@@ -94,3 +94,21 @@ impl ElicitIntrospect for Table {
         }
     }
 }
+
+impl crate::ElicitPromptTree for Table {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("Enter the SurrealDB table name:")
+                .to_string(),
+            type_name: "SurrealTable".to_string(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Table {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let n = &self.name;
+        quote::quote! { elicitation::SurrealTable { name: #n.to_string() } }
+    }
+}

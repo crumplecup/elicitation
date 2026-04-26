@@ -3,12 +3,16 @@
 //! This module provides contract types for regex validation using the `regex` crate.
 
 use crate::verification::types::ValidationError;
+#[cfg(not(kani))]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
-#[cfg(feature = "regex")]
+#[cfg(all(feature = "regex", not(kani)))]
 use anodized::spec;
-use elicitation_macros::instrumented_impl;
+#[cfg(not(kani))]
+use elicitation_derive::instrumented_impl;
 #[cfg(feature = "regex")]
-use regex::{Regex, RegexBuilder, RegexSet};
+use regex::{Regex, RegexSet};
+#[cfg(all(feature = "regex", not(kani)))]
+use regex::RegexBuilder;
 
 // ============================================================================
 // Regex Contract Types
@@ -561,14 +565,16 @@ crate::default_style!(RegexCaseInsensitive => RegexCaseInsensitiveStyle);
 crate::default_style!(RegexMultiline => RegexMultilineStyle);
 crate::default_style!(RegexSetNonEmpty => RegexSetNonEmptyStyle);
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Prompt for RegexValid {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a valid regex pattern:")
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Elicitation for RegexValid {
     type Style = RegexValidStyle;
 
@@ -607,14 +613,16 @@ impl Elicitation for RegexValid {
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Prompt for RegexSetValid {
     fn prompt() -> Option<&'static str> {
         Some("Please enter regex patterns (as a list):")
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Elicitation for RegexSetValid {
     type Style = RegexSetValidStyle;
 
@@ -653,14 +661,16 @@ impl Elicitation for RegexSetValid {
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Prompt for RegexCaseInsensitive {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a case-insensitive regex pattern:")
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Elicitation for RegexCaseInsensitive {
     type Style = RegexCaseInsensitiveStyle;
 
@@ -699,14 +709,16 @@ impl Elicitation for RegexCaseInsensitive {
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Prompt for RegexMultiline {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a multiline regex pattern:")
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Elicitation for RegexMultiline {
     type Style = RegexMultilineStyle;
 
@@ -745,14 +757,16 @@ impl Elicitation for RegexMultiline {
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Prompt for RegexSetNonEmpty {
     fn prompt() -> Option<&'static str> {
         Some("Please enter at least one regex pattern (as a list):")
     }
 }
 
-#[cfg_attr(not(kani), instrumented_impl)]
+#[cfg(not(kani))]
+#[instrumented_impl]
 impl Elicitation for RegexSetNonEmpty {
     type Style = RegexSetNonEmptyStyle;
 

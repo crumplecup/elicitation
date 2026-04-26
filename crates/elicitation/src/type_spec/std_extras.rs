@@ -126,3 +126,8 @@ impl_pathbuf_spec!(
 );
 
 impl crate::ElicitComplete for crate::verification::types::DurationPositive {}
+
+impl crate::ElicitComplete for crate::verification::types::PathBufExists {}
+impl crate::ElicitComplete for crate::verification::types::PathBufReadable {}
+impl crate::ElicitComplete for crate::verification::types::PathBufIsDir {}
+impl crate::ElicitComplete for crate::verification::types::PathBufIsFile {}

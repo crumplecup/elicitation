@@ -595,3 +595,154 @@ impl ElicitIntrospect for BevyAtmosphere {
         }
     }
 }
+
+// ── ElicitPromptTree + ToCodeLiteral ──────────────────────────────────────────
+
+impl crate::ElicitPromptTree for BevyFalloff {
+    fn prompt_tree() -> crate::PromptTree {
+        let f_leaf = crate::PromptTree::Leaf {
+            prompt: "Value:".to_string(),
+            type_name: "f32".to_string(),
+        };
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Falloff distribution:")
+                .to_string(),
+            type_name: "BevyFalloff".to_string(),
+            options: vec!["Linear".into(), "Exponential".into(), "Tent".into()],
+            branches: vec![
+                None,
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyFalloff::Exponential".to_string(),
+                    fields: vec![("scale".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyFalloff::Tent".to_string(),
+                    fields: vec![
+                        ("center".to_string(), Box::new(f_leaf.clone())),
+                        ("width".to_string(), Box::new(f_leaf)),
+                    ],
+                })),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyFalloff {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            Self::Linear => quote::quote! { bevy::pbr::Falloff::Linear },
+            Self::Exponential { scale } => {
+                quote::quote! { bevy::pbr::Falloff::Exponential { scale: #scale } }
+            }
+            Self::Tent { center, width } => {
+                quote::quote! { bevy::pbr::Falloff::Tent { center: #center, width: #width } }
+            }
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyPhaseFunction {
+    fn prompt_tree() -> crate::PromptTree {
+        let f_leaf = crate::PromptTree::Leaf {
+            prompt: "Asymmetry factor [-1, 1]:".to_string(),
+            type_name: "f32".to_string(),
+        };
+        crate::PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Phase function:").to_string(),
+            type_name: "BevyPhaseFunction".to_string(),
+            options: vec!["Isotropic".into(), "Rayleigh".into(), "Mie".into()],
+            branches: vec![
+                None,
+                None,
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyPhaseFunction::Mie".to_string(),
+                    fields: vec![("asymmetry".to_string(), Box::new(f_leaf))],
+                })),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyPhaseFunction {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            Self::Isotropic => quote::quote! { bevy::pbr::PhaseFunction::Isotropic },
+            Self::Rayleigh => quote::quote! { bevy::pbr::PhaseFunction::Rayleigh },
+            Self::Mie { asymmetry } => {
+                quote::quote! { bevy::pbr::PhaseFunction::Mie { asymmetry: #asymmetry } }
+            }
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyScatteringTerm {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: None,
+            type_name: "BevyScatteringTerm".to_string(),
+            fields: vec![
+                ("absorption".to_string(), Box::new(BevyVec3::prompt_tree())),
+                ("scattering".to_string(), Box::new(BevyVec3::prompt_tree())),
+                ("falloff".to_string(), Box::new(BevyFalloff::prompt_tree())),
+                (
+                    "phase".to_string(),
+                    Box::new(BevyPhaseFunction::prompt_tree()),
+                ),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyScatteringTerm {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let absorption = crate::emit_code::ToCodeLiteral::to_code_literal(&self.absorption);
+        let scattering = crate::emit_code::ToCodeLiteral::to_code_literal(&self.scattering);
+        let falloff = crate::emit_code::ToCodeLiteral::to_code_literal(&self.falloff);
+        let phase = crate::emit_code::ToCodeLiteral::to_code_literal(&self.phase);
+        quote::quote! {
+            bevy::pbr::ScatteringTerm {
+                absorption: #absorption,
+                scattering: #scattering,
+                falloff: #falloff,
+                phase: #phase,
+            }
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyAtmosphere {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "BevyAtmosphere".to_string(),
+            fields: vec![
+                ("bottom_radius".to_string(), Box::new(f32::prompt_tree())),
+                ("top_radius".to_string(), Box::new(f32::prompt_tree())),
+                (
+                    "ground_albedo".to_string(),
+                    Box::new(BevyVec3::prompt_tree()),
+                ),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyAtmosphere {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let bottom_radius = self.bottom_radius;
+        let top_radius = self.top_radius;
+        let ground_albedo = crate::emit_code::ToCodeLiteral::to_code_literal(&self.ground_albedo);
+        quote::quote! {
+            bevy::pbr::Atmosphere {
+                bottom_radius: #bottom_radius,
+                top_radius: #top_radius,
+                ground_albedo: #ground_albedo,
+                ..Default::default()
+            }
+        }
+    }
+}

@@ -6,7 +6,9 @@
 #[cfg(feature = "geojson-types")]
 #[kani::proof]
 fn verify_geojson_value_point_type_name() {
-    let value = geojson::Value::Point { coordinates: geojson::Position::from(vec![1.0_f64, 2.0_f64]) };
+    let value = geojson::Value::Point {
+        coordinates: geojson::Position::from(vec![1.0_f64, 2.0_f64]),
+    };
     assert!(value.type_name() == "Point", "Point type name preserved");
 }
 
@@ -14,7 +16,9 @@ fn verify_geojson_value_point_type_name() {
 #[cfg(feature = "geojson-types")]
 #[kani::proof]
 fn verify_geojson_geometry_new_point() {
-    let geometry = geojson::Geometry::new(geojson::Value::Point { coordinates: geojson::Position::from(vec![3.0_f64, 4.0_f64]) });
+    let geometry = geojson::Geometry::new(geojson::Value::Point {
+        coordinates: geojson::Position::from(vec![3.0_f64, 4.0_f64]),
+    });
     assert!(
         matches!(geometry.value, geojson::Value::Point { .. }),
         "Geometry::new preserves point variant"
@@ -31,7 +35,10 @@ fn verify_geojson_feature_property_access() {
     // HashMap internals and cause CBMC path explosion.  These are upstream
     // library APIs that we trust; our wrapper adds no logic around them.
     kani::assume(true);
-    assert!(true, "geojson feature property access is trusted third-party logic");
+    assert!(
+        true,
+        "geojson feature property access is trusted third-party logic"
+    );
 }
 
 /// FeatureCollection's FromIterator impl traverses HashMap internals, which
@@ -42,7 +49,10 @@ fn verify_geojson_feature_collection_len() {
     // geojson::FeatureCollection::from_iter explores HashMap / allocation
     // internals and causes CBMC path explosion.  Trusted third-party logic.
     kani::assume(true);
-    assert!(true, "geojson feature collection construction is trusted third-party logic");
+    assert!(
+        true,
+        "geojson feature collection construction is trusted third-party logic"
+    );
 }
 
 /// String feature identifiers preserve their variant.

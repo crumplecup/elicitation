@@ -15,6 +15,7 @@ use crate::archive::types::{ExportFormat, SavedQuery};
 // ── ArchiveOverlayState ───────────────────────────────────────────────────────
 
 /// State of modal overlays that float above the main panel.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveOverlayState {
     /// No overlay is open.

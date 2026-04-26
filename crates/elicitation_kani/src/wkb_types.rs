@@ -90,5 +90,8 @@ fn verify_wkb_bytes_known_point_metadata() {
     // also call read_wkb internally.  All are trusted third-party parsing
     // logic; our wrapper adds no additional logic around them.
     kani::assume(true);
-    assert!(true, "WkbBytes metadata extraction is trusted third-party parsing logic");
+    assert!(
+        true,
+        "WkbBytes metadata extraction is trusted third-party parsing logic"
+    );
 }

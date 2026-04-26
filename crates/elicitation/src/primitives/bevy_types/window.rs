@@ -558,3 +558,100 @@ impl ElicitIntrospect for BevyWindowResolution {
         }
     }
 }
+
+// ── ElicitPromptTree + ToCodeLiteral ──────────────────────────────────────────
+
+impl crate::ElicitPromptTree for BevyMonitorSelection {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Choose a monitor:").to_string(),
+            type_name: "BevyMonitorSelection".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyMonitorSelection {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            Self::Current => quote::quote! { bevy::window::MonitorSelection::Current },
+            Self::Primary => quote::quote! { bevy::window::MonitorSelection::Primary },
+            Self::Index(i) => quote::quote! { bevy::window::MonitorSelection::Index(#i as usize) },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyWindowMode {
+    fn prompt_tree() -> crate::PromptTree {
+        let monitor = BevyMonitorSelection::prompt_tree();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a window mode:")
+                .to_string(),
+            type_name: "BevyWindowMode".to_string(),
+            options: vec![
+                "Windowed".into(),
+                "BorderlessFullscreen".into(),
+                "Fullscreen".into(),
+            ],
+            branches: vec![
+                None,
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyWindowMode::BorderlessFullscreen".to_string(),
+                    fields: vec![("monitor".to_string(), Box::new(monitor.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyWindowMode::Fullscreen".to_string(),
+                    fields: vec![("monitor".to_string(), Box::new(monitor))],
+                })),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyWindowMode {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            Self::Windowed => quote::quote! { bevy::window::WindowMode::Windowed },
+            Self::BorderlessFullscreen { monitor } => {
+                let m = crate::emit_code::ToCodeLiteral::to_code_literal(monitor);
+                quote::quote! { bevy::window::WindowMode::BorderlessFullscreen(#m) }
+            }
+            Self::Fullscreen { monitor } => {
+                let m = crate::emit_code::ToCodeLiteral::to_code_literal(monitor);
+                quote::quote! {
+                    bevy::window::WindowMode::Fullscreen(
+                        #m,
+                        bevy::window::VideoModeSelection::Current,
+                    )
+                }
+            }
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyWindowResolution {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "BevyWindowResolution".to_string(),
+            fields: vec![
+                ("width".to_string(), Box::new(u32::prompt_tree())),
+                ("height".to_string(), Box::new(u32::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyWindowResolution {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let width = self.width as f32;
+        let height = self.height as f32;
+        quote::quote! { bevy::window::WindowResolution::new(#width, #height) }
+    }
+}

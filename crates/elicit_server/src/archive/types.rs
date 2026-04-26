@@ -16,6 +16,7 @@ use chrono::{DateTime, Utc};
 // ── BackendKind ───────────────────────────────────────────────────────────────
 
 /// Database backend detected from the connection URL.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -69,6 +70,7 @@ impl BackendKind {
 // ── TableType ─────────────────────────────────────────────────────────────────
 
 /// Distinguishes tables from views and materialised views.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -113,6 +115,7 @@ impl TableType {
 // ── ColumnDescriptor ──────────────────────────────────────────────────────────
 
 /// Descriptor for a single database column, including spatial detection.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ColumnDescriptor {
     /// Column name.
@@ -170,6 +173,7 @@ impl ColumnDescriptor {
 // ── TableDescriptor ───────────────────────────────────────────────────────────
 
 /// Descriptor for a database table or view.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TableDescriptor {
     /// Owning schema name.
@@ -214,6 +218,7 @@ impl TableDescriptor {
 // ── SchemaDescriptor ──────────────────────────────────────────────────────────
 
 /// Descriptor for a database schema and its contained tables.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaDescriptor {
     /// Schema name.
@@ -241,6 +246,7 @@ impl SchemaDescriptor {
 ///
 /// The raw connection URL is **never** stored; only a stable hash is kept so
 /// that descriptors are safe to serialise and log.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DatabaseDescriptor {
     /// Stable identifier derived from the connection URL (not the URL itself).
@@ -272,6 +278,7 @@ impl DatabaseDescriptor {
 // ── FkAction ──────────────────────────────────────────────────────────────────
 
 /// Referential action for a foreign key constraint.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -318,6 +325,7 @@ impl FkAction {
 ///
 /// Multi-column FK constraints are represented as multiple descriptors sharing
 /// the same `constraint_name`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ForeignKeyDescriptor {
     /// Constraint name in the database.
@@ -339,6 +347,7 @@ pub struct ForeignKeyDescriptor {
 // ── ConstraintKind ────────────────────────────────────────────────────────────
 
 /// Discriminator for database constraint types.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -383,6 +392,7 @@ impl ConstraintKind {
 // ── ConstraintDescriptor ──────────────────────────────────────────────────────
 
 /// Descriptor for a single table constraint.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConstraintDescriptor {
     /// Constraint name.
@@ -398,6 +408,7 @@ pub struct ConstraintDescriptor {
 // ── DdlDescriptor ─────────────────────────────────────────────────────────────
 
 /// The DDL text for a schema object (table, view, index, etc.).
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DdlDescriptor {
     /// Schema containing the object.
@@ -414,6 +425,7 @@ pub struct DdlDescriptor {
 ///
 /// Loaded lazily when the user selects a table node. Stored in
 /// `ArchiveNavModel::table_inspections`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TableInspection {
     /// Foreign keys defined on this table.
@@ -432,6 +444,7 @@ impl TableInspection {
 }
 
 /// Descriptor for a database index.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct IndexDescriptor {
     /// Index name.
@@ -467,6 +480,7 @@ impl IndexDescriptor {
 /// PostgreSQL planner statistics for a single column (from `pg_stats`).
 ///
 /// Only populated for PostgreSQL backends; other backends return empty stats.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ColumnStats {
     /// Column name.
@@ -493,6 +507,7 @@ pub struct ColumnStats {
 ///
 /// Populated by parsing the JSON array returned by PostgreSQL.
 /// Nesting mirrors the `Plans` arrays in the EXPLAIN output.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExplainNode {
     /// Node type, e.g. `"Seq Scan"`, `"Hash Join"`, `"Index Scan"`.
@@ -568,6 +583,7 @@ impl ExplainNode {
 /// Built when the user runs a second EXPLAIN while a plan is already visible.
 /// Cost-delta annotations (`▲`/`▼`) are computed at IR build time when the
 /// root nodes' total costs diverge by more than 10 %.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExplainComparison {
     /// Left (original) plan root.
@@ -581,6 +597,7 @@ pub struct ExplainComparison {
 }
 
 /// The result of executing a SQL query: column metadata + row data.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct QueryResult {
     /// Column descriptors for the result set.
@@ -619,6 +636,7 @@ impl QueryResult {
 // ── Export ────────────────────────────────────────────────────────────────────
 
 /// Output format for data export.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -661,6 +679,7 @@ impl ExportFormat {
 }
 
 /// Result of a data export operation.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExportResult {
     /// Format used.
@@ -690,6 +709,20 @@ pub struct QueryHistoryEntry {
     pub error: Option<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for QueryHistoryEntry {
+    fn any() -> Self {
+        Self {
+            id: kani::any(),
+            executed_at: chrono::DateTime::UNIX_EPOCH,
+            sql: kani::any(),
+            duration_ms: kani::any(),
+            row_count: kani::any(),
+            error: kani::any(),
+        }
+    }
+}
+
 /// A user-saved SQL snippet stored in the local SQLite database.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SavedQuery {
@@ -705,12 +738,26 @@ pub struct SavedQuery {
     pub updated_at: DateTime<Utc>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for SavedQuery {
+    fn any() -> Self {
+        Self {
+            id: kani::any(),
+            name: kani::any(),
+            sql: kani::any(),
+            created_at: chrono::DateTime::UNIX_EPOCH,
+            updated_at: chrono::DateTime::UNIX_EPOCH,
+        }
+    }
+}
+
 // ── Phase 3.1 — Inline Row Edit ───────────────────────────────────────────────
 
 /// The kind of mutation in a [`StagedEdit`].
 ///
 /// Values for `pk_values` and `row` fields are serialised as `String`; callers
 /// must pass `"NULL"` (the four-character literal) to represent SQL `NULL`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum RowEditKind {
@@ -739,6 +786,7 @@ pub enum RowEditKind {
 ///
 /// Serialisable so that the `archive_query__edit_row` MCP tool can accept a
 /// batch of staged edits as JSON.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct StagedEdit {
     /// Schema that owns the target table.
@@ -753,6 +801,7 @@ pub struct StagedEdit {
 ///
 /// Lives inside `ArchivePanelState::DataGrid::edit_state` and is `None` when
 /// no edit session is active.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct RowEditState {
     /// Mutations staged but not yet committed (ready to send to the tool).
@@ -805,6 +854,7 @@ impl Default for RowEditState {
 /// names the environment variable that holds it (e.g. `"DATABASE_URL"`).
 /// At runtime, [`ConnectionSet`] resolves the key via `std::env::var`.
 /// SSL connection mode, matching PostgreSQL `sslmode` parameter semantics.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -844,6 +894,7 @@ pub enum SslMode {
 
 ///
 /// [`ConnectionSet`]: crate::archive::nav_model::ConnectionSet
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConnectionProfile {
     /// Human-visible label shown in the tab bar.
@@ -881,6 +932,7 @@ pub struct ConnectionProfile {
 // ── Phase 4 — Advanced Object Types ──────────────────────────────────────────
 
 /// Volatility classification for PostgreSQL functions.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug,
     Clone,
@@ -908,6 +960,7 @@ pub enum FunctionVolatility {
 }
 
 /// A PostgreSQL function or stored procedure.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct FunctionDescriptor {
     /// OID of the function in `pg_proc`.
@@ -931,6 +984,7 @@ pub struct FunctionDescriptor {
 }
 
 /// The DML event(s) a trigger fires on.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TriggerEvents {
     /// Fires on `INSERT`.
@@ -944,6 +998,7 @@ pub struct TriggerEvents {
 }
 
 /// A PostgreSQL trigger attached to a table.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TriggerDescriptor {
     /// Containing schema.
@@ -965,6 +1020,7 @@ pub struct TriggerDescriptor {
 }
 
 /// A PostgreSQL sequence object.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SequenceDescriptor {
     /// Containing schema.
@@ -988,6 +1044,7 @@ pub struct SequenceDescriptor {
 }
 
 /// A PostgreSQL enum type with its ordered labels.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct EnumDescriptor {
     /// Containing schema.
@@ -999,6 +1056,7 @@ pub struct EnumDescriptor {
 }
 
 /// A PostgreSQL domain type (scalar with constraints).
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DomainDescriptor {
     /// Containing schema.
@@ -1016,6 +1074,7 @@ pub struct DomainDescriptor {
 }
 
 /// One column of a PostgreSQL composite type.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct CompositeTypeAttribute {
     /// Attribute (column) name.
@@ -1025,6 +1084,7 @@ pub struct CompositeTypeAttribute {
 }
 
 /// A PostgreSQL composite (record) type.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct CompositeTypeDescriptor {
     /// Containing schema.
@@ -1038,6 +1098,7 @@ pub struct CompositeTypeDescriptor {
 // ── MonitorTab ────────────────────────────────────────────────────────────────
 
 /// Which tab is active inside the monitor panel.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum MonitorTab {
     /// Session activity (default view).
@@ -1094,6 +1155,7 @@ impl MonitorTab {
 ///
 /// Populated by `ArchiveMonitorPlugin` tools and cached in
 /// `PanelMode::MonitorPanel`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct MonitorSnapshot {
     /// Active sessions from `pg_stat_activity`.
@@ -1119,6 +1181,7 @@ pub struct MonitorSnapshot {
 // ── AdminPanel types ──────────────────────────────────────────────────────────
 
 /// Which tab is active inside the admin panel.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum AdminTab {
     /// Role and privilege matrix.
@@ -1163,6 +1226,7 @@ impl AdminTab {
 ///
 /// Populated by `ArchiveAdminPlugin` tools and cached in
 /// `PanelMode::AdminPanel`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct AdminSnapshot {
     /// All cluster roles from `pg_roles`.
@@ -1184,6 +1248,7 @@ pub struct AdminSnapshot {
 // ── ERD types ─────────────────────────────────────────────────────────────────
 
 /// A single column in an ERD node.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdColumn {
     /// Column name.
@@ -1197,6 +1262,7 @@ pub struct ErdColumn {
 }
 
 /// A table node in an ERD diagram.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdNode {
     /// Owning schema.
@@ -1208,6 +1274,7 @@ pub struct ErdNode {
 }
 
 /// A directed foreign-key edge between two ERD nodes.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdEdge {
     /// Constraint name.
@@ -1230,6 +1297,7 @@ pub struct ErdEdge {
 ///
 /// Produced by [`fetch_erd`](crate::archive::nav_tree::fetch_erd) and
 /// cached in [`PanelMode::ErdPanel`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdDiagram {
     /// Schema this diagram covers.
@@ -1254,6 +1322,17 @@ pub struct ErdLayout {
     ///
     /// Key is `"schema.table"`.
     pub boxes: std::collections::HashMap<String, (f32, f32, f32, f32)>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ErdLayout {
+    fn any() -> Self {
+        Self {
+            canvas_w: kani::any(),
+            canvas_h: kani::any(),
+            boxes: std::collections::HashMap::new(),
+        }
+    }
 }
 
 impl ErdLayout {

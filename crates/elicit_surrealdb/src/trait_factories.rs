@@ -12,7 +12,7 @@
 //! boundary.  Users who need error-path handling should use the SurrealQL
 //! expression tools instead.
 
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 
 /// Expose [`surrealdb_types::SurrealValue`] as dynamic MCP tools.
 ///

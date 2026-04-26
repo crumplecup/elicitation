@@ -171,3 +171,18 @@ impl ElicitIntrospect for WkbGeometryType {
         }
     }
 }
+
+impl crate::ElicitPromptTree for WkbGeometryType {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose geometry type:")
+                .to_string(),
+            type_name: "WkbGeometryType".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}

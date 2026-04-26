@@ -90,6 +90,9 @@ mod chrono_specs {
         requires = [("after", "Timestamp must be strictly greater than the threshold.", "value > threshold")],
         related  = "chrono::NaiveDateTime",
     );
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for DateTimeUtcAfter {}
 }
 
 // ── jiff ──────────────────────────────────────────────────────────────────────

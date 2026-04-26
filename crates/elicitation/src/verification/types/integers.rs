@@ -5,7 +5,7 @@ use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -2965,6 +2965,35 @@ mod emit_impls {
     impl_to_code_literal_int!(UsizeNonZero);
     impl_to_code_literal_int!(UsizePositive);
     impl_to_code_literal_range!(UsizeRange, usize);
+
+    // ── Default wrappers (unconstrained primitives) ───────────────────────────
+
+    macro_rules! impl_to_code_literal_int_default {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#v) }
+                }
+            }
+        };
+    }
+
+    impl_to_code_literal_int_default!(I8Default);
+    impl_to_code_literal_int_default!(I16Default);
+    impl_to_code_literal_int_default!(I32Default);
+    impl_to_code_literal_int_default!(I64Default);
+    impl_to_code_literal_int_default!(I128Default);
+    impl_to_code_literal_int_default!(IsizeDefault);
+    impl_to_code_literal_int_default!(U8Default);
+    impl_to_code_literal_int_default!(U16Default);
+    impl_to_code_literal_int_default!(U32Default);
+    impl_to_code_literal_int_default!(U64Default);
+    impl_to_code_literal_int_default!(U128Default);
+    impl_to_code_literal_int_default!(UsizeDefault);
 }
 
 // ── ElicitIntrospect impls ────────────────────────────────────────────────────
@@ -3019,4 +3048,49 @@ impl_primitive_introspect!(
     U128Positive => "U128Positive",
     UsizeNonZero => "UsizeNonZero",
     UsizePositive => "UsizePositive",
+    // Default wrappers
+    I8Default => "I8Default",
+    I16Default => "I16Default",
+    I32Default => "I32Default",
+    I64Default => "I64Default",
+    I128Default => "I128Default",
+    IsizeDefault => "IsizeDefault",
+    U8Default => "U8Default",
+    U16Default => "U16Default",
+    U32Default => "U32Default",
+    U64Default => "U64Default",
+    U128Default => "U128Default",
+    UsizeDefault => "UsizeDefault",
 );
+
+// ── ElicitIntrospect for Range types (const-generic) ─────────────────────────
+
+macro_rules! impl_range_introspect {
+    ($ty:ident, $prim:ty, $name:literal) => {
+        impl<const MIN: $prim, const MAX: $prim> crate::ElicitIntrospect for $ty<MIN, MAX> {
+            fn pattern() -> crate::ElicitationPattern {
+                crate::ElicitationPattern::Primitive
+            }
+            fn metadata() -> crate::TypeMetadata {
+                crate::TypeMetadata {
+                    type_name: $name,
+                    description: <Self as crate::Prompt>::prompt(),
+                    details: crate::PatternDetails::Primitive,
+                }
+            }
+        }
+    };
+}
+
+impl_range_introspect!(I8Range, i8, "I8Range");
+impl_range_introspect!(I16Range, i16, "I16Range");
+impl_range_introspect!(I32Range, i32, "I32Range");
+impl_range_introspect!(I64Range, i64, "I64Range");
+impl_range_introspect!(I128Range, i128, "I128Range");
+impl_range_introspect!(IsizeRange, isize, "IsizeRange");
+impl_range_introspect!(U8Range, u8, "U8Range");
+impl_range_introspect!(U16Range, u16, "U16Range");
+impl_range_introspect!(U32Range, u32, "U32Range");
+impl_range_introspect!(U64Range, u64, "U64Range");
+impl_range_introspect!(U128Range, u128, "U128Range");
+impl_range_introspect!(UsizeRange, usize, "UsizeRange");

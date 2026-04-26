@@ -119,7 +119,9 @@ mod wkb_impls {
         };
     }
 
-    use crate::{ElicitComplete, WkbBytes, WkbDimension, WkbEndianness, WkbGeometryType, WkbWriteOptions};
+    use crate::{
+        ElicitComplete, WkbBytes, WkbDimension, WkbEndianness, WkbGeometryType, WkbWriteOptions,
+    };
 
     impl_select_spec!(
         type    = WkbEndianness,
@@ -179,4 +181,6 @@ mod wkb_impls {
     impl ElicitComplete for WkbEndianness {}
     impl ElicitComplete for WkbBytes {}
     impl ElicitComplete for WkbWriteOptions {}
+    impl ElicitComplete for WkbDimension {}
+    impl ElicitComplete for WkbGeometryType {}
 }

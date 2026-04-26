@@ -5,7 +5,7 @@
 #[cfg(feature = "surreal-types")]
 mod surreal_impls {
     use crate::primitives::surreal_types::{
-        Datetime, Duration, Geometry, Kind, Number, PatchOp, RecordId, Table, Value,
+        Datetime, Duration, Geometry, GeometryKind, Kind, Number, PatchOp, RecordId, Table, Value,
     };
     use crate::{
         ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
@@ -267,4 +267,32 @@ mod surreal_impls {
             ("Decrement", "Decrement the numeric value at a path"),
         ]
     );
+
+    impl_surreal_spec!(
+        type     = GeometryKind,
+        name     = "surreal::GeometryKind",
+        summary  = "A SurrealDB geometry type variant for use in DEFINE FIELD TYPE geometry(…).",
+        pattern  = "Select — choose the geometry kind variant",
+        variants = [
+            ("point",        "Point geometry"),
+            ("line",         "Line geometry"),
+            ("polygon",      "Polygon geometry"),
+            ("multipoint",   "MultiPoint geometry"),
+            ("multiline",    "MultiLine geometry"),
+            ("multipolygon", "MultiPolygon geometry"),
+            ("collection",   "Collection of geometries"),
+            ("feature",      "Any geometry type"),
+        ]
+    );
+
+    impl crate::ElicitComplete for Datetime {}
+    impl crate::ElicitComplete for Duration {}
+    impl crate::ElicitComplete for Table {}
+    impl crate::ElicitComplete for RecordId {}
+    impl crate::ElicitComplete for Number {}
+    impl crate::ElicitComplete for PatchOp {}
+    impl crate::ElicitComplete for Geometry {}
+    impl crate::ElicitComplete for GeometryKind {}
+    impl crate::ElicitComplete for Kind {}
+    impl crate::ElicitComplete for Value {}
 }

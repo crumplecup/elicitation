@@ -13,6 +13,7 @@ use super::ArchiveDisplay;
 // ── ErdColumn ─────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdColumn`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]
@@ -54,6 +55,7 @@ impl ArchiveDisplay for ErdColumn {
 // ── ErdNode ───────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdNode`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]
@@ -95,6 +97,7 @@ impl ArchiveDisplay for ErdNode {
 // ── ErdEdge ───────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdEdge`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]
@@ -133,6 +136,7 @@ impl ArchiveDisplay for ErdEdge {
 // ── ErdDiagram ────────────────────────────────────────────────────────────────
 
 /// Display strategies for an [`ErdDiagram`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]

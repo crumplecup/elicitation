@@ -15,7 +15,7 @@
 //! based methods remain available with their original names.
 
 use crate::WktItem;
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 
 /// Monomorphized `wkt::ToWkt<f64>` adapter.
 pub trait ToWktF64 {

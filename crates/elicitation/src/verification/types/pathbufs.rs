@@ -4,7 +4,7 @@ use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 use std::path::PathBuf;
 
 // PathBufExists - Paths that exist on the filesystem
@@ -389,6 +389,34 @@ mod tests {
         assert_eq!(exists.into_inner(), original);
     }
 }
+
+// ── ElicitIntrospect impls ───────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    PathBufExists   => "PathBufExists",
+    PathBufReadable => "PathBufReadable",
+    PathBufIsDir    => "PathBufIsDir",
+    PathBufIsFile   => "PathBufIsFile",
+);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 

@@ -669,7 +669,10 @@ pub fn run_creusot_module_prove(
     // Putting -p after 'prove' causes "unexpected argument" because the prove
     // subcommand's parser does not accept -p.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot").arg("-p").arg("elicitation_creusot").arg("prove");
+    cmd.arg("creusot")
+        .arg("-p")
+        .arg("elicitation_creusot")
+        .arg("prove");
 
     if let Some(feature) = module.feature() {
         cmd.arg("--").arg("--features").arg(feature);

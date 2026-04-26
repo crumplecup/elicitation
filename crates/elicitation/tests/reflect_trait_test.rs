@@ -9,7 +9,7 @@
 //! 6. Confirm the generated tools appear in the tool list
 
 use elicitation::{DynamicToolRegistry, Elicit, ElicitPlugin};
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

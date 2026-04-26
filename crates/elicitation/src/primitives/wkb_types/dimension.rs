@@ -142,3 +142,18 @@ impl ElicitIntrospect for WkbDimension {
         }
     }
 }
+
+impl crate::ElicitPromptTree for WkbDimension {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose coordinate dimension:")
+                .to_string(),
+            type_name: "WkbDimension".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}

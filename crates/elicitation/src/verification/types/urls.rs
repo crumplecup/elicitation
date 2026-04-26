@@ -3,7 +3,7 @@
 //! This module provides contract types for URL validation using the `url` crate.
 
 use crate::verification::types::ValidationError;
-#[cfg(feature = "url")]
+#[cfg(all(feature = "url", not(kani)))]
 use anodized::spec;
 #[cfg(feature = "url")]
 use url::Url;
@@ -768,6 +768,37 @@ mod tests {
         assert_eq!(inner.as_str(), "https://example.com/path");
     }
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+#[cfg(feature = "url")]
+macro_rules! impl_primitive_introspect_url {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+#[cfg(feature = "url")]
+impl_primitive_introspect_url!(
+    UrlValid      => "UrlValid",
+    UrlHttps      => "UrlHttps",
+    UrlHttp       => "UrlHttp",
+    UrlWithHost   => "UrlWithHost",
+    UrlCanBeBase  => "UrlCanBeBase",
+);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 

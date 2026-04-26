@@ -181,3 +181,28 @@ impl ElicitIntrospect for Number {
         }
     }
 }
+
+impl crate::ElicitPromptTree for Number {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose the numeric value type:")
+                .to_string(),
+            type_name: "SurrealNumber".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Number {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("Number should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::SurrealNumber>(#json)
+                .expect("serialized SurrealNumber should deserialize")
+        }
+    }
+}

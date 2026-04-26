@@ -94,4 +94,15 @@ mod url_impls {
         summary  = "A url::Url guaranteed to be capable of being a base URL (not opaque).",
         requires = [("can_be_base", "URL must be capable of being a base URL (scheme://authority/path form).", "!value.is_empty()")],
     );
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for UrlValid {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for UrlHttps {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for UrlHttp {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for UrlWithHost {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for UrlCanBeBase {}
 }

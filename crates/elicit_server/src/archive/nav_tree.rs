@@ -24,6 +24,7 @@ use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
 // ── Data model ────────────────────────────────────────────────────────────────
 
 /// A schema together with its pre-loaded table list and Phase 4 object types.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaEntry {
     /// Schema name.
@@ -47,6 +48,7 @@ pub struct SchemaEntry {
 }
 
 /// Pre-loaded navigation tree passed to the ratatui frontend.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct NavTree {
     /// Database / catalog name (first schema name or the supplied db name).

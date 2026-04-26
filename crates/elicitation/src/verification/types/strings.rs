@@ -5,7 +5,7 @@ use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
@@ -357,6 +357,19 @@ impl crate::ElicitIntrospect for StringDefault {
             type_name: "StringDefault",
             description: <Self as crate::Prompt>::prompt(),
             details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+mod string_default_emit {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for StringDefault {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.get();
+            quote::quote! { elicitation::StringDefault::new(#s.to_string()) }
         }
     }
 }

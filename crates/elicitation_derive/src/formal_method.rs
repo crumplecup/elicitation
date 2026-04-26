@@ -147,11 +147,7 @@ fn is_string_type(ty: &Type) -> bool {
     let segs = &tp.path.segments;
     match segs.len() {
         1 => segs[0].ident == "String",
-        3 => {
-            segs[0].ident == "std"
-                && segs[1].ident == "string"
-                && segs[2].ident == "String"
-        }
+        3 => segs[0].ident == "std" && segs[1].ident == "string" && segs[2].ident == "String",
         _ => false,
     }
 }

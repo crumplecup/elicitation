@@ -82,6 +82,7 @@ pub enum FlatItem {
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
 
 /// A schema entry combined with its current expand/collapse state.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaWithExpand {
     /// The underlying schema descriptor.

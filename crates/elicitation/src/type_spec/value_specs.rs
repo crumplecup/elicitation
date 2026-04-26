@@ -80,4 +80,11 @@ mod value_impls {
         summary  = "A serde_json::Value guaranteed to not be JSON null.",
         requires = [("non_null", "Value must not be the JSON null variant.", "!value.is_null()")],
     );
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for ValueObject {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for ValueArray {}
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for ValueNonNull {}
 }

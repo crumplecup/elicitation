@@ -5,7 +5,7 @@
 //! a struct to ensure proper schema generation.
 
 use elicitation::{Elicit, ElicitToolOutput};
-use elicitation_macros::elicit_tools;
+use elicitation_derive::elicit_tools;
 use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::service::RoleServer;
 use rmcp::{ServerHandler, tool, tool_router};

@@ -4,7 +4,7 @@ use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 
 // ============================================================================
 
@@ -333,6 +333,13 @@ mod emit_impls {
     impl ToCodeLiteral for BoolFalse {
         fn to_code_literal(&self) -> TokenStream {
             quote::quote! { elicitation::BoolFalse::new(false).expect("valid BoolFalse") }
+        }
+    }
+
+    impl ToCodeLiteral for BoolDefault {
+        fn to_code_literal(&self) -> TokenStream {
+            let b = self.get();
+            quote::quote! { elicitation::BoolDefault::new(#b) }
         }
     }
 }

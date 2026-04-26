@@ -24,6 +24,14 @@ pub enum DbSpatialValue {
     Wkb(Vec<u8>),
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for DbSpatialValue {
+    fn any() -> Self {
+        let bytes: [u8; 8] = kani::any();
+        Self::Wkt(String::from_utf8_lossy(&bytes).into_owned())
+    }
+}
+
 #[cfg(feature = "geo-types")]
 impl DbSpatialValue {
     /// Encodes a geometry as validated WKT text for database transport.
@@ -82,6 +90,20 @@ pub enum DbValue {
     Geometry(DbSpatialValue),
     /// PostGIS `geography` payload.
     Geography(DbSpatialValue),
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for DbValue {
+    fn any() -> Self {
+        match kani::any::<u8>() % 6 {
+            0 => Self::Null,
+            1 => Self::Bool(kani::any()),
+            2 => Self::Int(kani::any()),
+            3 => Self::Float(kani::any()),
+            4 => Self::Text(kani::any()),
+            _ => Self::Bytes(kani::any()),
+        }
+    }
 }
 
 #[cfg(feature = "geo-types")]
@@ -155,6 +177,7 @@ impl DbValue {
 }
 
 /// A single row from a query result — ordered named columns.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRow(pub Vec<(String, DbValue)>);
 
@@ -166,6 +189,7 @@ impl DbRow {
 }
 
 /// A collection of query rows with affected-row count.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRows {
     /// The result rows.
@@ -251,6 +275,7 @@ pub struct DbIndexInfo {
 }
 
 /// Role / user metadata.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRoleInfo {
     /// Role name.
@@ -266,6 +291,7 @@ pub struct DbRoleInfo {
 }
 
 /// Active session info from `pg_stat_activity`.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbSessionInfo {
     /// Backend process ID.

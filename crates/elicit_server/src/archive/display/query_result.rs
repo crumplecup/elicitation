@@ -11,6 +11,7 @@ use crate::archive::QueryResult;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`QueryResult`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]

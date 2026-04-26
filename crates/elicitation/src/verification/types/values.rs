@@ -6,10 +6,10 @@
 use super::ValidationError;
 #[cfg(all(feature = "serde_json", not(kani)))]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
-#[cfg(feature = "serde_json")]
+#[cfg(all(feature = "serde_json", not(kani)))]
 use anodized::spec;
 #[cfg(all(feature = "serde_json", not(kani)))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 #[cfg(feature = "serde_json")]
 use serde_json::Value;
 
@@ -453,6 +453,35 @@ impl crate::emit_code::ToCodeLiteral for ValueNonNull {
         }
     }
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+#[cfg(feature = "serde_json")]
+macro_rules! impl_primitive_introspect_value {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl_primitive_introspect_value!(
+    ValueObject  => "ValueObject",
+    ValueArray   => "ValueArray",
+    ValueNonNull => "ValueNonNull",
+);
 
 #[cfg(feature = "serde_json")]
 fn value_type_name(value: &Value) -> String {

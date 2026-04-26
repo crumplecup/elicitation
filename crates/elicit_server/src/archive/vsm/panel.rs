@@ -49,6 +49,7 @@ use crate::archive::types::{
 /// Every variant that carries displayable data also carries the `*Mode` that
 /// determines which AccessKit node tree is emitted, enforcing WCAG compliance
 /// at the type level.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchivePanelState {
     /// Column-detail view for the selected nav item (default landing).

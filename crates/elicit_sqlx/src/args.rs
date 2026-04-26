@@ -39,7 +39,7 @@
 //! // Agent can now call: create_user__to_sqlx_args { target: { … } }
 //! ```
 
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 use serde::Serialize;
 
 /// Convert `self` into a flat list of positional SQL argument values.

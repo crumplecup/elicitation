@@ -273,6 +273,42 @@ impl ElicitIntrospect for Geometry {
     }
 }
 
+impl crate::ElicitPromptTree for Geometry {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts: Vec<String> = [
+            "Point",
+            "Line",
+            "Polygon",
+            "MultiPoint",
+            "MultiLine",
+            "MultiPolygon",
+            "Collection (JSON)",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SurrealDB geometry variant:")
+                .to_string(),
+            type_name: "SurrealGeometry".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Geometry {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("Geometry should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::SurrealGeometry>(#json)
+                .expect("serialized SurrealGeometry should deserialize")
+        }
+    }
+}
+
 /// Ask the communicator for a JSON coordinate string.
 async fn ask_coord_json<C: ElicitCommunicator>(
     communicator: &C,

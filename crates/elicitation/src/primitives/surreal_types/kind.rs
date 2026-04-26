@@ -349,6 +349,31 @@ impl ElicitIntrospect for GeometryKind {
     }
 }
 
+impl crate::ElicitPromptTree for GeometryKind {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SurrealDB geometry kind:")
+                .to_string(),
+            type_name: "GeometryKind".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for GeometryKind {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("GeometryKind should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::GeometryKind>(#json)
+                .expect("serialized GeometryKind should deserialize")
+        }
+    }
+}
+
 // ── Kind ────────────────────────────────────────────────────────────────────
 
 /// Labels used in the Kind selector — unit variants first, then data variants.
@@ -667,6 +692,31 @@ impl ElicitIntrospect for Kind {
                     })
                     .collect(),
             },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for Kind {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts: Vec<String> = kind_all_labels().into_iter().map(String::from).collect();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SurrealDB field type kind:")
+                .to_string(),
+            type_name: "SurrealKind".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Kind {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("Kind should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::SurrealKind>(#json)
+                .expect("serialized SurrealKind should deserialize")
         }
     }
 }

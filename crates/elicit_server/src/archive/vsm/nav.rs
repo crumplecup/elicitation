@@ -11,6 +11,7 @@ use crate::archive::nav_tree::NavTree;
 // ── ArchiveNavState ───────────────────────────────────────────────────────────
 
 /// State of the archive navigation tree panel.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveNavState {
     /// No nav tree has been loaded yet.

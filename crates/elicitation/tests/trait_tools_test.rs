@@ -4,7 +4,7 @@
 
 #![allow(clippy::manual_async_fn)] // We use impl Future for zero-cost async
 
-use elicitation_macros::elicit_trait_tools_router;
+use elicitation_derive::elicit_trait_tools_router;
 use rmcp::handler::server::wrapper::{Json, Parameters};
 use rmcp::model::ServerInfo;
 use rmcp::{ServerHandler, tool_router};

@@ -73,4 +73,7 @@ mod uuid_impls {
         summary  = "A uuid::Uuid guaranteed to not be the nil UUID (all zeros).",
         requires = [("non_nil", "UUID must not be the nil UUID (00000000-0000-0000-0000-000000000000).", "uuid != Uuid::nil()")],
     );
+
+    impl crate::ElicitComplete for UuidV4 {}
+    impl crate::ElicitComplete for UuidNonNil {}
 }

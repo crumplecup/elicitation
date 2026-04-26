@@ -4326,11 +4326,6 @@ dependencies = [
 [[package]]
 name = "elicitation_macros"
 version = "0.10.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
 
 [[package]]
 name = "elicitation_rand"

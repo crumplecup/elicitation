@@ -11,6 +11,7 @@ use crate::archive::ForeignKeyDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`ForeignKeyDescriptor`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]

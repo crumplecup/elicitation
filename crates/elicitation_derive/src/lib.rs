@@ -97,6 +97,7 @@ mod rand_contract_parser;
 mod rand_generator_impl;
 mod struct_impl;
 mod tool_gen;
+mod trait_reflection;
 
 use proc_macro::TokenStream;
 
@@ -625,4 +626,308 @@ pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(ToCodeLiteral, attributes(to_code_literal, skip))]
 pub fn derive_to_code_literal(input: TokenStream) -> TokenStream {
     derive_to_code_literal::expand(input)
+}
+
+/// Attribute macro to add tracing instrumentation to impl blocks.
+///
+/// Apply to `impl` blocks to automatically instrument all public methods.
+///
+/// # Strategy
+///
+/// - **Constructors** (`new`, `from_*`, `try_*`): `#[instrument(ret, err)]`
+/// - **Accessors** (`get`, `into_inner`, `as_*`, `to_*`): `#[instrument(level = "trace", ret)]`
+/// - **Other methods**: `#[instrument(skip(self))]`
+///
+/// # Kani Compatibility
+///
+/// When compiling under Kani (formal verification), this macro becomes a no-op.
+/// Instrumentation is for runtime observability, not formal verification.
+#[proc_macro_attribute]
+pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    use syn::{ImplItem, ItemImpl, parse_macro_input};
+    use quote::quote;
+
+    let impl_block = parse_macro_input!(item as ItemImpl);
+
+    // Under Kani, return impl block unchanged (no instrumentation needed)
+    #[cfg(kani)]
+    {
+        return TokenStream::from(quote! { #impl_block });
+    }
+
+    #[cfg(not(kani))]
+    {
+        let mut impl_block = impl_block;
+
+        for item in &mut impl_block.items {
+            if let ImplItem::Fn(method) = item {
+                if matches!(method.vis, syn::Visibility::Public(_)) {
+                    let method_name = method.sig.ident.to_string();
+                    let has_generics = !method.sig.generics.params.is_empty();
+
+                    let instrument_attr = if instrumented_impl_is_constructor(&method_name) {
+                        if has_generics {
+                            let param_names: Vec<_> = method
+                                .sig
+                                .inputs
+                                .iter()
+                                .filter_map(|arg| {
+                                    if let syn::FnArg::Typed(pat_type) = arg
+                                        && let syn::Pat::Ident(ident) = &*pat_type.pat
+                                    {
+                                        return Some(ident.ident.clone());
+                                    }
+                                    None
+                                })
+                                .collect();
+                            quote! { #[tracing::instrument(skip(#(#param_names),*), err)] }
+                        } else {
+                            quote! { #[tracing::instrument(err)] }
+                        }
+                    } else if instrumented_impl_is_accessor(&method_name) {
+                        quote! { #[tracing::instrument(level = "trace", ret)] }
+                    } else {
+                        quote! { #[tracing::instrument(skip(self))] }
+                    };
+
+                    let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
+                    method.attrs.insert(0, attr);
+                }
+            }
+        }
+
+        TokenStream::from(quote! { #impl_block })
+    }
+}
+
+fn instrumented_impl_is_constructor(name: &str) -> bool {
+    name == "new" || name.starts_with("from_") || name.starts_with("try_") || name == "default"
+}
+
+fn instrumented_impl_is_accessor(name: &str) -> bool {
+    name == "get"
+        || name == "into_inner"
+        || name.starts_with("as_")
+        || name.starts_with("to_")
+        || name.starts_with("get_")
+}
+
+/// Generates elicitation tool methods inside an impl block for rmcp tool_router.
+///
+/// For each type T, generates an `elicit_T` method with `#[tool]` marker.
+#[proc_macro_attribute]
+pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
+    use syn::{ItemImpl, parse_macro_input};
+    use quote::quote;
+
+    let impl_block = parse_macro_input!(item as ItemImpl);
+
+    let types_input = attr.to_string();
+    let types: Vec<&str> = types_input
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if types.is_empty() {
+        return syn::Error::new_spanned(
+            &impl_block,
+            "elicit_tools requires at least one type: #[elicit_tools(Type1, Type2)]",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let mut new_impl = impl_block.clone();
+
+    for ty_str in types {
+        let ty: syn::Type = match syn::parse_str(ty_str) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse type '{}': {}", ty_str, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let method_name = elicit_tools_to_snake_case(ty_str);
+        let method_ident = syn::Ident::new(
+            &format!("elicit_{}", method_name),
+            proc_macro2::Span::call_site(),
+        );
+
+        let tool_description = format!("Elicit {} via MCP", ty_str);
+        let method: syn::ImplItemFn = syn::parse_quote! {
+            #[doc = concat!("Elicit `", #ty_str, "` via MCP.")]
+            #[tool(description = #tool_description)]
+            pub async fn #method_ident(
+                peer: ::rmcp::service::Peer<::rmcp::service::RoleServer>,
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<::elicitation::ElicitToolOutput<#ty>>,
+                ::rmcp::ErrorData
+            > {
+                let value = #ty::elicit_checked(peer).await
+                    .map_err(|e| ::rmcp::ErrorData::internal_error(e.to_string(), None))?;
+                Ok(::rmcp::handler::server::wrapper::Json(::elicitation::ElicitToolOutput::new(value)))
+            }
+        };
+
+        new_impl.items.push(syn::ImplItem::Fn(method));
+    }
+
+    TokenStream::from(quote! { #new_impl })
+}
+
+fn elicit_tools_to_snake_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut prev_was_lowercase = false;
+    for (i, ch) in s.chars().enumerate() {
+        if ch.is_uppercase() {
+            if i > 0 && prev_was_lowercase {
+                result.push('_');
+            }
+            result.push(ch.to_ascii_lowercase());
+            prev_was_lowercase = false;
+        } else {
+            result.push(ch);
+            prev_was_lowercase = ch.is_lowercase();
+        }
+    }
+    result
+}
+
+/// Generates MCP tool wrappers for trait methods, delegating to a named field.
+#[proc_macro_attribute]
+pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
+    use syn::{ItemImpl, parse_macro_input};
+    use quote::quote;
+
+    let attr_str = attr.to_string();
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut bracket_depth = 0;
+
+    for ch in attr_str.chars() {
+        match ch {
+            '[' => { bracket_depth += 1; current.push(ch); }
+            ']' => { bracket_depth -= 1; current.push(ch); }
+            ',' if bracket_depth == 0 => { parts.push(current.trim().to_string()); current.clear(); }
+            _ => current.push(ch),
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current.trim().to_string());
+    }
+
+    if parts.len() != 3 {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires three arguments: #[elicit_trait_tools_router(TraitName, field_name, [method1, method2])]",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let _trait_name = &parts[0];
+    let field_name = &parts[1];
+    let methods_str = &parts[2];
+
+    let methods_str = methods_str.trim_start_matches('[').trim_end_matches(']');
+    let methods: Vec<&str> = methods_str
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if methods.is_empty() {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires at least one method in the list",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let mut impl_block = parse_macro_input!(item as ItemImpl);
+
+    for method_name in methods {
+        let pascal_case = elicit_trait_tools_to_pascal_case(method_name);
+        let params_type = format!("{}Params", pascal_case);
+        let result_type = format!("{}Result", pascal_case);
+
+        let params_ty: syn::Type = match syn::parse_str(&params_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse params type '{}': {}", params_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let result_ty: syn::Type = match syn::parse_str(&result_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse result type '{}': {}", result_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let method_ident = syn::Ident::new(method_name, proc_macro2::Span::call_site());
+        let field_ident = syn::Ident::new(field_name, proc_macro2::Span::call_site());
+        let tool_description = format!("{} operation", method_name.replace('_', " "));
+
+        let method: syn::ImplItemFn = syn::parse_quote! {
+            #[doc = concat!("`", #method_name, "` operation via trait method delegation.")]
+            #[::rmcp::tool(description = #tool_description)]
+            pub async fn #method_ident(
+                &self,
+                params: ::rmcp::handler::server::wrapper::Parameters<#params_ty>,
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<#result_ty>,
+                ::rmcp::ErrorData
+            > {
+                self.#field_ident.#method_ident(params).await
+            }
+        };
+
+        impl_block.items.push(syn::ImplItem::Fn(method));
+    }
+
+    TokenStream::from(quote! { #impl_block })
+}
+
+fn elicit_trait_tools_to_pascal_case(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+            }
+        })
+        .collect()
+}
+
+/// Capture a third-party trait's methods as MCP tools.
+///
+/// Apply to an `impl` block that names the factory struct and lists the
+/// method signatures of the third-party trait you want to wrap.
+#[proc_macro_attribute]
+pub fn reflect_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+    match trait_reflection::expand(attr2, item2) {
+        Ok(ts) => ts.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
 }

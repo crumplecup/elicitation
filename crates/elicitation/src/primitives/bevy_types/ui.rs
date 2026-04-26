@@ -525,6 +525,67 @@ impl ElicitIntrospect for BevyVal {
     }
 }
 
+impl crate::ElicitPromptTree for BevyVal {
+    fn prompt_tree() -> crate::PromptTree {
+        let f_leaf = crate::PromptTree::Leaf {
+            prompt: "Value:".to_string(),
+            type_name: "f32".to_string(),
+        };
+        crate::PromptTree::Select {
+            prompt: "Choose a UI measurement unit:".to_string(),
+            type_name: "BevyVal".to_string(),
+            options: BevyValKind::labels(),
+            branches: vec![
+                None,
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::Px".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::Percent".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::Vw".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::Vh".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::VMin".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf.clone()))],
+                })),
+                Some(Box::new(crate::PromptTree::Survey {
+                    prompt: None,
+                    type_name: "BevyVal::VMax".to_string(),
+                    fields: vec![("value".to_string(), Box::new(f_leaf))],
+                })),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyVal {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            Self::Auto => quote::quote! { bevy::ui::Val::Auto },
+            Self::Px { value } => quote::quote! { bevy::ui::Val::Px(#value) },
+            Self::Percent { value } => quote::quote! { bevy::ui::Val::Percent(#value) },
+            Self::Vw { value } => quote::quote! { bevy::ui::Val::Vw(#value) },
+            Self::Vh { value } => quote::quote! { bevy::ui::Val::Vh(#value) },
+            Self::VMin { value } => quote::quote! { bevy::ui::Val::VMin(#value) },
+            Self::VMax { value } => quote::quote! { bevy::ui::Val::VMax(#value) },
+        }
+    }
+}
+
 // ── BevyUiRect ────────────────────────────────────────────────────────────────
 
 /// Owned trenchcoat for [`bevy::ui::UiRect`].
@@ -634,6 +695,38 @@ impl ElicitIntrospect for BevyUiRect {
             details: PatternDetails::Survey {
                 fields: Self::fields(),
             },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyUiRect {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: None,
+            type_name: "BevyUiRect".to_string(),
+            fields: vec![
+                ("left".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("right".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("top".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("bottom".to_string(), Box::new(BevyVal::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyUiRect {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let left = crate::emit_code::ToCodeLiteral::to_code_literal(&self.left);
+        let right = crate::emit_code::ToCodeLiteral::to_code_literal(&self.right);
+        let top = crate::emit_code::ToCodeLiteral::to_code_literal(&self.top);
+        let bottom = crate::emit_code::ToCodeLiteral::to_code_literal(&self.bottom);
+        quote::quote! {
+            bevy::ui::UiRect {
+                left: #left,
+                right: #right,
+                top: #top,
+                bottom: #bottom,
+            }
         }
     }
 }
@@ -752,6 +845,38 @@ impl ElicitIntrospect for BevyBorderRadius {
             details: PatternDetails::Survey {
                 fields: Self::fields(),
             },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyBorderRadius {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: None,
+            type_name: "BevyBorderRadius".to_string(),
+            fields: vec![
+                ("top_left".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("top_right".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("bottom_right".to_string(), Box::new(BevyVal::prompt_tree())),
+                ("bottom_left".to_string(), Box::new(BevyVal::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyBorderRadius {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let tl = crate::emit_code::ToCodeLiteral::to_code_literal(&self.top_left);
+        let tr = crate::emit_code::ToCodeLiteral::to_code_literal(&self.top_right);
+        let br = crate::emit_code::ToCodeLiteral::to_code_literal(&self.bottom_right);
+        let bl = crate::emit_code::ToCodeLiteral::to_code_literal(&self.bottom_left);
+        quote::quote! {
+            bevy::ui::BorderRadius {
+                top_left: #tl,
+                top_right: #tr,
+                bottom_right: #br,
+                bottom_left: #bl,
+            }
         }
     }
 }

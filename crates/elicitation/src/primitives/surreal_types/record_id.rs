@@ -181,3 +181,29 @@ impl ElicitIntrospect for RecordId {
         }
     }
 }
+
+impl crate::ElicitPromptTree for RecordId {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(|s| s.to_string()),
+            type_name: "SurrealRecordId".to_string(),
+            fields: vec![
+                ("table".to_string(), Box::new(String::prompt_tree())),
+                (
+                    "key".to_string(),
+                    Box::new(<serde_json::Value as crate::ElicitPromptTree>::prompt_tree()),
+                ),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for RecordId {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("RecordId should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::SurrealRecordId>(#json)
+                .expect("serialized SurrealRecordId should deserialize")
+        }
+    }
+}

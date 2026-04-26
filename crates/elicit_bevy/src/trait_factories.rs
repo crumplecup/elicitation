@@ -39,7 +39,7 @@
 //! registry.register_type::<MyState>("my_state").await;
 //! ```
 
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 use std::any::TypeId;
 use std::collections::HashSet;
 use std::sync::{LazyLock, RwLock};

@@ -3,7 +3,7 @@
 //! Goal: Understand exactly where composition breaks down.
 
 use elicitation::Elicit;
-use elicitation_macros::elicit_tools;
+use elicitation_derive::elicit_tools;
 use rmcp::handler::server::wrapper::Json;
 use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::service::{Peer, RoleServer};

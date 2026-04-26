@@ -833,6 +833,28 @@ impl ElicitIntrospect for BevyKeyCode {
     }
 }
 
+impl crate::ElicitPromptTree for BevyKeyCode {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Choose a key code:").to_string(),
+            type_name: "BevyKeyCode".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyKeyCode {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let label = serde_json::to_string(self).unwrap_or_default();
+        let label = label.trim_matches('"');
+        let variant = proc_macro2::Ident::new(label, proc_macro2::Span::call_site());
+        quote::quote! { bevy::input::keyboard::KeyCode::#variant }
+    }
+}
+
 // ── BevyMouseButton ───────────────────────────────────────────────────────────
 //
 // bevy::input::mouse::MouseButton has an Other(u16) data variant.
@@ -986,6 +1008,30 @@ impl ElicitIntrospect for BevyMouseButton {
                     .collect(),
             },
         }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyMouseButton {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a mouse button:")
+                .to_string(),
+            type_name: "BevyMouseButton".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyMouseButton {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let label = serde_json::to_string(self).unwrap_or_default();
+        let label = label.trim_matches('"');
+        let variant = proc_macro2::Ident::new(label, proc_macro2::Span::call_site());
+        quote::quote! { bevy::input::mouse::MouseButton::#variant }
     }
 }
 
@@ -1227,6 +1273,30 @@ impl ElicitIntrospect for BevyGamepadButton {
     }
 }
 
+impl crate::ElicitPromptTree for BevyGamepadButton {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a gamepad button:")
+                .to_string(),
+            type_name: "BevyGamepadButton".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyGamepadButton {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let label = serde_json::to_string(self).unwrap_or_default();
+        let label = label.trim_matches('"');
+        let variant = proc_macro2::Ident::new(label, proc_macro2::Span::call_site());
+        quote::quote! { bevy::input::gamepad::GamepadButton::#variant }
+    }
+}
+
 // ── BevyGamepadAxis ───────────────────────────────────────────────────────────
 //
 // bevy::input::gamepad::GamepadAxis has an Other(u8) data variant.
@@ -1389,5 +1459,29 @@ impl ElicitIntrospect for BevyGamepadAxis {
                     .collect(),
             },
         }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyGamepadAxis {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = Self::labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a gamepad axis:")
+                .to_string(),
+            type_name: "BevyGamepadAxis".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyGamepadAxis {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let label = serde_json::to_string(self).unwrap_or_default();
+        let label = label.trim_matches('"');
+        let variant = proc_macro2::Ident::new(label, proc_macro2::Span::call_site());
+        quote::quote! { bevy::input::gamepad::GamepadAxis::#variant }
     }
 }

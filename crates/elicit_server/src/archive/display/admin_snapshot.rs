@@ -13,6 +13,7 @@ use super::ArchiveDisplay;
 /// Display strategies for an [`AdminSnapshot`], mirroring [`AdminTab`].
 ///
 /// [`AdminTab`]: crate::archive::AdminTab
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]

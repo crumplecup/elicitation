@@ -319,3 +319,28 @@ impl ElicitIntrospect for Value {
         }
     }
 }
+
+impl crate::ElicitPromptTree for Value {
+    fn prompt_tree() -> crate::PromptTree {
+        let opts = value_labels();
+        let n = opts.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SurrealDB value type:")
+                .to_string(),
+            type_name: "SurrealValue".to_string(),
+            options: opts,
+            branches: vec![None; n],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Value {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let json = serde_json::to_string(self).expect("Value should serialize");
+        quote::quote! {
+            ::serde_json::from_str::<elicitation::SurrealValue>(#json)
+                .expect("serialized SurrealValue should deserialize")
+        }
+    }
+}

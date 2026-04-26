@@ -6,26 +6,24 @@
 mod bevy_impls {
     use crate::{
         BevyAffine2, BevyAffine3A, BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyAlphaMode,
-        BevyAmbientLight, BevyAnnulus, BevyAnchor, BevyArc2d, BevyAtmosphere, BevyBorderRadius,
+        BevyAmbientLight, BevyAnchor, BevyAnnulus, BevyArc2d, BevyAtmosphere, BevyBorderRadius,
         BevyBoxSizing, BevyButtonState, BevyCircularSector, BevyCircularSegment, BevyColor,
         BevyCone, BevyConicalFrustum, BevyCuboid, BevyCylinder, BevyDAffine2, BevyDAffine3,
-        BevyDQuat, BevyDir2, BevyDir3, BevyDir3A, BevyDirectionalLight, BevyDisplay,
-        BevyEllipse, BevyFalloff, BevyFlexDirection, BevyFlexWrap, BevyFontSmoothing,
-        BevyGamepadAxis, BevyGamepadButton, BevyGlobalTransform, BevyJustify,
-        BevyJustifyContent, BevyJustifyItems, BevyJustifySelf, BevyKeyCode, BevyLine2d,
-        BevyLine3d, BevyLineBreak, BevyMat3A, BevyMonitorSelection, BevyMouseButton,
-        BevyOrthographicProjection, BevyOverflowAxis, BevyOverflowClipBox,
-        BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable, BevyPickingInteraction,
-        BevyPlane2d, BevyPlane3d, BevyPlaybackMode, BevyPlaybackSettings, BevyPointLight,
-        BevyPositionType, BevyPresentMode, BevyQuat, BevyRay2d, BevyRay3d, BevyRectangle,
-        BevyRegularPolygon, BevyRepeatAnimation, BevyRhombus, BevyScalingMode,
-        BevyScatteringTerm, BevySegment2d, BevySpotLight, BevySpriteConfig,
-        BevySpriteScalingMode, BevyStandardMaterial, BevyTetrahedron, BevyTextFont,
-        BevyTextLayout, BevyTimer, BevyTonemapping, BevyTorus, BevyTouchPhase, BevyTransform,
-        BevyTriangle2d, BevyUiRect, BevyVal, BevyVec3A, BevyVolume, BevyWindowLevel,
-        BevyWindowMode, BevyWindowResolution, BevyWindowTheme, ElicitComplete, ElicitSpec,
-        Select, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
-        TypeSpecInventoryKey,
+        BevyDQuat, BevyDir2, BevyDir3, BevyDir3A, BevyDirectionalLight, BevyDisplay, BevyEllipse,
+        BevyFalloff, BevyFlexDirection, BevyFlexWrap, BevyFontSmoothing, BevyGamepadAxis,
+        BevyGamepadButton, BevyGlobalTransform, BevyJustify, BevyJustifyContent, BevyJustifyItems,
+        BevyJustifySelf, BevyKeyCode, BevyLine2d, BevyLine3d, BevyLineBreak, BevyMat3A,
+        BevyMonitorSelection, BevyMouseButton, BevyOrthographicProjection, BevyOverflowAxis,
+        BevyOverflowClipBox, BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable,
+        BevyPickingInteraction, BevyPlane2d, BevyPlane3d, BevyPlaybackMode, BevyPlaybackSettings,
+        BevyPointLight, BevyPositionType, BevyPresentMode, BevyQuat, BevyRay2d, BevyRay3d,
+        BevyRectangle, BevyRegularPolygon, BevyRepeatAnimation, BevyRhombus, BevyScalingMode,
+        BevyScatteringTerm, BevySegment2d, BevySpotLight, BevySpriteConfig, BevySpriteScalingMode,
+        BevyStandardMaterial, BevyTetrahedron, BevyTextFont, BevyTextLayout, BevyTimer,
+        BevyTonemapping, BevyTorus, BevyTouchPhase, BevyTransform, BevyTriangle2d, BevyUiRect,
+        BevyVal, BevyVec3A, BevyVolume, BevyWindowLevel, BevyWindowMode, BevyWindowResolution,
+        BevyWindowTheme, ElicitComplete, ElicitSpec, Select, SpecCategoryBuilder, SpecEntryBuilder,
+        TypeSpec, TypeSpecBuilder, TypeSpecInventoryKey,
     };
 
     // -------------------------------------------------------------------------
@@ -1168,4 +1166,22 @@ mod bevy_impls {
     impl ElicitComplete for BevyTriangle2d {}
     impl ElicitComplete for BevyTextLayout {}
     impl ElicitComplete for BevyVec3A {}
+    // atmosphere
+    impl ElicitComplete for BevyFalloff {}
+    impl ElicitComplete for BevyPhaseFunction {}
+    impl ElicitComplete for BevyScatteringTerm {}
+    impl ElicitComplete for BevyAtmosphere {}
+    // input
+    impl ElicitComplete for BevyKeyCode {}
+    impl ElicitComplete for BevyMouseButton {}
+    impl ElicitComplete for BevyGamepadButton {}
+    impl ElicitComplete for BevyGamepadAxis {}
+    // ui
+    impl ElicitComplete for BevyVal {}
+    impl ElicitComplete for BevyUiRect {}
+    impl ElicitComplete for BevyBorderRadius {}
+    // window
+    impl ElicitComplete for BevyMonitorSelection {}
+    impl ElicitComplete for BevyWindowMode {}
+    impl ElicitComplete for BevyWindowResolution {}
 }

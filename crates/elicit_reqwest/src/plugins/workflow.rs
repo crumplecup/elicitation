@@ -1186,8 +1186,10 @@ impl elicitation::emit_code::ToCodeLiteral for ContentType {
 // ── CustomEmit impls ──────────────────────────────────────────────────────────
 
 /// ZST for custom emit of `wf_fetch_json`.
+#[cfg(not(kani))]
 pub(crate) struct FetchJsonEmit;
 
+#[cfg(not(kani))]
 impl elicitation::emit_code::CustomEmit<FetchJsonParams> for FetchJsonEmit {
     fn emit_code(params: &FetchJsonParams) -> elicitation::proc_macro2::TokenStream {
         let url = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.url);

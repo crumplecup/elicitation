@@ -32,6 +32,7 @@ use crate::archive::types::{BackendKind, DatabaseDescriptor};
 // ── ArchiveConnectionState ────────────────────────────────────────────────────
 
 /// Lifecycle state of the archive backend connection.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveConnectionState {
     /// No active backend connection.

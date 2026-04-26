@@ -4,14 +4,14 @@
 
 #[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use super::ValidationError;
-#[cfg(any(feature = "chrono", feature = "time"))]
+#[cfg(all(not(kani), any(feature = "chrono", feature = "time")))]
 use anodized::spec;
 
 #[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
-#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
-use elicitation_macros::instrumented_impl;
+#[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
+use elicitation_derive::instrumented_impl;
 
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, NaiveDateTime, Utc};
@@ -1083,6 +1083,33 @@ mod time_tests {
         assert!(result.is_err());
     }
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+#[cfg(feature = "chrono")]
+macro_rules! impl_primitive_introspect_datetime {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+#[cfg(all(feature = "chrono", not(kani)))]
+impl_primitive_introspect_datetime!(
+    DateTimeUtcAfter => "DateTimeUtcAfter",
+);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 

@@ -104,3 +104,21 @@ impl ElicitIntrospect for Duration {
         }
     }
 }
+
+impl crate::ElicitPromptTree for Duration {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("Enter a SurrealDB duration string (e.g. \"1h30m\" or \"500ms\"):")
+                .to_string(),
+            type_name: "SurrealDuration".to_string(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Duration {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let v = &self.value;
+        quote::quote! { elicitation::SurrealDuration { value: #v.to_string() } }
+    }
+}

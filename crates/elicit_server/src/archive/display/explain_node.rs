@@ -14,6 +14,7 @@ use crate::archive::ExplainNode;
 use super::ArchiveDisplay;
 
 /// Display strategies for an [`ExplainNode`].
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
 )]

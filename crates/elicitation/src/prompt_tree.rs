@@ -1264,14 +1264,21 @@ mod verification_impls {
         leaf_impl!(UuidNonNil, "UuidNonNil");
     }
 
-    #[cfg(all(feature = "chrono", not(kani)))]
-    mod chrono_impls {
+    // Raw chrono types are fine under kani (no PhantomData stubs).
+    #[cfg(feature = "chrono")]
+    mod chrono_primitive_impls {
         use super::*;
-        use crate::verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
         use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
         leaf_impl!(DateTime<Utc>, "DateTime<Utc>");
         leaf_impl!(DateTime<FixedOffset>, "DateTime<FixedOffset>");
         leaf_impl!(NaiveDateTime, "NaiveDateTime");
+    }
+
+    // Contract types use PhantomData stubs under kani — gate them out.
+    #[cfg(all(feature = "chrono", not(kani)))]
+    mod chrono_contract_impls {
+        use super::*;
+        use crate::verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
         leaf_impl!(DateTimeUtcAfter, "DateTimeUtcAfter");
         leaf_impl!(DateTimeUtcBefore, "DateTimeUtcBefore");
         leaf_impl!(NaiveDateTimeAfter, "NaiveDateTimeAfter");
@@ -1323,7 +1330,7 @@ mod verification_impls {
         leaf_impl!(serde_json::Value, "serde_json::Value");
     }
 
-    #[cfg(feature = "regex")]
+    #[cfg(all(feature = "regex", not(kani)))]
     mod regex_impls {
         use super::*;
         use crate::verification::types::{
@@ -1336,7 +1343,7 @@ mod verification_impls {
         leaf_impl!(RegexSetNonEmpty, "RegexSetNonEmpty");
     }
 
-    #[cfg(feature = "reqwest")]
+    #[cfg(all(feature = "reqwest", not(kani)))]
     mod reqwest_impls {
         use super::*;
         use crate::verification::types::StatusCodeValid;

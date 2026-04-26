@@ -100,3 +100,21 @@ impl ElicitIntrospect for Datetime {
         }
     }
 }
+
+impl crate::ElicitPromptTree for Datetime {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("Enter an ISO 8601 datetime string (e.g. \"2024-01-15T10:30:00Z\"):")
+                .to_string(),
+            type_name: "SurrealDatetime".to_string(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for Datetime {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let v = &self.value;
+        quote::quote! { elicitation::SurrealDatetime { value: #v.to_string() } }
+    }
+}
