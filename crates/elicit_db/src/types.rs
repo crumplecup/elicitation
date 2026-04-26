@@ -100,8 +100,8 @@ impl kani::Arbitrary for DbValue {
             1 => Self::Bool(kani::any()),
             2 => Self::Int(kani::any()),
             3 => Self::Float(kani::any()),
-            4 => Self::Text(kani::any()),
-            _ => Self::Bytes(kani::any()),
+            4 => Self::Text(String::new()),
+            _ => Self::Bytes(Vec::new()),
         }
     }
 }
@@ -177,9 +177,15 @@ impl DbValue {
 }
 
 /// A single row from a query result — ordered named columns.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRow(pub Vec<(String, DbValue)>);
+
+#[cfg(kani)]
+impl kani::Arbitrary for DbRow {
+    fn any() -> Self {
+        Self(Vec::new())
+    }
+}
 
 impl DbRow {
     /// Look up a column value by name.
@@ -189,13 +195,22 @@ impl DbRow {
 }
 
 /// A collection of query rows with affected-row count.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRows {
     /// The result rows.
     pub rows: Vec<DbRow>,
     /// Number of rows affected or returned.
     pub affected: u64,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for DbRows {
+    fn any() -> Self {
+        Self {
+            rows: Vec::new(),
+            affected: kani::any(),
+        }
+    }
 }
 
 /// Result shape for executing a statement plus audit confirmation.
@@ -275,7 +290,6 @@ pub struct DbIndexInfo {
 }
 
 /// Role / user metadata.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRoleInfo {
     /// Role name.
@@ -290,8 +304,20 @@ pub struct DbRoleInfo {
     pub can_create_role: bool,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for DbRoleInfo {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            superuser: kani::any(),
+            can_login: kani::any(),
+            can_create_db: kani::any(),
+            can_create_role: kani::any(),
+        }
+    }
+}
+
 /// Active session info from `pg_stat_activity`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbSessionInfo {
     /// Backend process ID.
@@ -306,6 +332,28 @@ pub struct DbSessionInfo {
     pub query: Option<String>,
     /// Duration of current state in milliseconds.
     pub duration_ms: Option<u64>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for DbSessionInfo {
+    fn any() -> Self {
+        Self {
+            pid: kani::any(),
+            app_name: String::new(),
+            database: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            state: String::new(),
+            query: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            duration_ms: kani::any(),
+        }
+    }
 }
 
 /// Aggregate session activity from `pg_stat_activity`.

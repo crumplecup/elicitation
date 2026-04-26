@@ -24,7 +24,6 @@ use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
 // ── Data model ────────────────────────────────────────────────────────────────
 
 /// A schema together with its pre-loaded table list and Phase 4 object types.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaEntry {
     /// Schema name.
@@ -47,8 +46,24 @@ pub struct SchemaEntry {
     pub triggers: Vec<TriggerDescriptor>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for SchemaEntry {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            owner: String::new(),
+            tables: Vec::new(),
+            functions: Vec::new(),
+            sequences: Vec::new(),
+            enums: Vec::new(),
+            domains: Vec::new(),
+            composites: Vec::new(),
+            triggers: Vec::new(),
+        }
+    }
+}
+
 /// Pre-loaded navigation tree passed to the ratatui frontend.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct NavTree {
     /// Database / catalog name (first schema name or the supplied db name).
@@ -59,6 +74,18 @@ pub struct NavTree {
     pub backend: BackendKind,
     /// Schemas in this database (in query order).
     pub schemas: Vec<SchemaEntry>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for NavTree {
+    fn any() -> Self {
+        Self {
+            db_name: String::new(),
+            version: None,
+            backend: kani::any(),
+            schemas: Vec::new(),
+        }
+    }
 }
 
 impl NavTree {

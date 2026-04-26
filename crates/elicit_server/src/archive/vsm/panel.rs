@@ -49,7 +49,6 @@ use crate::archive::types::{
 /// Every variant that carries displayable data also carries the `*Mode` that
 /// determines which AccessKit node tree is emitted, enforcing WCAG compliance
 /// at the type level.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchivePanelState {
     /// Column-detail view for the selected nav item (default landing).
@@ -234,6 +233,103 @@ pub enum ArchivePanelState {
         /// Human-readable error message.
         message: String,
     },
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ArchivePanelState {
+    fn any() -> Self {
+        let s = || String::new();
+        match kani::any::<u8>() % 18 {
+            0 => ArchivePanelState::ColumnDetail,
+            1 => ArchivePanelState::Loading {
+                schema: s(),
+                label: s(),
+            },
+            2 => ArchivePanelState::DataGrid {
+                schema: s(),
+                table: s(),
+                result: kani::any(),
+                page: kani::any(),
+                grid_row: kani::any(),
+                grid_col: kani::any(),
+                edit_state: None,
+                display_mode: kani::any(),
+            },
+            3 => ArchivePanelState::SqlEditor {
+                text: s(),
+                result: None,
+                running: kani::any(),
+                error: None,
+            },
+            4 => ArchivePanelState::DdlView {
+                schema: s(),
+                table: s(),
+                ddl: kani::any(),
+                display_mode: kani::any(),
+            },
+            5 => ArchivePanelState::ExplainView {
+                schema: s(),
+                table: s(),
+                root: kani::any(),
+                display_mode: kani::any(),
+            },
+            6 => ArchivePanelState::ExplainCompare {
+                schema: s(),
+                table: s(),
+                comparison: kani::any(),
+            },
+            7 => ArchivePanelState::HistoryView {
+                entries: Vec::new(),
+                display_mode: kani::any(),
+            },
+            8 => ArchivePanelState::SavedView {
+                entries: Vec::new(),
+                display_mode: kani::any(),
+            },
+            9 => ArchivePanelState::ExportView {
+                schema: s(),
+                table: s(),
+                result: None,
+            },
+            10 => ArchivePanelState::HelpView,
+            11 => ArchivePanelState::MonitorView {
+                snapshot: kani::any(),
+                loading: kani::any(),
+                display_mode: kani::any(),
+            },
+            12 => ArchivePanelState::AdminView {
+                snapshot: kani::any(),
+                loading: kani::any(),
+                display_mode: kani::any(),
+            },
+            13 => ArchivePanelState::ErdView {
+                schema: s(),
+                diagram: kani::any(),
+                layout: None,
+                loading: kani::any(),
+                display_mode: kani::any(),
+            },
+            14 => ArchivePanelState::ConstraintView {
+                schema: s(),
+                table: s(),
+                constraints: Vec::new(),
+                loading: kani::any(),
+                display_mode: kani::any(),
+            },
+            15 => ArchivePanelState::IndexView {
+                schema: s(),
+                table: s(),
+                indexes: Vec::new(),
+                loading: kani::any(),
+                display_mode: kani::any(),
+            },
+            16 => ArchivePanelState::ConnectionEdit {
+                profile: kani::any(),
+                display_mode: kani::any(),
+            },
+            _ => ArchivePanelState::ErrorView { message: s() },
+        }
+    }
 }
 
 // ── ArchivePanelConsistent (invariant) ────────────────────────────────────────

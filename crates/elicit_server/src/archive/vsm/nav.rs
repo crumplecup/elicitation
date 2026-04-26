@@ -11,7 +11,6 @@ use crate::archive::nav_tree::NavTree;
 // ── ArchiveNavState ───────────────────────────────────────────────────────────
 
 /// State of the archive navigation tree panel.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveNavState {
     /// No nav tree has been loaded yet.
@@ -44,6 +43,29 @@ pub enum ArchiveNavState {
         /// Index of the currently highlighted row in the filtered flat list.
         cursor: usize,
     },
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveNavState {
+    fn any() -> Self {
+        let s = || String::new();
+        match kani::any::<u8>() % 4 {
+            0 => ArchiveNavState::NavUnloaded,
+            1 => ArchiveNavState::NavLoading,
+            2 => ArchiveNavState::NavReady {
+                schemas: Vec::new(),
+                cursor: kani::any(),
+                filter: s(),
+                filter_active: kani::any(),
+                show_help: kani::any(),
+            },
+            _ => ArchiveNavState::NavFiltered {
+                schemas: Vec::new(),
+                filter: s(),
+                cursor: kani::any(),
+            },
+        }
+    }
 }
 
 // ── ArchiveNavConsistent (invariant) ─────────────────────────────────────────

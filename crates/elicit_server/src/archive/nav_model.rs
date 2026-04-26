@@ -82,7 +82,6 @@ pub enum FlatItem {
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
 
 /// A schema entry combined with its current expand/collapse state.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaWithExpand {
     /// The underlying schema descriptor.
@@ -97,6 +96,20 @@ pub struct SchemaWithExpand {
     pub types_expanded: bool,
     /// Whether the triggers group is expanded.
     pub triggers_expanded: bool,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for SchemaWithExpand {
+    fn any() -> Self {
+        Self {
+            entry: kani::any(),
+            expanded: kani::any(),
+            functions_expanded: kani::any(),
+            sequences_expanded: kani::any(),
+            types_expanded: kani::any(),
+            triggers_expanded: kani::any(),
+        }
+    }
 }
 
 // ── Fetch messaging ───────────────────────────────────────────────────────────

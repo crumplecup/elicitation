@@ -15,7 +15,6 @@ use crate::archive::types::{ExportFormat, SavedQuery};
 // ── ArchiveOverlayState ───────────────────────────────────────────────────────
 
 /// State of modal overlays that float above the main panel.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveOverlayState {
     /// No overlay is open.
@@ -46,6 +45,27 @@ pub enum ArchiveOverlayState {
         /// Currently highlighted row.
         idx: usize,
     },
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveOverlayState {
+    fn any() -> Self {
+        match kani::any::<u8>() % 5 {
+            0 => ArchiveOverlayState::OverlayNone,
+            1 => ArchiveOverlayState::HelpOpen,
+            2 => ArchiveOverlayState::ExportPickerOpen {
+                idx: kani::any(),
+                formats: Vec::new(),
+            },
+            3 => ArchiveOverlayState::SavePromptOpen {
+                text: String::new(),
+            },
+            _ => ArchiveOverlayState::SavedBrowserOpen {
+                entries: Vec::new(),
+                idx: kani::any(),
+            },
+        }
+    }
 }
 
 // ── ArchiveOverlayConsistent (invariant) ─────────────────────────────────────

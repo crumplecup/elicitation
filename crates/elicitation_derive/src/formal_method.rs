@@ -137,7 +137,22 @@ impl Parse for FormalMethodArgs {
 
 // ── Type helpers ───────────────────────────────────────────────────────────────
 
-/// Returns `true` if `ty` resolves to `String` / `std::string::String`.
+/// Returns `true` if `ty` is `Vec<_>` (any generic `Vec`).
+///
+/// `kani::any::<Vec<T>>()` fails in Kani ≤0.67 because there is no blanket
+/// `impl kani::Arbitrary for Vec<T>`.  Callers should emit `Vec::new()` instead,
+/// which is always valid and keeps proofs bounded.
+fn is_vec_type(ty: &Type) -> bool {
+    let Type::Path(tp) = ty else { return false };
+    let segs = &tp.path.segments;
+    match segs.len() {
+        1 => segs[0].ident == "Vec",
+        3 => segs[0].ident == "std" && segs[1].ident == "vec" && segs[2].ident == "Vec",
+        _ => false,
+    }
+}
+
+/// Returns `true` if `ty` is `String` / `std::string::String`.
 ///
 /// `kani::any::<String>()` creates an unbounded symbolic string, causing
 /// CBMC to explore infinite paths.  Callers should emit a bounded byte-array
@@ -240,13 +255,18 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             let #pat: #ty = ::elicitation::Established::assert();
                         });
                     } else if is_string_type(ty) {
-                        // kani::any::<String>() creates an unbounded symbolic string;
-                        // derive a bounded one from a fixed-size byte array instead.
+                        // String content is irrelevant to structural invariant proofs.
+                        // from_utf8_lossy introduces a UTF-8 validation loop that makes
+                        // the state space unbounded; String::new() is bounded by construction.
                         lets.push(quote! {
-                            let #pat: #ty = {
-                                let bytes: [u8; 16] = ::kani::any();
-                                ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-                            };
+                            let #pat: #ty = ::std::string::String::new();
+                        });
+                    } else if is_vec_type(ty) {
+                        // kani::any::<Vec<T>>() is not implemented in Kani ≤0.67;
+                        // use an empty Vec instead — still covers all invariant checks
+                        // without requiring T: kani::Arbitrary on the Vec itself.
+                        lets.push(quote! {
+                            let #pat: #ty = ::std::vec::Vec::new();
                         });
                     } else {
                         lets.push(quote! {

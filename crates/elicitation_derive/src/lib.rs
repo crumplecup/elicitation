@@ -644,8 +644,8 @@ pub fn derive_to_code_literal(input: TokenStream) -> TokenStream {
 /// Instrumentation is for runtime observability, not formal verification.
 #[proc_macro_attribute]
 pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    use syn::{ImplItem, ItemImpl, parse_macro_input};
     use quote::quote;
+    use syn::{ImplItem, ItemImpl, parse_macro_input};
 
     let impl_block = parse_macro_input!(item as ItemImpl);
 
@@ -660,39 +660,39 @@ pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
         let mut impl_block = impl_block;
 
         for item in &mut impl_block.items {
-            if let ImplItem::Fn(method) = item {
-                if matches!(method.vis, syn::Visibility::Public(_)) {
-                    let method_name = method.sig.ident.to_string();
-                    let has_generics = !method.sig.generics.params.is_empty();
+            if let ImplItem::Fn(method) = item
+                && matches!(method.vis, syn::Visibility::Public(_))
+            {
+                let method_name = method.sig.ident.to_string();
+                let has_generics = !method.sig.generics.params.is_empty();
 
-                    let instrument_attr = if instrumented_impl_is_constructor(&method_name) {
-                        if has_generics {
-                            let param_names: Vec<_> = method
-                                .sig
-                                .inputs
-                                .iter()
-                                .filter_map(|arg| {
-                                    if let syn::FnArg::Typed(pat_type) = arg
-                                        && let syn::Pat::Ident(ident) = &*pat_type.pat
-                                    {
-                                        return Some(ident.ident.clone());
-                                    }
-                                    None
-                                })
-                                .collect();
-                            quote! { #[tracing::instrument(skip(#(#param_names),*), err)] }
-                        } else {
-                            quote! { #[tracing::instrument(err)] }
-                        }
-                    } else if instrumented_impl_is_accessor(&method_name) {
-                        quote! { #[tracing::instrument(level = "trace", ret)] }
+                let instrument_attr = if instrumented_impl_is_constructor(&method_name) {
+                    if has_generics {
+                        let param_names: Vec<_> = method
+                            .sig
+                            .inputs
+                            .iter()
+                            .filter_map(|arg| {
+                                if let syn::FnArg::Typed(pat_type) = arg
+                                    && let syn::Pat::Ident(ident) = &*pat_type.pat
+                                {
+                                    return Some(ident.ident.clone());
+                                }
+                                None
+                            })
+                            .collect();
+                        quote! { #[tracing::instrument(skip(#(#param_names),*), err)] }
                     } else {
-                        quote! { #[tracing::instrument(skip(self))] }
-                    };
+                        quote! { #[tracing::instrument(err)] }
+                    }
+                } else if instrumented_impl_is_accessor(&method_name) {
+                    quote! { #[tracing::instrument(level = "trace", ret)] }
+                } else {
+                    quote! { #[tracing::instrument(skip(self))] }
+                };
 
-                    let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
-                    method.attrs.insert(0, attr);
-                }
+                let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
+                method.attrs.insert(0, attr);
             }
         }
 
@@ -717,8 +717,8 @@ fn instrumented_impl_is_accessor(name: &str) -> bool {
 /// For each type T, generates an `elicit_T` method with `#[tool]` marker.
 #[proc_macro_attribute]
 pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
-    use syn::{ItemImpl, parse_macro_input};
     use quote::quote;
+    use syn::{ItemImpl, parse_macro_input};
 
     let impl_block = parse_macro_input!(item as ItemImpl);
 
@@ -802,8 +802,8 @@ fn elicit_tools_to_snake_case(s: &str) -> String {
 /// Generates MCP tool wrappers for trait methods, delegating to a named field.
 #[proc_macro_attribute]
 pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
-    use syn::{ItemImpl, parse_macro_input};
     use quote::quote;
+    use syn::{ItemImpl, parse_macro_input};
 
     let attr_str = attr.to_string();
     let mut parts = Vec::new();
@@ -812,9 +812,18 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
 
     for ch in attr_str.chars() {
         match ch {
-            '[' => { bracket_depth += 1; current.push(ch); }
-            ']' => { bracket_depth -= 1; current.push(ch); }
-            ',' if bracket_depth == 0 => { parts.push(current.trim().to_string()); current.clear(); }
+            '[' => {
+                bracket_depth += 1;
+                current.push(ch);
+            }
+            ']' => {
+                bracket_depth -= 1;
+                current.push(ch);
+            }
+            ',' if bracket_depth == 0 => {
+                parts.push(current.trim().to_string());
+                current.clear();
+            }
             _ => current.push(ch),
         }
     }

@@ -69,7 +69,14 @@ fn generate_kani_proofs(gen_dir: &std::path::Path) {
 }
 
 fn write_vsm_file(gen_dir: &std::path::Path, filename: &str, machine: &str, body: &str) {
-    let raw = format!("use elicit_server::archive::vsm::*;\n{body}");
+    let raw = format!(
+        "use elicitation::Established;\n\
+         use elicit_server::archive::vsm::*;\n\
+         use elicit_server::archive::types::*;\n\
+         use elicit_server::archive::display::*;\n\
+         use elicit_server::archive::nav_tree::*;\n\
+         {body}"
+    );
     let formatted = syn::parse_file(&raw)
         .map(|f| prettyplease::unparse(&f))
         .unwrap_or(raw);

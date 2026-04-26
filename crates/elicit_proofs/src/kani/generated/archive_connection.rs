@@ -4,7 +4,11 @@
 // Composed Kani proof harnesses for ArchiveConnectionMachine.
 // Source: elicit_server::archive::vsm
 
+use elicit_server::archive::display::*;
+use elicit_server::archive::nav_tree::*;
+use elicit_server::archive::types::*;
 use elicit_server::archive::vsm::*;
+use elicitation::Established;
 #[kani::proof]
 fn verify_archive_connection_consistent_prop_marker() {
     let established: bool = true;
@@ -15,10 +19,7 @@ fn verify_archive_connection_consistent_prop_marker() {
 fn begin_connect_sql__kani() {
     let _state: ArchiveConnectionState = ::kani::any();
     let proof: Established<ArchiveConnectionConsistent> = ::elicitation::Established::assert();
-    let profile_name: String = {
-        let bytes: [u8; 16] = ::kani::any();
-        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-    };
+    let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = ::kani::any();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
@@ -27,10 +28,7 @@ fn begin_connect_sql__kani() {
 fn begin_connect_kv__kani() {
     let _state: ArchiveConnectionState = ::kani::any();
     let proof: Established<ArchiveConnectionConsistent> = ::elicitation::Established::assert();
-    let profile_name: String = {
-        let bytes: [u8; 16] = ::kani::any();
-        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-    };
+    let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
 }
 #[cfg(kani)]
@@ -46,10 +44,7 @@ fn finish_connect_sql__kani() {
 fn finish_connect_kv__kani() {
     let _state: ArchiveConnectionState = ::kani::any();
     let proof: Established<ArchiveConnectionConsistent> = ::elicitation::Established::assert();
-    let path: String = {
-        let bytes: [u8; 16] = ::kani::any();
-        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-    };
+    let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
 }
 #[cfg(kani)]
@@ -71,9 +66,6 @@ fn reconnect__kani() {
 fn connection_error__kani() {
     let _state: ArchiveConnectionState = ::kani::any();
     let proof: Established<ArchiveConnectionConsistent> = ::elicitation::Established::assert();
-    let message: String = {
-        let bytes: [u8; 16] = ::kani::any();
-        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-    };
+    let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
 }

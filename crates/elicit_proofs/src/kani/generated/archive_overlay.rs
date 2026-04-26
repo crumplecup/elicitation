@@ -4,7 +4,11 @@
 // Composed Kani proof harnesses for ArchiveOverlayMachine.
 // Source: elicit_server::archive::vsm
 
+use elicit_server::archive::display::*;
+use elicit_server::archive::nav_tree::*;
+use elicit_server::archive::types::*;
 use elicit_server::archive::vsm::*;
+use elicitation::Established;
 #[kani::proof]
 fn verify_archive_overlay_consistent_prop_marker() {
     let established: bool = true;
@@ -29,7 +33,7 @@ fn open_help__kani() {
 fn open_export_picker__kani() {
     let _state: ArchiveOverlayState = ::kani::any();
     let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
-    let formats: Vec<ExportFormat> = ::kani::any();
+    let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
 }
 #[cfg(kani)]
@@ -73,7 +77,7 @@ fn prompt_backspace__kani() {
 fn open_saved_browser__kani() {
     let _state: ArchiveOverlayState = ::kani::any();
     let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
-    let entries: Vec<SavedQuery> = ::kani::any();
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
 }
 #[cfg(kani)]

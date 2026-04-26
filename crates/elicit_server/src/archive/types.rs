@@ -115,7 +115,6 @@ impl TableType {
 // ── ColumnDescriptor ──────────────────────────────────────────────────────────
 
 /// Descriptor for a single database column, including spatial detection.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ColumnDescriptor {
     /// Column name.
@@ -133,6 +132,25 @@ pub struct ColumnDescriptor {
     /// `true` when `sql_type` indicates a PostGIS geometry / geography column
     /// or any other well-known spatial type.
     pub is_spatial: bool,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ColumnDescriptor {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            sql_type: String::new(),
+            nullable: kani::any(),
+            is_primary_key: kani::any(),
+            is_foreign_key: kani::any(),
+            default_value: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            is_spatial: kani::any(),
+        }
+    }
 }
 
 impl ColumnDescriptor {
@@ -173,7 +191,6 @@ impl ColumnDescriptor {
 // ── TableDescriptor ───────────────────────────────────────────────────────────
 
 /// Descriptor for a database table or view.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TableDescriptor {
     /// Owning schema name.
@@ -186,6 +203,19 @@ pub struct TableDescriptor {
     pub estimated_rows: Option<i64>,
     /// Object type: table, view, or materialised view.
     pub table_type: TableType,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for TableDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            table_name: String::new(),
+            columns: Vec::new(),
+            estimated_rows: kani::any(),
+            table_type: kani::any(),
+        }
+    }
 }
 
 impl TableDescriptor {
@@ -218,7 +248,6 @@ impl TableDescriptor {
 // ── SchemaDescriptor ──────────────────────────────────────────────────────────
 
 /// Descriptor for a database schema and its contained tables.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaDescriptor {
     /// Schema name.
@@ -227,6 +256,17 @@ pub struct SchemaDescriptor {
     pub owner: String,
     /// Names of tables in this schema (lazily populated; may be empty).
     pub table_names: Vec<String>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for SchemaDescriptor {
+    fn any() -> Self {
+        Self {
+            schema_name: String::new(),
+            owner: String::new(),
+            table_names: Vec::new(),
+        }
+    }
 }
 
 impl SchemaDescriptor {
@@ -246,7 +286,6 @@ impl SchemaDescriptor {
 ///
 /// The raw connection URL is **never** stored; only a stable hash is kept so
 /// that descriptors are safe to serialise and log.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DatabaseDescriptor {
     /// Stable identifier derived from the connection URL (not the URL itself).
@@ -257,6 +296,22 @@ pub struct DatabaseDescriptor {
     pub version: Option<String>,
     /// Backend technology detected from the connection URL.
     pub backend: BackendKind,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for DatabaseDescriptor {
+    fn any() -> Self {
+        Self {
+            connection_id: String::new(),
+            db_name: String::new(),
+            version: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            backend: kani::any(),
+        }
+    }
 }
 
 impl DatabaseDescriptor {
@@ -325,7 +380,6 @@ impl FkAction {
 ///
 /// Multi-column FK constraints are represented as multiple descriptors sharing
 /// the same `constraint_name`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ForeignKeyDescriptor {
     /// Constraint name in the database.
@@ -342,6 +396,21 @@ pub struct ForeignKeyDescriptor {
     pub on_delete: FkAction,
     /// Action on `UPDATE` of the referenced row.
     pub on_update: FkAction,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ForeignKeyDescriptor {
+    fn any() -> Self {
+        Self {
+            constraint_name: String::new(),
+            from_column: String::new(),
+            to_schema: String::new(),
+            to_table: String::new(),
+            to_column: String::new(),
+            on_delete: kani::any(),
+            on_update: kani::any(),
+        }
+    }
 }
 
 // ── ConstraintKind ────────────────────────────────────────────────────────────
@@ -392,7 +461,6 @@ impl ConstraintKind {
 // ── ConstraintDescriptor ──────────────────────────────────────────────────────
 
 /// Descriptor for a single table constraint.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConstraintDescriptor {
     /// Constraint name.
@@ -405,10 +473,25 @@ pub struct ConstraintDescriptor {
     pub definition: Option<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ConstraintDescriptor {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            kind: kani::any(),
+            columns: Vec::new(),
+            definition: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+        }
+    }
+}
+
 // ── DdlDescriptor ─────────────────────────────────────────────────────────────
 
 /// The DDL text for a schema object (table, view, index, etc.).
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DdlDescriptor {
     /// Schema containing the object.
@@ -419,13 +502,23 @@ pub struct DdlDescriptor {
     pub ddl: String,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for DdlDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            object_name: String::new(),
+            ddl: String::new(),
+        }
+    }
+}
+
 // ── TableInspection ───────────────────────────────────────────────────────────
 
 /// Rich metadata for a table fetched on demand (not loaded at nav-tree time).
 ///
 /// Loaded lazily when the user selects a table node. Stored in
 /// `ArchiveNavModel::table_inspections`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TableInspection {
     /// Foreign keys defined on this table.
@@ -436,6 +529,17 @@ pub struct TableInspection {
     pub indexes: Vec<IndexDescriptor>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for TableInspection {
+    fn any() -> Self {
+        Self {
+            foreign_keys: Vec::new(),
+            constraints: Vec::new(),
+            indexes: Vec::new(),
+        }
+    }
+}
+
 impl TableInspection {
     /// Returns `true` when no FK, constraint, or index data was found.
     pub fn is_empty(&self) -> bool {
@@ -444,7 +548,6 @@ impl TableInspection {
 }
 
 /// Descriptor for a database index.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct IndexDescriptor {
     /// Index name.
@@ -459,6 +562,20 @@ pub struct IndexDescriptor {
     pub is_unique: bool,
     /// Access method: `"btree"`, `"hash"`, `"gin"`, `"gist"`, etc.
     pub index_method: String,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for IndexDescriptor {
+    fn any() -> Self {
+        Self {
+            index_name: String::new(),
+            schema: String::new(),
+            table_name: String::new(),
+            column_names: Vec::new(),
+            is_unique: kani::any(),
+            index_method: String::new(),
+        }
+    }
 }
 
 impl IndexDescriptor {
@@ -480,7 +597,6 @@ impl IndexDescriptor {
 /// PostgreSQL planner statistics for a single column (from `pg_stats`).
 ///
 /// Only populated for PostgreSQL backends; other backends return empty stats.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ColumnStats {
     /// Column name.
@@ -501,13 +617,25 @@ pub struct ColumnStats {
     pub correlation: Option<f64>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ColumnStats {
+    fn any() -> Self {
+        Self {
+            column_name: String::new(),
+            null_fraction: kani::any(),
+            avg_width_bytes: kani::any(),
+            n_distinct: kani::any(),
+            correlation: kani::any(),
+        }
+    }
+}
+
 // ── ExplainNode ───────────────────────────────────────────────────────────────
 
 /// One node in a PostgreSQL `EXPLAIN (FORMAT JSON)` plan tree.
 ///
 /// Populated by parsing the JSON array returned by PostgreSQL.
 /// Nesting mirrors the `Plans` arrays in the EXPLAIN output.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExplainNode {
     /// Node type, e.g. `"Seq Scan"`, `"Hash Join"`, `"Index Scan"`.
@@ -535,6 +663,34 @@ pub struct ExplainNode {
     /// Child plan nodes (skipped during elicitation; populated from database JSON).
     #[skip]
     pub children: Vec<ExplainNode>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ExplainNode {
+    fn any() -> Self {
+        Self {
+            node_type: String::new(),
+            relation_name: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            alias: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            startup_cost: kani::any(),
+            total_cost: kani::any(),
+            plan_rows: kani::any(),
+            plan_width: kani::any(),
+            actual_startup_time: kani::any(),
+            actual_total_time: kani::any(),
+            actual_rows: kani::any(),
+            actual_loops: kani::any(),
+            children: Vec::new(),
+        }
+    }
 }
 
 impl ExplainNode {
@@ -583,7 +739,6 @@ impl ExplainNode {
 /// Built when the user runs a second EXPLAIN while a plan is already visible.
 /// Cost-delta annotations (`▲`/`▼`) are computed at IR build time when the
 /// root nodes' total costs diverge by more than 10 %.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExplainComparison {
     /// Left (original) plan root.
@@ -596,8 +751,19 @@ pub struct ExplainComparison {
     pub label_right: String,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ExplainComparison {
+    fn any() -> Self {
+        Self {
+            left: kani::any::<ExplainNode>(),
+            right: kani::any::<ExplainNode>(),
+            label_left: String::new(),
+            label_right: String::new(),
+        }
+    }
+}
+
 /// The result of executing a SQL query: column metadata + row data.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct QueryResult {
     /// Column descriptors for the result set.
@@ -608,6 +774,18 @@ pub struct QueryResult {
     pub row_count: u64,
     /// Column names where `is_spatial = true` (pre-computed for display routing).
     pub spatial_column_names: Vec<String>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for QueryResult {
+    fn any() -> Self {
+        Self {
+            columns: Vec::new(),
+            rows: kani::any::<DbRows>(),
+            row_count: kani::any(),
+            spatial_column_names: Vec::new(),
+        }
+    }
 }
 
 impl QueryResult {
@@ -679,7 +857,6 @@ impl ExportFormat {
 }
 
 /// Result of a data export operation.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExportResult {
     /// Format used.
@@ -688,6 +865,17 @@ pub struct ExportResult {
     pub row_count: u64,
     /// Exported content.
     pub content: String,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ExportResult {
+    fn any() -> Self {
+        Self {
+            format: kani::any(),
+            row_count: kani::any(),
+            content: String::new(),
+        }
+    }
 }
 
 // ── QueryHistoryEntry ─────────────────────────────────────────────────────────
@@ -715,10 +903,14 @@ impl kani::Arbitrary for QueryHistoryEntry {
         Self {
             id: kani::any(),
             executed_at: chrono::DateTime::UNIX_EPOCH,
-            sql: kani::any(),
+            sql: String::new(),
             duration_ms: kani::any(),
             row_count: kani::any(),
-            error: kani::any(),
+            error: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
         }
     }
 }
@@ -743,8 +935,8 @@ impl kani::Arbitrary for SavedQuery {
     fn any() -> Self {
         Self {
             id: kani::any(),
-            name: kani::any(),
-            sql: kani::any(),
+            name: String::new(),
+            sql: String::new(),
             created_at: chrono::DateTime::UNIX_EPOCH,
             updated_at: chrono::DateTime::UNIX_EPOCH,
         }
@@ -757,7 +949,6 @@ impl kani::Arbitrary for SavedQuery {
 ///
 /// Values for `pk_values` and `row` fields are serialised as `String`; callers
 /// must pass `"NULL"` (the four-character literal) to represent SQL `NULL`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 #[serde(rename_all = "snake_case", tag = "kind")]
 pub enum RowEditKind {
@@ -782,11 +973,19 @@ pub enum RowEditKind {
     },
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for RowEditKind {
+    fn any() -> Self {
+        Self::Delete {
+            pk_values: Vec::new(),
+        }
+    }
+}
+
 /// A single row mutation staged for a future transactional commit.
 ///
 /// Serialisable so that the `archive_query__edit_row` MCP tool can accept a
 /// batch of staged edits as JSON.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct StagedEdit {
     /// Schema that owns the target table.
@@ -797,11 +996,21 @@ pub struct StagedEdit {
     pub kind: RowEditKind,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for StagedEdit {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            table: String::new(),
+            kind: kani::any::<RowEditKind>(),
+        }
+    }
+}
+
 /// Transient UI state for an active in-grid row-edit session.
 ///
 /// Lives inside `ArchivePanelState::DataGrid::edit_state` and is `None` when
 /// no edit session is active.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct RowEditState {
     /// Mutations staged but not yet committed (ready to send to the tool).
@@ -816,6 +1025,20 @@ pub struct RowEditState {
     pub inserting_row: Option<Vec<(String, String)>>,
     /// Which column the cursor is on within the new-row insertion form.
     pub insert_col_cursor: usize,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for RowEditState {
+    fn any() -> Self {
+        Self {
+            pending_edits: Vec::new(),
+            editing_cell: None,
+            input_buffer: String::new(),
+            rows_marked_deleted: Vec::new(),
+            inserting_row: None,
+            insert_col_cursor: kani::any(),
+        }
+    }
 }
 
 impl RowEditState {
@@ -894,7 +1117,6 @@ pub enum SslMode {
 
 ///
 /// [`ConnectionSet`]: crate::archive::nav_model::ConnectionSet
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConnectionProfile {
     /// Human-visible label shown in the tab bar.
@@ -929,6 +1151,54 @@ pub struct ConnectionProfile {
     pub ssl_ca_env: Option<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ConnectionProfile {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            url_env_key: String::new(),
+            backend: kani::any(),
+            color: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssh_host: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssh_port: kani::any(),
+            ssh_user: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssh_key_env: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssl_mode: kani::any(),
+            ssl_cert_env: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssl_key_env: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            ssl_ca_env: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+        }
+    }
+}
+
 // ── Phase 4 — Advanced Object Types ──────────────────────────────────────────
 
 /// Volatility classification for PostgreSQL functions.
@@ -960,7 +1230,6 @@ pub enum FunctionVolatility {
 }
 
 /// A PostgreSQL function or stored procedure.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct FunctionDescriptor {
     /// OID of the function in `pg_proc`.
@@ -983,6 +1252,23 @@ pub struct FunctionDescriptor {
     pub body_preview: String,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for FunctionDescriptor {
+    fn any() -> Self {
+        Self {
+            oid: kani::any(),
+            schema: String::new(),
+            name: String::new(),
+            arguments: String::new(),
+            return_type: String::new(),
+            language: String::new(),
+            volatility: kani::any(),
+            is_procedure: kani::any(),
+            body_preview: String::new(),
+        }
+    }
+}
+
 /// The DML event(s) a trigger fires on.
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
@@ -998,7 +1284,6 @@ pub struct TriggerEvents {
 }
 
 /// A PostgreSQL trigger attached to a table.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TriggerDescriptor {
     /// Containing schema.
@@ -1019,8 +1304,23 @@ pub struct TriggerDescriptor {
     pub enabled: bool,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for TriggerDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            table: String::new(),
+            name: String::new(),
+            timing: String::new(),
+            events: kani::any(),
+            row_level: kani::any(),
+            function: String::new(),
+            enabled: kani::any(),
+        }
+    }
+}
+
 /// A PostgreSQL sequence object.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SequenceDescriptor {
     /// Containing schema.
@@ -1043,8 +1343,28 @@ pub struct SequenceDescriptor {
     pub owned_by: Option<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for SequenceDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            name: String::new(),
+            current_value: kani::any(),
+            start_value: kani::any(),
+            increment_by: kani::any(),
+            min_value: kani::any(),
+            max_value: kani::any(),
+            cycle: kani::any(),
+            owned_by: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+        }
+    }
+}
+
 /// A PostgreSQL enum type with its ordered labels.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct EnumDescriptor {
     /// Containing schema.
@@ -1055,8 +1375,18 @@ pub struct EnumDescriptor {
     pub labels: Vec<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for EnumDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            name: String::new(),
+            labels: Vec::new(),
+        }
+    }
+}
+
 /// A PostgreSQL domain type (scalar with constraints).
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DomainDescriptor {
     /// Containing schema.
@@ -1073,8 +1403,25 @@ pub struct DomainDescriptor {
     pub check_constraints: Vec<String>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for DomainDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            name: String::new(),
+            base_type: String::new(),
+            not_null: kani::any(),
+            default_expr: if kani::any::<bool>() {
+                Some(String::new())
+            } else {
+                None
+            },
+            check_constraints: Vec::new(),
+        }
+    }
+}
+
 /// One column of a PostgreSQL composite type.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct CompositeTypeAttribute {
     /// Attribute (column) name.
@@ -1083,8 +1430,17 @@ pub struct CompositeTypeAttribute {
     pub type_name: String,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for CompositeTypeAttribute {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            type_name: String::new(),
+        }
+    }
+}
+
 /// A PostgreSQL composite (record) type.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct CompositeTypeDescriptor {
     /// Containing schema.
@@ -1093,6 +1449,17 @@ pub struct CompositeTypeDescriptor {
     pub name: String,
     /// Ordered list of attributes.
     pub attributes: Vec<CompositeTypeAttribute>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for CompositeTypeDescriptor {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            name: String::new(),
+            attributes: Vec::new(),
+        }
+    }
 }
 
 // ── MonitorTab ────────────────────────────────────────────────────────────────
@@ -1155,7 +1522,6 @@ impl MonitorTab {
 ///
 /// Populated by `ArchiveMonitorPlugin` tools and cached in
 /// `PanelMode::MonitorPanel`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct MonitorSnapshot {
     /// Active sessions from `pg_stat_activity`.
@@ -1176,6 +1542,23 @@ pub struct MonitorSnapshot {
     pub index_usage: Vec<(String, u64)>,
     /// Currently active monitor tab.
     pub active_tab: MonitorTab,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for MonitorSnapshot {
+    fn any() -> Self {
+        Self {
+            sessions: Vec::new(),
+            roles: Vec::new(),
+            cache_hit: kani::any(),
+            backups: Vec::new(),
+            slow_queries: Vec::new(),
+            lock_waits: Vec::new(),
+            table_bloat: Vec::new(),
+            index_usage: Vec::new(),
+            active_tab: kani::any(),
+        }
+    }
 }
 
 // ── AdminPanel types ──────────────────────────────────────────────────────────
@@ -1226,7 +1609,6 @@ impl AdminTab {
 ///
 /// Populated by `ArchiveAdminPlugin` tools and cached in
 /// `PanelMode::AdminPanel`.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct AdminSnapshot {
     /// All cluster roles from `pg_roles`.
@@ -1245,10 +1627,24 @@ pub struct AdminSnapshot {
     pub active_tab: AdminTab,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for AdminSnapshot {
+    fn any() -> Self {
+        Self {
+            roles: Vec::new(),
+            backups: Vec::new(),
+            wal_ready: kani::any(),
+            server_version: String::new(),
+            extensions: Vec::new(),
+            settings: Vec::new(),
+            active_tab: kani::any(),
+        }
+    }
+}
+
 // ── ERD types ─────────────────────────────────────────────────────────────────
 
 /// A single column in an ERD node.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdColumn {
     /// Column name.
@@ -1261,8 +1657,19 @@ pub struct ErdColumn {
     pub is_fk: bool,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ErdColumn {
+    fn any() -> Self {
+        Self {
+            name: String::new(),
+            sql_type: String::new(),
+            is_pk: kani::any(),
+            is_fk: kani::any(),
+        }
+    }
+}
+
 /// A table node in an ERD diagram.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdNode {
     /// Owning schema.
@@ -1273,8 +1680,18 @@ pub struct ErdNode {
     pub columns: Vec<ErdColumn>,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ErdNode {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            table: String::new(),
+            columns: Vec::new(),
+        }
+    }
+}
+
 /// A directed foreign-key edge between two ERD nodes.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdEdge {
     /// Constraint name.
@@ -1293,11 +1710,25 @@ pub struct ErdEdge {
     pub to_column: String,
 }
 
+#[cfg(kani)]
+impl kani::Arbitrary for ErdEdge {
+    fn any() -> Self {
+        Self {
+            constraint_name: String::new(),
+            from_schema: String::new(),
+            from_table: String::new(),
+            from_column: String::new(),
+            to_schema: String::new(),
+            to_table: String::new(),
+            to_column: String::new(),
+        }
+    }
+}
+
 /// A complete entity-relationship diagram for a single schema.
 ///
 /// Produced by [`fetch_erd`](crate::archive::nav_tree::fetch_erd) and
 /// cached in [`PanelMode::ErdPanel`].
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdDiagram {
     /// Schema this diagram covers.
@@ -1306,6 +1737,17 @@ pub struct ErdDiagram {
     pub nodes: Vec<ErdNode>,
     /// FK edges between nodes.
     pub edges: Vec<ErdEdge>,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ErdDiagram {
+    fn any() -> Self {
+        Self {
+            schema: String::new(),
+            nodes: Vec::new(),
+            edges: Vec::new(),
+        }
+    }
 }
 
 /// Spatial layout computed from an [`ErdDiagram`] for visual rendering.

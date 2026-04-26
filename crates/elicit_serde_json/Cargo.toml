@@ -31,3 +31,6 @@ proc-macro2 = { workspace = true }
 [features]
 emit = ["elicitation/emit"]
 serde = []
+
+[lints]
+workspace = true

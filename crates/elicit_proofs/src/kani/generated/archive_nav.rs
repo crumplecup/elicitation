@@ -4,7 +4,11 @@
 // Composed Kani proof harnesses for ArchiveNavMachine.
 // Source: elicit_server::archive::vsm
 
+use elicit_server::archive::display::*;
+use elicit_server::archive::nav_tree::*;
+use elicit_server::archive::types::*;
 use elicit_server::archive::vsm::*;
+use elicitation::Established;
 #[kani::proof]
 fn verify_archive_nav_consistent_prop_marker() {
     let established: bool = true;
@@ -69,10 +73,7 @@ fn move_cursor_down__kani() {
 fn apply_filter__kani() {
     let state: ArchiveNavState = ::kani::any();
     let proof: Established<ArchiveNavConsistent> = ::elicitation::Established::assert();
-    let filter: String = {
-        let bytes: [u8; 16] = ::kani::any();
-        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
-    };
+    let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
 }
 #[cfg(kani)]

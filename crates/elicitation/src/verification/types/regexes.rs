@@ -9,10 +9,10 @@ use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_derive::instrumented_impl;
-#[cfg(feature = "regex")]
-use regex::{Regex, RegexSet};
 #[cfg(all(feature = "regex", not(kani)))]
 use regex::RegexBuilder;
+#[cfg(feature = "regex")]
+use regex::{Regex, RegexSet};
 
 // ============================================================================
 // Regex Contract Types

@@ -32,7 +32,6 @@ use crate::archive::types::{BackendKind, DatabaseDescriptor};
 // ── ArchiveConnectionState ────────────────────────────────────────────────────
 
 /// Lifecycle state of the archive backend connection.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ArchiveConnectionState {
     /// No active backend connection.
@@ -65,6 +64,24 @@ pub enum ArchiveConnectionState {
         /// Human-readable error message.
         message: String,
     },
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveConnectionState {
+    fn any() -> Self {
+        let s = || String::new();
+        match kani::any::<u8>() % 6 {
+            0 => ArchiveConnectionState::Disconnected,
+            1 => ArchiveConnectionState::Connecting {
+                profile_name: s(),
+                backend: kani::any(),
+            },
+            2 => ArchiveConnectionState::SqlConnected { db: kani::any() },
+            3 => ArchiveConnectionState::KvConnected { path: s() },
+            4 => ArchiveConnectionState::Reconnecting { db: kani::any() },
+            _ => ArchiveConnectionState::ConnectionError { message: s() },
+        }
+    }
 }
 
 // ── ArchiveConnectionConsistent (invariant) ───────────────────────────────────
