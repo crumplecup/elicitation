@@ -204,6 +204,23 @@ pattern interactions table, and common pitfalls.
 
 ---
 
+### Kani Verification for VSMs
+
+**Document:** [KANI_FOR_VSMS.md](KANI_FOR_VSMS.md)
+
+**Status:** ✅ Active Reference
+
+**Description:** Operational guide for applying Kani model-checking to
+`VerifiedStateMachine` types. Explains why naïve `kani::any::<StateEnum>()`
+causes unbounded unwinding in CBMC, documents all approaches tried (and why
+they fail), and describes the per-variant harness solution in full detail.
+Covers `KaniVariantState`, `#[formal_method]` harness generation, `build.rs`
+manifest generation, the `elicit_proofs vsm` runner (including the critical
+`--lib` flag), real overflow bugs found by Kani, and step-by-step instructions
+for adding a new VSM to the proof suite.
+
+---
+
 ### Third-Party Crate Support Guide
 
 **Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)
