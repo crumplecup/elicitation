@@ -1,7 +1,8 @@
 //! Derive macro implementation for `#[derive(VerifiedStateMachine)]`.
 //!
 //! Generates the `VerifiedStateMachine` impl by inferring associated types from
-//! naming conventions and converting the transition list to companion struct calls.
+//! naming conventions and converting the transition list to per-variant companion
+//! struct calls.
 //!
 //! # Naming conventions
 //!
@@ -14,7 +15,12 @@
 //! # Transition list
 //!
 //! Each `snake_case` name in `#[vsm(transitions = [...])]` is converted to a
-//! companion struct call: `foo_bar` → `FooBarTransition::kani_harness()`.
+//! companion struct call: `foo_bar` → `FooBarTransition::kani_harness_for_variant(v, e)`.
+//!
+//! The state type must implement [`KaniVariantState`] (via
+//! `#[derive(KaniVariantState)]`) to supply per-variant construction expressions.
+//! One harness is generated per (transition × variant), giving CBMC a concrete
+//! discriminant for each proof and avoiding the symbolic-enum-drop problem.
 //!
 //! # Example
 //!
@@ -32,11 +38,15 @@
 //!     type Invariant = ArchiveConnectionConsistent;
 //!
 //!     fn transition_harnesses() -> Vec<::proc_macro2::TokenStream> {
-//!         vec![
-//!             BeginConnectTransition::kani_harness(),
-//!             DisconnectTransition::kani_harness(),
-//!             ReconnectTransition::kani_harness(),
-//!         ]
+//!         let mut __harnesses = Vec::new();
+//!         for (__vname, __vexpr) in
+//!             <ArchiveConnectionState as KaniVariantState>::kani_variant_constructions()
+//!         {
+//!             __harnesses.push(BeginConnectTransition::kani_harness_for_variant(__vname, __vexpr));
+//!             __harnesses.push(DisconnectTransition::kani_harness_for_variant(__vname, __vexpr));
+//!             __harnesses.push(ReconnectTransition::kani_harness_for_variant(__vname, __vexpr));
+//!         }
+//!         __harnesses
 //!     }
 //! }
 //! ```
@@ -167,8 +177,13 @@ pub fn expand(input: TokenStream) -> TokenStream {
         syn::parse_quote!(#ident)
     });
 
-    // Build the `transition_harnesses()` body.
-    let harness_calls: Vec<_> = vsm_args
+    // Build the `transition_harnesses()` body using per-variant construction.
+    //
+    // Instead of emitting one harness per transition (using kani::any() for the
+    // state), we loop over KaniVariantState::kani_variant_constructions() and
+    // emit one harness per (variant × transition).  This gives CBMC a concrete
+    // discriminant for each proof, eliminating the symbolic-enum-drop problem.
+    let harness_pushes: Vec<_> = vsm_args
         .transitions
         .iter()
         .map(|t| {
@@ -176,7 +191,9 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 &format!("{}Transition", to_pascal_case(&t.to_string())),
                 t.span(),
             );
-            quote! { #companion::kani_harness() }
+            quote! {
+                __harnesses.push(#companion::kani_harness_for_variant(__vname, __vexpr));
+            }
         })
         .collect();
 
@@ -189,7 +206,13 @@ pub fn expand(input: TokenStream) -> TokenStream {
             type Invariant = #invariant_type;
 
             fn transition_harnesses() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
-                vec![ #(#harness_calls),* ]
+                let mut __harnesses = ::std::vec::Vec::new();
+                for (__vname, __vexpr) in
+                    <#state_type as ::elicitation::KaniVariantState>::kani_variant_constructions()
+                {
+                    #( #harness_pushes )*
+                }
+                __harnesses
             }
         }
     };

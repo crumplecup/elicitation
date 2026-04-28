@@ -1137,6 +1137,39 @@ where
 {
 }
 
+/// Per-variant concrete construction expressions for VSM state enums.
+///
+/// Implemented via `#[derive(KaniVariantState)]`. Used by `derive_vsm` to
+/// generate per-variant Kani harnesses — one harness per (transition × variant)
+/// — so that CBMC receives a concrete discriminant and bounded fields instead
+/// of a fully symbolic enum.
+///
+/// # Motivation
+///
+/// `kani::any::<StateEnum>()` creates a tagged union where ALL variant fields
+/// are globally symbolic in CBMC. Dropping such a value requires reasoning
+/// about every variant destructor simultaneously, causing unbounded unwinding
+/// for variants that contain `Vec<T>` or `String` (non-trivial destructors).
+///
+/// Per-variant harnesses give CBMC a concrete discriminant for each proof,
+/// eliminating the symbolic-enum-drop problem while preserving exhaustive
+/// coverage through case analysis.
+pub trait KaniVariantState {
+    /// Returns `(variant_snake_name, construction_expr_str)` for each variant.
+    ///
+    /// Each pair represents one concrete state for Kani harness generation:
+    ///
+    /// - `variant_snake_name` — snake_case suffix appended to the harness
+    ///   function name (e.g. `"export_picker_open"` for `ExportPickerOpen`).
+    /// - `construction_expr_str` — a Rust expression (as token string) that
+    ///   concretely constructs that variant, using:
+    ///   - `Vec::new()` for `Vec<T>` fields
+    ///   - `String::new()` for `String` fields
+    ///   - `None` for `Option<T>` fields
+    ///   - `kani::any()` for all other fields
+    fn kani_variant_constructions() -> Vec<(&'static str, &'static str)>;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

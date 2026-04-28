@@ -67,6 +67,10 @@ pub enum VerifyAction {
         /// Resume mode: skip already-passed tests
         #[arg(short, long)]
         resume: bool,
+
+        /// Only run harnesses whose module path starts with this prefix (e.g. "kani::generated::archive_connection")
+        #[arg(short, long)]
+        module: Option<String>,
     },
 
     /// Show summary statistics from CSV

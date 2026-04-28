@@ -7,7 +7,8 @@
 
 use elicit_ui::WcagVerified;
 use elicitation::{
-    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
+    formal_method,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -18,7 +19,10 @@ use crate::archive::types::{ExportFormat, SavedQuery};
 // ── ArchiveOverlayState ───────────────────────────────────────────────────────
 
 /// State of modal overlays that float above the main panel.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit,
+    KaniVariantState,
+)]
 pub enum ArchiveOverlayState {
     /// No overlay is open.
     #[default]
@@ -48,27 +52,6 @@ pub enum ArchiveOverlayState {
         /// Currently highlighted row.
         idx: usize,
     },
-}
-
-#[cfg(kani)]
-impl kani::Arbitrary for ArchiveOverlayState {
-    fn any() -> Self {
-        match kani::any::<u8>() % 5 {
-            0 => ArchiveOverlayState::OverlayNone,
-            1 => ArchiveOverlayState::HelpOpen,
-            2 => ArchiveOverlayState::ExportPickerOpen {
-                idx: kani::any(),
-                formats: Vec::new(),
-            },
-            3 => ArchiveOverlayState::SavePromptOpen {
-                text: String::new(),
-            },
-            _ => ArchiveOverlayState::SavedBrowserOpen {
-                entries: Vec::new(),
-                idx: kani::any(),
-            },
-        }
-    }
 }
 
 // ── ArchiveOverlayConsistent (invariant) ─────────────────────────────────────
@@ -159,7 +142,7 @@ pub fn picker_move_down(
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
     let next = match state {
         ArchiveOverlayState::ExportPickerOpen { idx, formats } => {
-            let new_idx = (idx + 1).min(formats.len().saturating_sub(1));
+            let new_idx = idx.saturating_add(1).min(formats.len().saturating_sub(1));
             ArchiveOverlayState::ExportPickerOpen {
                 idx: new_idx,
                 formats,
@@ -262,7 +245,7 @@ pub fn saved_browser_down(
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
     let next = match state {
         ArchiveOverlayState::SavedBrowserOpen { entries, idx } => {
-            let new_idx = (idx + 1).min(entries.len().saturating_sub(1));
+            let new_idx = idx.saturating_add(1).min(entries.len().saturating_sub(1));
             ArchiveOverlayState::SavedBrowserOpen {
                 entries,
                 idx: new_idx,

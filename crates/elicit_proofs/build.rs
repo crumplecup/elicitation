@@ -42,30 +42,33 @@ fn main() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 fn generate_kani_proofs(gen_dir: &std::path::Path) {
-    write_vsm_file(
-        gen_dir,
-        "archive_connection.rs",
-        "ArchiveConnectionMachine",
-        &dedup_kani_proofs(&[ArchiveConnectionMachine::vsm_kani_proof()]),
-    );
-    write_vsm_file(
-        gen_dir,
-        "archive_nav.rs",
-        "ArchiveNavMachine",
-        &dedup_kani_proofs(&[ArchiveNavMachine::vsm_kani_proof()]),
-    );
-    write_vsm_file(
-        gen_dir,
-        "archive_overlay.rs",
-        "ArchiveOverlayMachine",
-        &dedup_kani_proofs(&[ArchiveOverlayMachine::vsm_kani_proof()]),
-    );
-    write_vsm_file(
-        gen_dir,
-        "archive_panel.rs",
-        "ArchivePanelMachine",
-        &dedup_kani_proofs(&[ArchivePanelMachine::vsm_kani_proof()]),
-    );
+    let mut manifest: Vec<(String, String)> = Vec::new();
+
+    let body = dedup_kani_proofs(&[ArchiveConnectionMachine::vsm_kani_proof()]);
+    for name in extract_harness_names(&body) {
+        manifest.push(("kani::generated::archive_connection".to_string(), name));
+    }
+    write_vsm_file(gen_dir, "archive_connection.rs", "ArchiveConnectionMachine", &body);
+
+    let body = dedup_kani_proofs(&[ArchiveNavMachine::vsm_kani_proof()]);
+    for name in extract_harness_names(&body) {
+        manifest.push(("kani::generated::archive_nav".to_string(), name));
+    }
+    write_vsm_file(gen_dir, "archive_nav.rs", "ArchiveNavMachine", &body);
+
+    let body = dedup_kani_proofs(&[ArchiveOverlayMachine::vsm_kani_proof()]);
+    for name in extract_harness_names(&body) {
+        manifest.push(("kani::generated::archive_overlay".to_string(), name));
+    }
+    write_vsm_file(gen_dir, "archive_overlay.rs", "ArchiveOverlayMachine", &body);
+
+    let body = dedup_kani_proofs(&[ArchivePanelMachine::vsm_kani_proof()]);
+    for name in extract_harness_names(&body) {
+        manifest.push(("kani::generated::archive_panel".to_string(), name));
+    }
+    write_vsm_file(gen_dir, "archive_panel.rs", "ArchivePanelMachine", &body);
+
+    write_manifest(gen_dir, &manifest);
 }
 
 fn write_vsm_file(gen_dir: &std::path::Path, filename: &str, machine: &str, body: &str) {
@@ -129,6 +132,26 @@ fn dedup_kani_proofs(streams: &[proc_macro2::TokenStream]) -> String {
         }
     }
     result
+}
+
+fn extract_harness_names(body: &str) -> Vec<String> {
+    extract_proof_chunks(body)
+        .into_iter()
+        .filter_map(|chunk| extract_fn_name(&chunk))
+        .collect()
+}
+
+fn write_manifest(gen_dir: &std::path::Path, harnesses: &[(String, String)]) {
+    let mut json = String::from("[\n");
+    for (i, (module, name)) in harnesses.iter().enumerate() {
+        json.push_str(&format!("  {{\"module\":\"{module}\",\"name\":\"{name}\"}}"));
+        if i + 1 < harnesses.len() {
+            json.push(',');
+        }
+        json.push('\n');
+    }
+    json.push_str("]\n");
+    std::fs::write(gen_dir.join("manifest.json"), json).expect("write manifest.json");
 }
 
 fn extract_proof_chunks(s: &str) -> Vec<String> {

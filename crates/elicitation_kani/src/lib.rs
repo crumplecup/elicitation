@@ -157,3 +157,7 @@ mod palette_types;
 
 #[cfg(all(kani, feature = "ui-types"))]
 mod ui_types;
+
+// Vec trust-boundary empirical investigation
+#[cfg(kani)]
+mod vec_boundary;

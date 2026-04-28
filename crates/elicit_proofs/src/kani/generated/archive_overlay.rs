@@ -4,11 +4,12 @@
 // Composed Kani proof harnesses for ArchiveOverlayMachine.
 // Source: elicit_server::archive::vsm
 
+use elicitation::Established;
+use elicit_server::archive::vsm::*;
+use elicit_server::archive::types::*;
 use elicit_server::archive::display::*;
 use elicit_server::archive::nav_tree::*;
-use elicit_server::archive::types::*;
-use elicit_server::archive::vsm::*;
-use elicitation::Established;
+#[cfg(kani)]
 #[kani::proof]
 fn verify_archive_overlay_consistent_prop_marker() {
     let established: bool = true;
@@ -16,81 +17,654 @@ fn verify_archive_overlay_consistent_prop_marker() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn close_overlay__kani() {
-    let _state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn close_overlay__kani__overlay_none() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = close_overlay(_state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_help__kani() {
-    let _state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn open_help__kani__overlay_none() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = open_help(_state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_export_picker__kani() {
-    let _state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn open_export_picker__kani__overlay_none() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn picker_move_up__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn picker_move_up__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = picker_move_up(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn picker_move_down__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn picker_move_down__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = picker_move_down(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_save_prompt__kani() {
-    let _state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn open_save_prompt__kani__overlay_none() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = open_save_prompt(_state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn prompt_push__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn prompt_push__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let ch: char = ::kani::any();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn prompt_backspace__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn prompt_backspace__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = prompt_backspace(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_saved_browser__kani() {
-    let _state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn open_saved_browser__kani__overlay_none() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn saved_browser_up__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn saved_browser_up__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = saved_browser_up(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn saved_browser_down__kani() {
-    let state: ArchiveOverlayState = ::kani::any();
-    let proof: Established<ArchiveOverlayConsistent> = ::elicitation::Established::assert();
+fn saved_browser_down__kani__overlay_none() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn close_overlay__kani__help_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = close_overlay(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help__kani__help_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_picker__kani__help_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
+    let _result = open_export_picker(_state, proof, formats);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_up__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_down__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_save_prompt__kani__help_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_save_prompt(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_push__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let ch: char = ::kani::any();
+    let _result = prompt_push(state, proof, ch);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_backspace__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = prompt_backspace(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_browser__kani__help_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let _result = open_saved_browser(_state, proof, entries);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_up__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_down__kani__help_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::HelpOpen;
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn close_overlay__kani__export_picker_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = close_overlay(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help__kani__export_picker_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_picker__kani__export_picker_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
+    let _result = open_export_picker(_state, proof, formats);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_up__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_down__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_save_prompt__kani__export_picker_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_save_prompt(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_push__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let ch: char = ::kani::any();
+    let _result = prompt_push(state, proof, ch);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_backspace__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = prompt_backspace(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_browser__kani__export_picker_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let _result = open_saved_browser(_state, proof, entries);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_up__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_down__kani__export_picker_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen {
+        idx: ::kani::any(),
+        formats: ::std::vec::Vec::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn close_overlay__kani__save_prompt_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = close_overlay(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help__kani__save_prompt_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_picker__kani__save_prompt_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
+    let _result = open_export_picker(_state, proof, formats);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_up__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_down__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_save_prompt__kani__save_prompt_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_save_prompt(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_push__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let ch: char = ::kani::any();
+    let _result = prompt_push(state, proof, ch);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_backspace__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = prompt_backspace(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_browser__kani__save_prompt_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let _result = open_saved_browser(_state, proof, entries);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_up__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_down__kani__save_prompt_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavePromptOpen {
+        text: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn close_overlay__kani__saved_browser_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = close_overlay(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help__kani__saved_browser_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_picker__kani__saved_browser_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
+    let _result = open_export_picker(_state, proof, formats);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_up__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn picker_move_down__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = picker_move_down(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_save_prompt__kani__saved_browser_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_save_prompt(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_push__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let ch: char = ::kani::any();
+    let _result = prompt_push(state, proof, ch);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn prompt_backspace__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = prompt_backspace(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_browser__kani__saved_browser_open() {
+    let _state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let _result = open_saved_browser(_state, proof, entries);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_up__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = saved_browser_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_browser_down__kani__saved_browser_open() {
+    let state: ArchiveOverlayState = ArchiveOverlayState::SavedBrowserOpen {
+        entries: ::std::vec::Vec::new(),
+        idx: ::kani::any(),
+    };
+    let proof: Established<ArchiveOverlayConsistent> = {
+        let __cred = ArchiveOverlayConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = saved_browser_down(state, proof);
 }

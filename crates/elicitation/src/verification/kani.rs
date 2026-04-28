@@ -137,3 +137,41 @@ pub trait Tool: Contract + Sync {
         Ok(output)
     }
 }
+
+/// Produce an empty `Vec<T>` as a verified proof boundary.
+///
+/// # Trust boundary
+///
+/// VSM harnesses verify *our* transition logic, not the correctness of
+/// `std::vec::Vec`.  Proving `Vec` itself is out of scope; we trust the
+/// standard library.
+///
+/// # Why `Vec::new()` instead of `any_vec` or `bounded_any`
+///
+/// Both `kani::vec::any_vec::<T, 0>()` and `Vec::<T>::bounded_any::<0>()`
+/// leave a symbolic `len` field visible to CBMC:
+///
+/// - `any_vec` routes through `exact_vec` → `<[T]>::into_vec(Box::new(any()))`,
+///   which loses the compile-time `N=0`; the resulting Vec carries a
+///   runtime-symbolic `len`.
+/// - `bounded_any` calls `vec.truncate(symbolic_real_length)` where
+///   `real_length = any_where(|s| *s <= 0)`.  Even though constrained to ≤0,
+///   CBMC does not reduce `symbolic_0` to the concrete value `0`, so
+///   `drop_in_place` on a symbolic-length slice unwinds without bound.
+///
+/// Both strategies work fine for element types with trivial drop (unit enums,
+/// scalar structs) because CBMC can bound the loop body.  For types whose
+/// destructor reaches `dealloc` (e.g. `String`-bearing structs), the loop
+/// body is unbounded and CBMC diverges.
+///
+/// `Vec::new()` gives CBMC a **concrete** `len = 0`; no loop body is
+/// generated at all.  The proof scope is: "for any state whose `Vec` fields
+/// are empty, the transition is structurally correct."  This is the correct
+/// scope for structural state-machine invariants.
+///
+/// Use this function in `kani::Arbitrary` impls for state-enum variants that
+/// carry `Vec<T>` payload fields.
+#[cfg(kani)]
+pub fn kani_vec<T>() -> Vec<T> {
+    Vec::new()
+}

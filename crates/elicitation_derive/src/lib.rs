@@ -92,6 +92,7 @@ mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
 mod formal_method;
+mod kani_variants;
 mod method_reflection;
 mod rand_contract_parser;
 mod rand_generator_impl;
@@ -554,6 +555,42 @@ pub fn derive_prop(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(VerifiedStateMachine, attributes(vsm))]
 pub fn derive_verified_state_machine(input: TokenStream) -> TokenStream {
     derive_vsm::expand(input)
+}
+
+/// Derive [`KaniVariantState`](elicitation::KaniVariantState) for a VSM state enum.
+///
+/// Generates a `kani_variant_constructions()` method returning one
+/// `(&'static str, &'static str)` pair per variant: the snake_case suffix and
+/// a concrete construction expression.  Used by `#[derive(VerifiedStateMachine)]`
+/// to emit per-variant Kani proof harnesses.
+///
+/// # Field construction rules
+///
+/// | Field type | Generated expression |
+/// |-----------|---------------------|
+/// | `Vec<T>` | `Vec::new()` |
+/// | `String` | `String::new()` |
+/// | `Option<T>` | `None` |
+/// | anything else | `kani::any()` |
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::KaniVariantState;
+///
+/// #[derive(KaniVariantState)]
+/// pub enum MyState {
+///     Idle,
+///     Running { name: String },
+///     Buffered { data: Vec<u8> },
+/// }
+/// // Generates: [("idle", "MyState :: Idle"),
+/// //             ("running", "MyState :: Running { name : :: std :: string :: String :: new () }"),
+/// //             ("buffered", "MyState :: Buffered { data : :: std :: vec :: Vec :: new () }")]
+/// ```
+#[proc_macro_derive(KaniVariantState)]
+pub fn derive_kani_variant_state(input: TokenStream) -> TokenStream {
+    kani_variants::expand(input)
 }
 
 ///

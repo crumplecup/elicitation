@@ -208,8 +208,8 @@ pub use type_spec::{
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
-    And, Established, FormalMethod, Implies, InVariant, Is, Prop, ProvableFrom, Refines,
-    VerifiedStateMachine, VerifiedTransition, both, downcast, fst, snd,
+    And, Established, FormalMethod, Implies, InVariant, Is, KaniVariantState, Prop, ProvableFrom,
+    Refines, VerifiedStateMachine, VerifiedTransition, both, downcast, fst, snd,
 };
 
 // Completion marker — enforces all elicitation obligations at compile time
@@ -267,12 +267,16 @@ pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool, formal_method};
 pub use elicitation_derive::Prop;
 // VerifiedStateMachine derive macro (coexists with the trait of the same name)
 pub use elicitation_derive::VerifiedStateMachine;
+// KaniVariantState derive macro
+pub use elicitation_derive::KaniVariantState;
 // ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
 pub use elicitation_derive::ToCodeLiteral;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
 pub use verification::Contract;
+#[cfg(kani)]
+pub use verification::kani::kani_vec;
 
 pub use verification::types::{
     ArcNonNull,

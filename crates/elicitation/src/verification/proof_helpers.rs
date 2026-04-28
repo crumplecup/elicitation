@@ -1056,6 +1056,7 @@ pub fn creusot_unit_struct(struct_name: &str) -> TokenStream {
 pub fn kani_trivial_prop(fn_name: &str) -> TokenStream {
     let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_marker"), Span::call_site());
     quote! {
+        #[cfg(kani)]
         #[kani::proof]
         fn #fn_ident() {
             // Zero-cost typestate marker — trivially established.

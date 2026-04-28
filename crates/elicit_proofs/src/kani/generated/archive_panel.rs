@@ -4,11 +4,12 @@
 // Composed Kani proof harnesses for ArchivePanelMachine.
 // Source: elicit_server::archive::vsm
 
+use elicitation::Established;
+use elicit_server::archive::vsm::*;
+use elicit_server::archive::types::*;
 use elicit_server::archive::display::*;
 use elicit_server::archive::nav_tree::*;
-use elicit_server::archive::types::*;
-use elicit_server::archive::vsm::*;
-use elicitation::Established;
+#[cfg(kani)]
 #[kani::proof]
 fn verify_archive_panel_consistent_prop_marker() {
     let established: bool = true;
@@ -16,33 +17,45 @@ fn verify_archive_panel_consistent_prop_marker() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn column_detail__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn column_detail__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = column_detail(_state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn panel_loading__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn panel_loading__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let label: String = ::std::string::String::new();
     let _result = panel_loading(_state, proof, schema, label);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn panel_error__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn panel_error__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let message: String = ::std::string::String::new();
     let _result = panel_error(_state, proof, message);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn data_grid_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn data_grid_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = ::kani::any();
@@ -51,80 +64,110 @@ fn data_grid_ready__kani() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn query_complete__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn query_complete__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let result: QueryResult = ::kani::any();
     let _result = query_complete(state, proof, result);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_edit__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn begin_edit__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = begin_edit(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn commit_edits__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn commit_edits__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = commit_edits(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn abort_edits__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn abort_edits__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = abort_edits(state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_sql_editor__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn open_sql_editor__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let initial_text: String = ::std::string::String::new();
     let _result = open_sql_editor(_state, proof, initial_text);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_export_panel__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn open_export_panel__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let _result = open_export_panel(_state, proof, schema, table);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_help_panel__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn open_help_panel__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let _result = open_help_panel(_state, proof);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_saved_panel__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn open_saved_panel__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode = ::kani::any();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn open_connection_editor__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn open_connection_editor__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let profile: ConnectionProfile = ::kani::any();
     let display_mode: ConnectionProfileMode = ::kani::any();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn ddl_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn ddl_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = ::kani::any();
@@ -133,9 +176,12 @@ fn ddl_ready__kani() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn explain_ready__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn explain_ready__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainNode = ::kani::any();
@@ -144,53 +190,71 @@ fn explain_ready__kani() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn export_ready__kani() {
-    let state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn export_ready__kani__column_detail() {
+    let state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let result: ExportResult = ::kani::any();
     let _result = export_ready(state, proof, result);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn history_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn history_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
     let display_mode: QueryHistoryEntryMode = ::kani::any();
     let _result = history_ready(_state, proof, entries, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn saved_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn saved_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode = ::kani::any();
     let _result = saved_ready(_state, proof, entries, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn monitor_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn monitor_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let snapshot: MonitorSnapshot = ::kani::any();
     let display_mode: MonitorSnapshotMode = ::kani::any();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn admin_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn admin_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let snapshot: AdminSnapshot = ::kani::any();
     let display_mode: AdminSnapshotMode = ::kani::any();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn erd_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn erd_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = ::kani::any();
     let layout: Option<ErdLayout> = ::kani::any();
@@ -199,20 +263,6466 @@ fn erd_ready__kani() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn constraints_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn constraints_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
     let display_mode: ConstraintDescriptorMode = ::kani::any();
-    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn indexes_ready__kani() {
-    let _state: ArchivePanelState = ::kani::any();
-    let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
+fn indexes_ready__kani__column_detail() {
+    let _state: ArchivePanelState = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__loading() {
+    let state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__loading() {
+    let _state: ArchivePanelState = ArchivePanelState::Loading {
+        schema: ::std::string::String::new(),
+        label: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__data_grid() {
+    let state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__data_grid() {
+    let _state: ArchivePanelState = ArchivePanelState::DataGrid {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: ::kani::any(),
+        page: ::kani::any(),
+        grid_row: ::kani::any(),
+        grid_col: ::kani::any(),
+        edit_state: None,
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__sql_editor() {
+    let state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__sql_editor() {
+    let _state: ArchivePanelState = ArchivePanelState::SqlEditor {
+        text: ::std::string::String::new(),
+        result: None,
+        running: ::kani::any(),
+        error: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__ddl_view() {
+    let state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__ddl_view() {
+    let _state: ArchivePanelState = ArchivePanelState::DdlView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        ddl: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__explain_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__explain_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        root: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__explain_compare() {
+    let state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__explain_compare() {
+    let _state: ArchivePanelState = ArchivePanelState::ExplainCompare {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        comparison: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__history_view() {
+    let state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__history_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HistoryView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__saved_view() {
+    let state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__saved_view() {
+    let _state: ArchivePanelState = ArchivePanelState::SavedView {
+        entries: ::std::vec::Vec::new(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__export_view() {
+    let state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__export_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ExportView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        result: None,
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__help_view() {
+    let state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__help_view() {
+    let _state: ArchivePanelState = ArchivePanelState::HelpView;
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__monitor_view() {
+    let state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__monitor_view() {
+    let _state: ArchivePanelState = ArchivePanelState::MonitorView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__admin_view() {
+    let state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__admin_view() {
+    let _state: ArchivePanelState = ArchivePanelState::AdminView {
+        snapshot: ::kani::any(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__erd_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__erd_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErdView {
+        schema: ::std::string::String::new(),
+        diagram: ::kani::any(),
+        layout: None,
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__constraint_view() {
+    let state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__constraint_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        constraints: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__index_view() {
+    let state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__index_view() {
+    let _state: ArchivePanelState = ArchivePanelState::IndexView {
+        schema: ::std::string::String::new(),
+        table: ::std::string::String::new(),
+        indexes: ::std::vec::Vec::new(),
+        loading: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__connection_edit() {
+    let state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__connection_edit() {
+    let _state: ArchivePanelState = ArchivePanelState::ConnectionEdit {
+        profile: ::kani::any(),
+        display_mode: ::kani::any(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = ::kani::any();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = ::kani::any();
+    let display_mode: QueryResultMode = ::kani::any();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = ::kani::any();
+    let _result = query_complete(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = ::kani::any();
+    let display_mode: ConnectionProfileMode = ::kani::any();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = ::kani::any();
+    let display_mode: DdlDescriptorMode = ::kani::any();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainNode = ::kani::any();
+    let display_mode: ExplainNodeMode = ::kani::any();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani__error_view() {
+    let state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = ::kani::any();
+    let _result = export_ready(state, proof, result);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = ::kani::any();
+    let _result = history_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = ::kani::any();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = ::kani::any();
+    let display_mode: MonitorSnapshotMode = ::kani::any();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = ::kani::any();
+    let display_mode: AdminSnapshotMode = ::kani::any();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = ::kani::any();
+    let layout: Option<ErdLayout> = ::kani::any();
+    let display_mode: ErdDiagramMode = ::kani::any();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = ::kani::any();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani__error_view() {
+    let _state: ArchivePanelState = ArchivePanelState::ErrorView {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();

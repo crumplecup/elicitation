@@ -22,7 +22,8 @@
 
 use elicit_db::ConnectionEstablished;
 use elicitation::{
-    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
+    formal_method,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -33,7 +34,10 @@ use crate::archive::types::{BackendKind, DatabaseDescriptor};
 // ── ArchiveConnectionState ────────────────────────────────────────────────────
 
 /// Lifecycle state of the archive backend connection.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit,
+    KaniVariantState,
+)]
 pub enum ArchiveConnectionState {
     /// No active backend connection.
     #[default]
@@ -65,24 +69,6 @@ pub enum ArchiveConnectionState {
         /// Human-readable error message.
         message: String,
     },
-}
-
-#[cfg(kani)]
-impl kani::Arbitrary for ArchiveConnectionState {
-    fn any() -> Self {
-        let s = || String::new();
-        match kani::any::<u8>() % 6 {
-            0 => ArchiveConnectionState::Disconnected,
-            1 => ArchiveConnectionState::Connecting {
-                profile_name: s(),
-                backend: kani::any(),
-            },
-            2 => ArchiveConnectionState::SqlConnected { db: kani::any() },
-            3 => ArchiveConnectionState::KvConnected { path: s() },
-            4 => ArchiveConnectionState::Reconnecting { db: kani::any() },
-            _ => ArchiveConnectionState::ConnectionError { message: s() },
-        }
-    }
 }
 
 // ── ArchiveConnectionConsistent (invariant) ───────────────────────────────────

@@ -261,7 +261,10 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             let verus_fn = format_ident!("{fn_name}__verus");
 
             let mut lets: Vec<TokenStream> = Vec::new();
+            let mut non_state_lets: Vec<TokenStream> = Vec::new();
             let mut call_args: Vec<TokenStream> = Vec::new();
+            let mut state_pat_str: Option<String> = None;
+            let mut state_ty_str: Option<String> = None;
 
             for arg in &func.sig.inputs {
                 if let FnArg::Typed(pat_type) = arg {
@@ -274,39 +277,68 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         // not the full state space of the underlying state enum.
                         let inner = extract_established_inner(ty)
                             .expect("is_established_type guarantees an inner type");
-                        lets.push(quote! {
+                        let let_ts = quote! {
                             let #pat: #ty = {
                                 let __cred = #inner::kani_proof_credential();
                                 ::elicitation::Established::prove(&__cred)
                             };
-                        });
+                        };
+                        lets.push(let_ts.clone());
+                        non_state_lets.push(let_ts);
                     } else if is_string_type(ty) {
                         // String content is irrelevant to structural invariant proofs.
                         // from_utf8_lossy introduces a UTF-8 validation loop that makes
                         // the state space unbounded; String::new() is bounded by construction.
-                        lets.push(quote! {
+                        let let_ts = quote! {
                             let #pat: #ty = ::std::string::String::new();
-                        });
+                        };
+                        lets.push(let_ts.clone());
+                        non_state_lets.push(let_ts);
                     } else if is_vec_type(ty) {
                         // kani::any::<Vec<T>>() is not implemented in Kani ≤0.67;
                         // use an empty Vec instead — still covers all invariant checks
                         // without requiring T: kani::Arbitrary on the Vec itself.
-                        lets.push(quote! {
+                        let let_ts = quote! {
                             let #pat: #ty = ::std::vec::Vec::new();
-                        });
-                    } else {
+                        };
+                        lets.push(let_ts.clone());
+                        non_state_lets.push(let_ts);
+                    } else if state_pat_str.is_none() {
+                        // First remaining param = the VSM state enum.
+                        // Captured as strings for kani_harness_for_variant; NOT added
+                        // to non_state_lets so the per-variant harness can substitute
+                        // a concrete construction expression in its place.
+                        state_pat_str = Some(quote!(#pat).to_string());
+                        state_ty_str = Some(quote!(#ty).to_string());
                         lets.push(quote! {
                             let #pat: #ty = ::kani::any();
                         });
+                    } else {
+                        let let_ts = quote! {
+                            let #pat: #ty = ::kani::any();
+                        };
+                        lets.push(let_ts.clone());
+                        non_state_lets.push(let_ts);
                     }
                     call_args.push(quote!(#pat));
                 }
             }
 
+            let has_state_param = state_pat_str.is_some();
+            let state_pat_s = state_pat_str.unwrap_or_default();
+            let state_ty_s = state_ty_str.unwrap_or_default();
+            let non_state_lets_src = quote!(#(#non_state_lets)*).to_string();
+            let call_args_src = quote!(#(#call_args),*).to_string();
+            let fn_name_src = fn_name.to_string();
+            let kani_fn_src = format!("{fn_name}__kani");
+
             let inputs = &func.sig.inputs;
             let output = &func.sig.output;
 
-            // ── Kani inline harness ──────────────────────────────────────────
+            // ── Kani harness ─────────────────────────────────────────────────
+            // kani_vec delegates to kani::any_vec::<T, 0>() which takes the
+            // vec![] branch immediately — no symbolic heap, no unbounded drops.
+            // No stub_verified needed.
             let kani = quote! {
                 #[cfg(kani)]
                 #[::kani::proof]
@@ -332,6 +364,77 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                  [`VerifiedStateMachine::transition_harnesses`] to obtain the \
                  `#[kani::proof]` harness as a `proc_macro2::TokenStream`."
             );
+
+            // Per-variant harness method — substitutes a concrete construction
+            // expression for the state param so CBMC sees a concrete discriminant
+            // rather than a symbolic enum.
+            let variant_method = if has_state_param {
+                quote! {
+                    /// Return a per-variant Kani harness for this transition.
+                    ///
+                    /// `variant_name` is the snake_case suffix appended to the
+                    /// proof function name (e.g., `"export_picker_open"` →
+                    /// `close_overlay__kani__export_picker_open`).
+                    ///
+                    /// `state_expr` is a concrete construction expression for
+                    /// that variant (from
+                    /// [`KaniVariantState::kani_variant_constructions`]).
+                    ///
+                    /// Together, these replace the symbolic `kani::any()` state
+                    /// construction with a concrete, bounded state that CBMC can
+                    /// verify in finite time.
+                    pub fn kani_harness_for_variant(
+                        variant_name: &str,
+                        state_expr: &str,
+                    ) -> ::proc_macro2::TokenStream {
+                        let variant_fn =
+                            String::new() + #kani_fn_src + "__" + variant_name;
+                        // String concatenation avoids format!() brace-escaping
+                        // issues: non_state_lets_src may contain Established
+                        // credential blocks with literal curly braces.
+                        let src = String::new()
+                            + "# [cfg (kani)] # [:: kani :: proof] fn "
+                            + &variant_fn
+                            + " () { let "
+                            + #state_pat_s
+                            + " : "
+                            + #state_ty_s
+                            + " = "
+                            + state_expr
+                            + " ; "
+                            + #non_state_lets_src
+                            + " let _result = "
+                            + #fn_name_src
+                            + " ("
+                            + #call_args_src
+                            + ") ; }";
+                        src.parse()
+                            .expect("kani_harness_for_variant: invalid TokenStream")
+                    }
+                }
+            } else {
+                // No state param: body is the same for all variants; only the
+                // harness function name is suffixed with the variant name.
+                quote! {
+                    /// Return a per-variant Kani harness for this transition.
+                    ///
+                    /// Since this transition has no state parameter, the body is
+                    /// the same for all variants; only the harness function name
+                    /// is suffixed.
+                    pub fn kani_harness_for_variant(
+                        variant_name: &str,
+                        _state_expr: &str,
+                    ) -> ::proc_macro2::TokenStream {
+                        let variant_fn =
+                            String::new() + #kani_fn_src + "__" + variant_name;
+                        #harness_src
+                            .replace(#kani_fn_src, &variant_fn)
+                            .parse()
+                            .expect("kani_harness_for_variant: invalid TokenStream")
+                    }
+                }
+            };
+
             let companion = quote! {
                 #[doc = #struct_doc]
                 #[allow(non_camel_case_types)]
@@ -347,6 +450,8 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             .parse()
                             .expect("formal_method companion: invalid kani harness source")
                     }
+
+                    #variant_method
                 }
             };
 
@@ -386,7 +491,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 }
             };
 
-            (kani, creusot, verus, companion)
+            // The inline kani harness (kani::any() for state) is intentionally
+            // NOT emitted here.  When the state type is a complex enum registered
+            // with VerifiedStateMachine, it may not implement kani::Arbitrary
+            // (the per-variant KaniVariantState approach replaces it).
+            //
+            // The companion struct provides kani_harness() (returns the string)
+            // and kani_harness_for_variant() for the build.rs / derive_vsm path.
+            let _ = kani; // consumed by harness_src above — suppress unused warning
+            (quote! {}, creusot, verus, companion)
         } else {
             (quote! {}, quote! {}, quote! {}, quote! {})
         };

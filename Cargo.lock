@@ -3680,11 +3680,18 @@ dependencies = [
 name = "elicit_proofs"
 version = "0.10.0"
 dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "csv",
  "elicit_server",
  "elicitation",
  "prettyplease",
  "proc-macro2",
+ "serde",
+ "serde_json",
  "syn 2.0.117",
+ "tracing",
 ]
 
 [[package]]
