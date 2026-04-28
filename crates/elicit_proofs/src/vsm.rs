@@ -238,6 +238,7 @@ fn run_harness(h: &VsmHarness, timeout_secs: u64) -> VsmResult {
             "kani",
             "-p",
             "elicit_proofs",
+            "--lib",
             "--features",
             "kani",
             "--harness",
