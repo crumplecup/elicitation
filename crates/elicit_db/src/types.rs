@@ -85,7 +85,17 @@ pub enum DbValue {
     /// Raw bytes.
     Bytes(Vec<u8>),
     /// Arbitrary JSON value.
+    ///
+    /// Under `#[cfg(kani)]` the payload is stored as a raw JSON string rather
+    /// than `serde_json::Value`, because `Value` is self-recursive
+    /// (`Array(Vec<Value>)`, `Object(Map<String,Value>)`). CBMC's type-driven
+    /// destructor analysis would unroll `Value::drop()` unboundedly even when
+    /// the variant is never constructed at runtime. The `String` payload is
+    /// drop-trivial, so CBMC terminates.
+    #[cfg(not(kani))]
     Json(serde_json::Value),
+    #[cfg(kani)]
+    Json(String),
     /// PostGIS `geometry` payload.
     Geometry(DbSpatialValue),
     /// PostGIS `geography` payload.
@@ -290,7 +300,9 @@ pub struct DbIndexInfo {
 }
 
 /// Role / user metadata.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct DbRoleInfo {
     /// Role name.
     pub name: String,
@@ -318,7 +330,9 @@ impl kani::Arbitrary for DbRoleInfo {
 }
 
 /// Active session info from `pg_stat_activity`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct DbSessionInfo {
     /// Backend process ID.
     pub pid: i32,
