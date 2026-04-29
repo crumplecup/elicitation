@@ -216,14 +216,14 @@ fn run_all(csv: &Path, timeout: u64, resume: bool, filter: Option<&str>) -> Resu
             }
         }
 
-        writer.serialize(&result).context("Failed to write CSV row")?;
+        writer
+            .serialize(&result)
+            .context("Failed to write CSV row")?;
         writer.flush().context("Failed to flush CSV")?;
     }
 
     println!();
-    println!(
-        "Results: {passed} passed, {failed} failed, {skipped} skipped / {total} total"
-    );
+    println!("Results: {passed} passed, {failed} failed, {skipped} skipped / {total} total");
     Ok(())
 }
 

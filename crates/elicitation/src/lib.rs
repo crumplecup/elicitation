@@ -111,8 +111,8 @@ pub mod cli;
 pub mod contracts;
 
 pub mod emit_code;
-pub mod mcp;
 pub mod kani_compose;
+pub mod mcp;
 mod paradigm;
 mod primitives;
 mod proxy;

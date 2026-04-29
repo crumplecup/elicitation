@@ -288,7 +288,13 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             let verus_fn = format_ident!("{fn_name}__verus");
 
             let mut lets: Vec<TokenStream> = Vec::new();
-            let mut non_state_lets: Vec<TokenStream> = Vec::new();
+            // Three depth variants for non-state inputs.
+            // Depth-bounded types use KaniCompose::kani_depthN() instead of
+            // kani::any(), preventing CBMC's type-based destructor model from
+            // unwinding recursively through types like Vec<ExplainNode>.
+            let mut non_state_lets_d0: Vec<TokenStream> = Vec::new();
+            let mut non_state_lets_d1: Vec<TokenStream> = Vec::new();
+            let mut non_state_lets_d2: Vec<TokenStream> = Vec::new();
             let mut call_args: Vec<TokenStream> = Vec::new();
             let mut state_pat_str: Option<String> = None;
             let mut state_ty_str: Option<String> = None;
@@ -311,7 +317,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             };
                         };
                         lets.push(let_ts.clone());
-                        non_state_lets.push(let_ts);
+                        non_state_lets_d0.push(let_ts.clone());
+                        non_state_lets_d1.push(let_ts.clone());
+                        non_state_lets_d2.push(let_ts);
                     } else if is_string_type(ty) {
                         // String content is irrelevant to structural invariant proofs.
                         // from_utf8_lossy introduces a UTF-8 validation loop that makes
@@ -320,7 +328,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             let #pat: #ty = ::std::string::String::new();
                         };
                         lets.push(let_ts.clone());
-                        non_state_lets.push(let_ts);
+                        non_state_lets_d0.push(let_ts.clone());
+                        non_state_lets_d1.push(let_ts.clone());
+                        non_state_lets_d2.push(let_ts);
                     } else if is_vec_type(ty) {
                         // kani::any::<Vec<T>>() is not implemented in Kani ≤0.67;
                         // use an empty Vec instead — still covers all invariant checks
@@ -329,7 +339,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             let #pat: #ty = ::std::vec::Vec::new();
                         };
                         lets.push(let_ts.clone());
-                        non_state_lets.push(let_ts);
+                        non_state_lets_d0.push(let_ts.clone());
+                        non_state_lets_d1.push(let_ts.clone());
+                        non_state_lets_d2.push(let_ts);
                     } else if is_option_type(ty) {
                         // kani::any::<Option<T>>() hangs when T contains heap-allocated
                         // fields — symbolic ownership transfer + non-trivial destructor
@@ -339,7 +351,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             let #pat: #ty = ::core::option::Option::None;
                         };
                         lets.push(let_ts.clone());
-                        non_state_lets.push(let_ts);
+                        non_state_lets_d0.push(let_ts.clone());
+                        non_state_lets_d1.push(let_ts.clone());
+                        non_state_lets_d2.push(let_ts);
                     } else if state_pat_str.is_none() {
                         // First remaining param = the VSM state enum.
                         // Captured as strings for kani_harness_for_variant; NOT added
@@ -351,11 +365,26 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             let #pat: #ty = ::kani::any();
                         });
                     } else {
-                        let let_ts = quote! {
+                        // All other types: use KaniCompose::kani_depthN() so that
+                        // recursive types (e.g. ExplainNode with Vec<ExplainNode>)
+                        // get a concrete bounded construction at each depth level.
+                        // This prevents CBMC's type-based destructor model from
+                        // unwinding the recursive drop path unboundedly.
+                        // The type MUST implement KaniCompose — this is enforced at
+                        // Kani compile time.
+                        let let_ts_any = quote! {
                             let #pat: #ty = ::kani::any();
                         };
-                        lets.push(let_ts.clone());
-                        non_state_lets.push(let_ts);
+                        lets.push(let_ts_any);
+                        non_state_lets_d0.push(quote! {
+                            let #pat: #ty = <#ty as ::elicitation::KaniCompose>::kani_depth0();
+                        });
+                        non_state_lets_d1.push(quote! {
+                            let #pat: #ty = <#ty as ::elicitation::KaniCompose>::kani_depth1();
+                        });
+                        non_state_lets_d2.push(quote! {
+                            let #pat: #ty = <#ty as ::elicitation::KaniCompose>::kani_depth2();
+                        });
                     }
                     call_args.push(quote!(#pat));
                 }
@@ -364,7 +393,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             let has_state_param = state_pat_str.is_some();
             let state_pat_s = state_pat_str.unwrap_or_default();
             let state_ty_s = state_ty_str.unwrap_or_default();
-            let non_state_lets_src = quote!(#(#non_state_lets)*).to_string();
+            let non_state_lets_d0_src = quote!(#(#non_state_lets_d0)*).to_string();
+            let non_state_lets_d1_src = quote!(#(#non_state_lets_d1)*).to_string();
+            let non_state_lets_d2_src = quote!(#(#non_state_lets_d2)*).to_string();
             let call_args_src = quote!(#(#call_args),*).to_string();
             let fn_name_src = fn_name.to_string();
             let kani_fn_src = format!("{fn_name}__kani");
@@ -423,6 +454,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             "{}__{}__d{}",
                             #kani_fn_src, variant_name, depth
                         );
+                        let non_state_lets = match depth {
+                            0 => #non_state_lets_d0_src,
+                            1 => #non_state_lets_d1_src,
+                            _ => #non_state_lets_d2_src,
+                        };
                         let src = String::new()
                             + "# [cfg (kani)] # [:: kani :: proof] fn "
                             + &variant_fn
@@ -433,7 +469,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + " = "
                             + state_expr
                             + " ; "
-                            + #non_state_lets_src
+                            + &non_state_lets
                             + " let _result = "
                             + #fn_name_src
                             + " ("

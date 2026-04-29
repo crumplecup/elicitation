@@ -52,14 +52,26 @@ fn test_weaken_with_custom_impl() {
     struct WeakProp;
 
     impl Prop for StrongProp {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for WeakProp {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Implies<WeakProp> for StrongProp {}
 
@@ -72,14 +84,26 @@ fn test_conjunction_combine() {
     struct P;
     struct Q;
     impl Prop for P {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for Q {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     let p: Established<P> = Established::assert();
@@ -92,14 +116,26 @@ fn test_conjunction_project_left() {
     struct P;
     struct Q;
     impl Prop for P {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for Q {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
@@ -111,14 +147,26 @@ fn test_conjunction_project_right() {
     struct P;
     struct Q;
     impl Prop for P {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for Q {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
@@ -130,14 +178,26 @@ fn test_conjunction_is_zero_sized() {
     struct P;
     struct Q;
     impl Prop for P {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for Q {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
@@ -150,19 +210,37 @@ fn test_conjunction_chain() {
     struct Q;
     struct R;
     impl Prop for P {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for Q {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
     impl Prop for R {
-        fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-        fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     let pq = both(Established::<P>::assert(), Established::<Q>::assert());
@@ -187,7 +265,10 @@ fn test_refinement_zero_sized() {
 
 #[test]
 fn test_invariant_zero_sized() {
-    enum Status { _Active, _Inactive }
+    enum Status {
+        _Active,
+        _Inactive,
+    }
     struct ActiveVariant;
 
     let proof: Established<InVariant<Status, ActiveVariant>> = Established::assert();
@@ -196,7 +277,10 @@ fn test_invariant_zero_sized() {
 
 #[test]
 fn test_invariant_type_safety() {
-    enum Status { _Active, _Inactive }
+    enum Status {
+        _Active,
+        _Inactive,
+    }
     struct ActiveVariant;
 
     fn process_active(_status: Status, _proof: Established<InVariant<Status, ActiveVariant>>) {}
@@ -207,7 +291,11 @@ fn test_invariant_type_safety() {
 
 #[test]
 fn test_invariant_enum_branches() {
-    enum State { _Loading, _Ready, _Error }
+    enum State {
+        _Loading,
+        _Ready,
+        _Error,
+    }
     struct LoadingVariant;
     struct ReadyVariant;
     struct ErrorVariant;
@@ -223,7 +311,11 @@ fn test_invariant_enum_branches() {
 
 #[test]
 fn test_invariant_with_inhabitation() {
-    enum Color { _Red, _Green, _Blue }
+    enum Color {
+        _Red,
+        _Green,
+        _Blue,
+    }
     struct RedVariant;
 
     let _type_proof: Established<Is<Color>> = Established::assert();

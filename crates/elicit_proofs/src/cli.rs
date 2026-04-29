@@ -7,7 +7,10 @@ use crate::vsm::VsmAction;
 
 /// Formal verification proof runner for the elicitation ecosystem.
 #[derive(Debug, Parser)]
-#[command(name = "elicit_proofs", about = "Run and track formal verification proof harnesses")]
+#[command(
+    name = "elicit_proofs",
+    about = "Run and track formal verification proof harnesses"
+)]
 pub struct Cli {
     #[command(subcommand)]
     command: Commands,

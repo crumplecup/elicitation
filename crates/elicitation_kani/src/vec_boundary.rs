@@ -312,7 +312,10 @@ struct ScalarRow {
 #[cfg(kani)]
 impl kani::Arbitrary for ScalarRow {
     fn any() -> Self {
-        ScalarRow { id: kani::any(), count: kani::any() }
+        ScalarRow {
+            id: kani::any(),
+            count: kani::any(),
+        }
     }
 }
 
@@ -497,7 +500,11 @@ fn string_new_drop() {
 /// Construct StringRow using String::new() directly (not via Arbitrary), drop it.
 #[kani::proof]
 fn string_row_direct_drop() {
-    let row = StringRow { id: kani::any(), name: String::new(), sql: String::new() };
+    let row = StringRow {
+        id: kani::any(),
+        name: String::new(),
+        sql: String::new(),
+    };
     drop(row);
 }
 
@@ -601,7 +608,10 @@ fn fn_drop_overlay_fixed() {
 /// Browser variant: concrete construction, no match dispatch.
 #[kani::proof]
 fn close_overlay_browser_variant() {
-    let state = OverlayFixed::Browser { entries: Vec::new(), idx: kani::any() };
+    let state = OverlayFixed::Browser {
+        entries: Vec::new(),
+        idx: kani::any(),
+    };
     let result = consume_overlay_fixed(state);
     assert!(matches!(result, OverlayFixed::None));
 }
@@ -609,7 +619,10 @@ fn close_overlay_browser_variant() {
 /// Picker variant: concrete construction, no match dispatch.
 #[kani::proof]
 fn close_overlay_picker_variant() {
-    let state = OverlayFixed::Picker { formats: Vec::new(), idx: kani::any() };
+    let state = OverlayFixed::Picker {
+        formats: Vec::new(),
+        idx: kani::any(),
+    };
     let result = consume_overlay_fixed(state);
     assert!(matches!(result, OverlayFixed::None));
 }

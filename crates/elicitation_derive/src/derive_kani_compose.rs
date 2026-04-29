@@ -59,11 +59,7 @@ fn is_string(ty: &Type) -> bool {
     let segs = &path.segments;
     match segs.len() {
         1 => segs[0].ident == "String",
-        3 => {
-            segs[0].ident == "std"
-                && segs[1].ident == "string"
-                && segs[2].ident == "String"
-        }
+        3 => segs[0].ident == "std" && segs[1].ident == "string" && segs[2].ident == "String",
         _ => false,
     }
 }
@@ -75,11 +71,7 @@ fn is_option(ty: &Type) -> bool {
     let segs = &path.segments;
     match segs.len() {
         1 => segs[0].ident == "Option",
-        3 => {
-            segs[0].ident == "std"
-                && segs[1].ident == "option"
-                && segs[2].ident == "Option"
-        }
+        3 => segs[0].ident == "std" && segs[1].ident == "option" && segs[2].ident == "Option",
         _ => false,
     }
 }
@@ -95,10 +87,20 @@ fn is_primitive(ty: &Type) -> bool {
     matches!(
         segs[0].ident.to_string().as_str(),
         "bool"
-            | "u8" | "u16" | "u32" | "u64" | "u128"
-            | "i8" | "i16" | "i32" | "i64" | "i128"
-            | "f32" | "f64"
-            | "usize" | "isize"
+            | "u8"
+            | "u16"
+            | "u32"
+            | "u64"
+            | "u128"
+            | "i8"
+            | "i16"
+            | "i32"
+            | "i64"
+            | "i128"
+            | "f32"
+            | "f64"
+            | "usize"
+            | "isize"
             | "char"
     )
 }
@@ -133,7 +135,13 @@ fn has_skip_attr(field: &syn::Field) -> bool {
 /// Generate depth-0/1/2 `TokenStream` expressions for a single field type.
 ///
 /// The returned triple is `(depth0, depth1, depth2)`.
-fn field_exprs(ty: &Type) -> (proc_macro2::TokenStream, proc_macro2::TokenStream, proc_macro2::TokenStream) {
+fn field_exprs(
+    ty: &Type,
+) -> (
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+    proc_macro2::TokenStream,
+) {
     if is_vec(ty) {
         let d0 = quote! { ::std::vec::Vec::new() };
         let (d1, d2) = if let Some(inner) = first_generic(ty) {
@@ -176,10 +184,7 @@ fn field_exprs(ty: &Type) -> (proc_macro2::TokenStream, proc_macro2::TokenStream
 // ── Struct helpers ────────────────────────────────────────────────────────────
 
 /// Build the `Self { field: expr, ... }` body for named fields at the given depth.
-fn struct_named_body(
-    fields: &syn::FieldsNamed,
-    depth: u8,
-) -> proc_macro2::TokenStream {
+fn struct_named_body(fields: &syn::FieldsNamed, depth: u8) -> proc_macro2::TokenStream {
     let assignments: Vec<proc_macro2::TokenStream> = fields
         .named
         .iter()
@@ -203,10 +208,7 @@ fn struct_named_body(
 }
 
 /// Build the `Self(expr, ...)` body for tuple struct fields at the given depth.
-fn struct_unnamed_body(
-    fields: &syn::FieldsUnnamed,
-    depth: u8,
-) -> proc_macro2::TokenStream {
+fn struct_unnamed_body(fields: &syn::FieldsUnnamed, depth: u8) -> proc_macro2::TokenStream {
     let exprs: Vec<proc_macro2::TokenStream> = fields
         .unnamed
         .iter()
@@ -230,17 +232,26 @@ fn struct_unnamed_body(
 /// 3. First variant overall
 fn pick_base_variant(data: &syn::DataEnum) -> &syn::Variant {
     // Priority 1: explicit #[default]
-    if let Some(v) = data.variants.iter().find(|v| {
-        v.attrs.iter().any(|a| a.path().is_ident("default"))
-    }) {
+    if let Some(v) = data
+        .variants
+        .iter()
+        .find(|v| v.attrs.iter().any(|a| a.path().is_ident("default")))
+    {
         return v;
     }
     // Priority 2: first unit variant
-    if let Some(v) = data.variants.iter().find(|v| matches!(v.fields, Fields::Unit)) {
+    if let Some(v) = data
+        .variants
+        .iter()
+        .find(|v| matches!(v.fields, Fields::Unit))
+    {
         return v;
     }
     // Priority 3: first variant
-    data.variants.iter().next().expect("enum must have at least one variant")
+    data.variants
+        .iter()
+        .next()
+        .expect("enum must have at least one variant")
 }
 
 /// Build the construction expression for a single enum variant at the given depth.
@@ -333,12 +344,18 @@ pub fn expand(input: TokenStream) -> TokenStream {
     quote! {
         #[cfg(kani)]
         impl #impl_generics ::elicitation::KaniCompose for #name #ty_generics #where_clause {
+            // #[inline(always)] ensures CBMC can propagate Vec::new() etc.
+            // constants through recursive types so the destructor loop sees
+            // length == 0 and does not unwind symbolically.
+            #[inline(always)]
             fn kani_depth0() -> Self {
                 #depth0_body
             }
+            #[inline(always)]
             fn kani_depth1() -> Self {
                 #depth1_body
             }
+            #[inline(always)]
             fn kani_depth2() -> Self {
                 #depth2_body
             }

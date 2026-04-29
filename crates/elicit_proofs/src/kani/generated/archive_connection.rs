@@ -24,7 +24,7 @@ fn begin_connect_sql__kani__disconnected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -36,7 +36,7 @@ fn begin_connect_sql__kani__disconnected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -48,7 +48,7 @@ fn begin_connect_sql__kani__disconnected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -92,7 +92,7 @@ fn finish_connect_sql__kani__disconnected__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -103,7 +103,7 @@ fn finish_connect_sql__kani__disconnected__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -114,7 +114,7 @@ fn finish_connect_sql__kani__disconnected__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -255,7 +255,7 @@ fn begin_connect_sql__kani__connecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -270,7 +270,7 @@ fn begin_connect_sql__kani__connecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -285,7 +285,7 @@ fn begin_connect_sql__kani__connecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -341,7 +341,7 @@ fn finish_connect_sql__kani__connecting__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -355,7 +355,7 @@ fn finish_connect_sql__kani__connecting__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -369,7 +369,7 @@ fn finish_connect_sql__kani__connecting__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -545,7 +545,7 @@ fn begin_connect_sql__kani__sql_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -559,7 +559,7 @@ fn begin_connect_sql__kani__sql_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -573,7 +573,7 @@ fn begin_connect_sql__kani__sql_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -625,7 +625,7 @@ fn finish_connect_sql__kani__sql_connected__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -638,7 +638,7 @@ fn finish_connect_sql__kani__sql_connected__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -651,7 +651,7 @@ fn finish_connect_sql__kani__sql_connected__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -815,7 +815,7 @@ fn begin_connect_sql__kani__kv_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -829,7 +829,7 @@ fn begin_connect_sql__kani__kv_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -843,7 +843,7 @@ fn begin_connect_sql__kani__kv_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -895,7 +895,7 @@ fn finish_connect_sql__kani__kv_connected__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -908,7 +908,7 @@ fn finish_connect_sql__kani__kv_connected__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -921,7 +921,7 @@ fn finish_connect_sql__kani__kv_connected__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1085,7 +1085,7 @@ fn begin_connect_sql__kani__reconnecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1099,7 +1099,7 @@ fn begin_connect_sql__kani__reconnecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1113,7 +1113,7 @@ fn begin_connect_sql__kani__reconnecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1165,7 +1165,7 @@ fn finish_connect_sql__kani__reconnecting__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1178,7 +1178,7 @@ fn finish_connect_sql__kani__reconnecting__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1191,7 +1191,7 @@ fn finish_connect_sql__kani__reconnecting__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1355,7 +1355,7 @@ fn begin_connect_sql__kani__connection_error__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1369,7 +1369,7 @@ fn begin_connect_sql__kani__connection_error__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1383,7 +1383,7 @@ fn begin_connect_sql__kani__connection_error__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
+    let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth2();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
 }
 #[cfg(kani)]
@@ -1435,7 +1435,7 @@ fn finish_connect_sql__kani__connection_error__d0() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1448,7 +1448,7 @@ fn finish_connect_sql__kani__connection_error__d1() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]
@@ -1461,7 +1461,7 @@ fn finish_connect_sql__kani__connection_error__d2() {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let db: DatabaseDescriptor = ::kani::any();
+    let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2();
     let _result = finish_connect_sql(_state, proof, db);
 }
 #[cfg(kani)]

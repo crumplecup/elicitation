@@ -59,11 +59,7 @@ fn is_string_type(ty: &syn::Type) -> bool {
     let segs = &tp.path.segments;
     match segs.len() {
         1 => segs[0].ident == "String",
-        3 => {
-            segs[0].ident == "std"
-                && segs[1].ident == "string"
-                && segs[2].ident == "String"
-        }
+        3 => segs[0].ident == "std" && segs[1].ident == "string" && segs[2].ident == "String",
         _ => false,
     }
 }
@@ -76,11 +72,7 @@ fn is_option_type(ty: &syn::Type) -> bool {
     let segs = &tp.path.segments;
     match segs.len() {
         1 => segs[0].ident == "Option",
-        3 => {
-            segs[0].ident == "std"
-                && segs[1].ident == "option"
-                && segs[2].ident == "Option"
-        }
+        3 => segs[0].ident == "std" && segs[1].ident == "option" && segs[2].ident == "Option",
         _ => false,
     }
 }

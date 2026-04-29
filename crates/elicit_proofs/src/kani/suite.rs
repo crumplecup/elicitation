@@ -286,7 +286,10 @@ fn suite__struct_named__clone_soundness() {
 #[kani::proof]
 fn suite__struct_tuple__depth0_constructs() {
     let t = Tuple::kani_depth0();
-    assert!(t.1.is_empty(), "String field in tuple must be empty at depth-0");
+    assert!(
+        t.1.is_empty(),
+        "String field in tuple must be empty at depth-0"
+    );
 }
 
 // ── Struct: unit ─────────────────────────────────────────────────────────────
@@ -305,7 +308,10 @@ fn suite__struct_unit__all_depths_construct() {
 #[kani::proof]
 fn suite__enum_unit__depth0_is_first_variant() {
     let d = UnitEnum::kani_depth0();
-    assert!(matches!(d, UnitEnum::A), "UnitEnum depth-0 must be variant A");
+    assert!(
+        matches!(d, UnitEnum::A),
+        "UnitEnum depth-0 must be variant A"
+    );
 }
 
 #[kani::proof]
@@ -327,7 +333,10 @@ fn suite__enum_unit__all_depths_agree() {
 #[kani::proof]
 fn suite__enum_data__depth0_is_unit_first_variant() {
     let d = DataEnum::kani_depth0();
-    assert!(matches!(d, DataEnum::First), "DataEnum depth-0 must be First");
+    assert!(
+        matches!(d, DataEnum::First),
+        "DataEnum depth-0 must be First"
+    );
 }
 
 // ── Struct with Vec<T> field ─────────────────────────────────────────────────
@@ -343,13 +352,19 @@ fn suite__struct_vec__depth0_items_empty() {
 #[kani::proof]
 fn suite__struct_vec__depth1_items_one_element() {
     let wv = WithVec::kani_depth1();
-    assert!(wv.items.len() == 1, "Vec field must have one element at depth-1");
+    assert!(
+        wv.items.len() == 1,
+        "Vec field must have one element at depth-1"
+    );
 }
 
 #[kani::proof]
 fn suite__struct_vec__depth2_items_two_elements() {
     let wv = WithVec::kani_depth2();
-    assert!(wv.items.len() == 2, "Vec field must have two elements at depth-2");
+    assert!(
+        wv.items.len() == 2,
+        "Vec field must have two elements at depth-2"
+    );
 }
 
 // ── Struct with Option<T> field ───────────────────────────────────────────────
@@ -433,8 +448,14 @@ fn suite__nested__depth1_one_none_element() {
 fn suite__nested__depth2_two_none_elements() {
     let wn = WithNested::kani_depth2();
     assert!(wn.items.len() == 2, "Nested depth-2 must have two elements");
-    assert!(wn.items[0].is_none(), "First inner Option at depth-2 must be None");
-    assert!(wn.items[1].is_none(), "Second inner Option at depth-2 must be None");
+    assert!(
+        wn.items[0].is_none(),
+        "First inner Option at depth-2 must be None"
+    );
+    assert!(
+        wn.items[1].is_none(),
+        "Second inner Option at depth-2 must be None"
+    );
 }
 
 // ── chrono::DateTime<Utc> ─────────────────────────────────────────────────────

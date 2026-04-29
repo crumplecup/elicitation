@@ -48,7 +48,12 @@ fn generate_kani_proofs(gen_dir: &std::path::Path) {
     for name in extract_harness_names(&body) {
         manifest.push(("kani::generated::archive_connection".to_string(), name));
     }
-    write_vsm_file(gen_dir, "archive_connection.rs", "ArchiveConnectionMachine", &body);
+    write_vsm_file(
+        gen_dir,
+        "archive_connection.rs",
+        "ArchiveConnectionMachine",
+        &body,
+    );
 
     let body = dedup_kani_proofs(&[ArchiveNavMachine::vsm_kani_proof()]);
     for name in extract_harness_names(&body) {
@@ -60,7 +65,12 @@ fn generate_kani_proofs(gen_dir: &std::path::Path) {
     for name in extract_harness_names(&body) {
         manifest.push(("kani::generated::archive_overlay".to_string(), name));
     }
-    write_vsm_file(gen_dir, "archive_overlay.rs", "ArchiveOverlayMachine", &body);
+    write_vsm_file(
+        gen_dir,
+        "archive_overlay.rs",
+        "ArchiveOverlayMachine",
+        &body,
+    );
 
     let body = dedup_kani_proofs(&[ArchivePanelMachine::vsm_kani_proof()]);
     for name in extract_harness_names(&body) {
@@ -144,7 +154,9 @@ fn extract_harness_names(body: &str) -> Vec<String> {
 fn write_manifest(gen_dir: &std::path::Path, harnesses: &[(String, String)]) {
     let mut json = String::from("[\n");
     for (i, (module, name)) in harnesses.iter().enumerate() {
-        json.push_str(&format!("  {{\"module\":\"{module}\",\"name\":\"{name}\"}}"));
+        json.push_str(&format!(
+            "  {{\"module\":\"{module}\",\"name\":\"{name}\"}}"
+        ));
         if i + 1 < harnesses.len() {
             json.push(',');
         }

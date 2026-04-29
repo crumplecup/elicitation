@@ -3684,6 +3684,7 @@ dependencies = [
  "chrono",
  "clap",
  "csv",
+ "elicit_db",
  "elicit_server",
  "elicitation",
  "prettyplease",

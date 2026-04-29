@@ -75,12 +75,7 @@ macro_rules! impl_kani_compose_primitive {
 }
 
 impl_kani_compose_primitive!(
-    bool,
-    u8, u16, u32, u64, u128,
-    i8, i16, i32, i64, i128,
-    f32, f64,
-    usize, isize,
-    char,
+    bool, u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64, usize, isize, char,
 );
 
 // ── Standard library impls ────────────────────────────────────────────────────

@@ -206,7 +206,7 @@ fn prompt_push__kani__overlay_none__d0() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -217,7 +217,7 @@ fn prompt_push__kani__overlay_none__d1() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth1();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -228,7 +228,7 @@ fn prompt_push__kani__overlay_none__d2() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth2();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -545,7 +545,7 @@ fn prompt_push__kani__help_open__d0() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -556,7 +556,7 @@ fn prompt_push__kani__help_open__d1() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth1();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -567,7 +567,7 @@ fn prompt_push__kani__help_open__d2() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth2();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -959,7 +959,7 @@ fn prompt_push__kani__export_picker_open__d0() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -973,7 +973,7 @@ fn prompt_push__kani__export_picker_open__d1() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth1();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -990,7 +990,7 @@ fn prompt_push__kani__export_picker_open__d2() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth2();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1393,7 +1393,7 @@ fn prompt_push__kani__save_prompt_open__d0() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1406,7 +1406,7 @@ fn prompt_push__kani__save_prompt_open__d1() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth1();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1419,7 +1419,7 @@ fn prompt_push__kani__save_prompt_open__d2() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth2();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1835,7 +1835,7 @@ fn prompt_push__kani__saved_browser_open__d0() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1849,7 +1849,7 @@ fn prompt_push__kani__saved_browser_open__d1() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth1();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]
@@ -1866,7 +1866,7 @@ fn prompt_push__kani__saved_browser_open__d2() {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let ch: char = ::kani::any();
+    let ch: char = <char as ::elicitation::KaniCompose>::kani_depth2();
     let _result = prompt_push(state, proof, ch);
 }
 #[cfg(kani)]

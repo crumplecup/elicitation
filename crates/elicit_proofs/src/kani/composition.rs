@@ -71,6 +71,18 @@ fn concrete_leaf_some() -> ExplainNode {
     }
 }
 
+/// Depth-0 `ExplainPlan`: a single leaf node, no children.
+///
+/// Used wherever a test needs an `ExplainPlan` value (ExplainView.root,
+/// ExplainComparison.left/right).
+#[cfg(kani)]
+fn concrete_plan() -> ExplainPlan {
+    ExplainPlan {
+        nodes: vec![concrete_leaf()],
+        root: 0,
+    }
+}
+
 // ── ExplainNode — base cases ──────────────────────────────────────────────────
 
 /// **Base case — leaf, all Options = None.**
@@ -98,56 +110,62 @@ fn comp__explain_node__leaf_some_options() {
 }
 
 // ── ExplainNode — inductive depth-1 steps ────────────────────────────────────
+//
+// children is now Vec<usize> (arena indices), not Vec<ExplainNode>.
+// These proofs verify that ExplainNode with non-empty children index vecs
+// is sound — they no longer involve recursive type drops.
 
-/// **Inductive step — Vec<ExplainNode> with 1 element.**
+/// **Inductive step — ExplainNode with one child index.**
 ///
-/// Substitutes the depth-0 proof into a parent that holds exactly one child.
-/// CBMC unrolls the Vec drop loop exactly once (concrete length) and invokes
-/// the depth-0 destructor — finite, no recursion required.
+/// children is Vec<usize>; one index is concrete (0).  CBMC sees a Vec<usize>
+/// drop, which is trivially bounded — no recursive type analysis.
 #[cfg(kani)]
 #[kani::proof]
-fn comp__explain_node__one_leaf_child() {
-    let child = concrete_leaf();
+fn comp__explain_node__one_child_index() {
     let parent = ExplainNode {
-        children: vec![child],
+        children: vec![0_usize],
         ..concrete_leaf()
     };
     let _clone = parent.clone();
     drop(parent);
 }
 
-/// **Inductive step — Vec<ExplainNode> with 2 elements.**
+/// **Inductive step — ExplainNode with two child indices.**
 ///
-/// Proves that two sibling leaf children are also safe — i.e. the inductive
-/// step holds for two simultaneous applications of the depth-0 proof.
+/// Proves that two sibling indices in children are also safe.
 #[cfg(kani)]
 #[kani::proof]
-fn comp__explain_node__two_leaf_children() {
+fn comp__explain_node__two_child_indices() {
     let parent = ExplainNode {
-        children: vec![concrete_leaf(), concrete_leaf()],
+        children: vec![0_usize, 1_usize],
         ..concrete_leaf()
     };
     let _clone = parent.clone();
     drop(parent);
 }
 
-/// **Inductive step — depth-2 tree (grandchild).**
+/// **Inductive step — depth-2 arena: parent + grandparent via indices.**
 ///
-/// Substitutes the depth-1 proof into a grandparent.  CBMC unrolls two
-/// levels of Vec drop — proves the inductive step composes across levels.
+/// Builds a two-level arena: node 0 (leaf), node 1 (indexes node 0),
+/// node 2 (indexes node 1).  Proves the arena can be cloned and dropped.
 #[cfg(kani)]
 #[kani::proof]
-fn comp__explain_node__depth2_grandchild() {
-    let grandchild = concrete_leaf();
-    let child = ExplainNode {
-        children: vec![grandchild],
+fn comp__explain_node__depth2_arena() {
+    let leaf = concrete_leaf();
+    let parent = ExplainNode {
+        children: vec![0_usize],
         ..concrete_leaf()
     };
     let grandparent = ExplainNode {
-        children: vec![child],
+        children: vec![1_usize],
         ..concrete_leaf()
     };
-    drop(grandparent);
+    let plan = ExplainPlan {
+        nodes: vec![leaf, parent, grandparent],
+        root: 2,
+    };
+    let _clone = plan.clone();
+    drop(plan);
 }
 
 // ── Option<ExplainNode> — split ───────────────────────────────────────────────
@@ -173,14 +191,14 @@ fn comp__option_explain_node__some_leaf() {
     drop(opt);
 }
 
-/// **Option split — Some(depth-1 node).**
+/// **Option split — Some(node with one child index).**
 ///
 /// Proves the `Some` case composes with the depth-1 inductive proof.
 #[cfg(kani)]
 #[kani::proof]
 fn comp__option_explain_node__some_depth1() {
     let node = ExplainNode {
-        children: vec![concrete_leaf()],
+        children: vec![0_usize],
         ..concrete_leaf()
     };
     let opt: Option<ExplainNode> = Some(node);
@@ -220,18 +238,16 @@ fn comp__vec_explain_node__two() {
 
 // ── ExplainComparison ─────────────────────────────────────────────────────────
 
-/// **ExplainComparison — two leaves.**
+/// **ExplainComparison — two leaf plans.**
 ///
 /// Proves the base case for `ExplainComparison`: when both `left` and `right`
-/// are depth-0 nodes the struct is sound.  The VSM panel harnesses use
-/// `ExplainComparison::any()` which calls `ExplainNode::any()` (a concrete
-/// leaf) — this harness proves that path is sound.
+/// are single-node plans the struct is sound.
 #[cfg(kani)]
 #[kani::proof]
 fn comp__explain_comparison__two_leaves() {
     let cmp = ExplainComparison {
-        left: concrete_leaf(),
-        right: concrete_leaf(),
+        left: concrete_plan(),
+        right: concrete_plan(),
         label_left: String::new(),
         label_right: String::new(),
     };
@@ -239,24 +255,36 @@ fn comp__explain_comparison__two_leaves() {
     drop(cmp);
 }
 
-/// **ExplainComparison — two depth-1 nodes.**
+/// **ExplainComparison — two depth-2 plans.**
 ///
-/// Proves the inductive step holds in a comparison: each side can be a
-/// depth-1 tree (one child each) and the struct remains sound.
+/// Proves the inductive step: each side can be a multi-node arena plan and
+/// the struct remains sound.
 #[cfg(kani)]
 #[kani::proof]
-fn comp__explain_comparison__two_depth1() {
-    let left = ExplainNode {
-        children: vec![concrete_leaf()],
-        ..concrete_leaf()
+fn comp__explain_comparison__two_depth2() {
+    let left_plan = ExplainPlan {
+        nodes: vec![
+            concrete_leaf(),
+            ExplainNode {
+                children: vec![0_usize],
+                ..concrete_leaf()
+            },
+        ],
+        root: 1,
     };
-    let right = ExplainNode {
-        children: vec![concrete_leaf()],
-        ..concrete_leaf()
+    let right_plan = ExplainPlan {
+        nodes: vec![
+            concrete_leaf(),
+            ExplainNode {
+                children: vec![0_usize],
+                ..concrete_leaf()
+            },
+        ],
+        root: 1,
     };
     let cmp = ExplainComparison {
-        left,
-        right,
+        left: left_plan,
+        right: right_plan,
         label_left: String::new(),
         label_right: String::new(),
     };
@@ -265,28 +293,25 @@ fn comp__explain_comparison__two_depth1() {
 
 // ── ArchivePanelState::ExplainView / ExplainCompare ──────────────────────────
 
-/// **State — ExplainView with concrete leaf root.**
+/// **State — ExplainView with concrete leaf plan root.**
 ///
-/// Proves the `ExplainView` panel state variant is sound with a depth-0 node.
-/// The VSM panel harnesses hardcode this state; this harness confirms it is
-/// the correct concrete foundation.
+/// Proves the `ExplainView` panel state variant is sound with a single-node plan.
 #[cfg(kani)]
 #[kani::proof]
 fn comp__panel_state__explain_view_leaf_root() {
     let state = ArchivePanelState::ExplainView {
         schema: String::new(),
         table: String::new(),
-        root: concrete_leaf(),
+        root: concrete_plan(),
         display_mode: ExplainNodeMode::TreeNode,
     };
     drop(state);
 }
 
-/// **State — ExplainCompare with two concrete leaves.**
+/// **State — ExplainCompare with two concrete leaf plans.**
 ///
 /// Proves the `ExplainCompare` panel state variant is sound when the
-/// comparison contains two depth-0 nodes.  This is the output state of
-/// `explain_ready` when given an ExplainView input.
+/// comparison contains two single-node plans.
 #[cfg(kani)]
 #[kani::proof]
 fn comp__panel_state__explain_compare_two_leaves() {
@@ -294,8 +319,8 @@ fn comp__panel_state__explain_compare_two_leaves() {
         schema: String::new(),
         table: String::new(),
         comparison: ExplainComparison {
-            left: concrete_leaf(),
-            right: concrete_leaf(),
+            left: concrete_plan(),
+            right: concrete_plan(),
             label_left: String::new(),
             label_right: String::new(),
         },
@@ -308,19 +333,14 @@ fn comp__panel_state__explain_compare_two_leaves() {
 /// **Transition — `explain_ready` ExplainView → ExplainCompare, concrete.**
 ///
 /// Proves the `explain_ready` transition is sound when the incoming state is
-/// `ExplainView` with a concrete leaf root and the new root parameter is also
-/// a concrete leaf.  This is the composition of:
-///
-/// - `comp__panel_state__explain_view_leaf_root` (input state is sound)
-/// - `comp__explain_comparison__two_leaves` (output ExplainComparison is sound)
-/// - The function body itself (just moves, no heap ops)
+/// `ExplainView` with a concrete single-node plan root.
 #[cfg(kani)]
 #[kani::proof]
 fn comp__transition__explain_ready_view_to_compare() {
     let state = ArchivePanelState::ExplainView {
         schema: String::new(),
         table: String::new(),
-        root: concrete_leaf(),
+        root: concrete_plan(),
         display_mode: ExplainNodeMode::TreeNode,
     };
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
@@ -329,7 +349,7 @@ fn comp__transition__explain_ready_view_to_compare() {
         proof,
         String::new(),
         String::new(),
-        concrete_leaf(),
+        concrete_plan(),
         ExplainNodeMode::TreeNode,
     );
     drop(new_state);
@@ -339,7 +359,7 @@ fn comp__transition__explain_ready_view_to_compare() {
 ///
 /// Proves that any transition function that discards an ExplainCompare state
 /// is sound.  This is the critical case that was timing out: the function
-/// simply drops the state (containing ExplainComparison with two ExplainNodes)
+/// simply drops the state (containing ExplainComparison with two ExplainPlans)
 /// and returns a different variant.
 #[cfg(kani)]
 #[kani::proof]
@@ -348,8 +368,8 @@ fn comp__transition__column_detail_drops_explain_compare() {
         schema: String::new(),
         table: String::new(),
         comparison: ExplainComparison {
-            left: concrete_leaf(),
-            right: concrete_leaf(),
+            left: concrete_plan(),
+            right: concrete_plan(),
             label_left: String::new(),
             label_right: String::new(),
         },

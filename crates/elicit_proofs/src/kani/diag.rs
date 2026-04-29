@@ -4,6 +4,8 @@
 //! specific theories about which types cause unbounded unwinding.
 
 #[cfg(kani)]
+use elicit_db::DbRows;
+#[cfg(kani)]
 use elicit_server::archive::{display::*, types::*, vsm::*};
 
 /// Theory A: BTreeMap<String, (f32,f32,f32,f32)> drop causes unbounded unwinding.
@@ -67,7 +69,11 @@ fn diag_option_erd_layout_manual() {
         canvas_h: kani::any::<f32>(),
         boxes: std::collections::BTreeMap::new(),
     };
-    let _layout: Option<ErdLayout> = if kani::any::<bool>() { Some(inner) } else { None };
+    let _layout: Option<ErdLayout> = if kani::any::<bool>() {
+        Some(inner)
+    } else {
+        None
+    };
 }
 
 /// Theory I: Option<f32> via kani::any() — does kani::Arbitrary for Option<primitive> hang?
@@ -77,6 +83,362 @@ fn diag_option_f32_arbitrary() {
     let _x: Option<f32> = kani::any();
 }
 
+/// Theory J: ExplainNode constructed via kani_depth0() — does the KaniCompose impl hang?
+///
+/// Previously tested kani::any::<ExplainNode>() but Arbitrary is no longer derived
+/// (String fields are not Arbitrary).  kani_depth0() is the correct probe.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_node_arbitrary_alone() {
+    use elicitation::KaniCompose;
+    let _node: ExplainNode = ExplainNode::kani_depth0();
+}
+
+/// Theory K: ExplainNodeMode kani::any() alone — is the enum harmless?
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_node_mode_arbitrary() {
+    let _mode: ExplainNodeMode = kani::any();
+}
+
+/// Theory L: explain_ready with fully concrete inputs (no kani::any on ExplainPlan at all).
+///
+/// If Theory J confirms kani::any::<ExplainNode>() hangs, this tests whether
+/// using concrete inputs bypasses the problem entirely.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_ready_concrete_inputs() {
+    let concrete_node = ExplainNode {
+        node_type: String::new(),
+        relation_name: None,
+        alias: None,
+        startup_cost: 0.0,
+        total_cost: 0.0,
+        plan_rows: 0,
+        plan_width: 0,
+        actual_startup_time: None,
+        actual_total_time: None,
+        actual_rows: None,
+        actual_loops: None,
+        children: Vec::new(),
+    };
+    let concrete_plan = ExplainPlan {
+        nodes: vec![concrete_node],
+        root: 0,
+    };
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: concrete_plan.clone(),
+        display_mode: ExplainNodeMode::TreeNode,
+    };
+    let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
+    let _ = explain_ready(
+        state,
+        proof,
+        String::new(),
+        String::new(),
+        concrete_plan,
+        ExplainNodeMode::TreeNode,
+    );
+}
+
+// ── ExplainNode field-isolation theories ─────────────────────────────────────
+//
+// Each theory adds exactly one "symbolic" element to an otherwise fully
+// concrete ExplainNode.  Run them in order: the first one that hangs
+// identifies the exact field (or interaction) responsible for the timeout.
+
+/// Theory M: ExplainNode with ALL concrete values — zero symbolic inputs.
+///
+/// This is the baseline.  If it hangs, the issue is CBMC's destructor model
+/// for Vec<ExplainNode> itself, regardless of field values.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_node_all_concrete() {
+    let _node = ExplainNode {
+        node_type: String::new(),
+        relation_name: None,
+        alias: None,
+        startup_cost: 0.0_f64,
+        total_cost: 0.0_f64,
+        plan_rows: 0_i64,
+        plan_width: 0_i32,
+        actual_startup_time: None,
+        actual_total_time: None,
+        actual_rows: None,
+        actual_loops: None,
+        children: Vec::new(),
+    };
+}
+
+/// Theory N: ExplainNode with one symbolic f64 (`startup_cost`), rest concrete.
+///
+/// If M passes but N hangs, then symbolic f64 + Vec<ExplainNode> type
+/// causes CBMC's destructor analysis to unwind recursively.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_node_one_symbolic_f64() {
+    let _node = ExplainNode {
+        node_type: String::new(),
+        relation_name: None,
+        alias: None,
+        startup_cost: kani::any::<f64>(),
+        total_cost: 0.0_f64,
+        plan_rows: 0_i64,
+        plan_width: 0_i32,
+        actual_startup_time: None,
+        actual_total_time: None,
+        actual_rows: None,
+        actual_loops: None,
+        children: Vec::new(),
+    };
+}
+
+/// Theory O: ExplainNode constructed via `kani_depth0()` (symbolic f64/i64/i32).
+///
+/// If N passes but O hangs, then the issue is inside kani_depth0() itself
+/// (e.g. not inlined, CBMC can't propagate Vec::new() through the call).
+/// If O also passes, we move to testing the full transition.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_node_kani_depth0() {
+    use elicitation::KaniCompose;
+    let _node = ExplainNode::kani_depth0();
+}
+
+/// Theory P: explain_ready with a non-ExplainView state (takes the `_` arm).
+///
+/// If this also hangs, the issue is the drop of `ArchivePanelState` (large
+/// 18-variant enum).  If it passes, the issue is specific to constructing
+/// `ExplainCompare` inside the ExplainView arm.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_ready_non_explain_view() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ColumnDetail;
+    let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
+    let plan = ExplainPlan::kani_depth0();
+    let mode = ExplainNodeMode::kani_depth0();
+    let _ = explain_ready(state, proof, String::new(), String::new(), plan, mode);
+}
+
+/// Theory Q: explain_ready with ExplainView state but drop the result immediately.
+///
+/// Same as L but assigns to `_` to drop immediately rather than binding the
+/// result.  Isolates whether it is the transition body or the result drop.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_ready_explainview_drop_result() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
+    let _ = explain_ready(
+        state,
+        proof,
+        String::new(),
+        String::new(),
+        ExplainPlan::kani_depth0(),
+        ExplainNodeMode::kani_depth0(),
+    );
+}
+
+/// Theory R: construct and drop ExplainComparison directly (two ExplainPlan fields).
+///
+/// If this hangs, the problem is CBMC's destructor model for two nested
+/// ExplainPlan fields — not the match arm or the function call.
+/// If it passes, the explosion is something inside explain_ready specifically.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_comparison_drop() {
+    use elicitation::KaniCompose;
+    let _cmp = ExplainComparison {
+        left: ExplainPlan::kani_depth0(),
+        right: ExplainPlan::kani_depth0(),
+        label_left: String::new(),
+        label_right: String::new(),
+    };
+}
+
+/// Theory S: two ExplainPlan values in local scope (not wrapped in a struct).
+///
+/// Isolates whether it is the struct wrapper or the co-presence of two
+/// ExplainPlan values in the same scope that causes unbounded unwinding.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_two_explain_nodes_local() {
+    use elicitation::KaniCompose;
+    let _a = ExplainPlan::kani_depth0();
+    let _b = ExplainPlan::kani_depth0();
+}
+
+/// Theory T: inline explain_ready's ExplainView arm directly in the harness.
+///
+/// R and S pass (ExplainComparison drop is fine). Q hangs (calling explain_ready
+/// with ExplainView state hangs). This isolates whether the problem is in the
+/// function-call overhead (#[instrument], #[formal_method]) or the match body.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_ready_inlined_body() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let schema = String::new();
+    let table = String::new();
+    let root = ExplainPlan::kani_depth0();
+    let display_mode = ExplainNodeMode::kani_depth0();
+    let _next = match state {
+        ArchivePanelState::ExplainView {
+            schema: old_schema,
+            table: old_table,
+            root: old_root,
+            ..
+        } => ArchivePanelState::ExplainCompare {
+            schema: schema.clone(),
+            table: table.clone(),
+            comparison: ExplainComparison {
+                left: old_root,
+                right: root,
+                label_left: String::new(),
+                label_right: String::new(),
+            },
+        },
+        _ => ArchivePanelState::ExplainView {
+            schema,
+            table,
+            root,
+            display_mode,
+        },
+    };
+}
+
+/// Theory U: partial move from ExplainView via if-let, no wildcard arm.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_partial_move_if_let() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let root = ExplainPlan::kani_depth0();
+    if let ArchivePanelState::ExplainView { root: old_root, .. } = state {
+        let _comparison = ExplainComparison {
+            left: old_root,
+            right: root,
+            label_left: String::new(),
+            label_right: String::new(),
+        };
+    }
+}
+
+/// Theory V: match ExplainView without moving old_root — use fresh ExplainPlans in arm.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_match_no_field_move() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let _next = match state {
+        ArchivePanelState::ExplainView { .. } => ArchivePanelState::ExplainCompare {
+            schema: String::new(),
+            table: String::new(),
+            comparison: ExplainComparison {
+                left: ExplainPlan::kani_depth0(),
+                right: ExplainPlan::kani_depth0(),
+                label_left: String::new(),
+                label_right: String::new(),
+            },
+        },
+        _ => ArchivePanelState::ColumnDetail,
+    };
+}
+
+/// Theory W: wildcard arm creates ExplainView (with ExplainPlan) — does the wildcard
+/// arm having ExplainPlan in it cause the hang even if ExplainView arm is taken?
+#[cfg(kani)]
+#[kani::proof]
+fn diag_wildcard_arm_explain_view() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let fallback_root = ExplainPlan::kani_depth0();
+    let _next = match state {
+        ArchivePanelState::ExplainView { .. } => ArchivePanelState::ColumnDetail,
+        _ => ArchivePanelState::ExplainView {
+            schema: String::new(),
+            table: String::new(),
+            root: fallback_root,
+            display_mode: ExplainNodeMode::kani_depth0(),
+        },
+    };
+}
+
+/// Theory X: directly drop ArchivePanelState::ExplainCompare with two ExplainPlans.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_drop_explain_compare() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ExplainCompare {
+        schema: String::new(),
+        table: String::new(),
+        comparison: ExplainComparison {
+            left: ExplainPlan::kani_depth0(),
+            right: ExplainPlan::kani_depth0(),
+            label_left: String::new(),
+            label_right: String::new(),
+        },
+    };
+}
+
+/// Theory Y: directly drop ArchivePanelState::ExplainView with ExplainPlan.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_drop_explain_view_direct() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+}
+
+/// Theory Z: Theory X without unwind bound — should now pass since ExplainPlan is not recursive.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_drop_explain_compare_bounded() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ExplainCompare {
+        schema: String::new(),
+        table: String::new(),
+        comparison: ExplainComparison {
+            left: ExplainPlan::kani_depth0(),
+            right: ExplainPlan::kani_depth0(),
+            label_left: String::new(),
+            label_right: String::new(),
+        },
+    };
+}
 
 /// Theory D: fully concrete erd_ready (None layout, concrete diagram, symbolic mode).
 #[cfg(kani)]
@@ -84,8 +446,136 @@ fn diag_option_f32_arbitrary() {
 fn diag_erd_ready_concrete() {
     let state = ArchivePanelState::ColumnDetail;
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
-    let diagram = ErdDiagram { schema: String::new(), nodes: vec![], edges: vec![] };
+    let diagram = ErdDiagram {
+        schema: String::new(),
+        nodes: vec![],
+        edges: vec![],
+    };
     let layout: Option<ErdLayout> = None;
     let mode: ErdDiagramMode = kani::any();
     let _ = erd_ready(state, proof, String::new(), diagram, layout, mode);
+}
+
+/// Theory AA: serde_json::Value::Null — does dropping a concrete Null cause recursive unwind?
+/// Isolation: just the type, no collections, no other types.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_serde_json_value_null_drop() {
+    let v: serde_json::Value = serde_json::Value::Null;
+    let _ = v;
+}
+
+/// Theory AB: DbValue::Json — does CBMC's drop analysis for the Json variant cause
+/// unbounded unwind? Under kani, Json(String) replaces Json(serde_json::Value) to
+/// break the recursive type chain. This harness confirms the fix.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_db_value_json_drop() {
+    // Under #[cfg(kani)], DbValue::Json holds a String, not serde_json::Value.
+    let v = elicit_db::DbValue::Json("null".to_string());
+    let _ = v;
+}
+
+/// Theory AC: QueryResult::kani_depth0() — does constructing and dropping this cause timeout?
+/// If this hangs, the type chain DbRows→DbRow→DbValue→Json is the source.
+/// If this passes, the timeout is caused by something else in the data_grid_ready harness.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_query_result_kani_depth0_drop() {
+    use elicitation::KaniCompose;
+    let r: QueryResult = QueryResult::kani_depth0();
+    let _ = r;
+}
+
+/// Theory AD: ArchivePanelState::DataGrid creation and drop at kani_depth0.
+/// Isolates whether the DataGrid variant itself is the SAT bottleneck in data_grid_ready.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_state_drop() {
+    use elicitation::KaniCompose;
+    let s = ArchivePanelState::DataGrid {
+        schema: String::new(),
+        table: String::new(),
+        result: QueryResult::kani_depth0(),
+        page: 0,
+        grid_row: 0,
+        grid_col: 0,
+        edit_state: None,
+        display_mode: QueryResultMode::kani_depth0(),
+    };
+    let _ = s;
+}
+
+/// Theory AE: Just drop DbRows::kani_depth0() inside the DataGrid context.
+/// Theory AC showed QueryResult::kani_depth0() is fast alone.
+/// This checks if wrapping in ArchivePanelState::DataGrid adds complexity.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_minimal() {
+    use elicitation::KaniCompose;
+    // Minimal DataGrid: everything is the simplest possible value.
+    // Under kani, QueryResult is simplified to { row_count: u64 }.
+    let result = QueryResult { row_count: 0 };
+    let s = ArchivePanelState::DataGrid {
+        schema: String::new(),
+        table: String::new(),
+        result,
+        page: 0,
+        grid_row: 0,
+        grid_col: 0,
+        edit_state: None,
+        display_mode: QueryResultMode::DataGrid,
+    };
+    let _ = s;
+}
+
+/// Theory AF: Check if the 18-variant ArchivePanelState enum itself causes overhead
+/// when created as DataGrid, vs. the ExplainView variant.
+/// If AF times out but Theory AC passes, the overhead is in ArchivePanelState's type analysis.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_panel_state_expl_view_drop() {
+    use elicitation::KaniCompose;
+    let s = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: ExplainPlan::kani_depth0(),
+        display_mode: ExplainNodeMode::kani_depth0(),
+    };
+    let _ = s;
+}
+
+/// Theory AG: DataGrid without the result field — replace with an empty String to isolate
+/// whether the QueryResult type tree is the SAT bottleneck.
+/// If this passes fast but Theory AE hangs, the bottleneck is in QueryResult's type.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_no_result() {
+    // Test by dropping a DataGrid-shaped struct without QueryResult.
+    // We use a DbRows with zero rows to remove any heap nesting.
+    let rows = elicit_db::DbRows {
+        rows: Vec::new(),
+        affected: 0,
+    };
+    let _ = rows;
+    // Now wrap the other DataGrid fields (no result).
+    let s = ArchivePanelState::ColumnDetail; // simplest variant — just proves 18-enum drop is cheap
+    let _ = s;
+}
+
+/// Theory AH: Vec<(String, DbValue)> drop — direct test of DbRow inner type.
+/// This isolates whether the 2-level Vec heap nesting causes CBMC formula explosion.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_db_row_inner_drop() {
+    let v: Vec<(String, elicit_db::DbValue)> = Vec::new();
+    let _ = v;
+}
+
+/// Theory AI: Vec<DbRow> drop — one level up from Theory AH.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_db_rows_vec_drop() {
+    let v: Vec<elicit_db::DbRow> = Vec::new();
+    let _ = v;
 }
