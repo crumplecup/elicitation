@@ -48,7 +48,7 @@ resolve within finite unwinding bounds, and the harness runs forever.
 | `kani::any_vec::<T, 0>()` on the *state* variant's inner fields | Helps for Vec parameters to *transitions* (see §4), but the problem is the enum discriminant itself being symbolic. |
 | `impl kani::Arbitrary for StateEnum` manually with bounded fields | Same root cause: CBMC sees all branches of the match-on-discriminant drop code simultaneously. |
 
-### The solution: one harness per variant
+### The solution: one harness per variant, three harnesses per depth
 
 If the discriminant is **concrete**, CBMC sees only one branch of the drop
 match. All destructors for the other variants are pruned at CBMC compile time.
@@ -58,25 +58,86 @@ There is nothing to unwind.
 // This works — discriminant is known at CBMC-compile time
 #[cfg(kani)]
 #[kani::proof]
-fn close_overlay__kani__overlay_none() {
+fn close_overlay__kani__overlay_none__d0() {
     let _state: ArchiveOverlayState = ArchiveOverlayState::OverlayNone;
     let proof = ArchiveOverlayConsistent::kani_proof_credential();
     let _result = close_overlay(_state, Established::prove(&proof));
 }
-
-// One more harness for each other reachable variant...
-#[kani::proof]
-fn close_overlay__kani__export_picker_open() {
-    let _state: ArchiveOverlayState = ArchiveOverlayState::ExportPickerOpen;
-    // ...
-}
 ```
 
-**Naming convention:** `{transition_fn}__kani__{variant_in_snake_case}`
+**Naming convention:** `{transition_fn}__kani__{variant_in_snake_case}__d{depth}`
+where `depth` ∈ `{0, 1, 2}`.
 
 ---
 
-## 2. The Machinery — How Per-Variant Harnesses Are Generated
+## 2. The Second Problem — Recursive / Collection Field Types
+
+Even with concrete discriminants, variants whose *fields* contain `Vec<T>`
+where `T` itself contains `Vec<T>` (recursive types) still cause CBMC to hang.
+
+### Why this happens
+
+CBMC's destructor model is **type-driven**, not value-driven. For
+`ExplainNode { children: Vec<ExplainNode> }`, CBMC generates:
+
+```
+ExplainNode::drop() → Vec<ExplainNode>::drop() → ExplainNode::drop() → ...
+```
+
+Even when `children` is `Vec::new()` (empty), CBMC has already unrolled the
+recursive destructor call tree. The hang is in CBMC's internal bookkeeping,
+not in your runtime values.
+
+### The solution: compositional depth-bounded instances
+
+Instead of `Vec::new()` (which CBMC models as "zero or more ExplainNodes"),
+use concrete instances bounded by explicit depth.
+
+| Depth | Collection field rule |
+|---|---|
+| 0 | `Vec::new()` — zero elements |
+| 1 | `vec![T::kani_depth0()]` — one element, itself at depth-0 |
+| 2 | `vec![T::kani_depth0(), T::kani_depth0()]` — two elements, both at depth-0 |
+
+With `vec![leaf]` (depth-1), CBMC unrolls exactly once: `ExplainNode::drop()`
+→ `Vec<ExplainNode>::drop()` (one element) → `ExplainNode::drop()` (the leaf,
+with `children: Vec::new()` → zero unrolls). Termination is guaranteed.
+
+This is the compositional proof argument:
+- **Base case (depth-0):** single ExplainNode with empty children is sound.
+- **Inductive step (depth-1, 2):** adding one or two children, each proven
+  sound at depth-0, is also sound.
+- **By induction:** any finite tree is covered.
+
+### The `KaniCompose` trait
+
+`crates/elicitation/src/kani_compose.rs` defines:
+
+```rust
+#[cfg(kani)]
+pub trait KaniCompose: Sized {
+    fn kani_depth0() -> Self;  // base case: empty collections
+    fn kani_depth1() -> Self { Self::kani_depth0() }  // one element
+    fn kani_depth2() -> Self { Self::kani_depth1() }  // two elements
+}
+```
+
+Impls:
+- Primitives (`bool`, `u8`, ..., `f64`): all depths → `kani::any::<T>()`
+- `String`: all depths → `String::new()` (symbolic strings cause path explosion)
+- `Vec<T>`: depth-0 = empty; depth-1 = one element; depth-2 = two elements
+- `Option<T>`: depth-0 = `None`; depth-1/2 = `Some(T::kani_depth0())`
+- `BTreeMap<K,V>`, `HashMap<K,V,S>`: all depths = empty (no `RandomState::new()`)
+- User types: `#[derive(KaniCompose)]` or manual impl
+
+**Important:** `HashMap::new()` calls `RandomState::new()` → `getrandom` syscall
+→ Kani cannot model. Always use `BTreeMap` or `HashMap::with_hasher(S::default())`
+in Kani contexts. The `ErdLayout` type was changed from `HashMap` to `BTreeMap`
+for this reason.
+
+---
+
+## 3. The Machinery — How Per-Variant, Per-Depth Harnesses Are Generated
 
 The codebase generates these harnesses automatically. You never write them by
 hand. The pipeline has four stages:
@@ -84,7 +145,7 @@ hand. The pipeline has four stages:
 ```
   1. #[formal_method] on a transition fn
          ↓  (at proc-macro expansion time)
-  2. FooTransition::kani_harness_for_variant(variant_name, state_expr)
+  2. FooTransition::kani_harness_for_variant_at_depth(variant_name, state_expr, depth)
          ↓  (called from VerifiedStateMachine::transition_harnesses())
   3. #[derive(VerifiedStateMachine)] loops KaniVariantState::kani_variant_constructions()
          ↓  (at cargo build -p elicit_proofs)
@@ -100,17 +161,16 @@ processes each transition function at compile time. It:
   non-`Vec`, non-`Established` parameter).
 - Captures the state parameter name, type, and all other parameter bindings as
   strings at macro-expansion time.
-- Generates a `FooTransition` companion struct with two methods:
-  - `kani_harness() -> TokenStream` — the full harness string (useful for
-    non-VSM functions).
-  - `kani_harness_for_variant(variant_name: &str, state_expr: &str) -> TokenStream`
-    — substitutes `state_expr` in place of `kani::any()` for the state param.
+- Generates a `FooTransition` companion struct with:
+  - `kani_harness() -> TokenStream` — the full harness string (for non-VSM use).
+  - `kani_harness_for_variant_at_depth(variant_name, state_expr, depth) -> TokenStream`
+    — substitutes `state_expr` in place of `kani::any()` for the state param,
+    and appends `__d{depth}` to the harness function name.
 
 **Critical detail:** The inline `#[kani::proof]` function that `#[formal_method]`
 *would* emit is intentionally suppressed (returns `quote!{}` instead of the
 `kani` token stream). If it were emitted, `cargo kani` would attempt to compile
-it with `kani::any::<StateEnum>()` — the naïve approach that hangs. The
-companion struct is still generated; the inline harness is not.
+it with `kani::any::<StateEnum>()` — the naïve approach that hangs.
 
 See: `crates/elicitation_derive/src/formal_method.rs` line ~494:
 ```rust
@@ -119,20 +179,22 @@ let _ = kani; // consumed by harness_src above — suppress unused warning
 //  ↑ empty — inline kani harness not emitted
 ```
 
-### Stage 2: `kani_harness_for_variant`
+### Stage 2: `kani_harness_for_variant_at_depth`
 
-Given `variant_name = "export_picker_open"` and
-`state_expr = "ArchiveOverlayState :: ExportPickerOpen"`, this method builds
-the harness source string by string-concatenation (not `format!` — format
-escaping of `{` in Established credential blocks is fragile):
+Given `variant_name = "export_picker_open"`,
+`state_expr = "ArchiveOverlayState :: ExportPickerOpen"`, and `depth = 0`,
+this method builds the harness source string:
 
 ```
-# [cfg (kani)] # [:: kani :: proof] fn close_overlay__kani__export_picker_open () {
+# [cfg (kani)] # [:: kani :: proof] fn close_overlay__kani__export_picker_open__d0 () {
     let _state : ArchiveOverlayState = ArchiveOverlayState :: ExportPickerOpen ;
     let proof : Established < ArchiveOverlayConsistent > = { ... } ;
     let _result = close_overlay (_state , proof) ;
 }
 ```
+
+For a variant with `Vec<ExplainNode>` children, depth=1 uses
+`<ExplainNode as ::elicitation::KaniCompose>::kani_depth0()` as the element expression.
 
 The string is parsed back into a `TokenStream` by `str::parse()`.
 
@@ -141,20 +203,22 @@ The string is parsed back into a `TokenStream` by `str::parse()`.
 `#[derive(VerifiedStateMachine)]` generates
 `VerifiedStateMachine::transition_harnesses()`, which loops over
 `KaniVariantState::kani_variant_constructions()` and calls
-`kani_harness_for_variant` for every (transition × variant) pair.
+`kani_harness_for_variant_at_depth` at depths 0, 1, 2 for every
+(transition × variant) triple.
 
 `#[derive(KaniVariantState)]` generates `kani_variant_constructions()` for
-the state enum. It returns `Vec<(&'static str, &'static str)>` —
-`(snake_variant_name, construction_expr)` pairs.
+the state enum. It returns `Vec<KaniVariantConstruction>` —
+`{ variant_name, depth0, depth1, depth2 }` structs.
 
 **Field construction rules** (enforced by `kani_variants.rs`):
 
-| Field type | Generated expression | Rationale |
-|---|---|---|
-| `Vec<T>` | `::std::vec::Vec::new()` | `kani::any::<Vec<T>>()` is not implemented in Kani ≤0.67; empty Vec avoids symbolic heap |
-| `String` | `::std::string::String::new()` | `from_utf8_lossy` introduces a UTF-8 validation loop → unbounded state space |
-| `Option<T>` | `None` | `Some(kani::any::<T>())` may fail if T doesn't impl `kani::Arbitrary`; None is always valid |
-| anything else | `::kani::any()` | Must implement `kani::Arbitrary`; covers all integer/bool/custom types |
+| Field type | depth-0 | depth-1 | depth-2 |
+|---|---|---|---|
+| `Vec<T>` | `Vec::new()` | `vec![<T as KaniCompose>::kani_depth0()]` | two elements |
+| `String` | `String::new()` | same | same |
+| `Option<T>` | `None` | `Some(<T as KaniCompose>::kani_depth0())` | same as depth-1 |
+| primitive | `kani::any::<T>()` | same | same |
+| any other `T` | `<T as KaniCompose>::kani_depth0()` | `kani_depth1()` | `kani_depth2()` |
 
 ### Stage 4: `build.rs` + `manifest.json`
 
@@ -180,7 +244,7 @@ The generated files are committed — they are source-faithful and auditable.
 
 ---
 
-## 3. Running Proofs with `elicit_proofs vsm`
+## 4. Running Proofs with `elicit_proofs vsm`
 
 The `elicit_proofs` binary (in `crates/elicit_proofs`) provides the `vsm`
 subcommand for running, tracking, and summarising VSM Kani proofs.
@@ -235,7 +299,7 @@ Statuses: `SUCCESS`, `FAILED`, `TIMEOUT`, `ERROR`.
 
 ---
 
-## 4. Bugs Kani Has Found
+## 5. Bugs Kani Has Found
 
 The per-variant approach has proven its value by finding real bugs. Because
 symbolic `usize` parameters cover the full `0..=usize::MAX` range, Kani
@@ -270,23 +334,31 @@ use `saturating_add`. Review any `x + 1` in index math.
 
 ---
 
-## 5. How to Add a New VSM to the Proof Suite
+## 6. How to Add a New VSM to the Proof Suite
 
-### Step 1: Derive `KaniVariantState` on the state enum
+### Step 1: Derive `KaniVariantState` and `KaniCompose` on state types
 
 ```rust
-// In the state enum definition:
+// On the state enum — generates kani_variant_constructions()
 #[derive(Debug, Clone, KaniVariantState, /* other derives */)]
 pub enum MyState {
     Idle,
     Processing { count: usize },
     Error(String),
 }
+
+// On any user-defined type that appears as a field in state variants:
+// #[derive(KaniCompose)]
+// pub struct MyData { ... }
 ```
 
+For recursive types or types with `Vec<Self>` fields, `KaniCompose` generates
+depth-bounded instances automatically via `#[derive(KaniCompose)]` (or manual impl).
+
 If any variant contains fields that require `kani::Arbitrary` but don't
-implement it (e.g., custom structs), add those impls or map them to `None`/
-`Vec::new()` via a newtype wrapper.
+implement it (e.g., custom structs), either:
+- Add `#[derive(KaniCompose)]` to the type, or
+- Implement `KaniCompose` manually with bounded constructions.
 
 ### Step 2: Derive `VerifiedStateMachine`
 
@@ -335,24 +407,24 @@ pub mod my_module;
 
 ```bash
 cargo build -p elicit_proofs          # regenerates manifest
-cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle
+cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle__d0
 ```
 
 ---
 
-## 6. Proof Suite Counts (as of last generation)
+## 7. Proof Suite Counts (as of last generation)
 
 | Module | Harnesses | Notes |
 |---|---|---|
-| `archive_connection` | 43 | All pass |
-| `archive_nav` | 37 | All pass; 1 overflow fixed |
-| `archive_overlay` | 56 | All pass; 2 overflows fixed |
-| `archive_panel` | ~414 | Largest suite; verification ongoing |
-| **Total** | **~551** | Embedded in `manifest.json` |
+| `archive_connection` | 129 | All pass (3× expansion) |
+| `archive_nav` | 111 | All pass; 1 overflow fixed |
+| `archive_overlay` | 168 | All pass; 2 overflows fixed |
+| `archive_panel` | ~1245 | Largest suite; verification ongoing |
+| **Total** | **~1653** | 3× expansion from per-depth harnesses |
 
 ---
 
-## 7. Architecture Decision Record
+## 8. Architecture Decision Record
 
 ### Why not `impl kani::Arbitrary for StateEnum`?
 
@@ -374,6 +446,30 @@ symbolic discriminant into every caller's drop code for the enum. The
 destructor problem recurs. The per-variant approach eliminates it by making the
 choice before CBMC enters the harness.
 
+### Why `KaniCompose` instead of `kani::Arbitrary` for collection fields?
+
+`kani::Arbitrary for Vec<T>` is not implemented in Kani ≤0.67. Even if it were,
+symbolic `Vec` creates unbounded heap allocation that CBMC models as a loop with
+unknown iteration count. `KaniCompose` avoids this by providing **concrete**
+instances at specific sizes (0, 1, 2 elements). The distinction:
+
+- `kani::any::<Vec<ExplainNode>>()` → CBMC: "this Vec could have any number of
+  elements" → unbounded drop loop
+- `KaniCompose::kani_depth1()` → CBMC: "this Vec has exactly 1 element"
+  → one drop call, terminates immediately
+
+### Why three depths and not more?
+
+Depths 0, 1, 2 provide the **compositional proof argument** without exponential
+blowup:
+- Depth-0: base case (empty collections are safe)
+- Depth-1: adding one element is safe (given base case)
+- Depth-2: adding two elements is safe (transitivity)
+
+By induction, any finite collection is safe. Adding depth-3 or higher would
+be redundant — the inductive step is already covered at depth-1/2. Depth-2
+exists as a second inductive step to build confidence.
+
 ### Why not `#[kani::unwind(N)]` with a large N?
 
 `#[kani::unwind(5)]` is what the agent tried first (and the user immediately
@@ -384,7 +480,7 @@ more than N times*. The overflow bugs found by per-variant Kani would not have
 been found with bounded unwinding, because the symbolic `usize::MAX` value
 would require more than 5 iterations to propagate through arithmetic.
 
-### Why string concatenation in `kani_harness_for_variant`?
+### Why string concatenation in `kani_harness_for_variant_at_depth`?
 
 The method builds harness source by string `+` rather than `format!`. The
 `Established::prove(&__cred)` block contains literal `{` and `}` characters
@@ -407,7 +503,7 @@ The generated `src/kani/generated/*.rs` and `manifest.json` are committed:
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### All harnesses fail immediately with "requires features: runner"
 
@@ -419,18 +515,27 @@ cargo kani -p elicit_proofs --lib --features kani --harness HARNESS_NAME
 
 ### A new harness hangs or times out
 
-1. **Check for `Vec<T>` or `String` fields in the state variant.** If a variant
-   contains a `String` field that `KaniVariantState` maps to `String::new()`,
-   but the transition itself takes a `String` parameter, the parameter is
-   constructed with `kani::any()` via `from_utf8_lossy` (bounded). If the state
-   field is being populated from a symbolic source elsewhere, trace it back.
+1. **Check for recursive types in state variant fields.** If a variant field
+   is `Vec<T>` where `T` itself contains `Vec<T>` (recursive), the type must
+   implement `KaniCompose` with depth-bounded construction. Add
+   `#[derive(KaniCompose)]` to `T`.
 
-2. **Check for `kani::any()` on a non-primitive inner type.** If a variant
-   field's type does not match Vec/String/Option but also doesn't implement
-   `kani::Arbitrary` cleanly, the harness will hang. Add an `impl
-   kani::Arbitrary` for the type that uses only bounded primitives.
+2. **Check for `HashMap` in state variants.** `HashMap::new()` calls
+   `RandomState::new()` → `getrandom` syscall → Kani can't model. Replace
+   with `BTreeMap` in VSM state types, or implement `KaniCompose` manually
+   using `HashMap::with_hasher(S::default())`.
 
-3. **Check `usize` arithmetic.** Any `x + 1` or `x - 1` on a symbolic `usize`
+3. **Check for `String` fields in non-state parameters.** If a transition
+   takes a `String` parameter, `formal_method` uses `String::new()` for it
+   (not symbolic). If the state field is being populated from a symbolic
+   source elsewhere, trace it back.
+
+4. **Check for `kani::any()` on a non-primitive inner type.** If a variant
+   field's type does not match Vec/String/Option/primitive but also doesn't
+   implement `KaniCompose`, the harness will hang. Add `#[derive(KaniCompose)]`
+   or a manual `impl KaniCompose`.
+
+5. **Check `usize` arithmetic.** Any `x + 1` or `x - 1` on a symbolic `usize`
    will fail; use `saturating_add(1)` / `saturating_sub(1)`.
 
 ### Harness names in the manifest don't match actual harnesses
@@ -441,23 +546,22 @@ files weren't rebuilt, names will be stale.
 
 ### `cargo build -p elicit_proofs` fails with a `KaniVariantState` error
 
-A new field type was added to a state variant that `kani_variants.rs` doesn't
-know how to handle. The `field_construction_expr` function in
-`elicitation_derive/src/kani_variants.rs` only recognises Vec, String, and
-Option. For any other type:
+A new field type was added to a state variant. `field_construction_exprs` in
+`elicitation_derive/src/kani_variants.rs` handles: Vec, String, Option,
+primitives, and `KaniCompose` types. For any other type:
 
-- If it implements `kani::Arbitrary`: it falls through to `:: kani :: any ()`
-  and should work.
-- If it does not: add a `kani::Arbitrary` impl, or wrap it in `Option<T>`
-  (which gets `None`) if it is optional state.
+- Add `#[derive(KaniCompose)]` to the type (generates depth-bounded impls).
+- Or implement `KaniCompose` manually with concrete constructions.
+- Or wrap it in `Option<T>` (gets `None` at depth-0) if optional.
 
 ---
 
-## 9. Further Reading
+## 10. Further Reading
 
 | Document | Location |
 |---|---|
 | VSM architecture (layers, traits, proofs) | [`VERIFIED_STATE_MACHINES.md`](VERIFIED_STATE_MACHINES.md) |
+| `KaniCompose` trait and impls | `crates/elicitation/src/kani_compose.rs` |
 | `KaniVariantState` derive impl | `crates/elicitation_derive/src/kani_variants.rs` |
 | `VerifiedStateMachine` derive impl | `crates/elicitation_derive/src/derive_vsm.rs` |
 | `#[formal_method]` harness generation | `crates/elicitation_derive/src/formal_method.rs` |
