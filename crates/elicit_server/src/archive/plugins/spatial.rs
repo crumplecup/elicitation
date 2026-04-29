@@ -41,6 +41,7 @@ pub struct ExtractGeometryParams {
 
 // ── tools ─────────────────────────────────────────────────────────────────────
 
+#[cfg(not(kani))]
 #[elicit_tool(
     plugin = "archive_spatial",
     name = "archive_spatial__spatial_columns",
@@ -53,6 +54,7 @@ async fn spatial_columns(p: SpatialColumnsParams) -> Result<CallToolResult, Erro
     json_result(&names)
 }
 
+#[cfg(not(kani))]
 #[elicit_tool(
     plugin = "archive_spatial",
     name = "archive_spatial__extract_geometry",

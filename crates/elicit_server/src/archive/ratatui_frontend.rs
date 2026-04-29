@@ -19,6 +19,8 @@
 //! └────────────────────────────────────────────────────────────────────┘
 //! ```
 
+#![cfg(not(kani))]
+
 use crossterm::{
     event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers},
     execute,

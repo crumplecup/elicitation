@@ -470,15 +470,15 @@ pub async fn get_column_stats_direct(
 
 // ── EXPLAIN query ─────────────────────────────────────────────────────────────
 
-/// Run `EXPLAIN (ANALYZE, FORMAT JSON)` on a SQL string and parse the plan tree.
+/// Run `EXPLAIN (ANALYZE, FORMAT JSON)` on a SQL string and parse the plan.
 ///
-/// Returns an [`ExplainNode`] tree rooted at the top-level plan node.
+/// Returns an [`ExplainPlan`] arena rooted at the top-level plan node.
 #[instrument(skip(url, sql))]
 pub async fn explain_sql_direct(
     url: &str,
     sql: &str,
-) -> Result<crate::archive::ExplainNode, String> {
-    use crate::archive::ExplainNode;
+) -> Result<crate::archive::ExplainPlan, String> {
+    use crate::archive::ExplainPlan;
 
     let pool = connect(url).await?;
 
@@ -498,5 +498,5 @@ pub async fn explain_sql_direct(
         .try_get::<String, _>(0)
         .map_err(|e| e.to_string())?;
 
-    ExplainNode::parse_explain_output(&json_text)
+    ExplainPlan::parse_explain_output(&json_text)
 }

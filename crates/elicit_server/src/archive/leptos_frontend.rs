@@ -41,6 +41,8 @@
 //! | GET | `/api/admin-tab-prev` | Cycle admin tab backward |
 //! | GET | `/api/erd` | ERD diagram for `?schema=` → ErdPanel (content fragment) |
 
+#![cfg(not(kani))]
+
 use std::sync::Arc;
 
 use axum::{

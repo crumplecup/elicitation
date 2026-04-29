@@ -3,6 +3,9 @@
 //! These functions are pure — they take a `QueryResult` by reference and return
 //! a formatted `String`.  No database connection is required.
 
+// Not compiled under Kani: QueryResult is simplified to `{ row_count: u64 }` in that context.
+#![cfg(not(kani))]
+
 use elicit_db::DbValue;
 
 use crate::archive::{ExportFormat, ExportResult, QueryResult};

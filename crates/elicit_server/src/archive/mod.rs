@@ -22,14 +22,17 @@
 pub mod actions;
 mod backend;
 pub mod display;
+#[cfg(not(kani))]
 pub mod egui_frontend;
 mod errors;
 pub mod frontend_trait;
 pub mod frontend_utils;
+#[cfg(not(kani))]
 pub mod leptos_frontend;
 pub mod nav_model;
 pub mod nav_tree;
 mod plugins;
+#[cfg(not(kani))]
 pub mod ratatui_frontend;
 pub mod types;
 pub mod vsm;
@@ -37,6 +40,7 @@ pub mod vsm;
 pub use backend::{ArchiveDbBackend, ArchiveKvBackend};
 
 pub use actions::{ArchiveAction, ArchiveKey, ArchiveKeyMap, KeyCombo, KeyMapEntry, KeyMapMode};
+#[cfg(not(kani))]
 pub use egui_frontend::run_egui;
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use frontend_trait::ArchiveFrontend;
@@ -45,20 +49,22 @@ pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveAdminPlugin, ArchiveBrowsePlugin, ArchiveConstraintPlugin,
-    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveQueryPlugin, ArchiveReplicationPlugin,
-    ArchiveRoutinePlugin, ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, QueryExecuted,
-    SavedQueryStore, SchemaExists, TableExists, explain_sql_direct, export_query_result,
+    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin,
+    ArchiveRoutinePlugin, ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore,
+    SavedQueryStore, SchemaExists, TableExists, explain_sql_direct,
     generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
 };
+#[cfg(not(kani))]
+pub use plugins::{ArchiveQueryPlugin, QueryExecuted, export_query_result};
 pub use types::{
     AdminSnapshot, AdminTab, BackendKind, ColumnDescriptor, ColumnStats, CompositeTypeAttribute,
     CompositeTypeDescriptor, ConnectionProfile, ConstraintDescriptor, ConstraintKind,
     DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ErdColumn, ErdDiagram,
-    ErdEdge, ErdLayout, ErdNode, ExplainComparison, ExplainNode, ExportFormat, ExportResult,
-    FkAction, ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility, IndexDescriptor,
-    MonitorSnapshot, MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind, RowEditState,
-    SavedQuery, SchemaDescriptor, SequenceDescriptor, SslMode, StagedEdit, TableDescriptor,
-    TableInspection, TableType, TriggerDescriptor, TriggerEvents,
+    ErdEdge, ErdLayout, ErdNode, ExplainComparison, ExplainNode, ExplainPlan, ExportFormat,
+    ExportResult, FkAction, ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility,
+    IndexDescriptor, MonitorSnapshot, MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind,
+    RowEditState, SavedQuery, SchemaDescriptor, SequenceDescriptor, SslMode, StagedEdit,
+    TableDescriptor, TableInspection, TableType, TriggerDescriptor, TriggerEvents,
 };
 pub use vsm::{
     ArchiveConnectionConsistent,

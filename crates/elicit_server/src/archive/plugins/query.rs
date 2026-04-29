@@ -3,6 +3,9 @@
 //! Executes arbitrary SQL and returns typed [`QueryResult`] values containing
 //! column metadata and row data using `elicit_db` value types.
 
+// Not compiled under Kani: QueryResult is simplified to `{ row_count: u64 }` in that context.
+#![cfg(not(kani))]
+
 use elicit_db::{DbRow, DbRows, DbValue};
 use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, contracts::Established, elicit_tool};
 use rmcp::ErrorData;

@@ -25,7 +25,7 @@ use crate::archive::display::{
 use crate::archive::{
     AdminSnapshot, ColumnDescriptor, ColumnStats, CompositeTypeDescriptor, ConnectionProfile,
     ConstraintDescriptor, DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor,
-    ErdColumn, ErdDiagram, ErdEdge, ErdNode, ExplainNode, ForeignKeyDescriptor, FunctionDescriptor,
+    ErdColumn, ErdDiagram, ErdEdge, ErdNode, ExplainPlan, ForeignKeyDescriptor, FunctionDescriptor,
     IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, SavedQuery, SchemaDescriptor,
     SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection, TriggerDescriptor,
 };
@@ -88,6 +88,7 @@ pub struct DisplayTableParams {
 }
 
 /// Parameters for `archive_display__query_result`.
+#[cfg(not(kani))]
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct DisplayQueryResultParams {
     /// Query result to render.
@@ -152,6 +153,7 @@ async fn display_table(p: DisplayTableParams) -> Result<CallToolResult, ErrorDat
     json_result(&to_entries(nodes))
 }
 
+#[cfg(not(kani))]
 #[elicit_tool(
     plugin = "archive_display",
     name = "archive_display__query_result",
@@ -238,8 +240,8 @@ pub struct DisplayColumnStatsParams {
 /// Parameters for `archive_display__explain_node`.
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DisplayExplainNodeParams {
-    /// ExplainNode plan node to render.
-    pub node: ExplainNode,
+    /// ExplainPlan arena to render.
+    pub node: ExplainPlan,
     /// Display mode: `"TreeNode"` (only mode).
     pub mode: Option<String>,
 }

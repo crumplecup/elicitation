@@ -117,7 +117,9 @@ impl TableType {
 // ── ColumnDescriptor ──────────────────────────────────────────────────────────
 
 /// Descriptor for a single database column, including spatial detection.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ColumnDescriptor {
     /// Column name.
     pub name: String,
@@ -288,7 +290,9 @@ impl SchemaDescriptor {
 ///
 /// The raw connection URL is **never** stored; only a stable hash is kept so
 /// that descriptors are safe to serialise and log.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct DatabaseDescriptor {
     /// Stable identifier derived from the connection URL (not the URL itself).
     pub connection_id: String,
@@ -464,7 +468,9 @@ impl ConstraintKind {
 // ── ConstraintDescriptor ──────────────────────────────────────────────────────
 
 /// Descriptor for a single table constraint.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ConstraintDescriptor {
     /// Constraint name.
     pub name: String,
@@ -495,7 +501,9 @@ impl kani::Arbitrary for ConstraintDescriptor {
 // ── DdlDescriptor ─────────────────────────────────────────────────────────────
 
 /// The DDL text for a schema object (table, view, index, etc.).
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct DdlDescriptor {
     /// Schema containing the object.
     pub schema: String,
@@ -551,7 +559,9 @@ impl TableInspection {
 }
 
 /// Descriptor for a database index.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct IndexDescriptor {
     /// Index name.
     pub index_name: String,
@@ -638,7 +648,9 @@ impl kani::Arbitrary for ColumnStats {
 /// One node in a PostgreSQL `EXPLAIN (FORMAT JSON)` plan tree.
 ///
 /// Populated by parsing the JSON array returned by PostgreSQL.
-/// Nesting mirrors the `Plans` arrays in the EXPLAIN output.
+///
+/// Children are stored as indices into the owning [`ExplainPlan`] arena,
+/// so `ExplainNode` is not a recursive type — all fields have bounded size.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct ExplainNode {
     /// Node type, e.g. `"Seq Scan"`, `"Hash Join"`, `"Index Scan"`.
@@ -663,64 +675,34 @@ pub struct ExplainNode {
     pub actual_rows: Option<i64>,
     /// Number of loops executed.
     pub actual_loops: Option<i64>,
-    /// Child plan nodes (skipped during elicitation; populated from database JSON).
-    #[skip]
-    pub children: Vec<ExplainNode>,
+    /// Indices of child plan nodes in the owning [`ExplainPlan`] arena.
+    pub children: Vec<usize>,
 }
 
-#[cfg(kani)]
-impl kani::Arbitrary for ExplainNode {
-    fn any() -> Self {
-        // Fully concrete — no kani::any() calls.  ExplainNode contains
-        // Vec<ExplainNode> (recursive), so any symbolic Optional<String> or
-        // other symbolic field causes CBMC's type-based destructor analysis to
-        // unwind unboundedly.  The ArchivePanelConsistent invariant does not
-        // depend on the *content* of plan nodes, only on the *existence* of a
-        // valid state, so a single concrete sentinel value is sufficient.
-        Self {
-            node_type: String::new(),
-            relation_name: None,
-            alias: None,
-            startup_cost: 0.0,
-            total_cost: 0.0,
-            plan_rows: 0,
-            plan_width: 0,
-            actual_startup_time: None,
-            actual_total_time: None,
-            actual_rows: None,
-            actual_loops: None,
-            children: Vec::new(),
-        }
+/// An EXPLAIN plan stored as a flat arena.
+///
+/// Nodes reference their children by index into `nodes`, eliminating the
+/// recursive `Vec<ExplainNode>` that previously made `ExplainNode` a recursive
+/// type.  The root node is at `nodes[root]`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+pub struct ExplainPlan {
+    /// All nodes in the plan, in post-order (children before parents).
+    pub nodes: Vec<ExplainNode>,
+    /// Index of the root node within `nodes`.
+    pub root: usize,
+}
+
+impl ExplainPlan {
+    /// Return a reference to the root node.
+    pub fn root(&self) -> &ExplainNode {
+        &self.nodes[self.root]
     }
-}
 
-impl ExplainNode {
-    /// Parse from a single EXPLAIN JSON plan object.
+    /// Parse from a single EXPLAIN JSON plan object, building the arena.
     pub fn from_json(v: &serde_json::Value) -> Self {
-        let get_str = |k: &str| v[k].as_str().map(str::to_string);
-        let get_f64 = |k: &str| v[k].as_f64().unwrap_or(0.0);
-        let get_i64 = |k: &str| v[k].as_i64().unwrap_or(0);
-        let get_i32 = |k: &str| v[k].as_i64().unwrap_or(0) as i32;
-
-        let children = v["Plans"]
-            .as_array()
-            .map(|arr| arr.iter().map(ExplainNode::from_json).collect())
-            .unwrap_or_default();
-
-        Self {
-            node_type: get_str("Node Type").unwrap_or_else(|| "Unknown".to_string()),
-            relation_name: get_str("Relation Name"),
-            alias: get_str("Alias"),
-            startup_cost: get_f64("Startup Cost"),
-            total_cost: get_f64("Total Cost"),
-            plan_rows: get_i64("Plan Rows"),
-            plan_width: get_i32("Plan Width"),
-            actual_startup_time: v["Actual Startup Time"].as_f64(),
-            actual_total_time: v["Actual Total Time"].as_f64(),
-            actual_rows: v["Actual Rows"].as_i64(),
-            actual_loops: v["Actual Loops"].as_i64(),
-            children,
-        }
+        let mut nodes = Vec::new();
+        let root = Self::build_node(v, &mut nodes);
+        Self { nodes, root }
     }
 
     /// Parse from the top-level EXPLAIN JSON array (first element's "Plan").
@@ -733,6 +715,38 @@ impl ExplainNode {
         }
         Ok(Self::from_json(plan))
     }
+
+    /// Recursively build arena nodes in post-order; returns the index of `v`.
+    fn build_node(v: &serde_json::Value, arena: &mut Vec<ExplainNode>) -> usize {
+        let get_str = |k: &str| v[k].as_str().map(str::to_string);
+        let get_f64 = |k: &str| v[k].as_f64().unwrap_or(0.0);
+        let get_i64 = |k: &str| v[k].as_i64().unwrap_or(0);
+        let get_i32 = |k: &str| v[k].as_i64().unwrap_or(0) as i32;
+
+        // Build children first so their indices are stable.
+        let children: Vec<usize> = v["Plans"]
+            .as_array()
+            .map(|arr| arr.iter().map(|c| Self::build_node(c, arena)).collect())
+            .unwrap_or_default();
+
+        let node = ExplainNode {
+            node_type: get_str("Node Type").unwrap_or_else(|| "Unknown".to_string()),
+            relation_name: get_str("Relation Name"),
+            alias: get_str("Alias"),
+            startup_cost: get_f64("Startup Cost"),
+            total_cost: get_f64("Total Cost"),
+            plan_rows: get_i64("Plan Rows"),
+            plan_width: get_i32("Plan Width"),
+            actual_startup_time: v["Actual Startup Time"].as_f64(),
+            actual_total_time: v["Actual Total Time"].as_f64(),
+            actual_rows: v["Actual Rows"].as_i64(),
+            actual_loops: v["Actual Loops"].as_i64(),
+            children,
+        };
+        let idx = arena.len();
+        arena.push(node);
+        idx
+    }
 }
 
 /// Side-by-side comparison of two EXPLAIN plans.
@@ -742,33 +756,18 @@ impl ExplainNode {
 /// root nodes' total costs diverge by more than 10 %.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct ExplainComparison {
-    /// Left (original) plan root.
-    pub left: ExplainNode,
-    /// Right (new) plan root.
-    pub right: ExplainNode,
+    /// Left (original) plan.
+    pub left: ExplainPlan,
+    /// Right (new) plan.
+    pub right: ExplainPlan,
     /// Human-readable label for the left plan.
     pub label_left: String,
     /// Human-readable label for the right plan.
     pub label_right: String,
 }
 
-#[cfg(kani)]
-impl kani::Arbitrary for ExplainComparison {
-    fn any() -> Self {
-        // Use ExplainNode::any() which is now fully concrete (see above).
-        // Calling kani::any::<ExplainNode>() would not help here because the
-        // *type* ExplainNode is recursive (Vec<ExplainNode>), causing CBMC's
-        // destructor model to unwind unboundedly regardless of the actual value.
-        Self {
-            left: ExplainNode::any(),
-            right: ExplainNode::any(),
-            label_left: String::new(),
-            label_right: String::new(),
-        }
-    }
-}
-
 /// The result of executing a SQL query: column metadata + row data.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct QueryResult {
     /// Column descriptors for the result set.
@@ -781,18 +780,25 @@ pub struct QueryResult {
     pub spatial_column_names: Vec<String>,
 }
 
+/// Kani-simplified `QueryResult`: scalar-only to eliminate nested-Vec CBMC formula explosion
+/// when the 18-variant `ArchivePanelState` drop is analyzed.
+#[cfg(kani)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+pub struct QueryResult {
+    /// Number of rows returned or affected.
+    pub row_count: u64,
+}
+
 #[cfg(kani)]
 impl kani::Arbitrary for QueryResult {
     fn any() -> Self {
         Self {
-            columns: Vec::new(),
-            rows: kani::any::<DbRows>(),
             row_count: kani::any(),
-            spatial_column_names: Vec::new(),
         }
     }
 }
 
+#[cfg(not(kani))]
 impl QueryResult {
     /// Build a `QueryResult` from column descriptors and raw rows.
     pub fn new(columns: Vec<ColumnDescriptor>, rows: DbRows) -> Self {
@@ -1124,7 +1130,9 @@ pub enum SslMode {
 
 ///
 /// [`ConnectionSet`]: crate::archive::nav_model::ConnectionSet
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ConnectionProfile {
     /// Human-visible label shown in the tab bar.
     pub name: String,
@@ -1474,7 +1482,9 @@ impl kani::Arbitrary for CompositeTypeDescriptor {
 
 /// Which tab is active inside the monitor panel.
 #[cfg_attr(kani, derive(kani::Arbitrary))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub enum MonitorTab {
     /// Session activity (default view).
     #[default]
@@ -1530,7 +1540,9 @@ impl MonitorTab {
 ///
 /// Populated by `ArchiveMonitorPlugin` tools and cached in
 /// `PanelMode::MonitorPanel`.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct MonitorSnapshot {
     /// Active sessions from `pg_stat_activity`.
     pub sessions: Vec<DbSessionInfo>,
@@ -1573,7 +1585,9 @@ impl kani::Arbitrary for MonitorSnapshot {
 
 /// Which tab is active inside the admin panel.
 #[cfg_attr(kani, derive(kani::Arbitrary))]
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub enum AdminTab {
     /// Role and privilege matrix.
     #[default]
@@ -1617,7 +1631,9 @@ impl AdminTab {
 ///
 /// Populated by `ArchiveAdminPlugin` tools and cached in
 /// `PanelMode::AdminPanel`.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct AdminSnapshot {
     /// All cluster roles from `pg_roles`.
     pub roles: Vec<DbRoleInfo>,
@@ -1653,7 +1669,9 @@ impl kani::Arbitrary for AdminSnapshot {
 // ── ERD types ─────────────────────────────────────────────────────────────────
 
 /// A single column in an ERD node.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ErdColumn {
     /// Column name.
     pub name: String,
@@ -1678,7 +1696,9 @@ impl kani::Arbitrary for ErdColumn {
 }
 
 /// A table node in an ERD diagram.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ErdNode {
     /// Owning schema.
     pub schema: String,
@@ -1700,7 +1720,9 @@ impl kani::Arbitrary for ErdNode {
 }
 
 /// A directed foreign-key edge between two ERD nodes.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ErdEdge {
     /// Constraint name.
     pub constraint_name: String,
@@ -1737,7 +1759,9 @@ impl kani::Arbitrary for ErdEdge {
 ///
 /// Produced by [`fetch_erd`](crate::archive::nav_tree::fetch_erd) and
 /// cached in [`PanelMode::ErdPanel`].
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ErdDiagram {
     /// Schema this diagram covers.
     pub schema: String,
@@ -1762,7 +1786,9 @@ impl kani::Arbitrary for ErdDiagram {
 ///
 /// Coordinates are in logical pixels (no DPI scaling).  The origin (0, 0)
 /// is the top-left corner of the canvas.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
 pub struct ErdLayout {
     /// Canvas width needed to contain all boxes.
     pub canvas_w: f32,

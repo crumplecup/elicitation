@@ -21,8 +21,8 @@
 use std::collections::BTreeMap;
 
 use elicit_accesskit::KeyBinding;
-use elicitation::{Elicit, KaniCompose};
 use elicitation::Established;
+use elicitation::{Elicit, KaniCompose};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator as _;
@@ -39,8 +39,8 @@ use crate::archive::vsm::{
 };
 use crate::archive::{
     AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ErdLayout,
-    ExplainNode, ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult,
-    RowEditState, SavedQuery, StagedEdit, TableInspection,
+    ExplainNode, ExplainPlan, ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry,
+    QueryResult, RowEditState, SavedQuery, StagedEdit, TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},
     nav_tree::{NavTree, SchemaEntry},
 };
@@ -260,8 +260,8 @@ pub enum PanelEvent {
         schema: String,
         /// Table context.
         table: String,
-        /// Parsed plan root.
-        root: ExplainNode,
+        /// Parsed plan arena.
+        root: ExplainPlan,
     },
     /// Export completed; content ready to write or display.
     ExportReady {
@@ -1331,6 +1331,7 @@ impl ArchiveNavModel {
     }
 
     /// Jump to the last page of the data grid.
+    #[cfg(not(kani))]
     pub fn page_last(&mut self) {
         if let ArchivePanelState::DataGrid { result, page, .. } = &mut self.panel_state {
             const PAGE_SIZE: u32 = 100;
@@ -1365,6 +1366,7 @@ impl ArchiveNavModel {
     // ── Phase 3.1 — Inline Row Edit ──────────────────────────────────────────
 
     /// Move the grid cursor up one row. Returns `true` if in a data grid.
+    #[cfg(not(kani))]
     pub fn grid_row_up(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result, grid_row, ..
@@ -1381,6 +1383,7 @@ impl ArchiveNavModel {
     }
 
     /// Move the grid cursor down one row. Returns `true` if in a data grid.
+    #[cfg(not(kani))]
     pub fn grid_row_down(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result, grid_row, ..
@@ -1394,6 +1397,7 @@ impl ArchiveNavModel {
     }
 
     /// Move the grid cursor left one column. Returns `true` if in a data grid.
+    #[cfg(not(kani))]
     pub fn grid_col_left(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result, grid_col, ..
@@ -1410,6 +1414,7 @@ impl ArchiveNavModel {
     }
 
     /// Move the grid cursor right one column. Returns `true` if in a data grid.
+    #[cfg(not(kani))]
     pub fn grid_col_right(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result, grid_col, ..
@@ -1434,6 +1439,7 @@ impl ArchiveNavModel {
     }
 
     /// Start editing the currently focused cell. Returns `true` if successful.
+    #[cfg(not(kani))]
     pub fn begin_cell_edit(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result,
@@ -1484,6 +1490,7 @@ impl ArchiveNavModel {
     }
 
     /// Stage the current cell edit as a pending update. Returns `true` if an edit was staged.
+    #[cfg(not(kani))]
     pub fn stage_cell_edit(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             schema,
@@ -1527,6 +1534,7 @@ impl ArchiveNavModel {
     }
 
     /// Begin inserting a new row. Returns `true` if successful.
+    #[cfg(not(kani))]
     pub fn begin_insert_row(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             result,
@@ -1599,6 +1607,7 @@ impl ArchiveNavModel {
     }
 
     /// Mark the focused row for deletion. Returns `true` if the row was marked.
+    #[cfg(not(kani))]
     pub fn stage_delete_row(&mut self) -> bool {
         if let ArchivePanelState::DataGrid {
             schema,
@@ -1734,7 +1743,7 @@ impl ArchiveNavModel {
 
     /// Set an explain view (promoting to comparison if already showing one).
     #[tracing::instrument(skip(self))]
-    pub fn panel_set_explain(&mut self, schema: String, table: String, root: ExplainNode) {
+    pub fn panel_set_explain(&mut self, schema: String, table: String, root: ExplainPlan) {
         self.apply_panel(|s, p| explain_ready(s, p, schema, table, root, Default::default()));
     }
 
@@ -1781,6 +1790,7 @@ impl ArchiveNavModel {
     /// - Navigation panel (filter input + flat tree)
     /// - Content panel (current PanelMode)
     /// - Status bar
+    #[cfg(not(kani))]
     #[tracing::instrument(skip(self))]
     pub fn to_verified_tree(
         &self,
@@ -1876,6 +1886,7 @@ impl ArchiveNavModel {
     /// Build the content-only subtree (root = `GenericContainer id=content`).
     ///
     /// Used by browser API endpoints that return only the content panel fragment.
+    #[cfg(not(kani))]
     #[tracing::instrument(skip(self))]
     pub fn to_content_tree(
         &self,
@@ -2200,6 +2211,7 @@ impl ArchiveNavModel {
 
     /// Build AccessKit nodes for the current content panel.  Returns the list
     /// of direct children of the content group.
+    #[cfg(not(kani))]
     fn build_content_nodes(
         &self,
         nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
@@ -2435,7 +2447,7 @@ impl ArchiveNavModel {
                 children.push(heading_id);
 
                 let plan_root_id = alloc();
-                let plan_id = self.build_explain_node(root, nodes, counter);
+                let plan_id = self.build_explain_node(&root.nodes, root.root(), nodes, counter);
                 let mut plan_tree = AkNode::new(AkRole::Tree);
                 plan_tree.set_label("query plan".to_string());
                 plan_tree.set_children(vec![plan_id]);
@@ -2459,8 +2471,8 @@ impl ArchiveNavModel {
                 children.push(heading_id);
 
                 // Cost-delta annotation: if total costs differ by > 10 %, prefix labels.
-                let cost_l = left.total_cost;
-                let cost_r = right.total_cost;
+                let cost_l = left.root().total_cost;
+                let cost_r = right.root().total_cost;
                 let delta_pct = if cost_l > 0.0 {
                     (cost_r - cost_l).abs() / cost_l
                 } else {
@@ -2483,13 +2495,15 @@ impl ArchiveNavModel {
                 let right_tree_id = alloc();
                 // alloc is not called again; its borrow of counter ends here.
 
-                let left_plan_id = self.build_explain_node(left, nodes, counter);
+                let left_plan_id =
+                    self.build_explain_node(&left.nodes, left.root(), nodes, counter);
                 let mut left_tree = AkNode::new(AkRole::Tree);
                 left_tree.set_label(format!("{ann_l}{label_left}"));
                 left_tree.set_children(vec![left_plan_id]);
                 nodes.insert(left_tree_id, left_tree);
 
-                let right_plan_id = self.build_explain_node(right, nodes, counter);
+                let right_plan_id =
+                    self.build_explain_node(&right.nodes, right.root(), nodes, counter);
                 let mut right_tree = AkNode::new(AkRole::Tree);
                 right_tree.set_label(format!("{ann_r}{label_right}"));
                 right_tree.set_children(vec![right_plan_id]);
@@ -3221,6 +3235,7 @@ impl ArchiveNavModel {
     /// Recursively build AccessKit nodes for an [`ExplainNode`] subtree.
     fn build_explain_node(
         &self,
+        arena: &[ExplainNode],
         node: &ExplainNode,
         nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
@@ -3231,8 +3246,8 @@ impl ArchiveNavModel {
         *counter += 1;
 
         let mut child_ids: Vec<AkNodeId> = Vec::new();
-        for child in &node.children {
-            child_ids.push(self.build_explain_node(child, nodes, counter));
+        for &idx in &node.children {
+            child_ids.push(self.build_explain_node(arena, &arena[idx], nodes, counter));
         }
 
         let label = format!(
@@ -3402,6 +3417,7 @@ impl ArchiveNavModel {
 // ── Column width helpers for data-grid rendering ──────────────────────────────
 
 /// Compute column display widths from a [`QueryResult`] for table rendering.
+#[cfg(not(kani))]
 pub fn column_widths(result: &QueryResult, max_col_width: usize) -> Vec<usize> {
     result
         .columns

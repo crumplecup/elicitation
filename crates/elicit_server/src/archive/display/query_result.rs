@@ -13,7 +13,18 @@ use super::ArchiveDisplay;
 /// Display strategies for a [`QueryResult`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum QueryResultMode {
     /// Full data grid: column headers + one row per result row.
@@ -26,6 +37,7 @@ pub enum QueryResultMode {
     SpatialMap,
 }
 
+#[cfg(not(kani))]
 impl ArchiveDisplay for QueryResult {
     type Mode = QueryResultMode;
 

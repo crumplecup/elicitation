@@ -67,9 +67,10 @@ mod secure_fetch;
 mod emit_plugin;
 
 pub use archive::{
-    ArchiveBrowsePlugin, ArchiveDbBackend, ArchiveDisplayPlugin, ArchiveQueryPlugin,
-    ArchiveSpatialPlugin,
+    ArchiveBrowsePlugin, ArchiveDbBackend, ArchiveDisplayPlugin, ArchiveSpatialPlugin,
 };
+#[cfg(not(kani))]
+pub use archive::ArchiveQueryPlugin;
 pub use fetch_and_parse::{FetchAndParsePlugin, http_get};
 pub use secure_fetch::SecureFetchPlugin;
 

@@ -9,6 +9,8 @@
 //!
 //! [`run_egui`] runs the event loop directly on the calling thread.
 
+#![cfg(not(kani))]
+
 use std::sync::Arc;
 
 use egui::Key;
@@ -183,7 +185,7 @@ impl ArchiveEguiApp {
                             .take()
                             .map(|t| t.elapsed().as_millis() as u64)
                             .unwrap_or(0);
-                        let row_count = result.rows.rows.len() as u64;
+                        let row_count = result.row_count;
                         let entry = crate::archive::QueryHistoryEntry {
                             id: 0,
                             sql: sql.clone(),
