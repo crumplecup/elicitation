@@ -934,6 +934,26 @@ impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
     }
 }
 
+impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::BTreeMap<String, V> {
+    fn type_tokens() -> TokenStream {
+        let v = <V as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::collections::BTreeMap<::std::string::String, #v> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let entries: Vec<_> = self
+            .iter()
+            .map(|(k, v)| {
+                let v_ts = v.to_code_literal();
+                quote::quote! { (#k.to_string(), #v_ts) }
+            })
+            .collect();
+        quote::quote! {
+            [#(#entries),*].into_iter().collect::<::std::collections::BTreeMap<_, _>>()
+        }
+    }
+}
+
 impl<T: ToCodeLiteral> ToCodeLiteral for Box<T> {
     fn type_tokens() -> TokenStream {
         let inner = <T as ToCodeLiteral>::type_tokens();
