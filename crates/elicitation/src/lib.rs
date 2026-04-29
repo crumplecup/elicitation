@@ -112,6 +112,7 @@ pub mod contracts;
 
 pub mod emit_code;
 pub mod mcp;
+pub mod kani_compose;
 mod paradigm;
 mod primitives;
 mod proxy;
@@ -208,9 +209,14 @@ pub use type_spec::{
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
-    And, Established, FormalMethod, Implies, InVariant, Is, KaniVariantState, Prop, ProvableFrom,
-    Refines, VerifiedStateMachine, VerifiedTransition, both, downcast, fst, snd,
+    And, Established, FormalMethod, Implies, InVariant, Is, KaniVariantConstruction,
+    KaniVariantState, Prop, ProvableFrom, Refines, VerifiedStateMachine, VerifiedTransition, both,
+    downcast, fst, snd,
 };
+
+// Compositional depth-bounded construction for Kani proofs
+#[cfg(kani)]
+pub use kani_compose::KaniCompose;
 
 // Completion marker — enforces all elicitation obligations at compile time
 pub use complete::ElicitComplete;
@@ -269,6 +275,8 @@ pub use elicitation_derive::Prop;
 pub use elicitation_derive::VerifiedStateMachine;
 // KaniVariantState derive macro
 pub use elicitation_derive::KaniVariantState;
+// KaniCompose derive macro (trait lives at elicitation::kani_compose::KaniCompose)
+pub use elicitation_derive::KaniCompose;
 // ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
 pub use elicitation_derive::ToCodeLiteral;
 

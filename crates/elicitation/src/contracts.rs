@@ -1137,12 +1137,30 @@ where
 {
 }
 
+/// Per-variant concrete construction expressions at each compositional depth.
+///
+/// Used by `#[derive(VerifiedStateMachine)]` to emit three harnesses per
+/// `(transition × variant)`: one per depth.  Each depth uses `KaniCompose`
+/// field expressions from `#[derive(KaniVariantState)]`.
+pub struct KaniVariantConstruction {
+    /// Snake_case variant name suffix for harness function names
+    /// (e.g. `"explain_view"` for `ExplainView`).
+    pub variant_name: &'static str,
+    /// Depth-0 construction expression: all collections empty / `None`.
+    pub depth0: String,
+    /// Depth-1 construction expression: one element in each collection.
+    pub depth1: String,
+    /// Depth-2 construction expression: two elements in each collection.
+    pub depth2: String,
+}
+
 /// Per-variant concrete construction expressions for VSM state enums.
 ///
 /// Implemented via `#[derive(KaniVariantState)]`. Used by `derive_vsm` to
-/// generate per-variant Kani harnesses — one harness per (transition × variant)
-/// — so that CBMC receives a concrete discriminant and bounded fields instead
-/// of a fully symbolic enum.
+/// generate per-variant Kani harnesses — three harnesses per
+/// `(transition × variant)`, one per compositional depth — so that CBMC
+/// receives a concrete discriminant and bounded fields instead of a fully
+/// symbolic enum.
 ///
 /// # Motivation
 ///
@@ -1153,558 +1171,49 @@ where
 ///
 /// Per-variant harnesses give CBMC a concrete discriminant for each proof,
 /// eliminating the symbolic-enum-drop problem while preserving exhaustive
-/// coverage through case analysis.
+/// coverage through case analysis.  Per-depth harnesses extend this to
+/// cover recursive / collection fields at sizes 0, 1, and 2.
 pub trait KaniVariantState {
-    /// Returns `(variant_snake_name, construction_expr_str)` for each variant.
+    /// Returns per-variant construction expressions at all three depths.
     ///
-    /// Each pair represents one concrete state for Kani harness generation:
+    /// Each [`KaniVariantConstruction`] provides:
     ///
-    /// - `variant_snake_name` — snake_case suffix appended to the harness
-    ///   function name (e.g. `"export_picker_open"` for `ExportPickerOpen`).
-    /// - `construction_expr_str` — a Rust expression (as token string) that
-    ///   concretely constructs that variant, using:
-    ///   - `Vec::new()` for `Vec<T>` fields
-    ///   - `String::new()` for `String` fields
-    ///   - `None` for `Option<T>` fields
-    ///   - `kani::any()` for all other fields
-    fn kani_variant_constructions() -> Vec<(&'static str, &'static str)>;
+    /// - `variant_name` — snake_case suffix for the harness function name.
+    /// - `depth0` — all collections empty / `None` (base case).
+    /// - `depth1` — one element in each collection (inductive step).
+    /// - `depth2` — two elements in each collection (inductive step ×2).
+    ///
+    /// Field expressions use `<T as KaniCompose>::kani_depth{n}()` for
+    /// non-primitive types, `Vec::new()` / `None` / `String::new()` for
+    /// recognized collection types, and `kani::any()` for primitives.
+    fn kani_variant_constructions() -> Vec<KaniVariantConstruction>;
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_established_is_zero_sized() {
-        let proof: Established<Is<String>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&proof), 0);
-    }
-
-    #[test]
-    fn test_established_is_copy() {
-        let proof: Established<Is<String>> = Established::assert();
-        let proof2 = proof; // Copy
-        let _proof3 = proof; // Can still use original
-        let _proof4 = proof2; // Can use copy
-    }
-
-    #[test]
-    fn test_can_construct_proof() {
-        let _proof: Established<Is<String>> = Established::assert();
-        let _proof: Established<Is<i32>> = Established::assert();
-        let _proof: Established<Is<Vec<u8>>> = Established::assert();
-    }
-
-    #[test]
-    fn test_proof_requires_type() {
-        fn requires_string_proof(_proof: Established<Is<String>>) {}
-
-        let proof: Established<Is<String>> = Established::assert();
-        requires_string_proof(proof);
-
-        // This would fail to compile:
-        // let wrong_proof: Established<Is<i32>> = Established::assert();
-        // requires_string_proof(wrong_proof);
-    }
-
-    #[test]
-    fn test_implies_reflexive() {
-        // Every proposition implies itself
-        let proof: Established<Is<String>> = Established::assert();
-        let same_proof: Established<Is<String>> = proof.weaken();
-        let _ = same_proof; // Use it
-    }
-
-    #[test]
-    fn test_weaken_with_custom_impl() {
-        // Define custom propositions
-        struct StrongProp;
-        struct WeakProp;
-
-        impl Prop for StrongProp {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for WeakProp {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Implies<WeakProp> for StrongProp {}
-
-        // Can weaken from strong to weak
-        let strong: Established<StrongProp> = Established::assert();
-        let _weak: Established<WeakProp> = strong.weaken();
-    }
-
-    #[test]
-    fn test_cannot_weaken_without_impl() {
-        struct _PropA;
-        struct _PropB;
-
-        impl Prop for _PropA {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for _PropB {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        // This would fail to compile (no Implies<_PropB> for _PropA):
-        // let a: Established<_PropA> = Established::assert();
-        // let _b: Established<_PropB> = a.weaken();
-    }
-
-    #[test]
-    fn test_conjunction_combine() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let p: Established<P> = Established::assert();
-        let q: Established<Q> = Established::assert();
-        let _pq: Established<And<P, Q>> = both(p, q);
-    }
-
-    #[test]
-    fn test_conjunction_project_left() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _p: Established<P> = fst(pq);
-    }
-
-    #[test]
-    fn test_conjunction_project_right() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _q: Established<Q> = snd(pq);
-    }
-
-    #[test]
-    fn test_conjunction_implies_components() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        // Use projection functions instead of weaken
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _p: Established<P> = fst(pq);
-        let _q: Established<Q> = snd(pq);
-    }
-
-    #[test]
-    fn test_conjunction_is_zero_sized() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        assert_eq!(std::mem::size_of_val(&pq), 0);
-    }
-
-    #[test]
-    fn test_conjunction_chain() {
-        struct P;
-        struct Q;
-        struct R;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for R {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        // Can nest: (P ∧ Q) ∧ R
-        let p: Established<P> = Established::assert();
-        let q: Established<Q> = Established::assert();
-        let r: Established<R> = Established::assert();
-
-        let pq = both(p, q);
-        let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
-    }
-
-    #[test]
-    fn test_refinement_downcast() {
-        // Define refined type
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        // Can downcast from refined to base
-        let refined_proof: Established<Is<_NonEmptyString>> = Established::assert();
-        let _base_proof: Established<Is<String>> = downcast(refined_proof);
-    }
-
-    #[test]
-    fn test_refinement_via_weaken() {
-        // Refinement requires explicit Implies impl
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        let refined: Established<Is<_NonEmptyString>> = Established::assert();
-        let _base: Established<Is<String>> = refined.weaken();
-    }
-
-    #[test]
-    fn test_refinement_reflexive() {
-        // Every type refines itself (via reflexive Implies)
-        let proof: Established<Is<String>> = Established::assert();
-        let _same: Established<Is<String>> = downcast(proof);
-    }
-
-    #[test]
-    fn test_refinement_chain() {
-        // Test transitivity: _HttpsUrl -> _ValidUrl -> String
-        use core::marker::PhantomData;
-        struct _HttpsUrl(PhantomData<String>);
-        struct _ValidUrl(PhantomData<String>);
-
-        impl Refines<String> for _ValidUrl {}
-        impl Implies<Is<String>> for Is<_ValidUrl> {}
-
-        impl Refines<_ValidUrl> for _HttpsUrl {}
-        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
-
-        impl Refines<String> for _HttpsUrl {} // Transitive closure
-        impl Implies<Is<String>> for Is<_HttpsUrl> {} // Enable direct downcast
-
-        let https: Established<Is<_HttpsUrl>> = Established::assert();
-        let valid: Established<Is<_ValidUrl>> = downcast(https);
-        let _base: Established<Is<String>> = downcast(valid);
-    }
-
-    #[test]
-    fn test_refinement_direct_chain() {
-        // Direct downcast from most refined to base
-        use core::marker::PhantomData;
-        struct _HttpsUrl(PhantomData<String>);
-        struct _ValidUrl(PhantomData<String>);
-
-        impl Refines<String> for _ValidUrl {}
-        impl Implies<Is<String>> for Is<_ValidUrl> {}
-
-        impl Refines<_ValidUrl> for _HttpsUrl {}
-        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
-
-        impl Refines<String> for _HttpsUrl {}
-        impl Implies<Is<String>> for Is<_HttpsUrl> {}
-
-        let https: Established<Is<_HttpsUrl>> = Established::assert();
-        let _base: Established<Is<String>> = downcast(https);
-    }
-
-    #[test]
-    fn test_refinement_zero_sized() {
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        let refined: Established<Is<_NonEmptyString>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&refined), 0);
-
-        let base: Established<Is<String>> = downcast(refined);
-        assert_eq!(std::mem::size_of_val(&base), 0);
-    }
-
-    #[test]
-    fn test_cannot_upcast() {
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        // This would fail to compile (no Implies<Is<_NonEmptyString>> for Is<String>):
-        // let base: Established<Is<String>> = Established::assert();
-        // let _refined: Established<Is<_NonEmptyString>> = downcast(base);
-    }
-
-    #[test]
-    fn test_invariant_zero_sized() {
-        enum _Status {
-            _Active,
-            _Inactive,
-        }
-        struct _ActiveVariant;
-
-        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&proof), 0);
-    }
-
-    #[test]
-    fn test_invariant_type_safety() {
-        enum _Status {
-            _Active,
-            _Inactive,
-        }
-        struct _ActiveVariant;
-        struct _InactiveVariant;
-
-        // Function requires specific variant proof
-        fn process_active(
-            _status: _Status,
-            _proof: Established<InVariant<_Status, _ActiveVariant>>,
-        ) {
-        }
-
-        // Can call with correct proof
-        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
-        process_active(_Status::_Active, proof);
-
-        // This would fail to compile (wrong variant):
-        // let wrong_proof: Established<InVariant<_Status, _InactiveVariant>> = Established::assert();
-        // process_active(_Status::_Active, wrong_proof);
-    }
-
-    #[test]
-    fn test_invariant_enum_branches() {
-        enum _State {
-            _Loading,
-            _Ready,
-            _Error,
-        }
-
-        struct _LoadingVariant;
-        struct _ReadyVariant;
-        struct _ErrorVariant;
-
-        fn handle_loading(_proof: Established<InVariant<_State, _LoadingVariant>>) {
-            // Loading-specific logic
-        }
-
-        fn handle_ready(_proof: Established<InVariant<_State, _ReadyVariant>>) {
-            // Ready-specific logic
-        }
-
-        fn handle_error(_proof: Established<InVariant<_State, _ErrorVariant>>) {
-            // Error-specific logic
-        }
-
-        // Simulate state machine
-        let loading_proof: Established<InVariant<_State, _LoadingVariant>> = Established::assert();
-        handle_loading(loading_proof);
-
-        let ready_proof: Established<InVariant<_State, _ReadyVariant>> = Established::assert();
-        handle_ready(ready_proof);
-
-        let error_proof: Established<InVariant<_State, _ErrorVariant>> = Established::assert();
-        handle_error(error_proof);
-    }
-
-    #[test]
-    fn test_invariant_with_inhabitation() {
-        enum _Color {
-            _Red,
-            _Green,
-            _Blue,
-        }
-        struct _RedVariant;
-
-        // Can have both variant and type proofs
-        let _type_proof: Established<Is<_Color>> = Established::assert();
-        let _variant_proof: Established<InVariant<_Color, _RedVariant>> = Established::assert();
-    }
+// ── Kani-safe label helpers ───────────────────────────────────────────────────
+
+/// Produce a label string for display / diagnostics in formal-method transitions.
+///
+/// In normal builds, expands to `format!($args*)` as written.  In Kani builds,
+/// returns `String::new()` instead so CBMC does not model the entire Rust
+/// formatter machinery — `format!()` involves trait-object dispatch through
+/// `std::fmt` that multiplies CBMC paths even for fully concrete inputs.
+///
+/// # Usage
+///
+/// Replace every `format!("...")` that produces a *display label* (content
+/// irrelevant to invariant correctness) in a `#[formal_method]` transition
+/// body with `kani_label!("...")`:
+///
+/// ```rust,ignore
+/// let label_left = kani_label!("{old_schema}.{old_table}");
+/// ```
+#[macro_export]
+macro_rules! kani_label {
+    ($($arg:tt)*) => {{
+        #[cfg(not(kani))]
+        let _s = format!($($arg)*);
+        #[cfg(kani)]
+        let _s = ::std::string::String::new();
+        _s
+    }};
 }

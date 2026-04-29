@@ -85,6 +85,7 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
+mod derive_kani_compose;
 mod derive_prop;
 mod derive_to_code_literal;
 mod derive_vsm;
@@ -528,6 +529,51 @@ pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
 ///     assert!(established);
 /// }
 /// ```
+/// Derive `KaniCompose` for a struct or enum.
+///
+/// Generates a depth-bounded `impl KaniCompose for T` gated behind `#[cfg(kani)]`.
+/// Each depth method constructs `Self` using the `KaniCompose` impl of every field
+/// type, propagating the depth semantics through the type hierarchy automatically.
+///
+/// # Structs
+///
+/// All fields are built from `<FieldType as KaniCompose>::kani_depth{n}()`.
+/// The depth of collection fields (`Vec<T>`, `Option<T>`) propagates the
+/// compositional inductive proof: depth-0 is empty, depth-1 has one element,
+/// depth-2 has two elements.
+///
+/// # Enums
+///
+/// The base variant is selected in this priority order:
+/// 1. `#[default]` variant
+/// 2. First unit variant (no fields)
+/// 3. First variant overall
+///
+/// All three depths use the same base variant, with depth-aware field construction.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[derive(KaniCompose)]
+/// struct ExplainNode {
+///     node_type: String,
+///     children: Vec<ExplainNode>,
+///     plan_rows: i64,
+/// }
+/// // Generates:
+/// //   depth0: { node_type: String::new(), children: vec![], plan_rows: kani::any() }
+/// //   depth1: { ..., children: vec![ExplainNode::kani_depth0()] }
+/// //   depth2: { ..., children: vec![ExplainNode::kani_depth0(), ExplainNode::kani_depth0()] }
+///
+/// #[derive(KaniCompose)]
+/// enum Mode { ViewA, ViewB { label: String } }
+/// // All depths return Mode::ViewA (first unit variant).
+/// ```
+#[proc_macro_derive(KaniCompose)]
+pub fn derive_kani_compose(input: TokenStream) -> TokenStream {
+    derive_kani_compose::expand(input)
+}
+
 #[proc_macro_derive(Prop, attributes(prop))]
 pub fn derive_prop(input: TokenStream) -> TokenStream {
     derive_prop::expand(input)
