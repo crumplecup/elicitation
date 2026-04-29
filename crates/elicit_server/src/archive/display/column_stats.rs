@@ -1,5 +1,5 @@
 //! AccessKit display for [`ColumnStats`].
-use elicitation::Elicit;
+use elicitation::{Elicit, KaniCompose};
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -13,7 +13,7 @@ use super::ArchiveDisplay;
 /// Display strategies for a [`ColumnStats`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
 pub enum ColumnStatsMode {
     /// A compact one-line summary row.

@@ -11,7 +11,7 @@
 //! Both runtime interpretation (live server) and code-generation (emit) read
 //! the same verified specification.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
 use elicit_accesskit::NodeJson;
@@ -29,11 +29,11 @@ use elicit_db::{DbSchemaManager, DbServerAdmin};
 // ── IR helpers ────────────────────────────────────────────────────────────────
 
 /// Convert a `(elicit_accesskit::NodeId, Vec<(NodeId, NodeJson)>)` pair list
-/// from `to_ak_nodes` into the `HashMap<accesskit::NodeId, accesskit::Node>`
+/// from `to_ak_nodes` into the `BTreeMap<accesskit::NodeId, accesskit::Node>`
 /// that [`VerifiedTree::from_parts`] expects.
 fn convert_nodes(
     pairs: Vec<(elicit_accesskit::NodeId, NodeJson)>,
-) -> HashMap<accesskit::NodeId, accesskit::Node> {
+) -> BTreeMap<accesskit::NodeId, accesskit::Node> {
     pairs
         .into_iter()
         .map(|(eid, json)| (eid.0, accesskit::Node::from(json)))
@@ -53,7 +53,7 @@ fn convert_nodes(
 /// status bar occupies one line at the bottom.
 fn with_status_bar(
     content_root: accesskit::NodeId,
-    mut nodes: HashMap<accesskit::NodeId, accesskit::Node>,
+    mut nodes: BTreeMap<accesskit::NodeId, accesskit::Node>,
     viewport: Viewport,
 ) -> VerifiedTree {
     use crate::archive::actions::{ArchiveKeyMap, KeyMapMode};
@@ -93,7 +93,7 @@ fn with_status_bar(
 /// ```
 #[instrument(skip(nav))]
 pub fn nav_tree_to_verified_tree(nav: &NavTree) -> ArchiveResult<VerifiedTree> {
-    let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+    let mut nodes: BTreeMap<AkNodeId, AkNode> = BTreeMap::new();
     let mut counter: u64 = 1; // 0 is reserved for Window
 
     // DB header — Banner so it renders as <header>, sits outside the Tree

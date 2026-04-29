@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::{AuditLogged, Committed, DbResult, Durable, TransactionCommitted, TxMarker};
-use elicitation::{Elicit, Established};
+use elicitation::{Elicit, Established, KaniCompose};
 
 #[cfg(feature = "geo-types")]
 use elicit_geo_types::Geometry as GeoTypesGeometry;
@@ -70,7 +70,7 @@ impl DbSpatialValue {
 }
 
 /// A single scalar database value.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub enum DbValue {
     /// SQL NULL.
     Null,
@@ -177,7 +177,7 @@ impl DbValue {
 }
 
 /// A single row from a query result — ordered named columns.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct DbRow(pub Vec<(String, DbValue)>);
 
 #[cfg(kani)]
@@ -195,7 +195,7 @@ impl DbRow {
 }
 
 /// A collection of query rows with affected-row count.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct DbRows {
     /// The result rows.
     pub rows: Vec<DbRow>,
@@ -290,7 +290,7 @@ pub struct DbIndexInfo {
 }
 
 /// Role / user metadata.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct DbRoleInfo {
     /// Role name.
     pub name: String,
@@ -318,7 +318,7 @@ impl kani::Arbitrary for DbRoleInfo {
 }
 
 /// Active session info from `pg_stat_activity`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct DbSessionInfo {
     /// Backend process ID.
     pub pid: i32,

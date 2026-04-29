@@ -4,7 +4,7 @@
 //! `pg_catalog` views to collect data not available at nav-tree build time.
 //! Results are stored in `ArchiveNavModel::table_inspections`.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use sqlx::AnyPool;
 use sqlx::Row as _;
@@ -129,7 +129,7 @@ async fn query_constraints(
         .map_err(|e| format!("constraint query failed: {e}"))?;
 
     // Group columns by constraint_name
-    let mut map: HashMap<String, ConstraintDescriptor> = HashMap::new();
+    let mut map: BTreeMap<String, ConstraintDescriptor> = BTreeMap::new();
     let mut order: Vec<String> = Vec::new();
 
     for r in &rows {
@@ -195,7 +195,7 @@ async fn query_indexes(
         .await
         .map_err(|e| format!("index query failed: {e}"))?;
 
-    let mut map: HashMap<String, IndexDescriptor> = HashMap::new();
+    let mut map: BTreeMap<String, IndexDescriptor> = BTreeMap::new();
     let mut order: Vec<String> = Vec::new();
 
     for r in &rows {
