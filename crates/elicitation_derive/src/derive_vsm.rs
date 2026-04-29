@@ -1,8 +1,8 @@
 //! Derive macro implementation for `#[derive(VerifiedStateMachine)]`.
 //!
 //! Generates the `VerifiedStateMachine` impl by inferring associated types from
-//! naming conventions and converting the transition list to per-variant companion
-//! struct calls.
+//! naming conventions and converting the transition list to per-variant, per-depth
+//! companion struct calls.
 //!
 //! # Naming conventions
 //!
@@ -15,12 +15,13 @@
 //! # Transition list
 //!
 //! Each `snake_case` name in `#[vsm(transitions = [...])]` is converted to a
-//! companion struct call: `foo_bar` → `FooBarTransition::kani_harness_for_variant(v, e)`.
+//! companion struct call using `kani_harness_for_variant_at_depth`.
 //!
 //! The state type must implement [`KaniVariantState`] (via
-//! `#[derive(KaniVariantState)]`) to supply per-variant construction expressions.
-//! One harness is generated per (transition × variant), giving CBMC a concrete
-//! discriminant for each proof and avoiding the symbolic-enum-drop problem.
+//! `#[derive(KaniVariantState)]`) to supply per-variant, per-depth construction
+//! expressions.  Three harnesses are generated per (transition × variant) — one at
+//! each compositional depth (0/1/2) — giving CBMC a concrete discriminant and
+//! bounded collection sizes for each proof.
 //!
 //! # Example
 //!
@@ -39,12 +40,13 @@
 //!
 //!     fn transition_harnesses() -> Vec<::proc_macro2::TokenStream> {
 //!         let mut __harnesses = Vec::new();
-//!         for (__vname, __vexpr) in
+//!         for __vc in
 //!             <ArchiveConnectionState as KaniVariantState>::kani_variant_constructions()
 //!         {
-//!             __harnesses.push(BeginConnectTransition::kani_harness_for_variant(__vname, __vexpr));
-//!             __harnesses.push(DisconnectTransition::kani_harness_for_variant(__vname, __vexpr));
-//!             __harnesses.push(ReconnectTransition::kani_harness_for_variant(__vname, __vexpr));
+//!             __harnesses.push(BeginConnectTransition::kani_harness_for_variant_at_depth(__vc.variant_name, &__vc.depth0, 0));
+//!             __harnesses.push(BeginConnectTransition::kani_harness_for_variant_at_depth(__vc.variant_name, &__vc.depth1, 1));
+//!             __harnesses.push(BeginConnectTransition::kani_harness_for_variant_at_depth(__vc.variant_name, &__vc.depth2, 2));
+//!             // ... same for each transition
 //!         }
 //!         __harnesses
 //!     }
@@ -177,12 +179,10 @@ pub fn expand(input: TokenStream) -> TokenStream {
         syn::parse_quote!(#ident)
     });
 
-    // Build the `transition_harnesses()` body using per-variant construction.
+    // Build the `transition_harnesses()` body using per-variant, per-depth construction.
     //
-    // Instead of emitting one harness per transition (using kani::any() for the
-    // state), we loop over KaniVariantState::kani_variant_constructions() and
-    // emit one harness per (variant × transition).  This gives CBMC a concrete
-    // discriminant for each proof, eliminating the symbolic-enum-drop problem.
+    // For each (variant × transition × depth in [0, 1, 2]) we emit one harness,
+    // giving CBMC a concrete discriminant AND bounded collection sizes.
     let harness_pushes: Vec<_> = vsm_args
         .transitions
         .iter()
@@ -192,7 +192,27 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 t.span(),
             );
             quote! {
-                __harnesses.push(#companion::kani_harness_for_variant(__vname, __vexpr));
+                __harnesses.push(
+                    #companion::kani_harness_for_variant_at_depth(
+                        __vc.variant_name,
+                        &__vc.depth0,
+                        0,
+                    )
+                );
+                __harnesses.push(
+                    #companion::kani_harness_for_variant_at_depth(
+                        __vc.variant_name,
+                        &__vc.depth1,
+                        1,
+                    )
+                );
+                __harnesses.push(
+                    #companion::kani_harness_for_variant_at_depth(
+                        __vc.variant_name,
+                        &__vc.depth2,
+                        2,
+                    )
+                );
             }
         })
         .collect();
@@ -207,7 +227,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
 
             fn transition_harnesses() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __harnesses = ::std::vec::Vec::new();
-                for (__vname, __vexpr) in
+                for __vc in
                     <#state_type as ::elicitation::KaniVariantState>::kani_variant_constructions()
                 {
                     #( #harness_pushes )*

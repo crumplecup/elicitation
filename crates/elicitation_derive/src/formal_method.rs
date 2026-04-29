@@ -152,6 +152,33 @@ fn is_vec_type(ty: &Type) -> bool {
     }
 }
 
+/// Returns `true` if `ty` is `Option<_>` (any path ending in `Option` with one
+/// generic argument).
+///
+/// `kani::any::<Option<T>>()` hangs in CBMC when T contains heap-allocated
+/// fields (BTreeMap, HashMap, etc.): symbolic ownership transfer of the inner
+/// value combined with a non-trivial destructor causes unbounded unwinding.
+/// Callers should emit `None` instead — option parameters are auxiliary state
+/// that doesn't affect structural invariant preservation.
+fn is_option_type(ty: &Type) -> bool {
+    if let Type::Path(type_path) = ty {
+        type_path
+            .path
+            .segments
+            .last()
+            .map(|s| {
+                s.ident == "Option"
+                    && matches!(
+                        &s.arguments,
+                        syn::PathArguments::AngleBracketed(ab) if ab.args.len() == 1
+                    )
+            })
+            .unwrap_or(false)
+    } else {
+        false
+    }
+}
+
 /// Returns `true` if `ty` is `String` / `std::string::String`.
 ///
 /// `kani::any::<String>()` creates an unbounded symbolic string, causing
@@ -303,6 +330,16 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         };
                         lets.push(let_ts.clone());
                         non_state_lets.push(let_ts);
+                    } else if is_option_type(ty) {
+                        // kani::any::<Option<T>>() hangs when T contains heap-allocated
+                        // fields — symbolic ownership transfer + non-trivial destructor
+                        // causes unbounded unwinding in CBMC. Option parameters are
+                        // auxiliary state; None is the safe bounded choice for invariant proofs.
+                        let let_ts = quote! {
+                            let #pat: #ty = ::core::option::Option::None;
+                        };
+                        lets.push(let_ts.clone());
+                        non_state_lets.push(let_ts);
                     } else if state_pat_str.is_none() {
                         // First remaining param = the VSM state enum.
                         // Captured as strings for kani_harness_for_variant; NOT added
@@ -365,33 +402,27 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                  `#[kani::proof]` harness as a `proc_macro2::TokenStream`."
             );
 
-            // Per-variant harness method — substitutes a concrete construction
-            // expression for the state param so CBMC sees a concrete discriminant
-            // rather than a symbolic enum.
+            // Per-variant harness methods — one per depth.
+            // `kani_harness_for_variant_at_depth` substitutes a concrete
+            // construction expression for the state param AND appends
+            // `__d{n}` to the harness function name.
             let variant_method = if has_state_param {
                 quote! {
-                    /// Return a per-variant Kani harness for this transition.
+                    /// Return a depth-bounded per-variant Kani harness.
                     ///
-                    /// `variant_name` is the snake_case suffix appended to the
-                    /// proof function name (e.g., `"export_picker_open"` →
-                    /// `close_overlay__kani__export_picker_open`).
-                    ///
-                    /// `state_expr` is a concrete construction expression for
-                    /// that variant (from
-                    /// [`KaniVariantState::kani_variant_constructions`]).
-                    ///
-                    /// Together, these replace the symbolic `kani::any()` state
-                    /// construction with a concrete, bounded state that CBMC can
-                    /// verify in finite time.
-                    pub fn kani_harness_for_variant(
+                    /// `variant_name` — snake_case suffix (e.g. `"explain_view"`).
+                    /// `state_expr` — concrete construction expression for that variant
+                    ///   (from [`KaniVariantConstruction::depth0`] / `depth1` / `depth2`).
+                    /// `depth` — 0, 1, or 2; appended as `__d{depth}` to the harness name.
+                    pub fn kani_harness_for_variant_at_depth(
                         variant_name: &str,
                         state_expr: &str,
+                        depth: u8,
                     ) -> ::proc_macro2::TokenStream {
-                        let variant_fn =
-                            String::new() + #kani_fn_src + "__" + variant_name;
-                        // String concatenation avoids format!() brace-escaping
-                        // issues: non_state_lets_src may contain Established
-                        // credential blocks with literal curly braces.
+                        let variant_fn = format!(
+                            "{}__{}__d{}",
+                            #kani_fn_src, variant_name, depth
+                        );
                         let src = String::new()
                             + "# [cfg (kani)] # [:: kani :: proof] fn "
                             + &variant_fn
@@ -409,28 +440,49 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + #call_args_src
                             + ") ; }";
                         src.parse()
-                            .expect("kani_harness_for_variant: invalid TokenStream")
+                            .expect("kani_harness_for_variant_at_depth: invalid TokenStream")
+                    }
+
+                    /// Convenience wrapper for depth-0 (backward compat shim).
+                    #[deprecated(note = "use kani_harness_for_variant_at_depth")]
+                    pub fn kani_harness_for_variant(
+                        variant_name: &str,
+                        state_expr: &str,
+                    ) -> ::proc_macro2::TokenStream {
+                        Self::kani_harness_for_variant_at_depth(variant_name, state_expr, 0)
                     }
                 }
             } else {
                 // No state param: body is the same for all variants; only the
-                // harness function name is suffixed with the variant name.
+                // harness function name is suffixed with variant name + depth.
                 quote! {
-                    /// Return a per-variant Kani harness for this transition.
+                    /// Return a depth-bounded per-variant Kani harness.
                     ///
                     /// Since this transition has no state parameter, the body is
                     /// the same for all variants; only the harness function name
                     /// is suffixed.
-                    pub fn kani_harness_for_variant(
+                    pub fn kani_harness_for_variant_at_depth(
                         variant_name: &str,
                         _state_expr: &str,
+                        depth: u8,
                     ) -> ::proc_macro2::TokenStream {
-                        let variant_fn =
-                            String::new() + #kani_fn_src + "__" + variant_name;
+                        let variant_fn = format!(
+                            "{}__{}__d{}",
+                            #kani_fn_src, variant_name, depth
+                        );
                         #harness_src
                             .replace(#kani_fn_src, &variant_fn)
                             .parse()
-                            .expect("kani_harness_for_variant: invalid TokenStream")
+                            .expect("kani_harness_for_variant_at_depth: invalid TokenStream")
+                    }
+
+                    /// Convenience wrapper for depth-0 (backward compat shim).
+                    #[deprecated(note = "use kani_harness_for_variant_at_depth")]
+                    pub fn kani_harness_for_variant(
+                        variant_name: &str,
+                        state_expr: &str,
+                    ) -> ::proc_macro2::TokenStream {
+                        Self::kani_harness_for_variant_at_depth(variant_name, state_expr, 0)
                     }
                 }
             };
