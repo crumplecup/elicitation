@@ -15,7 +15,18 @@ use super::ArchiveDisplay;
 /// Display mode for an [`ErdColumn`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ErdColumnMode {
     /// A compact row.
@@ -57,7 +68,18 @@ impl ArchiveDisplay for ErdColumn {
 /// Display mode for an [`ErdNode`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ErdNodeMode {
     /// A table box listing columns as children.
@@ -99,7 +121,18 @@ impl ArchiveDisplay for ErdNode {
 /// Display mode for an [`ErdEdge`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ErdEdgeMode {
     /// A compact row describing the FK relationship.
@@ -138,7 +171,18 @@ impl ArchiveDisplay for ErdEdge {
 /// Display strategies for an [`ErdDiagram`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ErdDiagramMode {
     /// List of table nodes.

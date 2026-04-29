@@ -13,7 +13,18 @@ use super::ArchiveDisplay;
 /// Display strategies for a [`ColumnStats`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ColumnStatsMode {
     /// A compact one-line summary row.

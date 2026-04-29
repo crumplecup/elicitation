@@ -13,7 +13,18 @@ use super::ArchiveDisplay;
 /// Display strategies for a [`MonitorSnapshot`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum MonitorSnapshotMode {
     /// Summary dashboard: one group per data category.

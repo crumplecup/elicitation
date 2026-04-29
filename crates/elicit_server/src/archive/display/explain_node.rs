@@ -1,7 +1,8 @@
-//! AccessKit display for [`ExplainNode`].
+//! AccessKit display for [`ExplainPlan`].
 //!
-//! The tree is recursive; ID allocation uses a `&mut u64` counter so that each
-//! node in an arbitrarily deep subtree gets a unique `NodeId`.
+//! The plan is stored as a flat arena; display traversal follows child indices
+//! iteratively.  ID allocation uses a `&mut u64` counter so that each node in
+//! an arbitrarily deep subtree gets a unique `NodeId`.
 use elicitation::{Elicit, KaniCompose};
 
 use accesskit::Role as AkRole;
@@ -9,14 +10,25 @@ use elicit_accesskit::{NodeId, NodeJson, Role};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::archive::ExplainNode;
+use crate::archive::{ExplainNode, ExplainPlan};
 
 use super::ArchiveDisplay;
 
-/// Display strategies for an [`ExplainNode`].
+/// Display strategies for an [`ExplainPlan`].
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
 )]
 pub enum ExplainNodeMode {
     /// A recursive tree item — the only meaningful display for plan nodes.
@@ -24,7 +36,7 @@ pub enum ExplainNodeMode {
     TreeNode,
 }
 
-impl ArchiveDisplay for ExplainNode {
+impl ArchiveDisplay for ExplainPlan {
     type Mode = ExplainNodeMode;
 
     fn root_role(_mode: &Self::Mode) -> Role {
@@ -34,16 +46,14 @@ impl ArchiveDisplay for ExplainNode {
     fn to_ak_nodes(&self, _mode: &Self::Mode, id_base: u64) -> (NodeId, Vec<(NodeId, NodeJson)>) {
         let mut counter = id_base;
         let mut nodes = Vec::new();
-        let root_id = build_explain_node(self, &mut counter, &mut nodes);
+        let root_id = build_explain_node(&self.nodes, self.root(), &mut counter, &mut nodes);
         (root_id, nodes)
     }
 }
 
-/// Recursively build AccessKit nodes for `node` and all its children.
-///
-/// `counter` is advanced past every ID allocated in this subtree so that
-/// sibling subtrees start at a non-overlapping base.
+/// Build AccessKit nodes for `node` and all its descendants using the arena.
 fn build_explain_node(
+    arena: &[ExplainNode],
     node: &ExplainNode,
     counter: &mut u64,
     nodes: &mut Vec<(NodeId, NodeJson)>,
@@ -72,7 +82,7 @@ fn build_explain_node(
     let child_root_ids: Vec<NodeId> = node
         .children
         .iter()
-        .map(|child| build_explain_node(child, counter, nodes))
+        .map(|&idx| build_explain_node(arena, &arena[idx], counter, nodes))
         .collect();
 
     let tree_item = NodeJson::new(Role(AkRole::TreeItem))
