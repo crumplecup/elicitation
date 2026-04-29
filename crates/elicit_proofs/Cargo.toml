@@ -39,7 +39,7 @@ required-features = ["runner"]
 [features]
 default = []
 ## Enable Kani proof harnesses for archive VSMs.
-kani = ["dep:elicit_server"]
+kani = ["dep:elicit_server", "dep:chrono"]
 ## Enable Creusot companions for archive VSMs.
 creusot = ["dep:elicit_server"]
 ## Enable Verus companions for archive VSMs.

@@ -4,3 +4,6 @@
 //! Add hand-written harnesses as additional modules alongside the generated ones.
 
 pub mod generated;
+pub mod diag;
+pub mod composition;
+pub mod suite;
