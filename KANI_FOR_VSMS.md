@@ -45,7 +45,7 @@ resolve within finite unwinding bounds, and the harness runs forever.
 | `#[kani::unwind(N)]` | Sets a hard cap on loop iterations. Stops the hang but **invalidates the proof**: any path that requires more than N unwinds is silently ignored. You prove the "easy" cases only. |
 | `kani::assume(discriminant == V)` | Must be applied before the symbolic enum is created. CBMC has already materialised all variants' drop code at assumption-check time. |
 | `BoundedArbitrary` trait + manual `impl` | The symbolic-length destructor problem is in CBMC's internal bookkeeping, not in your code's loop. Bounding your iterator does not bound CBMC's drop reasoning. |
-| `kani::any_vec::<T, 0>()` on the *state* variant's inner fields | Helps for Vec parameters to *transitions* (see §4), but the problem is the enum discriminant itself being symbolic. |
+| `kani::any_vec::<T, 0>()` on the *state* variant's inner fields | Helps for Vec parameters to *transitions* (see §5), but the problem is the enum discriminant itself being symbolic. |
 | `impl kani::Arbitrary for StateEnum` manually with bounded fields | Same root cause: CBMC sees all branches of the match-on-discriminant drop code simultaneously. |
 
 ### The solution: one harness per variant, three harnesses per depth
@@ -109,6 +109,16 @@ This is the compositional proof argument:
   sound at depth-0, is also sound.
 - **By induction:** any finite tree is covered.
 
+**Limitation:** This approach only works when `T` in `Vec<T>` is *not*
+self-recursive. For `ExplainNode { children: Vec<ExplainNode> }`, CBMC's
+destructor model is **type-driven**, not value-driven. Even `Vec::new()`
+(zero elements) makes CBMC unroll:
+```
+ExplainNode::drop → Vec<ExplainNode>::drop → ExplainNode::drop → ...
+```
+The infinite chain is in the *type definition*, not the runtime content.
+`KaniCompose::kani_depth0()` does not help here. See §3 for the fix.
+
 ### The `KaniCompose` trait
 
 `crates/elicitation/src/kani_compose.rs` defines:
@@ -137,7 +147,106 @@ for this reason.
 
 ---
 
-## 3. The Machinery — How Per-Variant, Per-Depth Harnesses Are Generated
+## 3. The Third Problem — Self-Recursive Types: Arena/Index Elimination
+
+### Why depth-bounding is insufficient
+
+The `KaniCompose` depth-0/1/2 approach in §2 works when `T` in `Vec<T>` is
+non-recursive. For `ExplainNode { children: Vec<ExplainNode> }`, CBMC generates
+a recursive destructor chain regardless of runtime values:
+
+```
+ExplainNode::drop()
+  → Vec<ExplainNode>::drop()   // drops each element
+    → ExplainNode::drop()      // for each element
+      → Vec<ExplainNode>::drop()  // ... infinite
+```
+
+The depth of unrolling is determined by CBMC's **type analysis**, not by
+runtime content. An empty `Vec::new()` still triggers this infinite chain
+because the *type* `Vec<ExplainNode>` structurally contains `ExplainNode`,
+which structurally contains `Vec<ExplainNode>`.
+
+### What does not fix it
+
+| Attempted approach | Why it fails |
+|---|---|
+| `KaniCompose::kani_depth0()` with `Vec::new()` | Recursion is in the type, not the value. CBMC unrolls the destructor chain regardless. |
+| `#[kani::unwind(N)]` | Caps CBMC exploration but does not make the type non-recursive. Unsound: paths beyond N unwinds are silently dropped. |
+| Wrapping in `Option<T>` | `Option<ExplainNode>::drop()` → `ExplainNode::drop()` — same infinite chain. |
+| `Box::into_raw` / explicit leak | Unsound: proof no longer covers the dropped state. |
+
+### The solution: remove the recursion from the type
+
+Replace the self-referential field with an **arena index**:
+
+```rust
+// ❌ Before — self-recursive, CBMC hangs even on empty Vec
+pub struct ExplainNode {
+    pub label: String,
+    pub value: Option<f64>,
+    pub children: Vec<ExplainNode>,   // ← recursive
+}
+
+// ✅ After — children are indices into a flat arena
+pub struct ExplainNode {
+    pub label: String,
+    pub value: Option<f64>,
+    pub children: Vec<usize>,         // ← plain index, no recursion
+}
+
+// Arena wrapper holds the flat list
+pub struct ExplainPlan {
+    pub nodes: Vec<ExplainNode>,      // flat, non-recursive
+    pub root: usize,                  // index of the root node
+}
+```
+
+`Vec<usize>::drop()` is trivially bounded. CBMC sees `ExplainNode` as a struct
+with `String` + `Option<f64>` + `Vec<usize>` — all non-recursive.
+`ExplainPlan.nodes` is a `Vec<ExplainNode>`, but `ExplainNode::drop()` no
+longer recurses. The 39 harnesses for variants containing `ExplainView` and
+`ExplainComparison` had all timed out; after the arena refactor, each
+completed in under 10 seconds.
+
+### `KaniCompose` on the new types
+
+After the refactor, `ExplainNode` derives `KaniCompose` as normal (children is
+now `Vec<usize>`, handled by the standard depth rules). The arena wrapper needs
+a manual impl:
+
+```rust
+impl KaniCompose for ExplainPlan {
+    fn kani_depth0() -> Self {
+        Self {
+            nodes: vec![ExplainNode::kani_depth0()],
+            root: 0,
+        }
+    }
+}
+```
+
+**Important:** Do **not** add `#[cfg_attr(kani, derive(kani::Arbitrary))]` to
+any struct containing `String` fields. `String` does not implement
+`kani::Arbitrary`; the attribute compiles fine but Kani fails at verification
+time with a confusing trait-bound error. Use `KaniCompose` exclusively.
+
+### Generalization
+
+Apply the arena/index pattern whenever:
+
+- A type `T` contains a field of type `Vec<T>` or `Box<T>` (direct
+  self-recursion).
+- A mutual recursion cycle exists: `A { data: Vec<B> }`, `B { data: Vec<A> }`.
+- Depth-0 with `Vec::new()` still times out after 60 seconds.
+
+The arena can be as simple as the `ExplainPlan` pattern (flat `Vec<Node>` +
+root index). The key invariant for Kani: `NodeType::drop()` must not call
+itself, directly or through a transitive `Vec<NodeType>`.
+
+---
+
+## 4. The Machinery — How Per-Variant, Per-Depth Harnesses Are Generated
 
 The codebase generates these harnesses automatically. You never write them by
 hand. The pipeline has four stages:
@@ -244,7 +353,7 @@ The generated files are committed — they are source-faithful and auditable.
 
 ---
 
-## 4. Running Proofs with `elicit_proofs vsm`
+## 5. Running Proofs with `elicit_proofs vsm`
 
 The `elicit_proofs` binary (in `crates/elicit_proofs`) provides the `vsm`
 subcommand for running, tracking, and summarising VSM Kani proofs.
@@ -299,7 +408,7 @@ Statuses: `SUCCESS`, `FAILED`, `TIMEOUT`, `ERROR`.
 
 ---
 
-## 5. Bugs Kani Has Found
+## 6. Bugs Kani Has Found
 
 The per-variant approach has proven its value by finding real bugs. Because
 symbolic `usize` parameters cover the full `0..=usize::MAX` range, Kani
@@ -334,7 +443,7 @@ use `saturating_add`. Review any `x + 1` in index math.
 
 ---
 
-## 6. How to Add a New VSM to the Proof Suite
+## 7. How to Add a New VSM to the Proof Suite
 
 ### Step 1: Derive `KaniVariantState` and `KaniCompose` on state types
 
@@ -412,7 +521,7 @@ cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle__d
 
 ---
 
-## 7. Proof Suite Counts (as of last generation)
+## 8. Proof Suite Counts (as of last generation)
 
 | Module | Harnesses | Notes |
 |---|---|---|
@@ -424,7 +533,7 @@ cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle__d
 
 ---
 
-## 8. Architecture Decision Record
+## 9. Architecture Decision Record
 
 ### Why not `impl kani::Arbitrary for StateEnum`?
 
@@ -503,7 +612,7 @@ The generated `src/kani/generated/*.rs` and `manifest.json` are committed:
 
 ---
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 ### All harnesses fail immediately with "requires features: runner"
 
@@ -515,10 +624,15 @@ cargo kani -p elicit_proofs --lib --features kani --harness HARNESS_NAME
 
 ### A new harness hangs or times out
 
-1. **Check for recursive types in state variant fields.** If a variant field
-   is `Vec<T>` where `T` itself contains `Vec<T>` (recursive), the type must
-   implement `KaniCompose` with depth-bounded construction. Add
-   `#[derive(KaniCompose)]` to `T`.
+1. **Check for recursive types in state variant fields.** Distinguish two cases:
+
+   - *Non-recursive `Vec<T>`* (T does not contain `Vec<T>`): add
+     `#[derive(KaniCompose)]` to `T`; depth-bounded instances (§2) will work.
+   - *Self-recursive `Vec<T>`* (T contains `Vec<T>` or `Box<T>`): depth-bounding
+     does **not** help (§3). Apply the arena/index refactor: replace `Vec<T>`
+     with `Vec<usize>` and introduce a flat arena wrapper. The
+     `ExplainNode.children: Vec<ExplainNode>` → `Vec<usize>` change is the
+     reference example.
 
 2. **Check for `HashMap` in state variants.** `HashMap::new()` calls
    `RandomState::new()` → `getrandom` syscall → Kani can't model. Replace
@@ -538,6 +652,23 @@ cargo kani -p elicit_proofs --lib --features kani --harness HARNESS_NAME
 5. **Check `usize` arithmetic.** Any `x + 1` or `x - 1` on a symbolic `usize`
    will fail; use `saturating_add(1)` / `saturating_sub(1)`.
 
+### `#[cfg_attr(kani, derive(kani::Arbitrary))]` causes a trait-bound error
+
+`String` does not implement `kani::Arbitrary`. Adding
+`#[cfg_attr(kani, derive(kani::Arbitrary))]` to any struct with a `String`
+field compiles fine (the derive is gated) but fails at Kani verification time
+with a confusing "does not satisfy `kani::Arbitrary`" error. Never use
+`kani::Arbitrary` on types with `String` fields — use `KaniCompose` instead.
+
+### Harness compiles with `--features kani` but fails under `cargo kani`
+
+`cargo check --features kani` enables the `kani` feature flag but does **not**
+activate `#[cfg(kani)]` blocks. Code inside `#[cfg(kani)]` is only compiled
+when actually running `cargo kani`. This means stale or broken harness code
+in `#[cfg(kani)]` blocks can lurk undetected by `cargo check`. After refactors
+that rename or remove types, explicitly search for `#[cfg(kani)]` in the
+modified files — `cargo check --features kani` will not catch errors there.
+
 ### Harness names in the manifest don't match actual harnesses
 
 Rebuild: `cargo build -p elicit_proofs`. The manifest is generated at build
@@ -556,7 +687,7 @@ primitives, and `KaniCompose` types. For any other type:
 
 ---
 
-## 10. Further Reading
+## 11. Further Reading
 
 | Document | Location |
 |---|---|
