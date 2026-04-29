@@ -42,7 +42,7 @@ use crate::archive::display::{
 };
 use crate::archive::types::{
     AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout,
-    ExplainComparison, ExplainNode, ExportResult, IndexDescriptor, MonitorSnapshot,
+    ExplainComparison, ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot,
     QueryHistoryEntry, QueryResult, RowEditState, SavedQuery,
 };
 
@@ -54,8 +54,7 @@ use crate::archive::types::{
 /// determines which AccessKit node tree is emitted, enforcing WCAG compliance
 /// at the type level.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit,
-    KaniVariantState,
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniVariantState,
 )]
 pub enum ArchivePanelState {
     /// Column-detail view for the selected nav item (default landing).
@@ -120,8 +119,8 @@ pub enum ArchivePanelState {
         schema: String,
         /// Table name (or `"(custom)"` for SQL editor plans).
         table: String,
-        /// Root node of the parsed plan tree.
-        root: ExplainNode,
+        /// Parsed plan arena.
+        root: ExplainPlan,
         /// Active AccessKit display mode (WCAG contract).
         display_mode: ExplainNodeMode,
     },
@@ -548,7 +547,7 @@ pub fn explain_ready(
     proof: Established<ArchivePanelConsistent>,
     schema: String,
     table: String,
-    root: ExplainNode,
+    root: ExplainPlan,
     display_mode: ExplainNodeMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     // If already showing an explain plan, promote to comparison view.
