@@ -17,7 +17,7 @@ fn verify_archive_nav_consistent_prop_marker() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn load_nav__kani__nav_unloaded() {
+fn load_nav__kani__nav_unloaded__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -27,7 +27,27 @@ fn load_nav__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_loaded__kani__nav_unloaded() {
+fn load_nav__kani__nav_unloaded__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_unloaded__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_unloaded__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -38,7 +58,29 @@ fn nav_loaded__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_refresh__kani__nav_unloaded() {
+fn nav_loaded__kani__nav_unloaded__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_unloaded__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_unloaded__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -48,7 +90,27 @@ fn nav_refresh__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn expand_schema__kani__nav_unloaded() {
+fn nav_refresh__kani__nav_unloaded__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_unloaded__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -60,7 +122,31 @@ fn expand_schema__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn collapse_schema__kani__nav_unloaded() {
+fn expand_schema__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -71,7 +157,29 @@ fn collapse_schema__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_up__kani__nav_unloaded() {
+fn collapse_schema__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -81,7 +189,27 @@ fn move_cursor_up__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_down__kani__nav_unloaded() {
+fn move_cursor_up__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -92,7 +220,29 @@ fn move_cursor_down__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn apply_filter__kani__nav_unloaded() {
+fn move_cursor_down__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -103,7 +253,29 @@ fn apply_filter__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn clear_filter__kani__nav_unloaded() {
+fn apply_filter__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_unloaded__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -113,7 +285,27 @@ fn clear_filter__kani__nav_unloaded() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn load_nav__kani__nav_loading() {
+fn clear_filter__kani__nav_unloaded__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_unloaded__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavUnloaded;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_loading__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -123,7 +315,27 @@ fn load_nav__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_loaded__kani__nav_loading() {
+fn load_nav__kani__nav_loading__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_loading__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_loading__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -134,7 +346,29 @@ fn nav_loaded__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_refresh__kani__nav_loading() {
+fn nav_loaded__kani__nav_loading__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_loading__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_loading__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -144,7 +378,27 @@ fn nav_refresh__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn expand_schema__kani__nav_loading() {
+fn nav_refresh__kani__nav_loading__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_loading__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -156,7 +410,31 @@ fn expand_schema__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn collapse_schema__kani__nav_loading() {
+fn expand_schema__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -167,7 +445,29 @@ fn collapse_schema__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_up__kani__nav_loading() {
+fn collapse_schema__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -177,7 +477,27 @@ fn move_cursor_up__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_down__kani__nav_loading() {
+fn move_cursor_up__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -188,7 +508,29 @@ fn move_cursor_down__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn apply_filter__kani__nav_loading() {
+fn move_cursor_down__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -199,7 +541,29 @@ fn apply_filter__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn clear_filter__kani__nav_loading() {
+fn apply_filter__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_loading__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavLoading;
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -209,13 +573,33 @@ fn clear_filter__kani__nav_loading() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn load_nav__kani__nav_ready() {
+fn clear_filter__kani__nav_loading__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_loading__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavLoading;
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_ready__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -225,13 +609,50 @@ fn load_nav__kani__nav_ready() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_loaded__kani__nav_ready() {
+fn load_nav__kani__nav_ready__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_ready__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_ready__d0() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -242,142 +663,15 @@ fn nav_loaded__kani__nav_ready() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_refresh__kani__nav_ready() {
+fn nav_loaded__kani__nav_ready__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = nav_refresh(_state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn expand_schema__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let schema_idx: usize = ::kani::any();
-    let expanded: bool = ::kani::any();
-    let _result = expand_schema(state, proof, schema_idx, expanded);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn collapse_schema__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let schema_idx: usize = ::kani::any();
-    let _result = collapse_schema(state, proof, schema_idx);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn move_cursor_up__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = move_cursor_up(state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn move_cursor_down__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let max: usize = ::kani::any();
-    let _result = move_cursor_down(state, proof, max);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn apply_filter__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let filter: String = ::std::string::String::new();
-    let _result = apply_filter(state, proof, filter);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn clear_filter__kani__nav_ready() {
-    let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: ::std::vec::Vec::new(),
-        cursor: ::kani::any(),
-        filter: ::std::string::String::new(),
-        filter_active: ::kani::any(),
-        show_help: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = clear_filter(state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn load_nav__kani__nav_filtered() {
-    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
-        filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
-    };
-    let proof: Established<ArchiveNavConsistent> = {
-        let __cred = ArchiveNavConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = load_nav(_state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn nav_loaded__kani__nav_filtered() {
-    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
-        filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -388,11 +682,33 @@ fn nav_loaded__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn nav_refresh__kani__nav_filtered() {
-    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn nav_loaded__kani__nav_ready__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_ready__d0() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -402,11 +718,50 @@ fn nav_refresh__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn expand_schema__kani__nav_filtered() {
-    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn nav_refresh__kani__nav_ready__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_ready__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -418,11 +773,54 @@ fn expand_schema__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn collapse_schema__kani__nav_filtered() {
-    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn expand_schema__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -433,11 +831,52 @@ fn collapse_schema__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_up__kani__nav_filtered() {
-    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn collapse_schema__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -447,11 +886,50 @@ fn move_cursor_up__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn move_cursor_down__kani__nav_filtered() {
-    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn move_cursor_up__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -462,11 +940,52 @@ fn move_cursor_down__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn apply_filter__kani__nav_filtered() {
-    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: ::std::vec::Vec::new(),
+fn move_cursor_down__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
@@ -477,11 +996,530 @@ fn apply_filter__kani__nav_filtered() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn clear_filter__kani__nav_filtered() {
+fn apply_filter__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_ready__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: ::std::vec::Vec::new(),
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_ready__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_ready__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavReady {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        cursor: ::kani::any::<usize>(),
+        filter: ::std::string::String::new(),
+        filter_active: ::kani::any::<bool>(),
+        show_help: ::kani::any::<bool>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_filtered__d0() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_filtered__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani__nav_filtered__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_filtered__d0() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_filtered__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani__nav_filtered__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = ::kani::any();
+    let _result = nav_loaded(_state, proof, nav);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_filtered__d0() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_filtered__d1() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani__nav_filtered__d2() {
+    let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_filtered__d0() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: ::std::vec::Vec::new(),
         filter: ::std::string::String::new(),
-        cursor: ::kani::any(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let expanded: bool = ::kani::any();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_filtered__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = ::kani::any();
+    let _result = collapse_schema(state, proof, schema_idx);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_filtered__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_filtered__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = ::kani::any();
+    let _result = move_cursor_down(state, proof, max);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_filtered__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_filtered__d0() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: ::std::vec::Vec::new(),
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_filtered__d1() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
+    };
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani__nav_filtered__d2() {
+    let state: ArchiveNavState = ArchiveNavState::NavFiltered {
+        schemas: vec![
+            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
+            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+        ],
+        filter: ::std::string::String::new(),
+        cursor: ::kani::any::<usize>(),
     };
     let proof: Established<ArchiveNavConsistent> = {
         let __cred = ArchiveNavConsistent::kani_proof_credential();

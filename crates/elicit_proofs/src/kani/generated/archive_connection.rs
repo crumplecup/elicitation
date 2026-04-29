@@ -17,7 +17,7 @@ fn verify_archive_connection_consistent_prop_marker() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__disconnected() {
+fn begin_connect_sql__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -29,7 +29,31 @@ fn begin_connect_sql__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_kv__kani__disconnected() {
+fn begin_connect_sql__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -40,7 +64,29 @@ fn begin_connect_kv__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_sql__kani__disconnected() {
+fn begin_connect_kv__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -51,7 +97,29 @@ fn finish_connect_sql__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_kv__kani__disconnected() {
+fn finish_connect_sql__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -62,7 +130,29 @@ fn finish_connect_kv__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn disconnect__kani__disconnected() {
+fn finish_connect_kv__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -72,7 +162,27 @@ fn disconnect__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn reconnect__kani__disconnected() {
+fn disconnect__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__disconnected__d0() {
     let state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -82,7 +192,27 @@ fn reconnect__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn connection_error__kani__disconnected() {
+fn reconnect__kani__disconnected__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__disconnected__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__disconnected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -93,10 +223,32 @@ fn connection_error__kani__disconnected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__connecting() {
+fn connection_error__kani__disconnected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__disconnected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Disconnected;
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__connecting__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -108,10 +260,40 @@ fn begin_connect_sql__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_kv__kani__connecting() {
+fn begin_connect_sql__kani__connecting__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__connecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -122,10 +304,38 @@ fn begin_connect_kv__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_sql__kani__connecting() {
+fn begin_connect_kv__kani__connecting__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__connecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -136,10 +346,38 @@ fn finish_connect_sql__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_kv__kani__connecting() {
+fn finish_connect_sql__kani__connecting__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__connecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -150,10 +388,38 @@ fn finish_connect_kv__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn disconnect__kani__connecting() {
+fn finish_connect_kv__kani__connecting__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__connecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -163,10 +429,36 @@ fn disconnect__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn reconnect__kani__connecting() {
+fn disconnect__kani__connecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__connecting__d0() {
     let state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -176,10 +468,36 @@ fn reconnect__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn connection_error__kani__connecting() {
+fn reconnect__kani__connecting__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__connecting__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__connecting__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
         profile_name: ::std::string::String::new(),
-        backend: ::kani::any(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -190,9 +508,37 @@ fn connection_error__kani__connecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__sql_connected() {
+fn connection_error__kani__connecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__connecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Connecting {
+        profile_name: ::std::string::String::new(),
+        backend: <BackendKind as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__sql_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -204,9 +550,37 @@ fn begin_connect_sql__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_kv__kani__sql_connected() {
+fn begin_connect_sql__kani__sql_connected__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__sql_connected__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -217,9 +591,35 @@ fn begin_connect_kv__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_sql__kani__sql_connected() {
+fn begin_connect_kv__kani__sql_connected__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__sql_connected__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -230,9 +630,35 @@ fn finish_connect_sql__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_kv__kani__sql_connected() {
+fn finish_connect_sql__kani__sql_connected__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__sql_connected__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -243,9 +669,35 @@ fn finish_connect_kv__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn disconnect__kani__sql_connected() {
+fn finish_connect_kv__kani__sql_connected__d1() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__sql_connected__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -255,9 +707,33 @@ fn disconnect__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn reconnect__kani__sql_connected() {
+fn disconnect__kani__sql_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__sql_connected__d0() {
     let state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -267,9 +743,33 @@ fn reconnect__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn connection_error__kani__sql_connected() {
+fn reconnect__kani__sql_connected__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__sql_connected__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__sql_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
-        db: ::kani::any(),
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -280,7 +780,33 @@ fn connection_error__kani__sql_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__kv_connected() {
+fn connection_error__kani__sql_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__sql_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::SqlConnected {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -294,7 +820,35 @@ fn begin_connect_sql__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_kv__kani__kv_connected() {
+fn begin_connect_sql__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -307,7 +861,33 @@ fn begin_connect_kv__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_sql__kani__kv_connected() {
+fn begin_connect_kv__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -320,7 +900,33 @@ fn finish_connect_sql__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_kv__kani__kv_connected() {
+fn finish_connect_sql__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -333,7 +939,33 @@ fn finish_connect_kv__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn disconnect__kani__kv_connected() {
+fn finish_connect_kv__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -345,7 +977,31 @@ fn disconnect__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn reconnect__kani__kv_connected() {
+fn disconnect__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__kv_connected__d0() {
     let state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -357,7 +1013,31 @@ fn reconnect__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn connection_error__kani__kv_connected() {
+fn reconnect__kani__kv_connected__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__kv_connected__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__kv_connected__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
         path: ::std::string::String::new(),
     };
@@ -370,86 +1050,9 @@ fn connection_error__kani__kv_connected() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let profile_name: String = ::std::string::String::new();
-    let backend: BackendKind = ::kani::any();
-    let _result = begin_connect_sql(_state, proof, profile_name, backend);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn begin_connect_kv__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let profile_name: String = ::std::string::String::new();
-    let _result = begin_connect_kv(_state, proof, profile_name);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn finish_connect_sql__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let db: DatabaseDescriptor = ::kani::any();
-    let _result = finish_connect_sql(_state, proof, db);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn finish_connect_kv__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let path: String = ::std::string::String::new();
-    let _result = finish_connect_kv(_state, proof, path);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn disconnect__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = disconnect(_state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn reconnect__kani__reconnecting() {
-    let state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
-    };
-    let proof: Established<ArchiveConnectionConsistent> = {
-        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
-        ::elicitation::Established::prove(&__cred)
-    };
-    let _result = reconnect(state, proof);
-}
-#[cfg(kani)]
-#[::kani::proof]
-fn connection_error__kani__reconnecting() {
-    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
-        db: ::kani::any(),
+fn connection_error__kani__kv_connected__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
     };
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -460,7 +1063,290 @@ fn connection_error__kani__reconnecting() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_sql__kani__connection_error() {
+fn connection_error__kani__kv_connected__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::KvConnected {
+        path: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__reconnecting__d0() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__reconnecting__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__reconnecting__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__reconnecting__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__reconnecting__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth1(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__reconnecting__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::Reconnecting {
+        db: <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth2(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__connection_error__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -474,7 +1360,35 @@ fn begin_connect_sql__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn begin_connect_kv__kani__connection_error() {
+fn begin_connect_sql__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_sql__kani__connection_error__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let backend: BackendKind = ::kani::any();
+    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__connection_error__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -487,7 +1401,33 @@ fn begin_connect_kv__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_sql__kani__connection_error() {
+fn begin_connect_kv__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_connect_kv__kani__connection_error__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile_name: String = ::std::string::String::new();
+    let _result = begin_connect_kv(_state, proof, profile_name);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__connection_error__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -500,7 +1440,33 @@ fn finish_connect_sql__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn finish_connect_kv__kani__connection_error() {
+fn finish_connect_sql__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_sql__kani__connection_error__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let db: DatabaseDescriptor = ::kani::any();
+    let _result = finish_connect_sql(_state, proof, db);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__connection_error__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -513,7 +1479,33 @@ fn finish_connect_kv__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn disconnect__kani__connection_error() {
+fn finish_connect_kv__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn finish_connect_kv__kani__connection_error__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let path: String = ::std::string::String::new();
+    let _result = finish_connect_kv(_state, proof, path);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__connection_error__d0() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -525,7 +1517,31 @@ fn disconnect__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn reconnect__kani__connection_error() {
+fn disconnect__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn disconnect__kani__connection_error__d2() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = disconnect(_state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__connection_error__d0() {
     let state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
@@ -537,7 +1553,57 @@ fn reconnect__kani__connection_error() {
 }
 #[cfg(kani)]
 #[::kani::proof]
-fn connection_error__kani__connection_error() {
+fn reconnect__kani__connection_error__d1() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn reconnect__kani__connection_error__d2() {
+    let state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = reconnect(state, proof);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__connection_error__d0() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__connection_error__d1() {
+    let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
+        message: ::std::string::String::new(),
+    };
+    let proof: Established<ArchiveConnectionConsistent> = {
+        let __cred = ArchiveConnectionConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = connection_error(_state, proof, message);
+}
+#[cfg(kani)]
+#[::kani::proof]
+fn connection_error__kani__connection_error__d2() {
     let _state: ArchiveConnectionState = ArchiveConnectionState::ConnectionError {
         message: ::std::string::String::new(),
     };
