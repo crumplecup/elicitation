@@ -29,7 +29,7 @@
 use elicit_ui::WcagVerified;
 use elicitation::{
     Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
-    formal_method,
+    formal_method, kani_label,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -564,8 +564,8 @@ pub fn explain_ready(
             comparison: ExplainComparison {
                 left: old_root,
                 right: root,
-                label_left: format!("{old_schema}.{old_table}"),
-                label_right: format!("{schema}.{table}"),
+                label_left: kani_label!("{old_schema}.{old_table}"),
+                label_right: kani_label!("{schema}.{table}"),
             },
         },
         _ => ArchivePanelState::ExplainView {
