@@ -18,7 +18,7 @@ use super::{HasLabelConstraint, KeyboardAccessibleConstraint, ValidRoleConstrain
 use crate::Viewport;
 use accesskit::NodeId;
 use accesskit::Role;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Container-like roles whose children contribute to layout size.
 fn is_container_role(role: Role) -> bool {
@@ -333,7 +333,7 @@ impl TerminalBreakpointSet {
     pub fn verify_all(
         &self,
         root: NodeId,
-        nodes: &HashMap<NodeId, accesskit::Node>,
+        nodes: &BTreeMap<NodeId, accesskit::Node>,
         constraint_set: &ConstraintSet,
     ) -> BreakpointReport {
         let mut results = Vec::with_capacity(self.breakpoints.len());

@@ -3,7 +3,7 @@
 use accesskit::NodeId;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Opaque identifier for a widget in the UI tree.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
@@ -82,7 +82,7 @@ pub struct ContrastViolation {
 /// Carries the AccessKit nodes without the typestate machinery.
 #[derive(Debug, Clone)]
 pub struct VerifiedTree {
-    pub(crate) nodes: HashMap<NodeId, accesskit::Node>,
+    pub(crate) nodes: BTreeMap<NodeId, accesskit::Node>,
     pub(crate) root: NodeId,
     pub(crate) viewport: crate::Viewport,
 }
@@ -99,7 +99,7 @@ impl VerifiedTree {
     }
 
     /// All nodes in the tree, keyed by `NodeId`.
-    pub fn nodes(&self) -> &HashMap<NodeId, accesskit::Node> {
+    pub fn nodes(&self) -> &BTreeMap<NodeId, accesskit::Node> {
         &self.nodes
     }
 
@@ -109,7 +109,7 @@ impl VerifiedTree {
     /// intended for use in renderer tests that need a known-good tree
     /// without going through the full WCAG verification path.
     pub fn from_parts(
-        nodes: HashMap<NodeId, accesskit::Node>,
+        nodes: BTreeMap<NodeId, accesskit::Node>,
         root: NodeId,
         viewport: crate::Viewport,
     ) -> Self {

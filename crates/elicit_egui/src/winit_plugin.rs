@@ -20,7 +20,7 @@
 //! | `describe` | `config_id` | JSON descriptor | Inspect current config |
 //! | `emit` | `config_id` | `main.rs` source | Emit complete native app |
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use elicitation::{
@@ -78,13 +78,13 @@ impl VerifiedWorkflow for EguiWinitAppConfigured {}
 
 /// Shared mutable state for [`EguiWinitPlugin`].
 pub struct EguiWinitCtx {
-    pub(crate) items: Mutex<HashMap<Uuid, EguiWinitDescriptor>>,
+    pub(crate) items: Mutex<BTreeMap<Uuid, EguiWinitDescriptor>>,
 }
 
 impl EguiWinitCtx {
     fn new() -> Self {
         Self {
-            items: Mutex::new(HashMap::new()),
+            items: Mutex::new(BTreeMap::new()),
         }
     }
 }

@@ -5,7 +5,7 @@
 //! bounding boxes for constraint verification.
 
 #[cfg(feature = "layout-engine")]
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[cfg(feature = "layout-engine")]
 use accesskit::NodeId as AkNodeId;
@@ -56,6 +56,28 @@ pub enum LayoutMode {
     Grid,
 }
 
+/// Ordered wrapper for `taffy::NodeId` enabling `BTreeMap` use.
+///
+/// `taffy::NodeId` is internally a `u64` and converts via `From` — this
+/// wrapper adds the `Ord` impl so it can be used as a `BTreeMap` key.
+#[cfg(feature = "layout-engine")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct OrdTaffyId(pub taffy::NodeId);
+
+#[cfg(feature = "layout-engine")]
+impl PartialOrd for OrdTaffyId {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[cfg(feature = "layout-engine")]
+impl Ord for OrdTaffyId {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        u64::from(self.0).cmp(&u64::from(other.0))
+    }
+}
+
 /// Bridge between AccessKit tree and Taffy layout engine.
 ///
 /// Walks an AccessKit tree, constructs a parallel Taffy tree,
@@ -64,9 +86,9 @@ pub enum LayoutMode {
 pub struct TaffyBridge {
     tree: TaffyTree,
     /// Maps AccessKit NodeId → Taffy NodeId.
-    ak_to_taffy: HashMap<AkNodeId, taffy::NodeId>,
+    ak_to_taffy: BTreeMap<AkNodeId, taffy::NodeId>,
     /// Maps Taffy NodeId → AccessKit NodeId.
-    taffy_to_ak: HashMap<taffy::NodeId, AkNodeId>,
+    taffy_to_ak: BTreeMap<OrdTaffyId, AkNodeId>,
 }
 
 #[cfg(feature = "layout-engine")]
@@ -76,8 +98,8 @@ impl TaffyBridge {
     pub fn new() -> Self {
         Self {
             tree: TaffyTree::new(),
-            ak_to_taffy: HashMap::new(),
-            taffy_to_ak: HashMap::new(),
+            ak_to_taffy: BTreeMap::new(),
+            taffy_to_ak: BTreeMap::new(),
         }
     }
 
@@ -89,7 +111,7 @@ impl TaffyBridge {
     pub fn build_from_accesskit(
         &mut self,
         root_id: AkNodeId,
-        nodes: &HashMap<AkNodeId, accesskit::Node>,
+        nodes: &BTreeMap<AkNodeId, accesskit::Node>,
     ) -> Result<taffy::NodeId, LayoutEngineError> {
         self.build_node_recursive(root_id, nodes)
     }
@@ -97,7 +119,7 @@ impl TaffyBridge {
     fn build_node_recursive(
         &mut self,
         ak_id: AkNodeId,
-        nodes: &HashMap<AkNodeId, accesskit::Node>,
+        nodes: &BTreeMap<AkNodeId, accesskit::Node>,
     ) -> Result<taffy::NodeId, LayoutEngineError> {
         let node = nodes
             .get(&ak_id)
@@ -123,7 +145,7 @@ impl TaffyBridge {
         };
 
         self.ak_to_taffy.insert(ak_id, taffy_id);
-        self.taffy_to_ak.insert(taffy_id, ak_id);
+        self.taffy_to_ak.insert(OrdTaffyId(taffy_id), ak_id);
 
         Ok(taffy_id)
     }
@@ -174,12 +196,12 @@ impl TaffyBridge {
         &self,
         viewport: Viewport,
     ) -> Result<LayoutContext, LayoutEngineError> {
-        let mut bounds = HashMap::new();
+        let mut bounds = BTreeMap::new();
 
         for (taffy_id, ak_id) in &self.taffy_to_ak {
             let layout = self
                 .tree
-                .layout(*taffy_id)
+                .layout(taffy_id.0)
                 .map_err(|e| LayoutEngineError::new(format!("Failed to get layout: {e}")))?;
 
             let bb = BoundingBox::new(

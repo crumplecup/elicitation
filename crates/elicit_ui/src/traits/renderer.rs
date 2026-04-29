@@ -33,7 +33,7 @@
 //! tool.  For egui (immediate-mode), `Widget = Box<dyn FnOnce(&mut egui::Ui)>`
 //! lets the DFS pre-build the render closure tree before execution.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use accesskit::{ActionRequest, Node, NodeId, Role};
 use elicitation::Established;
@@ -2635,7 +2635,7 @@ pub trait UiNodeBridge: UiRenderBackend {
 
 fn render_dfs<T: UiNodeBridge>(
     bridge: &T,
-    nodes: &HashMap<NodeId, Node>,
+    nodes: &BTreeMap<NodeId, Node>,
     id: NodeId,
     stats: &mut RenderStats,
     wcag: &Established<WcagVerified>,

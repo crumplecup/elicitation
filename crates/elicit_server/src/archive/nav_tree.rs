@@ -4,7 +4,10 @@
 //! the pre-loaded schema/table list and is rebuilt by [`build_nav_tree`]
 //! before the event loop starts.
 
-use elicitation::Elicit;
+use elicitation::{Elicit, KaniCompose};
+// Re-export so that the generated Kani harnesses (which glob-import nav_tree::*)
+// can access SchemaWithExpand without a separate explicit import.
+pub use crate::archive::nav_model::SchemaWithExpand;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -24,7 +27,7 @@ use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
 // ── Data model ────────────────────────────────────────────────────────────────
 
 /// A schema together with its pre-loaded table list and Phase 4 object types.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct SchemaEntry {
     /// Schema name.
     pub name: String,
@@ -64,7 +67,7 @@ impl kani::Arbitrary for SchemaEntry {
 }
 
 /// Pre-loaded navigation tree passed to the ratatui frontend.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct NavTree {
     /// Database / catalog name (first schema name or the supplied db name).
     pub db_name: String,

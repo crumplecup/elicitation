@@ -10,7 +10,7 @@ use accesskit::{Node, NodeId, Rect, Role, Toggled};
 use elicit_ui::node_roles::*;
 use elicit_ui::{RolePreserved, UiNodeBridge, UiRenderBackend};
 use elicitation::Established;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ── EguiBackend ───────────────────────────────────────────────────────────────
 
@@ -1590,7 +1590,7 @@ impl UiNodeBridge for EguiBackend {
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
 pub fn render_tree(
     ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
+    nodes: &BTreeMap<NodeId, Node>,
     root: NodeId,
 ) -> (elicit_ui::RenderStats, Vec<NodeId>) {
     let mut stats = elicit_ui::RenderStats::default();
@@ -1635,7 +1635,7 @@ fn heading_size(node: &Node) -> f32 {
 
 fn render_node_recursive(
     ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
+    nodes: &BTreeMap<NodeId, Node>,
     node_id: NodeId,
     stats: &mut elicit_ui::RenderStats,
     clicked_nodes: &mut Vec<NodeId>,
@@ -2072,7 +2072,7 @@ fn render_node_recursive(
 
 fn render_container(
     ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
+    nodes: &BTreeMap<NodeId, Node>,
     node: &Node,
     stats: &mut elicit_ui::RenderStats,
     clicked_nodes: &mut Vec<NodeId>,

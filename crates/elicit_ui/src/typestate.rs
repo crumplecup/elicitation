@@ -7,7 +7,7 @@ use crate::constraints::{
 };
 use crate::{VerificationReport, Viewport, validators};
 use accesskit::{Node, NodeId, TreeUpdate};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::marker::PhantomData;
 
 /// Typestate marker: Layout awaiting verification.
@@ -30,7 +30,7 @@ pub struct Rendered;
 ///   to obtain a [`crate::VerifiedTree`] for a frontend bridge
 #[derive(Debug, Clone)]
 pub struct Layout<State> {
-    nodes: HashMap<NodeId, Node>,
+    nodes: BTreeMap<NodeId, Node>,
     root: NodeId,
     viewport: Option<Viewport>,
     report: Option<VerificationReport>,
@@ -40,7 +40,7 @@ pub struct Layout<State> {
 impl Layout<Pending> {
     /// Create a new pending layout from an AccessKit TreeUpdate.
     pub fn from_update(update: TreeUpdate) -> Self {
-        let nodes: HashMap<NodeId, Node> = update.nodes.into_iter().collect();
+        let nodes: BTreeMap<NodeId, Node> = update.nodes.into_iter().collect();
         let root = update.focus;
 
         Self {
@@ -266,7 +266,7 @@ impl Layout<Verified> {
     }
 
     /// Get a reference to the node map.
-    pub fn nodes(&self) -> &HashMap<NodeId, Node> {
+    pub fn nodes(&self) -> &BTreeMap<NodeId, Node> {
         &self.nodes
     }
 

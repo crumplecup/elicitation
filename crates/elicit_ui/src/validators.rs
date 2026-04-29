@@ -10,7 +10,7 @@ use crate::constraints::{
 };
 use crate::{VerificationError, Viewport};
 use accesskit::NodeId;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Convert a constraint [`Violation`](crate::constraints::Violation) to a legacy
 /// [`VerificationError`].
@@ -54,7 +54,7 @@ fn violation_to_error(v: crate::constraints::Violation) -> VerificationError {
 ///
 /// Delegates to [`HasLabelConstraint`].
 pub fn validate_has_label(
-    nodes: &HashMap<NodeId, accesskit::Node>,
+    nodes: &BTreeMap<NodeId, accesskit::Node>,
     node_id: NodeId,
 ) -> Result<(), VerificationError> {
     let ctx = ConstraintContext {
@@ -70,7 +70,7 @@ pub fn validate_has_label(
 ///
 /// Delegates to [`ValidRoleConstraint`].
 pub fn validate_valid_role(
-    nodes: &HashMap<NodeId, accesskit::Node>,
+    nodes: &BTreeMap<NodeId, accesskit::Node>,
     node_id: NodeId,
 ) -> Result<(), VerificationError> {
     let ctx = ConstraintContext {
@@ -86,7 +86,7 @@ pub fn validate_valid_role(
 ///
 /// Delegates to [`MinTouchTargetConstraint`].
 pub fn validate_min_target_size(
-    nodes: &HashMap<NodeId, accesskit::Node>,
+    nodes: &BTreeMap<NodeId, accesskit::Node>,
     node_id: NodeId,
 ) -> Result<(), VerificationError> {
     let ctx = ConstraintContext {
@@ -102,7 +102,7 @@ pub fn validate_min_target_size(
 ///
 /// Delegates to [`NoOverflowConstraint`].
 pub fn validate_no_overflow(
-    nodes: &HashMap<NodeId, accesskit::Node>,
+    nodes: &BTreeMap<NodeId, accesskit::Node>,
     node_id: NodeId,
     viewport: Viewport,
 ) -> Result<(), VerificationError> {
@@ -116,7 +116,7 @@ pub fn validate_no_overflow(
 ///
 /// Delegates to [`KeyboardAccessibleConstraint`].
 pub fn validate_keyboard_accessible(
-    nodes: &HashMap<NodeId, accesskit::Node>,
+    nodes: &BTreeMap<NodeId, accesskit::Node>,
     node_id: NodeId,
 ) -> Result<(), VerificationError> {
     let ctx = ConstraintContext {

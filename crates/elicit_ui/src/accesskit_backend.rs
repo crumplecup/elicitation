@@ -1,6 +1,6 @@
 //! Reference implementation of all UI traits backed by AccessKit.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 use accesskit::{Node, NodeId, Role, Toggled, Tree, TreeId, TreeUpdate};
@@ -48,19 +48,19 @@ use crate::{
 };
 
 struct BackendState {
-    nodes: HashMap<NodeId, Node>,
+    nodes: BTreeMap<NodeId, Node>,
     root: NodeId,
     next_id: u64,
     focus_order: Vec<NodeId>,
-    event_handlers: HashMap<(u64, String), String>,
-    parent_map: HashMap<NodeId, NodeId>,
+    event_handlers: BTreeMap<(u64, String), String>,
+    parent_map: BTreeMap<NodeId, NodeId>,
     page_lang: String,
 }
 
 impl BackendState {
     fn new() -> Self {
         let root = NodeId(0);
-        let mut nodes = HashMap::new();
+        let mut nodes = BTreeMap::new();
         let mut root_node = Node::new(Role::Window);
         root_node.set_label("Application");
         nodes.insert(root, root_node);
@@ -69,8 +69,8 @@ impl BackendState {
             root,
             next_id: 1,
             focus_order: Vec::new(),
-            event_handlers: HashMap::new(),
-            parent_map: HashMap::new(),
+            event_handlers: BTreeMap::new(),
+            parent_map: BTreeMap::new(),
             page_lang: String::new(),
         }
     }

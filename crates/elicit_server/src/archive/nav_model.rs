@@ -18,10 +18,10 @@
 //! items whose name contains the filter string (case-insensitive).  Esc clears
 //! the filter and returns to normal navigation.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use elicit_accesskit::KeyBinding;
-use elicitation::Elicit;
+use elicitation::{Elicit, KaniCompose};
 use elicitation::Established;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -82,7 +82,7 @@ pub enum FlatItem {
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
 
 /// A schema entry combined with its current expand/collapse state.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub struct SchemaWithExpand {
     /// The underlying schema descriptor.
     pub entry: SchemaEntry,
@@ -335,9 +335,9 @@ pub struct ArchiveNavModel {
     /// Whether the filter bar is active (accepting keystrokes).
     pub filter_active: bool,
     /// Cached FK/constraint/index enrichment, keyed by `(schema, table)`.
-    pub table_inspections: HashMap<(String, String), TableInspection>,
+    pub table_inspections: BTreeMap<(String, String), TableInspection>,
     /// Cached per-column planner statistics, keyed by `(schema, table)`.
-    pub column_stats: HashMap<(String, String), Vec<ColumnStats>>,
+    pub column_stats: BTreeMap<(String, String), Vec<ColumnStats>>,
     /// Most recent export result (schema, table, content, format).
     pub last_export: Option<(String, String, String, ExportFormat)>,
     /// In-memory history cache (newest first), loaded at startup.
@@ -393,8 +393,8 @@ impl ArchiveNavModel {
             flash: None,
             filter: String::new(),
             filter_active: false,
-            table_inspections: HashMap::new(),
-            column_stats: HashMap::new(),
+            table_inspections: BTreeMap::new(),
+            column_stats: BTreeMap::new(),
             last_export: None,
             history_cache: Vec::new(),
             history_idx: None,
@@ -1790,9 +1790,9 @@ impl ArchiveNavModel {
     )> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
         use elicit_ui::{VerifiedTree, Viewport};
-        use std::collections::HashMap;
+        use std::collections::BTreeMap;
 
-        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut nodes: BTreeMap<AkNodeId, AkNode> = BTreeMap::new();
         let mut counter: u64 = 1; // NodeId(0) reserved for Window
 
         // ── toolbar ───────────────────────────────────────────────────────────
@@ -1885,9 +1885,9 @@ impl ArchiveNavModel {
     )> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
         use elicit_ui::{VerifiedTree, Viewport};
-        use std::collections::HashMap;
+        use std::collections::BTreeMap;
 
-        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut nodes: BTreeMap<AkNodeId, AkNode> = BTreeMap::new();
         let mut counter: u64 = 1;
         let content_children = self.build_content_nodes(&mut nodes, &mut counter);
 
@@ -1919,9 +1919,9 @@ impl ArchiveNavModel {
     )> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
         use elicit_ui::{VerifiedTree, Viewport};
-        use std::collections::HashMap;
+        use std::collections::BTreeMap;
 
-        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut nodes: BTreeMap<AkNodeId, AkNode> = BTreeMap::new();
         let mut counter: u64 = 1;
         let (root_id, nav_item_nodes) = self.build_nav_item_nodes(&mut nodes, &mut counter);
 
@@ -1939,7 +1939,7 @@ impl ArchiveNavModel {
     /// Build toolbar AccessKit nodes and return the toolbar root `NodeId`.
     fn build_toolbar_nodes(
         &self,
-        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
     ) -> accesskit::NodeId {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
@@ -2045,7 +2045,7 @@ impl ArchiveNavModel {
     /// Build the flat nav items and return `(tree_node_id, item_ids)`.
     fn build_nav_item_nodes(
         &self,
-        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
     ) -> (accesskit::NodeId, Vec<accesskit::NodeId>) {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
@@ -2202,7 +2202,7 @@ impl ArchiveNavModel {
     /// of direct children of the content group.
     fn build_content_nodes(
         &self,
-        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
     ) -> Vec<accesskit::NodeId> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
@@ -3222,7 +3222,7 @@ impl ArchiveNavModel {
     fn build_explain_node(
         &self,
         node: &ExplainNode,
-        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
     ) -> accesskit::NodeId {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
@@ -3252,7 +3252,7 @@ impl ArchiveNavModel {
     /// overlay, if any.  Returns `None` when no overlay is open.
     fn build_overlay_node(
         &self,
-        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        nodes: &mut std::collections::BTreeMap<accesskit::NodeId, accesskit::Node>,
         counter: &mut u64,
     ) -> Option<accesskit::NodeId> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};

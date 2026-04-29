@@ -103,7 +103,7 @@ pub struct LayoutContext {
     /// Viewport dimensions.
     pub viewport: Viewport,
     /// All element bounding boxes indexed by NodeId.
-    pub bounds: std::collections::HashMap<accesskit::NodeId, BoundingBox>,
+    pub bounds: std::collections::BTreeMap<accesskit::NodeId, BoundingBox>,
 }
 
 impl LayoutContext {
@@ -111,7 +111,7 @@ impl LayoutContext {
     #[tracing::instrument(level = "debug", skip(bounds), fields(num_bounds = bounds.len()))]
     pub fn new(
         viewport: Viewport,
-        bounds: std::collections::HashMap<accesskit::NodeId, BoundingBox>,
+        bounds: std::collections::BTreeMap<accesskit::NodeId, BoundingBox>,
     ) -> Self {
         Self { viewport, bounds }
     }
