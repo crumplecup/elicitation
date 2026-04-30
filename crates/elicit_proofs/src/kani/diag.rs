@@ -579,3 +579,336 @@ fn diag_db_rows_vec_drop() {
     let v: Vec<elicit_db::DbRow> = Vec::new();
     let _ = v;
 }
+
+// ── open_connection_editor d1/d2 blocker theories ────────────────────────────
+
+/// Theory AJ: ConnectionProfile::kani_depth1() drop alone.
+/// Isolates whether multi-Option<String> struct causes SAT explosion at d1.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_connection_profile_depth1() {
+    use elicitation::KaniCompose;
+    let _p = <ConnectionProfile as KaniCompose>::kani_depth1();
+}
+
+/// Theory AK: ConnectionProfile::kani_depth2() drop alone.
+/// Confirms whether d2 escalates the issue.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_connection_profile_depth2() {
+    use elicitation::KaniCompose;
+    let _p = <ConnectionProfile as KaniCompose>::kani_depth2();
+}
+
+/// Theory AL: ExplainPlan::kani_depth1() drop alone.
+/// Isolates the arena-based ExplainPlan at d1.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_plan_depth1() {
+    use elicitation::KaniCompose;
+    let _p = <ExplainPlan as KaniCompose>::kani_depth1();
+}
+
+/// Theory AM: ExplainPlan::kani_depth2() drop alone.
+/// Isolates the arena-based ExplainPlan at d2.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_plan_depth2() {
+    use elicitation::KaniCompose;
+    let _p = <ExplainPlan as KaniCompose>::kani_depth2();
+}
+
+/// Theory AN: Inline open_connection_editor body at d1, bypassing #[instrument].
+/// Tests whether tracing span + symbolic heap at d1 causes the hang.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_open_connection_editor_inlined_d1() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let profile = Box::new(<ConnectionProfile as KaniCompose>::kani_depth1());
+    let display_mode = <ConnectionProfileMode as KaniCompose>::kani_depth1();
+    // Inline the function body — no #[instrument] wrapper
+    let _result = (
+        ArchivePanelState::ConnectionEdit {
+            profile,
+            display_mode,
+        },
+        (),
+    );
+    let _ = state;
+    let _ = _result;
+}
+
+/// Theory AO: Same as AN but WITH calling the real function (includes #[instrument]).
+/// If AN passes but AO hangs, #[instrument] tracing span is the blocker.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_open_connection_editor_real_d1() {
+    use elicitation::KaniCompose;
+    let state = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let proof = {
+        let cred = ArchivePanelConsistent::kani_proof_credential();
+        elicitation::Established::prove(&cred)
+    };
+    let profile = <ConnectionProfile as KaniCompose>::kani_depth1();
+    let display_mode = <ConnectionProfileMode as KaniCompose>::kani_depth1();
+    let _result = open_connection_editor(state, proof, profile, display_mode);
+}
+
+/// Theory AP: Drop two ArchivePanelState values (ExplainView d1 + ConnectionEdit d1).
+/// Tests whether two concurrent symbolic 18-variant drops cause SAT explosion,
+/// independent of any function call.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_two_panel_state_drops_d1() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let _s2 = ArchivePanelState::ConnectionEdit {
+        profile: Box::new(<ConnectionProfile as KaniCompose>::kani_depth1()),
+        display_mode: <ConnectionProfileMode as KaniCompose>::kani_depth1(),
+    };
+}
+
+/// Theory AQ: Drop ONE ArchivePanelState ExplainView d1 — no second state.
+/// If this passes but AP hangs, the issue is two concurrent state drops, not one.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_one_explain_view_drop_d1() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+}
+
+/// Theory AR: ExplainView d1 + ColumnDetail (trivial second variant, no heap).
+/// Tests if it's the 18-variant cross-product model OR the specific variant content.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_view_plus_column_detail_d1() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let _s2 = ArchivePanelState::ColumnDetail;
+}
+
+/// Theory AS: ExplainView d0 + ConnectionEdit d1 (concrete input is cheaper).
+/// Tests if using depth-0 for the input state avoids the explosion.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_view_d0_plus_connection_edit_d1() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth0(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth0(),
+    };
+    let _s2 = ArchivePanelState::ConnectionEdit {
+        profile: Box::new(<ConnectionProfile as KaniCompose>::kani_depth1()),
+        display_mode: <ConnectionProfileMode as KaniCompose>::kani_depth1(),
+    };
+}
+
+/// Theory AT: AdminView depth0 alone — no ExplainView.
+/// If this hangs, AdminView itself has expensive drop logic.
+/// If fast, the cost comes from the combination.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_admin_view_alone_d0() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::AdminView {
+        snapshot: <AdminSnapshot as KaniCompose>::kani_depth0(),
+        loading: kani::any(),
+        display_mode: <AdminSnapshotMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+/// Theory AU: ExplainView d1 + AdminView d0 directly (no function call).
+/// Isolates drop combination cost from transition function overhead.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_view_d1_plus_admin_view_d0() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let _s2 = ArchivePanelState::AdminView {
+        snapshot: <AdminSnapshot as KaniCompose>::kani_depth0(),
+        loading: kani::any(),
+        display_mode: <AdminSnapshotMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+/// Theory AV: ExplainView d0 + AdminView d0.
+/// If AU hangs but this is fast, d1 input depth is the trigger with AdminView.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_view_d0_plus_admin_view_d0() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth0(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth0(),
+    };
+    let _s2 = ArchivePanelState::AdminView {
+        snapshot: <AdminSnapshot as KaniCompose>::kani_depth0(),
+        loading: kani::any(),
+        display_mode: <AdminSnapshotMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+/// Theory AW: ExplainView d1 + MonitorView d0 directly.
+/// MonitorSnapshot has MORE Vec fields but monitor_ready passes.
+/// If fast here too, MonitorView is cheaper than AdminView for a structural reason.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_explain_view_d1_plus_monitor_view_d0() {
+    use elicitation::KaniCompose;
+    let _s1 = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let _s2 = ArchivePanelState::MonitorView {
+        snapshot: <MonitorSnapshot as KaniCompose>::kani_depth0(),
+        loading: kani::any(),
+        display_mode: <MonitorSnapshotMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+// ── Theory AX: ConnectionProfile alone ───────────────────────────────────────
+// Isolates whether ConnectionProfile::kani_depth0() drop is bounded.
+#[kani::proof]
+fn diag_connection_profile_d0_alone() {
+    use elicitation::KaniCompose;
+    let _p = <ConnectionProfile as KaniCompose>::kani_depth0();
+}
+
+// ── Theory AY: ExplainPlan d1 + ConnectionProfile d0 ─────────────────────────
+// Isolates whether the two-drop combination is bounded (analogous to AU/AV).
+#[kani::proof]
+fn diag_explain_view_d1_plus_connection_profile_d0() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ExplainView {
+        schema: String::new(),
+        table: String::new(),
+        root: <ExplainPlan as KaniCompose>::kani_depth1(),
+        display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
+    };
+    let _p = <ConnectionProfile as KaniCompose>::kani_depth0();
+}
+
+// ── Theory AZ: ConnectionEdit output state alone ─────────────────────────────
+// Isolates whether constructing and dropping the result state is bounded.
+// PREVIOUSLY HUNG: ConnectionProfile flat in union + BTree-bearing dead arms.
+// AFTER FIX: Box<ConnectionProfile> → union footprint = 8B pointer → EXPECTED PASS.
+#[kani::proof]
+fn diag_connection_edit_state_d0_alone() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ConnectionEdit {
+        profile: Box::new(<ConnectionProfile as KaniCompose>::kani_depth0()),
+        display_mode: <ConnectionProfileMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+// ── Theory BA: ErdView with layout: None — inline Option<ErdLayout> in union ─
+// If this hangs, the BTree drop loops are triggered by nondeterministic union
+// bytes even when Option discriminant is None.  That would confirm that boxing
+// is required to cut the reachability.
+#[kani::proof]
+fn diag_erd_view_layout_none() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::ErdView {
+        schema: String::new(),
+        diagram: <ErdDiagram as KaniCompose>::kani_depth0(),
+        layout: None,
+        loading: false,
+        display_mode: <ErdDiagramMode as KaniCompose>::kani_depth0(),
+    };
+}
+
+// ── Theory BB: ColumnDetail (unit variant) alone ────────────────────────────────
+// If this hangs, the issue is the enum's drop glue in general (CBMC explores all
+// variant arms even with a concrete discriminant).  If it passes, the hang is
+// specific to some data-carrying variants.
+#[kani::proof]
+fn diag_column_detail_unit_alone() {
+    let _s = ArchivePanelState::ColumnDetail;
+}
+
+// ── Theory BC: Loading (2 plain Strings) alone ───────────────────────────────
+// Simpler data-carrying variant.  If BB passes but BC hangs, even two Strings
+// inside this enum union cause CBMC trouble.
+#[kani::proof]
+fn diag_loading_alone() {
+    let _s = ArchivePanelState::Loading {
+        schema: String::new(),
+        label: String::new(),
+    };
+}
+
+// ── Theory BD: ErrorView (1 String, last variant) alone ──────────────────────
+// Last variant; smallest data-carrying variant.
+#[kani::proof]
+fn diag_error_view_alone() {
+    let _s = ArchivePanelState::ErrorView {
+        message: String::new(),
+    };
+}
+
+// ── Theory BE: ConnectionEdit with ALL fields inlined (no kani_depth0 call) ──
+// AZ calls kani_depth0() which is a function call that CBMC inlines.  This
+// theory constructs the IDENTICAL concrete value inline without any function
+// calls.  If AZ hangs but BE passes, the kani_depth0() function call/inlining
+// path (or something reachable from it) is the trigger.  If BE also hangs,
+// the type structure / union layout itself is the root cause.
+// RESULT: HANGS — fully concrete inline still hangs. Root cause is structural.
+// #[kani::proof]
+// fn diag_connection_edit_inline() { ... }
+
+// ── Theory BF: ConnectionEdit with all Options as Some (not None) ────────────
+// RESULT: HANGS (when profile was flat in union). After boxing, this should pass.
+// BF is now superseded by AZ (which uses KaniCompose::kani_depth0 + Box).
+// #[kani::proof]
+// fn diag_connection_edit_options_some() { ... }
+
+// ── Theory BG: SqlEditor (has Option<QueryResult> + Option<String>) ──────────
+// Tests whether ANY variant with Option fields hangs.  SqlEditor is simpler
+// than ConnectionEdit (fewer fields) but has two Option fields.
+#[kani::proof]
+fn diag_sql_editor_alone() {
+    use elicitation::KaniCompose;
+    let _s = ArchivePanelState::SqlEditor {
+        text: String::new(),
+        result: None,
+        running: false,
+        error: None,
+    };
+}

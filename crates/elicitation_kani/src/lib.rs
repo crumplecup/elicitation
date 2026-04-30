@@ -161,3 +161,7 @@ mod ui_types;
 // Vec trust-boundary empirical investigation
 #[cfg(kani)]
 mod vec_boundary;
+
+// Synthetic diagnostic theories for BTreeMap/HashMap drop-glue in enums
+#[cfg(kani)]
+mod diag;

@@ -49,10 +49,10 @@ pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveAdminPlugin, ArchiveBrowsePlugin, ArchiveConstraintPlugin,
-    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin,
-    ArchiveRoutinePlugin, ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore,
-    SavedQueryStore, SchemaExists, TableExists, explain_sql_direct,
-    generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
+    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin,
+    ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, SavedQueryStore, SchemaExists,
+    TableExists, explain_sql_direct, generate_ddl_direct, get_column_stats_direct,
+    inspect_table_direct,
 };
 #[cfg(not(kani))]
 pub use plugins::{ArchiveQueryPlugin, QueryExecuted, export_query_result};

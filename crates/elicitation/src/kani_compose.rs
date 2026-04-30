@@ -108,6 +108,27 @@ impl<T: KaniCompose> KaniCompose for Vec<T> {
     }
 }
 
+/// `[T; N]`: each element is constructed with the appropriate depth method.
+///
+/// `std::array::from_fn` (stable since 1.63) calls the closure `N` times without
+/// requiring `T: Copy`, so only `KaniCompose` is needed.  Fixed-size arrays are
+/// used in game-state structs (e.g. `[Hand; MAX_PLAYER_HANDS]`) and other
+/// phase structs where the length is a compile-time constant.
+#[cfg(kani)]
+impl<T: KaniCompose, const N: usize> KaniCompose for [T; N] {
+    fn kani_depth0() -> Self {
+        std::array::from_fn(|_| T::kani_depth0())
+    }
+
+    fn kani_depth1() -> Self {
+        std::array::from_fn(|_| T::kani_depth1())
+    }
+
+    fn kani_depth2() -> Self {
+        std::array::from_fn(|_| T::kani_depth2())
+    }
+}
+
 /// `Option<T>`: depth-0 is `None`; depth-1/2 are `Some(T::kani_depth0())`.
 #[cfg(kani)]
 impl<T: KaniCompose> KaniCompose for Option<T> {
@@ -224,6 +245,27 @@ impl<A: KaniCompose, B: KaniCompose, C: KaniCompose, D: KaniCompose> KaniCompose
 }
 
 // ── chrono impls ──────────────────────────────────────────────────────────────
+
+/// `Box<T>`: transparently delegates to `T`'s depth methods.
+///
+/// Boxing a large struct reduces an enum variant's union footprint to a single
+/// pointer, which prevents the CBMC SAT formula explosion that occurs when a
+/// complex live-arm type co-exists with a BTree-bearing dead-arm variant.
+/// See `KANI_FOR_VSMS.md` for the root-cause analysis.
+#[cfg(kani)]
+impl<T: KaniCompose> KaniCompose for Box<T> {
+    fn kani_depth0() -> Self {
+        Box::new(T::kani_depth0())
+    }
+
+    fn kani_depth1() -> Self {
+        Box::new(T::kani_depth1())
+    }
+
+    fn kani_depth2() -> Self {
+        Box::new(T::kani_depth2())
+    }
+}
 
 /// `DateTime<Utc>`: use the Unix epoch as a bounded stand-in at all depths.
 #[cfg(all(kani, feature = "chrono"))]

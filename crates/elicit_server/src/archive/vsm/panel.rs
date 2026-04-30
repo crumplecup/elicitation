@@ -229,7 +229,11 @@ pub enum ArchivePanelState {
     /// Connection profile editor.
     ConnectionEdit {
         /// Clone of the profile being edited; changes not persisted until saved.
-        profile: ConnectionProfile,
+        ///
+        /// Boxed to keep the enum variant's union footprint small; large inline
+        /// structs combined with BTree-bearing sibling variants cause CBMC to
+        /// generate unbounded SAT formulae during drop-glue analysis.
+        profile: Box<ConnectionProfile>,
         /// Active AccessKit display mode (WCAG contract).
         display_mode: ConnectionProfileMode,
     },
@@ -508,7 +512,7 @@ pub fn open_connection_editor(
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     (
         ArchivePanelState::ConnectionEdit {
-            profile,
+            profile: Box::new(profile),
             display_mode,
         },
         proof,

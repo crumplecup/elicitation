@@ -6,8 +6,8 @@
 //! cross-frontend translation.
 
 use crate::serde_types::{
-    BlockJson, BordersJson, ColorJson, DirectionJson, LineJson, ParagraphText, SpanJson, StyleJson,
-    TextJson, TuiNode, WidgetJson,
+    BlockJson, BordersJson, ColorJson, DirectionJson, LineJson, ModifierJson, ParagraphText,
+    SpanJson, StyleJson, TextJson, TuiNode, WidgetJson,
 };
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use elicit_ui::ColorTheme;
@@ -350,6 +350,18 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         label.clone()
     };
 
+    // When the node is explicitly selected, apply reverse-video highlight so
+    // every renderer (ratatui, egui, leptos) can surface the cursor position.
+    let selected_style = if node.is_selected() == Some(true) {
+        Some(StyleJson {
+            fg: None,
+            bg: None,
+            modifiers: vec![ModifierJson::Reversed, ModifierJson::Bold],
+        })
+    } else {
+        None
+    };
+
     let block_from_label = |l: &str| -> Option<BlockJson> {
         if l.is_empty() {
             None
@@ -368,7 +380,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
     match role {
         Role::Label | Role::Paragraph | Role::TextRun => WidgetJson::Paragraph {
             text: text_str.into(),
-            style: None,
+            style: selected_style,
             wrap: true,
             scroll: None,
             alignment: None,
@@ -377,7 +389,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         Role::Heading | Role::Strong | Role::Emphasis | Role::Code | Role::Mark => {
             WidgetJson::Paragraph {
                 text: text_str.into(),
-                style: None,
+                style: selected_style,
                 wrap: true,
                 scroll: None,
                 alignment: None,
@@ -491,7 +503,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         // Fallback: Paragraph with text (label IS the content, so no block title)
         _ => WidgetJson::Paragraph {
             text: text_str.into(),
-            style: None,
+            style: selected_style,
             wrap: true,
             scroll: None,
             alignment: None,

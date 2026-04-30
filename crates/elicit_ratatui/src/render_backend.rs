@@ -14,7 +14,8 @@ use elicit_ui::{RolePreserved, UiNodeBridge, UiRenderBackend};
 use elicitation::Established;
 
 use crate::serde_types::{
-    ConstraintJson, DirectionJson, ParagraphText, RowJson, TuiNode, WidgetJson,
+    ConstraintJson, DirectionJson, ModifierJson, ParagraphText, RowJson, StyleJson, TuiNode,
+    WidgetJson,
 };
 
 // ── RatatuiBackend ────────────────────────────────────────────────────────────
@@ -642,10 +643,19 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<ParagraphNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
+            let style = if node.is_selected().unwrap_or(false) {
+                Some(StyleJson {
+                    fg: None,
+                    bg: None,
+                    modifiers: vec![ModifierJson::Reversed, ModifierJson::Bold],
+                })
+            } else {
+                None
+            };
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
                     text: ParagraphText::Plain(node_label(node)),
-                    style: None,
+                    style,
                     wrap: true,
                     scroll: None,
                     alignment: None,

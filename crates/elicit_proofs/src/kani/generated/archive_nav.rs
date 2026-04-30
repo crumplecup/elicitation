@@ -64,7 +64,7 @@ fn nav_loaded__kani__nav_unloaded__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth1();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -75,7 +75,7 @@ fn nav_loaded__kani__nav_unloaded__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth2();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -128,8 +128,8 @@ fn expand_schema__kani__nav_unloaded__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -140,8 +140,8 @@ fn expand_schema__kani__nav_unloaded__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -163,7 +163,7 @@ fn collapse_schema__kani__nav_unloaded__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -174,7 +174,7 @@ fn collapse_schema__kani__nav_unloaded__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -226,7 +226,7 @@ fn move_cursor_down__kani__nav_unloaded__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -237,7 +237,7 @@ fn move_cursor_down__kani__nav_unloaded__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -352,7 +352,7 @@ fn nav_loaded__kani__nav_loading__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth1();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -363,7 +363,7 @@ fn nav_loaded__kani__nav_loading__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth2();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -416,8 +416,8 @@ fn expand_schema__kani__nav_loading__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -428,8 +428,8 @@ fn expand_schema__kani__nav_loading__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -451,7 +451,7 @@ fn collapse_schema__kani__nav_loading__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -462,7 +462,7 @@ fn collapse_schema__kani__nav_loading__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -514,7 +514,7 @@ fn move_cursor_down__kani__nav_loading__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -525,7 +525,7 @@ fn move_cursor_down__kani__nav_loading__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -677,7 +677,7 @@ fn nav_loaded__kani__nav_ready__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth1();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -697,7 +697,7 @@ fn nav_loaded__kani__nav_ready__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth2();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -787,8 +787,8 @@ fn expand_schema__kani__nav_ready__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -808,8 +808,8 @@ fn expand_schema__kani__nav_ready__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -845,7 +845,7 @@ fn collapse_schema__kani__nav_ready__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -865,7 +865,7 @@ fn collapse_schema__kani__nav_ready__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -954,7 +954,7 @@ fn move_cursor_down__kani__nav_ready__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -974,7 +974,7 @@ fn move_cursor_down__kani__nav_ready__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -1162,7 +1162,7 @@ fn nav_loaded__kani__nav_filtered__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth1();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -1180,7 +1180,7 @@ fn nav_loaded__kani__nav_filtered__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth2();
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
 }
 #[cfg(kani)]
@@ -1260,8 +1260,8 @@ fn expand_schema__kani__nav_filtered__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -1279,8 +1279,8 @@ fn expand_schema__kani__nav_filtered__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
-    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
 }
 #[cfg(kani)]
@@ -1312,7 +1312,7 @@ fn collapse_schema__kani__nav_filtered__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -1330,7 +1330,7 @@ fn collapse_schema__kani__nav_filtered__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
 }
 #[cfg(kani)]
@@ -1409,7 +1409,7 @@ fn move_cursor_down__kani__nav_filtered__d1() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth1();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]
@@ -1427,7 +1427,7 @@ fn move_cursor_down__kani__nav_filtered__d2() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth2();
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
 }
 #[cfg(kani)]

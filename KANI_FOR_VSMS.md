@@ -685,6 +685,71 @@ primitives, and `KaniCompose` types. For any other type:
 - Or implement `KaniCompose` manually with concrete constructions.
 - Or wrap it in `Option<T>` (gets `None` at depth-0) if optional.
 
+### Diagnosing which loops are causing a hang: `cbmc --show-loops`
+
+When a harness hangs at 99% CPU, use CBMC's `--show-loops` to enumerate every
+loop in the GOTO model **before** running the SAT solver. This identifies the
+culprit without waiting for an unbounded run.
+
+**Step 1 — build the GOTO binary.**
+Run the harness with `--cbmc-args --show-loops`. Kani will build the GOTO
+binary, then its output parser will panic (it can't consume the non-JSON
+`--show-loops` output), but the `.out` file is left behind:
+
+```bash
+cargo kani -p elicit_proofs --lib --features kani \
+    --harness 'kani::diag::my_failing_harness' \
+    -Z unstable-options --cbmc-args --show-loops
+```
+
+Look for the `.out` path in the output, e.g.:
+
+```
+Reading GOTO program from file
+target/kani/.../elicit_proofs-HASH__HARNESS_MANGLED_NAME.out
+```
+
+**Step 2 — inspect the loops.**
+Run CBMC directly on the `.out` file. The Kani-bundled binary is at
+`~/.kani/kani-X.Y.Z/bin/cbmc`:
+
+```bash
+CBMC=~/.kani/kani-0.67.0/bin/cbmc
+GOTO=$(ls target/kani/x86_64-unknown-linux-gnu/debug/deps/elicit_proofs-*HARNESS*.out)
+$CBMC "$GOTO" --show-loops 2>&1
+```
+
+**What to look for:**
+
+The loop list shows **every loop reachable in the GOTO model** — not just those
+in the harness itself. Key patterns:
+
+| Loop function | What it means |
+|---|---|
+| `drop_in_place::<[ComplexType]>` | Vec slice drop from **another enum variant** |
+| `BTreeMap … deallocating_next/end` | BTree-internal traversal (ErdLayout etc.) |
+| `__rust_dealloc.0 / .1` | Kani allocator loops (usually bounded) |
+
+**The critical insight — enum drop glue includes ALL variants:**  
+Even if your harness constructs only `MyEnum::VariantA`, CBMC includes the
+drop-glue loops for **every variant** because Rust's enum is a union and CBMC
+may not propagate the discriminant through the generated match. A seemingly
+trivial harness that just constructs and drops one small variant will include
+`Vec<ErdNode>` slice drops, BTreeMap traversals, etc. if other variants of the
+same enum contain those types.
+
+This is the fundamental driver of unbounded unwinding in `ArchivePanelState`
+harnesses: the 18-variant enum carries `ErdView { layout: Option<ErdLayout> }`
+(ErdLayout is a `BTreeMap<String, …>`), and BTree drop traversal is pulled into
+every harness that ever drops an `ArchivePanelState` value, regardless of which
+variant was actually stored.
+
+**Resolution strategy:** see §3 (arena/index elimination) and compartmentalise
+state so the problematic loops only appear when the relevant variant is truly
+reachable. If a variant's field type has unmanageable drop loops under Kani,
+consider hiding it behind `Box<T>` (one pointer drop, no loop) or behind a
+`#[cfg(not(kani))]`-gated newtype with a trivial `KaniCompose` impl.
+
 ---
 
 ## 11. Further Reading
