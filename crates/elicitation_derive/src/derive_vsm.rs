@@ -240,6 +240,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
             type State     = #state_type;
             type Invariant = #invariant_type;
 
+            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_harnesses() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __harnesses = ::std::vec::Vec::new();
@@ -251,6 +252,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __harnesses
             }
 
+            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_creusot_contracts(
                 __inv_fn: &str,

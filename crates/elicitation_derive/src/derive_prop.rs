@@ -151,6 +151,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
             // User-declared credential: formal_method will call prove(&P::kani_proof_credential()).
             // The user must separately declare impl ProvableFrom<cred_ty> for Self.
             let cred_impl = quote! {
+                #[allow(unexpected_cfgs)]
                 #[cfg(kani)]
                 impl #impl_generics #name #ty_generics #where_clause {
                     /// Return a Kani symbolic credential for use in proof harnesses.
@@ -169,6 +170,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
             // No credential: use `()` as credential and auto-derive ProvableFrom<()>.
             // This preserves backward-compatible assert()-equivalent proofs.
             let cred_impl = quote! {
+                #[allow(unexpected_cfgs)]
                 #[cfg(kani)]
                 impl #impl_generics #name #ty_generics #where_clause {
                     /// Return the trivial unit credential used for marker propositions.

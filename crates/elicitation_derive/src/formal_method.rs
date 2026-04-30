@@ -421,6 +421,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             // vec![] branch immediately — no symbolic heap, no unbounded drops.
             // No stub_verified needed.
             let kani = quote! {
+                #[allow(unexpected_cfgs)]
                 #[cfg(kani)]
                 #[::kani::proof]
                 fn #kani_fn() {
@@ -542,10 +543,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 // `proc_macro2::TokenStream` (backed by `Vec<TokenTree>`, a
                 // recursive heap type) and CBMC would inflate the SAT formula
                 // through the drop-glue for every companion in the crate.
+                #[allow(unexpected_cfgs)]
                 #[cfg(not(kani))]
                 #[doc = #struct_doc]
                 #[allow(non_camel_case_types)]
                 #vis struct #struct_name;
+                #[allow(unexpected_cfgs)]
                 #[cfg(not(kani))]
                 impl #struct_name {
                     /// Return the Kani harness `TokenStream` for this transition.
@@ -616,6 +619,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 format!("Creusot companion. Contracts: `{contracts_str}`.")
             };
             let creusot = quote! {
+                #[allow(unexpected_cfgs)]
                 #[cfg(creusot)]
                 #[doc = #creusot_doc]
                 #[requires(true)]
@@ -633,6 +637,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 format!("Verus companion. Contracts: `{contracts_str}`.")
             };
             let verus = quote! {
+                #[allow(unexpected_cfgs)]
                 #[cfg(verus)]
                 verus! {
                     #[doc = #verus_doc]

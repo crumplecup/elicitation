@@ -342,6 +342,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
     // the trivially-identical cases away.
 
     quote! {
+        #[allow(unexpected_cfgs)]
         #[cfg(kani)]
         impl #impl_generics ::elicitation::KaniCompose for #name #ty_generics #where_clause {
             // #[inline(always)] ensures CBMC can propagate Vec::new() etc.
