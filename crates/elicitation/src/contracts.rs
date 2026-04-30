@@ -1111,6 +1111,7 @@ pub trait VerifiedStateMachine {
     /// ```
     ///
     /// The default implementation returns an empty list (no harnesses).
+    #[cfg(not(kani))]
     fn transition_harnesses() -> Vec<proc_macro2::TokenStream> {
         vec![]
     }
@@ -1123,6 +1124,7 @@ pub trait VerifiedStateMachine {
     ///
     /// The composition says: "the invariant is a valid proposition AND every
     /// transition preserves it without panicking for any reachable input."
+    #[cfg(not(kani))]
     fn vsm_kani_proof() -> proc_macro2::TokenStream {
         let mut ts = Self::Invariant::kani_proof();
         for harness in Self::transition_harnesses() {
@@ -1139,6 +1141,7 @@ pub trait VerifiedStateMachine {
     /// Otherwise they fall back to `#[trusted]` placeholders.
     ///
     /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
     fn transition_creusot_contracts(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
         vec![]
     }
@@ -1150,6 +1153,7 @@ pub trait VerifiedStateMachine {
     /// generated companions use real `#[requires]`/`#[ensures]` annotations and
     /// Creusot will verify the function bodies. Otherwise trusted placeholders
     /// are emitted (same as the stub path).
+    #[cfg(not(kani))]
     fn vsm_creusot_proof() -> proc_macro2::TokenStream {
         let mut ts = Self::Invariant::creusot_proof();
         let inv_fn = Self::Invariant::creusot_invariant_fn_name();

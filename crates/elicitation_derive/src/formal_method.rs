@@ -537,9 +537,16 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             };
 
             let companion = quote! {
+                // The companion struct is used only from build.rs / codegen paths.
+                // Under Kani it must be absent: its methods return
+                // `proc_macro2::TokenStream` (backed by `Vec<TokenTree>`, a
+                // recursive heap type) and CBMC would inflate the SAT formula
+                // through the drop-glue for every companion in the crate.
+                #[cfg(not(kani))]
                 #[doc = #struct_doc]
                 #[allow(non_camel_case_types)]
                 #vis struct #struct_name;
+                #[cfg(not(kani))]
                 impl #struct_name {
                     /// Return the Kani harness `TokenStream` for this transition.
                     ///

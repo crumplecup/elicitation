@@ -919,3 +919,77 @@ fn diag_sql_editor_alone() {
         error: None,
     };
 }
+
+// ── Theory BH: Bare DataGrid with all concrete-zero / None fields ─────────────
+// Does the DataGrid variant itself cause CBMC trouble when fully concrete?
+// All scalars are zero, edit_state is None, Strings are empty (no heap).
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_concrete_zero() {
+    let _s = ArchivePanelState::DataGrid {
+        schema: String::new(),
+        table: String::new(),
+        result: QueryResult { row_count: 0 },
+        page: 0_u32,
+        grid_row: 0_usize,
+        grid_col: 0_usize,
+        edit_state: None,
+        display_mode: QueryResultMode::DataGrid,
+    };
+}
+
+// ── Theory BI: DataGrid with kani::any() for all scalar fields ───────────────
+// Does symbolic content in the scalars (page/grid_row/grid_col/row_count) cause
+// a blowup?
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_symbolic_scalars() {
+    let _s = ArchivePanelState::DataGrid {
+        schema: String::new(),
+        table: String::new(),
+        result: QueryResult {
+            row_count: kani::any(),
+        },
+        page: kani::any(),
+        grid_row: kani::any(),
+        grid_col: kani::any(),
+        edit_state: None,
+        display_mode: QueryResultMode::DataGrid,
+    };
+}
+
+// ── Theory BJ: column_detail() called with DataGrid input ────────────────────
+// Mimics the failing harness: DataGrid state consumed + ColumnDetail returned.
+// If BH/BI pass but BJ hangs, the transition call itself (or its drop semantics)
+// is the trigger.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_column_detail_with_data_grid_input() {
+    use elicitation::contracts::{Established, ProvableFrom};
+    let state = ArchivePanelState::DataGrid {
+        schema: String::new(),
+        table: String::new(),
+        result: QueryResult { row_count: 0 },
+        page: 0_u32,
+        grid_row: 0_usize,
+        grid_col: 0_usize,
+        edit_state: None,
+        display_mode: QueryResultMode::DataGrid,
+    };
+    let proof: Established<ArchivePanelConsistent> = Established::assert();
+    let _r = column_detail(state, proof);
+}
+
+// ── Theory BK: data_grid_ready() called with ColumnDetail input ──────────────
+// Mimics the other failing harness: trivial input, DataGrid OUTPUT produced.
+// If BH/BI pass but BK hangs, the DataGrid output drop (not input) is the culprit.
+#[cfg(kani)]
+#[kani::proof]
+fn diag_data_grid_ready_with_column_detail_input() {
+    use elicitation::contracts::{Established, ProvableFrom};
+    let state = ArchivePanelState::ColumnDetail;
+    let proof: Established<ArchivePanelConsistent> = Established::assert();
+    let result = QueryResult { row_count: 0 };
+    let display_mode = QueryResultMode::DataGrid;
+    let _r = data_grid_ready(state, proof, String::new(), String::new(), result, display_mode);
+}
