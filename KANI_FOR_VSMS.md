@@ -45,7 +45,7 @@ resolve within finite unwinding bounds, and the harness runs forever.
 | `#[kani::unwind(N)]` | Sets a hard cap on loop iterations. Stops the hang but **invalidates the proof**: any path that requires more than N unwinds is silently ignored. You prove the "easy" cases only. |
 | `kani::assume(discriminant == V)` | Must be applied before the symbolic enum is created. CBMC has already materialised all variants' drop code at assumption-check time. |
 | `BoundedArbitrary` trait + manual `impl` | The symbolic-length destructor problem is in CBMC's internal bookkeeping, not in your code's loop. Bounding your iterator does not bound CBMC's drop reasoning. |
-| `kani::any_vec::<T, 0>()` on the *state* variant's inner fields | Helps for Vec parameters to *transitions* (see §5), but the problem is the enum discriminant itself being symbolic. |
+| `kani::any_vec::<T, 0>()` on the *state* variant's inner fields | Helps for Vec parameters to *transitions* (see §6), but the problem is the enum discriminant itself being symbolic. |
 | `impl kani::Arbitrary for StateEnum` manually with bounded fields | Same root cause: CBMC sees all branches of the match-on-discriminant drop code simultaneously. |
 
 ### The solution: one harness per variant, three harnesses per depth
@@ -137,6 +137,7 @@ Impls:
 - `String`: all depths → `String::new()` (symbolic strings cause path explosion)
 - `Vec<T>`: depth-0 = empty; depth-1 = one element; depth-2 = two elements
 - `Option<T>`: depth-0 = `None`; depth-1/2 = `Some(T::kani_depth0())`
+- `Box<T>`: all depths → `Box::new(T::kani_depth{n}())` (see §4 for why this matters)
 - `BTreeMap<K,V>`, `HashMap<K,V,S>`: all depths = empty (no `RandomState::new()`)
 - User types: `#[derive(KaniCompose)]` or manual impl
 
@@ -246,7 +247,150 @@ itself, directly or through a transitive `Vec<NodeType>`.
 
 ---
 
-## 4. The Machinery — How Per-Variant, Per-Depth Harnesses Are Generated
+## 4. The Fourth Problem — Union Byte Aliasing (Complex Live Arm + BTree Dead Arm)
+
+### Symptom
+
+A harness with a **concrete discriminant** and **no recursive types** still hangs
+at 99% CPU. Per §1 the discriminant is concrete, per §3 no recursive `Vec<T>`
+exists. The type is structurally straightforward — yet CBMC runs unbounded.
+
+This happened with `ArchivePanelState::ConnectionEdit`:
+
+```rust
+// ✅ Concrete discriminant — no recursive types — BUT HANGS
+let _s = ArchivePanelState::ConnectionEdit {
+    profile: ConnectionProfile { /* 12× Option<String> fields */ },
+    display_mode: ConnectionProfileMode::Card,
+};
+```
+
+### Root cause: CBMC's enum union model
+
+Rust enums are unions under the hood. When CBMC analyses the DROP of an enum
+value, it does not just reason about the live arm — it must prove that the
+**dead arms' bytes cannot trigger their destructors**. For a dead arm containing
+a `BTreeMap`, CBMC must traverse the BTree node chain to prove it terminates:
+
+```
+// CBMC's internal model for ArchivePanelState::drop()
+match discriminant {
+    ConnectionEdit  => /* live: drop profile, display_mode */
+    ErdView         => /* DEAD — but CBMC still asks: "is the BTree reachable?" */
+                       BTreeMap::drop() → loop over BTree nodes …
+    …
+}
+```
+
+CBMC propagates the concrete discriminant to prune the live arm correctly. But
+for each dead arm, it must **also prove the dead arm's data is not live** — i.e.,
+that no valid pointer lurks in the union's byte representation from the live arm's
+fields.
+
+### The trigger: `String::new()` dangling pointers
+
+`ConnectionProfile` contains roughly 12 `Option<String>` fields. At depth-0:
+- `String::new()` sets the internal buffer pointer to `NonNull::dangling()` = `0x1`.
+- `Option<String>::None` leaves the byte representation as zero (null niche).
+- At depth-0, all `Option<String>` fields are `None`, so most bytes are 0.
+
+The struct is ~222 bytes. Those 222 bytes sit in the enum union alongside every
+other variant. The dead `ErdView` variant contains `Option<ErdLayout>` where
+`ErdLayout` is a `BTreeMap`. CBMC sees those same 222 bytes through `ErdView`'s
+lens and asks: "could these bytes represent a valid, non-null BTree root node
+pointer?" The answer is not trivially "no" — because `String::new()` puts
+`0x1` (non-null, non-zero) into some of those bytes — so CBMC enters the BTree
+traversal loop trying to prove the BTree is empty or null. The loop unwinds
+without bound.
+
+### The fix: `Box<T>` for large live-arm structs
+
+`Box<T>` stores only a pointer (8 bytes on 64-bit). The union footprint of the
+live arm shrinks from ~222 bytes to exactly 8 bytes. Those 8 bytes represent one
+valid heap pointer. CBMC trivially proves the dead arm's BTree node fields
+(also 8-byte pointer slots) are not aliased with the live arm's content:
+
+```rust
+// ✅ Live arm is Box<T>: union footprint = 8 bytes.  CBMC immediately proves
+//    dead BTree arm is unreachable.  Both AZ and BA now pass in ~1s.
+ConnectionEdit {
+    profile: Box<ConnectionProfile>,   // ← box the large struct
+    display_mode: ConnectionProfileMode,
+}
+```
+
+The construction site wraps the value before returning it as the output state:
+
+```rust
+fn open_connection_editor(
+    state: ArchivePanelState,
+    proof: Established<ArchivePanelConsistent>,
+    profile: ConnectionProfile,           // ← takes plain value …
+    display_mode: ConnectionProfileMode,
+) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
+    (
+        ArchivePanelState::ConnectionEdit {
+            profile: Box::new(profile),   // ← … boxes on the way out
+            display_mode,
+        },
+        proof,
+    )
+}
+```
+
+### How this was diagnosed: synthetic ladder
+
+The root cause was identified by running a graduated sequence of isolated Kani
+harnesses in `crates/elicitation_kani` (no heavy workspace dependencies — fast
+build cycle). Each theory changed exactly one variable:
+
+| Theory | Live arm | Dead arm | Result |
+|--------|----------|----------|--------|
+| BO | 7 `Option<String>` direct | `u32` | **PASS** — dead arm trivial |
+| BP | `MockProfile` (7 `Option<String>` nested) | `u32` | **PASS** — dead arm still trivial |
+| BQ | `MockProfile` nested | `BTreeMap` | **HANG** ← trigger confirmed |
+| BR | `MockProfile` nested | `Box<BTreeMap>` | **HANG** — boxing dead arm insufficient |
+| BS | `Box<MockProfile>` | `BTreeMap` | **PASS** ← boxing live arm resolves |
+
+BQ isolates the trigger (complex live arm + BTree dead arm). BR rules out
+boxing the dead arm as a fix. BS confirms boxing the live arm is sufficient.
+
+### `Box<T>: KaniCompose`
+
+Boxing a live-arm struct requires `Box<T>` to implement `KaniCompose` so the
+harness generator produces correct depth-bounded constructions:
+
+```rust
+#[cfg(kani)]
+impl<T: KaniCompose> KaniCompose for Box<T> {
+    fn kani_depth0() -> Self { Box::new(T::kani_depth0()) }
+    fn kani_depth1() -> Self { Box::new(T::kani_depth1()) }
+    fn kani_depth2() -> Self { Box::new(T::kani_depth2()) }
+}
+```
+
+The `field_construction_exprs` function in `kani_variants.rs` already handles
+`Box<T>` via the fallthrough "any other T → delegate to `KaniCompose`" case,
+so no change to the derive macro was required — only the impl needed adding.
+
+### When to apply this pattern
+
+Box a variant's field when **all three** of these hold:
+
+1. The struct is large (dozens of bytes, typically multiple `Option<String>` or
+   similar non-trivially-zero fields).
+2. The enum has at least one other variant containing a collection with
+   non-trivial drop traversal (`BTreeMap`, `Vec<T>` where T has heap fields).
+3. Concrete-discriminant harnesses for *other* variants hang even though those
+   other variants look structurally simple (this is the tell: the BTree loop is
+   in a dead arm, pulled in by the large live arm's bytes).
+
+Boxing the struct has zero runtime overhead relative to heap-allocating it
+elsewhere; the trade-off is one extra pointer indirection per field access.
+
+---
+
+## 5. The Machinery — How Per-Variant, Per-Depth Harnesses Are Generated
 
 The codebase generates these harnesses automatically. You never write them by
 hand. The pipeline has four stages:
@@ -326,8 +470,12 @@ the state enum. It returns `Vec<KaniVariantConstruction>` —
 | `Vec<T>` | `Vec::new()` | `vec![<T as KaniCompose>::kani_depth0()]` | two elements |
 | `String` | `String::new()` | same | same |
 | `Option<T>` | `None` | `Some(<T as KaniCompose>::kani_depth0())` | same as depth-1 |
+| `Box<T>` | `Box::new(<T>::kani_depth0())` | `kani_depth1()` | `kani_depth2()` |
 | primitive | `kani::any::<T>()` | same | same |
 | any other `T` | `<T as KaniCompose>::kani_depth0()` | `kani_depth1()` | `kani_depth2()` |
+
+`Box<T>` falls through to the "any other T" path in the derive since `Box<T>:
+KaniCompose` is implemented; the table row above is the effective behaviour.
 
 ### Stage 4: `build.rs` + `manifest.json`
 
@@ -353,7 +501,7 @@ The generated files are committed — they are source-faithful and auditable.
 
 ---
 
-## 5. Running Proofs with `elicit_proofs vsm`
+## 6. Running Proofs with `elicit_proofs vsm`
 
 The `elicit_proofs` binary (in `crates/elicit_proofs`) provides the `vsm`
 subcommand for running, tracking, and summarising VSM Kani proofs.
@@ -408,7 +556,7 @@ Statuses: `SUCCESS`, `FAILED`, `TIMEOUT`, `ERROR`.
 
 ---
 
-## 6. Bugs Kani Has Found
+## 7. Bugs Kani Has Found
 
 The per-variant approach has proven its value by finding real bugs. Because
 symbolic `usize` parameters cover the full `0..=usize::MAX` range, Kani
@@ -443,7 +591,7 @@ use `saturating_add`. Review any `x + 1` in index math.
 
 ---
 
-## 7. How to Add a New VSM to the Proof Suite
+## 8. How to Add a New VSM to the Proof Suite
 
 ### Step 1: Derive `KaniVariantState` and `KaniCompose` on state types
 
@@ -521,19 +669,19 @@ cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle__d
 
 ---
 
-## 8. Proof Suite Counts (as of last generation)
+## 9. Proof Suite Counts (as of last generation)
 
 | Module | Harnesses | Notes |
 |---|---|---|
 | `archive_connection` | 129 | All pass (3× expansion) |
 | `archive_nav` | 111 | All pass; 1 overflow fixed |
 | `archive_overlay` | 168 | All pass; 2 overflows fixed |
-| `archive_panel` | ~1245 | Largest suite; verification ongoing |
+| `archive_panel` | ~1245 | `ConnectionEdit` variant boxed (§4); all d0 pass, d1/d2 ongoing |
 | **Total** | **~1653** | 3× expansion from per-depth harnesses |
 
 ---
 
-## 9. Architecture Decision Record
+## 10. Architecture Decision Record
 
 ### Why not `impl kani::Arbitrary for StateEnum`?
 
@@ -612,7 +760,7 @@ The generated `src/kani/generated/*.rs` and `manifest.json` are committed:
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### All harnesses fail immediately with "requires features: runner"
 
@@ -651,6 +799,23 @@ cargo kani -p elicit_proofs --lib --features kani --harness HARNESS_NAME
 
 5. **Check `usize` arithmetic.** Any `x + 1` or `x - 1` on a symbolic `usize`
    will fail; use `saturating_add(1)` / `saturating_sub(1)`.
+
+6. **Check for union byte aliasing (large live arm + BTree dead arm).** (§4)
+   If a harness with a concrete discriminant and no recursive types still hangs,
+   and `--show-loops` reveals `BTreeMap::deallocating_*` loops for a *different*
+   variant, the trigger is union byte aliasing. The large live-arm struct's
+   non-null interior pointers (e.g., `String::new()` → `NonNull::dangling()`)
+   look like valid BTree node pointers to CBMC when it inspects the union through
+   the dead arm's layout.
+   
+   **Diagnosis:** run a synthetic ladder in `crates/elicitation_kani`:
+   1. Live arm = your large struct + dead arm = `u32` → should PASS
+   2. Live arm = your large struct + dead arm = `BTreeMap` → should HANG (confirms trigger)
+   3. Live arm = `Box<YourStruct>` + dead arm = `BTreeMap` → should PASS (confirms fix)
+   
+   **Fix:** wrap the large struct in `Box<T>` inside the variant definition and
+   add `Box::new(value)` at each construction site. The union footprint drops to
+   8 bytes; CBMC trivially proves the dead BTree arm is unreachable.
 
 ### `#[cfg_attr(kani, derive(kani::Arbitrary))]` causes a trait-bound error
 
@@ -744,15 +909,22 @@ harnesses: the 18-variant enum carries `ErdView { layout: Option<ErdLayout> }`
 every harness that ever drops an `ArchivePanelState` value, regardless of which
 variant was actually stored.
 
-**Resolution strategy:** see §3 (arena/index elimination) and compartmentalise
-state so the problematic loops only appear when the relevant variant is truly
-reachable. If a variant's field type has unmanageable drop loops under Kani,
-consider hiding it behind `Box<T>` (one pointer drop, no loop) or behind a
-`#[cfg(not(kani))]`-gated newtype with a trivial `KaniCompose` impl.
+**Resolution strategy:**
+
+- `drop_in_place::<[ComplexType]>` loops from another variant's `Vec<T>` field:
+  see §3 (arena/index elimination) and §4 (boxing the live arm).
+- `BTreeMap … deallocating_*` loops from a dead arm: the live arm is likely a
+  large struct with non-null interior pointers. Apply the §4 boxing fix.
+- `__rust_dealloc.0 / .1` loops: Kani allocator, usually bounded — not the
+  primary culprit.
+
+If BTree loops appear and the harness has a concrete discriminant, confirm via
+the synthetic ladder in §4 before applying a fix. The loop itself is in a dead
+arm; boxing the **live** arm is the solution, not boxing the dead arm.
 
 ---
 
-## 11. Further Reading
+## 12. Further Reading
 
 | Document | Location |
 |---|---|
