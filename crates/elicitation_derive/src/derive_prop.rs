@@ -34,40 +34,71 @@ use heck::ToSnakeCase;
 
 // ── Attribute parsing ──────────────────────────────────────────────────────────
 
-/// Parsed content of `#[prop(credential = SomeType)]`.
+/// Parsed content of `#[prop(credential = SomeType, creusot_invariant_fn = "fn_name")]`.
 struct PropArgs {
     credential: Option<Path>,
+    creusot_invariant_fn: Option<String>,
 }
 
 impl Parse for PropArgs {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         if input.is_empty() {
-            return Ok(PropArgs { credential: None });
+            return Ok(PropArgs {
+                credential: None,
+                creusot_invariant_fn: None,
+            });
         }
-        let ident: syn::Ident = input.parse()?;
-        if ident != "credential" {
-            return Err(syn::Error::new(
-                ident.span(),
-                "expected `credential = SomeType`",
-            ));
+        let mut credential = None;
+        let mut creusot_invariant_fn = None;
+        loop {
+            let ident: syn::Ident = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            match ident.to_string().as_str() {
+                "credential" => {
+                    let path: Path = input.parse()?;
+                    credential = Some(path);
+                }
+                "creusot_invariant_fn" => {
+                    let lit: syn::LitStr = input.parse()?;
+                    creusot_invariant_fn = Some(lit.value());
+                }
+                other => {
+                    return Err(syn::Error::new(
+                        ident.span(),
+                        format!(
+                            "unknown prop key `{other}`; expected `credential` or `creusot_invariant_fn`"
+                        ),
+                    ));
+                }
+            }
+            if input.peek(Token![,]) {
+                let _: Token![,] = input.parse()?;
+                if input.is_empty() {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
-        let _: Token![=] = input.parse()?;
-        let path: Path = input.parse()?;
         Ok(PropArgs {
-            credential: Some(path),
+            credential,
+            creusot_invariant_fn,
         })
     }
 }
 
-/// Extract the `#[prop(credential = T)]` attribute from the derive input, if present.
-fn extract_credential(input: &DeriveInput) -> syn::Result<Option<Path>> {
+/// Extract the `#[prop(...)]` attribute from the derive input, if present.
+fn extract_prop_args(input: &DeriveInput) -> syn::Result<PropArgs> {
     for attr in &input.attrs {
         if attr.path().is_ident("prop") {
             let args: PropArgs = attr.parse_args()?;
-            return Ok(args.credential);
+            return Ok(args);
         }
     }
-    Ok(None)
+    Ok(PropArgs {
+        credential: None,
+        creusot_invariant_fn: None,
+    })
 }
 
 // ── Expand ────────────────────────────────────────────────────────────────────
@@ -78,12 +109,24 @@ pub fn expand(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
-    let credential = match extract_credential(&input) {
-        Ok(c) => c,
+    let prop_args = match extract_prop_args(&input) {
+        Ok(a) => a,
         Err(e) => return e.to_compile_error().into(),
     };
+    let credential = prop_args.credential;
+    let creusot_fn_name = prop_args.creusot_invariant_fn;
 
     let snake_name = name.to_string().to_snake_case();
+
+    // Generate the optional `creusot_invariant_fn_name()` override when specified.
+    let creusot_fn_override = match &creusot_fn_name {
+        Some(fn_name) => quote! {
+            fn creusot_invariant_fn_name() -> &'static str {
+                #fn_name
+            }
+        },
+        None => quote! {},
+    };
 
     let proof_methods = quote! {
         fn kani_proof() -> ::elicitation::proc_macro2::TokenStream {
@@ -97,6 +140,8 @@ pub fn expand(input: TokenStream) -> TokenStream {
         fn creusot_proof() -> ::elicitation::proc_macro2::TokenStream {
             ::elicitation::verification::proof_helpers::creusot_trivial_prop(#snake_name)
         }
+
+        #creusot_fn_override
     };
 
     // Generate `kani_proof_credential()` inherent method and, for the

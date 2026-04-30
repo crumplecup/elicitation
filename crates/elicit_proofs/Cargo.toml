@@ -24,6 +24,7 @@ clap = { workspace = true, optional = true }
 csv = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
+creusot-std = { workspace = true, optional = true }
 
 [build-dependencies]
 elicitation = { workspace = true }
@@ -42,7 +43,7 @@ default = []
 ## Enable Kani proof harnesses for archive VSMs.
 kani = ["dep:elicit_server", "dep:elicit_db", "dep:serde_json", "dep:chrono"]
 ## Enable Creusot companions for archive VSMs.
-creusot = ["dep:elicit_server"]
+creusot = ["dep:elicit_server", "dep:creusot-std"]
 ## Enable Verus companions for archive VSMs.
 verus = ["dep:elicit_server"]
 ## Enable the proof runner CLI binary.

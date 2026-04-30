@@ -3683,6 +3683,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "clap",
+ "creusot-std",
  "csv",
  "elicit_db",
  "elicit_server",

@@ -78,7 +78,7 @@ pub enum ArchiveConnectionState {
 /// harnesses will call `Established::prove(&kani::any::<ConnectionEstablished>())`
 /// instead of the axiom `Established::assert()`, keeping CBMC's state space bounded.
 #[derive(Prop)]
-#[prop(credential = ConnectionEstablished)]
+#[prop(credential = ConnectionEstablished, creusot_invariant_fn = "archive_connection_consistent")]
 pub struct ArchiveConnectionConsistent;
 
 impl ProvableFrom<ConnectionEstablished> for ArchiveConnectionConsistent {}

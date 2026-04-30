@@ -253,7 +253,7 @@ pub enum ArchivePanelState {
 /// implementation is the source of WCAG compliance. The credential bounds CBMC
 /// to exploring only `WcagVerified` (a ZST), not all 18 `ArchivePanelState` variants.
 #[derive(Prop)]
-#[prop(credential = WcagVerified)]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_panel_consistent")]
 pub struct ArchivePanelConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}

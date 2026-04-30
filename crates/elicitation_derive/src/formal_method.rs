@@ -412,6 +412,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
 
             let inputs = &func.sig.inputs;
             let output = &func.sig.output;
+            let inputs_src = quote!(#inputs).to_string();
+            let output_src = quote!(#output).to_string();
+            let creusot_fn_src = format!("{fn_name}__creusot");
 
             // ── Kani harness ─────────────────────────────────────────────────
             // kani_vec delegates to kani::any_vec::<T, 0>() which takes the
@@ -550,6 +553,52 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     }
 
                     #variant_method
+
+                    /// Return a Creusot companion contract `TokenStream` for this transition.
+                    ///
+                    /// When `inv_fn` is non-empty and this transition has a state parameter,
+                    /// a real `#[requires(inv_fn(&state))]` / `#[ensures(inv_fn(&result.0))]`
+                    /// contract is emitted (no `#[trusted]`) — Creusot will verify the body.
+                    ///
+                    /// When `inv_fn` is empty or this transition has no state parameter,
+                    /// a `#[trusted]` placeholder is emitted instead.
+                    pub fn creusot_contract(inv_fn: &str) -> ::proc_macro2::TokenStream {
+                        let src = if !inv_fn.is_empty() && #has_state_param {
+                            String::new()
+                                + "# [cfg (creusot)] # [requires ("
+                                + inv_fn
+                                + " (& "
+                                + #state_pat_s
+                                + "))] # [ensures ("
+                                + inv_fn
+                                + " (& result . 0))] pub (crate) fn "
+                                + #creusot_fn_src
+                                + " ("
+                                + #inputs_src
+                                + ") "
+                                + #output_src
+                                + " { "
+                                + #fn_name_src
+                                + " ("
+                                + #call_args_src
+                                + ") }"
+                        } else {
+                            String::new()
+                                + "# [cfg (creusot)] # [requires (true)] # [ensures (true)] # [trusted] pub (crate) fn "
+                                + #creusot_fn_src
+                                + " ("
+                                + #inputs_src
+                                + ") "
+                                + #output_src
+                                + " { "
+                                + #fn_name_src
+                                + " ("
+                                + #call_args_src
+                                + ") }"
+                        };
+                        src.parse()
+                            .expect("creusot_contract: invalid TokenStream")
+                    }
                 }
             };
 

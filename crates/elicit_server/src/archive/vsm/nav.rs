@@ -58,7 +58,7 @@ pub enum ArchiveNavState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: nav state produces AccessKit
 /// nodes via `to_ak_nodes`, so WCAG compliance is the appropriate credential.
 #[derive(Prop)]
-#[prop(credential = WcagVerified)]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_nav_consistent")]
 pub struct ArchiveNavConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}

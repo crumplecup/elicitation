@@ -217,6 +217,21 @@ pub fn expand(input: TokenStream) -> TokenStream {
         })
         .collect();
 
+    // Build `transition_creusot_contracts(inv_fn)` — one contract per transition.
+    let creusot_pushes: Vec<_> = vsm_args
+        .transitions
+        .iter()
+        .map(|t| {
+            let companion = Ident::new(
+                &format!("{}Transition", to_pascal_case(&t.to_string())),
+                t.span(),
+            );
+            quote! {
+                __contracts.push(#companion::creusot_contract(__inv_fn));
+            }
+        })
+        .collect();
+
     let expanded = quote! {
         impl #impl_generics ::elicitation::contracts::VerifiedStateMachine
             for #struct_name #ty_generics
@@ -233,6 +248,14 @@ pub fn expand(input: TokenStream) -> TokenStream {
                     #( #harness_pushes )*
                 }
                 __harnesses
+            }
+
+            fn transition_creusot_contracts(
+                __inv_fn: &str,
+            ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {
+                let mut __contracts = ::std::vec::Vec::new();
+                #( #creusot_pushes )*
+                __contracts
             }
         }
     };

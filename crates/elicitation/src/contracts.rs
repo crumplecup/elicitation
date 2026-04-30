@@ -347,6 +347,20 @@ pub trait Prop: 'static {
     ///
     /// Available with the `proofs` feature.
     fn creusot_proof() -> proc_macro2::TokenStream;
+
+    /// The name of the Creusot pearlite `#[logic]` function that expresses this
+    /// proposition as a predicate over the machine state.
+    ///
+    /// When non-empty, `#[formal_method]`-generated Creusot companions emit
+    /// real `#[requires]` / `#[ensures]` contracts using this function instead
+    /// of the weaker `#[trusted]` placeholder.
+    ///
+    /// Set via `#[prop(creusot_invariant_fn = "my_fn")]` on the prop struct.
+    /// The named function must be a `#[cfg(creusot)] #[logic]` function in scope
+    /// wherever the generated companions are compiled.
+    fn creusot_invariant_fn_name() -> &'static str {
+        ""
+    }
 }
 
 /// Witness that proposition P has been established.
@@ -1113,6 +1127,34 @@ pub trait VerifiedStateMachine {
         let mut ts = Self::Invariant::kani_proof();
         for harness in Self::transition_harnesses() {
             ts.extend(harness);
+        }
+        ts
+    }
+
+    /// Return one Creusot companion contract per transition in this machine.
+    ///
+    /// Each entry is a `#[cfg(creusot)]` function with `#[requires]`/`#[ensures]`
+    /// annotations. When the invariant type's [`Prop::creusot_invariant_fn_name`]
+    /// returns a non-empty string, the contracts are real (no `#[trusted]`).
+    /// Otherwise they fall back to `#[trusted]` placeholders.
+    ///
+    /// The default implementation returns an empty list.
+    fn transition_creusot_contracts(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
+    }
+
+    /// Compose the full VSM Creusot proof: the invariant proposition proof
+    /// followed by one contract per registered transition.
+    ///
+    /// When `Self::Invariant::creusot_invariant_fn_name()` is non-empty, the
+    /// generated companions use real `#[requires]`/`#[ensures]` annotations and
+    /// Creusot will verify the function bodies. Otherwise trusted placeholders
+    /// are emitted (same as the stub path).
+    fn vsm_creusot_proof() -> proc_macro2::TokenStream {
+        let mut ts = Self::Invariant::creusot_proof();
+        let inv_fn = Self::Invariant::creusot_invariant_fn_name();
+        for contract in Self::transition_creusot_contracts(inv_fn) {
+            ts.extend(contract);
         }
         ts
     }
