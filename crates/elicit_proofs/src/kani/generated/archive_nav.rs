@@ -4,10 +4,15 @@
 // Composed Kani proof harnesses for ArchiveNavMachine.
 // Source: elicit_server::archive::vsm
 
+#[cfg(kani)]
 use elicitation::Established;
+#[cfg(kani)]
 use elicit_server::archive::vsm::*;
+#[cfg(kani)]
 use elicit_server::archive::types::*;
+#[cfg(kani)]
 use elicit_server::archive::display::*;
+#[cfg(kani)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(kani)]
 #[kani::proof]

@@ -805,6 +805,7 @@ fn diag_explain_view_d1_plus_monitor_view_d0() {
 
 // ── Theory AX: ConnectionProfile alone ───────────────────────────────────────
 // Isolates whether ConnectionProfile::kani_depth0() drop is bounded.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_connection_profile_d0_alone() {
     use elicitation::KaniCompose;
@@ -813,6 +814,7 @@ fn diag_connection_profile_d0_alone() {
 
 // ── Theory AY: ExplainPlan d1 + ConnectionProfile d0 ─────────────────────────
 // Isolates whether the two-drop combination is bounded (analogous to AU/AV).
+#[cfg(kani)]
 #[kani::proof]
 fn diag_explain_view_d1_plus_connection_profile_d0() {
     use elicitation::KaniCompose;
@@ -829,6 +831,7 @@ fn diag_explain_view_d1_plus_connection_profile_d0() {
 // Isolates whether constructing and dropping the result state is bounded.
 // PREVIOUSLY HUNG: ConnectionProfile flat in union + BTree-bearing dead arms.
 // AFTER FIX: Box<ConnectionProfile> → union footprint = 8B pointer → EXPECTED PASS.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_connection_edit_state_d0_alone() {
     use elicitation::KaniCompose;
@@ -842,6 +845,7 @@ fn diag_connection_edit_state_d0_alone() {
 // If this hangs, the BTree drop loops are triggered by nondeterministic union
 // bytes even when Option discriminant is None.  That would confirm that boxing
 // is required to cut the reachability.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_erd_view_layout_none() {
     use elicitation::KaniCompose;
@@ -858,6 +862,7 @@ fn diag_erd_view_layout_none() {
 // If this hangs, the issue is the enum's drop glue in general (CBMC explores all
 // variant arms even with a concrete discriminant).  If it passes, the hang is
 // specific to some data-carrying variants.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_column_detail_unit_alone() {
     let _s = ArchivePanelState::ColumnDetail;
@@ -866,6 +871,7 @@ fn diag_column_detail_unit_alone() {
 // ── Theory BC: Loading (2 plain Strings) alone ───────────────────────────────
 // Simpler data-carrying variant.  If BB passes but BC hangs, even two Strings
 // inside this enum union cause CBMC trouble.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_loading_alone() {
     let _s = ArchivePanelState::Loading {
@@ -876,6 +882,7 @@ fn diag_loading_alone() {
 
 // ── Theory BD: ErrorView (1 String, last variant) alone ──────────────────────
 // Last variant; smallest data-carrying variant.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_error_view_alone() {
     let _s = ArchivePanelState::ErrorView {
@@ -902,9 +909,9 @@ fn diag_error_view_alone() {
 // ── Theory BG: SqlEditor (has Option<QueryResult> + Option<String>) ──────────
 // Tests whether ANY variant with Option fields hangs.  SqlEditor is simpler
 // than ConnectionEdit (fewer fields) but has two Option fields.
+#[cfg(kani)]
 #[kani::proof]
 fn diag_sql_editor_alone() {
-    use elicitation::KaniCompose;
     let _s = ArchivePanelState::SqlEditor {
         text: String::new(),
         result: None,
