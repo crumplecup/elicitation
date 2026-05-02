@@ -60,7 +60,7 @@ fn gallery8a_derived_prim_any() {
 #[derive(Clone, KaniCompose)]
 struct D8VecPrim {
     label: String,
-    vals: Vec<i32>,     // kani_any() → kani_vec_closure(1, 3)
+    vals: Vec<i32>, // kani_any() → kani_vec_closure(1, 3)
     flag: bool,
 }
 
@@ -101,7 +101,7 @@ struct D8Inner {
 #[derive(Clone, KaniCompose)]
 struct D8Outer {
     name: String,
-    items: Vec<D8Inner>,    // d2 → [D8Inner::d0(), D8Inner::d0()]
+    items: Vec<D8Inner>, // d2 → [D8Inner::d0(), D8Inner::d0()]
     count: u32,
 }
 

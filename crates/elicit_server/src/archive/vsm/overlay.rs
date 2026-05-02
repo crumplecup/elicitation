@@ -20,7 +20,15 @@ use crate::archive::types::{ExportFormat, SavedQuery};
 
 /// State of modal overlays that float above the main panel.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
     KaniVariantState,
 )]
 pub enum ArchiveOverlayState {
@@ -74,6 +82,16 @@ impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
 #[cfg(kani)]
 pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
     true
+}
+
+/// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
+/// `stub_verified` can generate bounded symbolic return values.
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveOverlayState {
+    fn any() -> Self {
+        use elicitation::KaniCompose;
+        ArchiveOverlayState::kani_depth0()
+    }
 }
 
 // ── ArchiveOverlayMachine ─────────────────────────────────────────────────────

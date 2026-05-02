@@ -35,7 +35,15 @@ use crate::archive::types::{BackendKind, DatabaseDescriptor};
 
 /// Lifecycle state of the archive backend connection.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
     KaniVariantState,
 )]
 pub enum ArchiveConnectionState {
@@ -94,7 +102,16 @@ pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
     true
 }
 
-// ── ArchiveConnectionMachine ──────────────────────────────────────────────────
+/// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
+/// `stub_verified` can generate bounded symbolic return values.
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveConnectionState {
+    fn any() -> Self {
+        use elicitation::KaniCompose;
+        ArchiveConnectionState::kani_depth0()
+    }
+}
+
 
 /// Verified state machine for the archive connection lifecycle.
 #[derive(VerifiedStateMachine)]

@@ -51,10 +51,7 @@ fn gallery10b_any_drop_in_fn() {
 // ── 10c: real harness shape but with forget of input — proposed fix ──────────
 
 #[cfg(kani)]
-fn trivial_transition(
-    state: ArchivePanelState,
-    _proof: (),
-) -> (ArchivePanelState, ()) {
+fn trivial_transition(state: ArchivePanelState, _proof: ()) -> (ArchivePanelState, ()) {
     std::mem::forget(state); // prevent drop of input
     (ArchivePanelState::ColumnDetail, ())
 }

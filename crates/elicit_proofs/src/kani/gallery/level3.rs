@@ -168,6 +168,9 @@ fn gallery3b_vec_str_closure() {
     let state = <GVecStr as elicitation::KaniCompose>::kani_any();
     kani::assume(g_vec_str_consistent(&state));
     let result = g_vec_str_identity(state);
-    kani::assert(g_vec_str_consistent(&result), "L3b closure: invariant preserved");
+    kani::assert(
+        g_vec_str_consistent(&result),
+        "L3b closure: invariant preserved",
+    );
     forget(result);
 }

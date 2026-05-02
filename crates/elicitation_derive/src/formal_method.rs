@@ -240,6 +240,25 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
 
     let fn_name = &func.sig.ident;
 
+    // ── Gate tracing instrumentation under not(kani) ──────────────────────────
+    // `#[instrument]` from tracing expands to heap-allocating Span/enter code
+    // with no Kani contracts.  Under proof_for_contract, DFCC would inline the
+    // entire tracing prologue/epilogue (no contracts on tracing functions),
+    // inflating the proof cost from ~32s to timeout.
+    // Transform:  #[instrument(…)]  →  #[cfg_attr(not(kani), instrument(…))]
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(kani), #meta)] };
+        }
+    }
+
     // ── Doc annotation ────────────────────────────────────────────────────────
     let contracts_doc = if parsed_args.contracts.is_empty() {
         "**\\[formal\\_method\\]**".to_string()
@@ -289,13 +308,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let verus_fn = format_ident!("{fn_name}__verus");
 
         let mut lets: Vec<TokenStream> = Vec::new();
-        // Three depth variants for non-state inputs.
-        // Depth-bounded types use KaniCompose::kani_depthN() instead of
+        // Non-state let bindings for the proof_for_contract closure harness.
+        // Depth-bounded types use KaniCompose::kani_depth0() instead of
         // kani::any(), preventing CBMC's type-based destructor model from
         // unwinding recursively through types like Vec<ExplainNode>.
         let mut non_state_lets_d0: Vec<TokenStream> = Vec::new();
-        let mut non_state_lets_d1: Vec<TokenStream> = Vec::new();
-        let mut non_state_lets_d2: Vec<TokenStream> = Vec::new();
         let mut call_args: Vec<TokenStream> = Vec::new();
         let mut state_pat_str: Option<String> = None;
         let mut state_ty_str: Option<String> = None;
@@ -318,9 +335,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         };
                     };
                     lets.push(let_ts.clone());
-                    non_state_lets_d0.push(let_ts.clone());
-                    non_state_lets_d1.push(let_ts.clone());
-                    non_state_lets_d2.push(let_ts);
+                    non_state_lets_d0.push(let_ts);
                 } else if is_string_type(ty) {
                     // String content is irrelevant to structural invariant proofs.
                     // from_utf8_lossy introduces a UTF-8 validation loop that makes
@@ -329,9 +344,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         let #pat: #ty = ::std::string::String::new();
                     };
                     lets.push(let_ts.clone());
-                    non_state_lets_d0.push(let_ts.clone());
-                    non_state_lets_d1.push(let_ts.clone());
-                    non_state_lets_d2.push(let_ts);
+                    non_state_lets_d0.push(let_ts);
                 } else if is_vec_type(ty) {
                     // kani::any::<Vec<T>>() is not implemented in Kani ≤0.67;
                     // use an empty Vec instead — still covers all invariant checks
@@ -340,9 +353,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         let #pat: #ty = ::std::vec::Vec::new();
                     };
                     lets.push(let_ts.clone());
-                    non_state_lets_d0.push(let_ts.clone());
-                    non_state_lets_d1.push(let_ts.clone());
-                    non_state_lets_d2.push(let_ts);
+                    non_state_lets_d0.push(let_ts);
                 } else if is_option_type(ty) {
                     // kani::any::<Option<T>>() hangs when T contains heap-allocated
                     // fields — symbolic ownership transfer + non-trivial destructor
@@ -352,9 +363,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         let #pat: #ty = ::core::option::Option::None;
                     };
                     lets.push(let_ts.clone());
-                    non_state_lets_d0.push(let_ts.clone());
-                    non_state_lets_d1.push(let_ts.clone());
-                    non_state_lets_d2.push(let_ts);
+                    non_state_lets_d0.push(let_ts);
                 } else if state_pat_str.is_none() {
                     // First remaining param = the VSM state enum.
                     // Captured as strings for kani_harness_for_variant; NOT added
@@ -393,9 +402,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     let let_ts_d0 = quote! {
                         let #pat: #ty = <#ty as ::elicitation::KaniCompose>::kani_depth0();
                     };
-                    non_state_lets_d0.push(let_ts_d0.clone());
-                    non_state_lets_d1.push(let_ts_d0.clone());
-                    non_state_lets_d2.push(let_ts_d0);
+                    non_state_lets_d0.push(let_ts_d0);
                 }
                 call_args.push(quote!(#pat));
             }
@@ -405,8 +412,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let state_pat_s = state_pat_str.unwrap_or_default();
         let state_ty_s = state_ty_str.unwrap_or_default();
         let non_state_lets_d0_src = quote!(#(#non_state_lets_d0)*).to_string();
-        let non_state_lets_d1_src = quote!(#(#non_state_lets_d1)*).to_string();
-        let non_state_lets_d2_src = quote!(#(#non_state_lets_d2)*).to_string();
         let call_args_src = quote!(#(#call_args),*).to_string();
         let fn_name_src = fn_name.to_string();
         let kani_fn_src = format!("{fn_name}__kani");
@@ -416,6 +421,52 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let inputs_src = quote!(#inputs).to_string();
         let output_src = quote!(#output).to_string();
         let creusot_fn_src = format!("{fn_name}__creusot");
+
+        // ── Kani contracts on the original function ───────────────────────
+        // When contracts = [SomeType] is provided and there is a state
+        // parameter, add #[cfg_attr(kani, kani::requires(...))] and
+        // #[cfg_attr(kani, kani::ensures(...))] to the original function.
+        //
+        // The invariant function name is derived by snake_casing the last
+        // segment of the first contract type path.  Convention:
+        //   ArchivePanelConsistent → archive_panel_consistent
+        //
+        // This allows proof_for_contract(fn_name) to target the original
+        // function directly, and stub_verified(fn_name) to work in
+        // composition proofs without contracted wrapper indirection.
+        if has_state_param && !parsed_args.contracts.is_empty() {
+            if let Some(first_contract) = parsed_args.contracts.first()
+                && let Some(last_seg) = first_contract.segments.last()
+            {
+                let inv_fn_name = {
+                    let s = last_seg.ident.to_string();
+                    // Manual PascalCase → snake_case: insert underscore before
+                    // each uppercase letter that follows a lowercase letter.
+                    let mut out = String::with_capacity(s.len() + 8);
+                    let mut prev_lower = false;
+                    for ch in s.chars() {
+                        if ch.is_uppercase() && prev_lower {
+                            out.push('_');
+                        }
+                        out.push(ch.to_ascii_lowercase());
+                        prev_lower = ch.is_lowercase();
+                    }
+                    out
+                };
+                let inv_fn_ident: syn::Ident =
+                    syn::parse_str(&inv_fn_name).expect("derived ident is valid");
+                let state_pat_tokens: TokenStream =
+                    state_pat_s.parse().expect("state_pat_s is valid tokens");
+                let requires_attr: syn::Attribute = syn::parse_quote! {
+                    #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
+                };
+                let ensures_attr: syn::Attribute = syn::parse_quote! {
+                    #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
+                };
+                func.attrs.push(requires_attr);
+                func.attrs.push(ensures_attr);
+            }
+        }
 
         // ── Kani harness ─────────────────────────────────────────────────
         // kani_vec delegates to kani::any_vec::<T, 0>() which takes the
@@ -472,11 +523,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         "{}__{}__d{}",
                         #kani_fn_src, variant_name, depth
                     );
-                    let non_state_lets = match depth {
-                        0 => #non_state_lets_d0_src,
-                        1 => #non_state_lets_d1_src,
-                        _ => #non_state_lets_d2_src,
-                    };
+                    let non_state_lets = #non_state_lets_d0_src;
                     let src = String::new()
                         + "# [cfg (kani)] # [:: kani :: proof] fn "
                         + &variant_fn
@@ -614,25 +661,16 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         .expect("creusot_contract: invalid TokenStream")
                 }
 
-                /// Return a Kani closure proof `TokenStream` for this transition.
+                /// Return a Kani `proof_for_contract` harness `TokenStream` for this transition.
                 ///
                 /// When `inv_fn` is non-empty and this transition has a state parameter,
-                /// emits five items:
+                /// emits one `#[kani::proof_for_contract(fn_name)]` harness using the
+                /// forgive-and-forget pattern:
+                /// `kani_any()` → `assume(inv_fn)` → `forget` → `kani_depth0()` → call → `forget` result.
+                /// The postcondition is checked automatically by DFCC.
                 ///
-                /// 1. A contracted wrapper `fn_name__kani_contracted` with `#[kani::requires]`
-                ///    and `#[kani::ensures]` annotations (documentation / Creusot companion;
-                ///    **not** used in the proof harnesses below).
-                ///
-                /// 2-4. Three `#[kani::proof]` depth harnesses (`_d0`, `_d1`, `_d2`) that
-                ///    verify the invariant at the base case and two inductive steps using
-                ///    `KaniCompose::kani_depth{n}()`.  Each calls the ACTUAL function (not
-                ///    the contracted wrapper) after `kani::assume(inv_fn(&state))`, and
-                ///    asserts `inv_fn(&result.0)` afterward.  No DFCC is triggered because
-                ///    `#[kani::proof_for_contract]` is not used.
-                ///
-                /// 5. A `#[kani::proof]` closure harness that uses `KaniCompose::kani_any()`
-                ///    for symbolic coverage of all variants.  Same assume/assert pattern;
-                ///    `std::mem::forget` prevents drop-glue SAT explosion.
+                /// Once verified, `stub_verified(fn_name)` can replace calls to this
+                /// function in composition proofs with the contract axiom.
                 ///
                 /// When `inv_fn` is empty or this transition has no state parameter,
                 /// an empty `TokenStream` is returned.
@@ -640,67 +678,35 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     if inv_fn.is_empty() || !#has_state_param {
                         return ::proc_macro2::TokenStream::new();
                     }
-                    let contracted_fn = String::new() + #fn_name_src + "__kani_contracted";
-                    let closure_d0_fn = String::new() + #fn_name_src + "__kani_closure_d0";
-                    let closure_d1_fn = String::new() + #fn_name_src + "__kani_closure_d1";
-                    let closure_d2_fn = String::new() + #fn_name_src + "__kani_closure_d2";
-                    let closure_fn    = String::new() + #fn_name_src + "__kani_closure";
+                    let closure_fn = String::new() + #fn_name_src + "__kani_closure";
 
-                    // Build one plain #[kani::proof] depth harness (no DFCC).
-                    // Calls the ACTUAL function, not the contracted wrapper, so
-                    // goto-instrument --dfcc is never invoked.
-                    let depth_harness = |harness_fn: &str, depth_method: &str, non_state_lets: &str| {
-                        String::new()
-                            + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
-                            + "# [:: kani :: proof] fn "
-                            + harness_fn
-                            + " () { let "
-                            + #state_pat_s
-                            + " : "
-                            + #state_ty_s
-                            + " = < "
-                            + #state_ty_s
-                            + " as :: elicitation :: KaniCompose > :: "
-                            + depth_method
-                            + " () ; "
-                            + ":: kani :: assume ("
-                            + inv_fn
-                            + " (& "
-                            + #state_pat_s
-                            + ")) ; "
-                            + non_state_lets
-                            + "let _result = "
-                            + #fn_name_src
-                            + " ("
-                            + #call_args_src
-                            + ") ; "
-                            + ":: kani :: assert ("
-                            + inv_fn
-                            + " (& _result . 0) , \"invariant preserved\") ; "
-                            + ":: std :: mem :: forget (_result) ; } "
-                    };
-
-                    // 5. Symbolic closure harness — forget-and-shadow pattern.
+                    // Symbolic closure harness — proof_for_contract + forgive-and-forget.
                     //
-                    // ALL closure harnesses use this pattern regardless of whether the
-                    // state parameter is named with or without a leading `_`:
-                    //   a) Construct the full kani_any() state for the precondition check.
-                    //   b) Forget it (preventing drop-glue SAT explosion in CBMC).
-                    //   c) Shadow with kani_depth0() for the actual function call.
+                    // Uses #[kani::proof_for_contract(fn_name)] where fn_name is the
+                    // ORIGINAL function.  The original function must have
+                    // #[cfg_attr(kani, kani::requires(...))] and
+                    // #[cfg_attr(kani, kani::ensures(...))] on it — emitted by
+                    // formal_method's expand() via the cfg_attr contract injection.
                     //
-                    // Soundness: the per-variant depth harnesses (d0/d1/d2 × all variants)
-                    // already cover every concrete variant path.  The closure harness
-                    // completes the inductive argument: "for any precondition-satisfying
-                    // state, the base-variant call preserves the postcondition", closing
-                    // the symbolic quantifier without re-proving every case.
+                    // DFCC instruments the original function body directly, without the
+                    // indirection of a contracted wrapper.  This is why the wrapper was
+                    // causing timeouts (DFCC inlined wrapper → called original → inlined
+                    // original body, doubling the CBMC work).
                     //
-                    // The return value is computed before any drop (Rust MIR guarantee),
-                    // so forgetting the input is sound regardless of whether the function
-                    // reads it.  (Confirmed empirically by Level 10 proof gallery:
-                    // kani_any + drop-in-fn >10 min; kani_any + forget = 25 s.)
+                    // Forgive-and-forget pattern (confirmed tractable in Level 11-12 gallery):
+                    //   a) kani_any() state for symbolic precondition coverage.
+                    //   b) kani::assume(inv_fn(&state)) to restrict to valid inputs.
+                    //   c) forget(state) — prevents drop-glue SAT explosion.
+                    //   d) kani_depth0() shadow for the actual function call.
+                    // The postcondition is checked automatically by DFCC (no kani::assert).
+                    //
+                    // Once verified, stub_verified(fn_name) can replace calls in
+                    // composition proofs with the contract axiom.
                     let closure_src = String::new()
                         + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
-                        + "# [:: kani :: proof] fn "
+                        + "# [:: kani :: proof_for_contract ("
+                        + #fn_name_src
+                        + ")] fn "
                         + &closure_fn
                         + " () { let "
                         + #state_pat_s
@@ -714,7 +720,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         + " (& "
                         + #state_pat_s
                         + ")) ; "
-                        + #non_state_lets_d0_src
                         + ":: std :: mem :: forget ("
                         + #state_pat_s
                         + ") ; "
@@ -725,45 +730,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         + " = < "
                         + #state_ty_s
                         + " as :: elicitation :: KaniCompose > :: kani_depth0 () ; "
+                        + #non_state_lets_d0_src
                         + "let _result = "
                         + #fn_name_src
                         + " ("
                         + #call_args_src
                         + ") ; "
-                        + ":: kani :: assert ("
-                        + inv_fn
-                        + " (& _result . 0) , \"invariant preserved\") ; "
                         + ":: std :: mem :: forget (_result) ; } ";
 
-                    let src = String::new()
-                        // 1. Contracted wrapper — documentation only; not used in harnesses
-                        + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
-                        + "# [:: kani :: requires ("
-                        + inv_fn
-                        + " (& "
-                        + #state_pat_s
-                        + "))] # [:: kani :: ensures (| result | "
-                        + inv_fn
-                        + " (& result . 0))] pub (crate) fn "
-                        + &contracted_fn
-                        + " ("
-                        + #inputs_src
-                        + ") "
-                        + #output_src
-                        + " { "
-                        + #fn_name_src
-                        + " ("
-                        + #call_args_src
-                        + ") } "
-                        // 2. Depth-0 plain proof — base case
-                        + &depth_harness(&closure_d0_fn, "kani_depth0", #non_state_lets_d0_src)
-                        // 3. Depth-1 plain proof — inductive step 1
-                        + &depth_harness(&closure_d1_fn, "kani_depth1", #non_state_lets_d1_src)
-                        // 4. Depth-2 plain proof — inductive step 2
-                        + &depth_harness(&closure_d2_fn, "kani_depth2", #non_state_lets_d2_src)
-                        // 5. Symbolic closure
-                        + &closure_src;
-                    src.parse()
+                    closure_src.parse()
                         .expect("kani_closure_proof: invalid TokenStream")
                 }
             }

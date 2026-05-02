@@ -133,7 +133,9 @@ fn theory_bh_recursive_type_other_variant() {
 
 #[kani::proof]
 fn theory_bi_symbolic_value_btree_other_variant() {
-    let _v = BigBTree::A1 { x: kani::any::<u32>() };
+    let _v = BigBTree::A1 {
+        x: kani::any::<u32>(),
+    };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -207,7 +209,9 @@ enum LadderBM {
 
 #[kani::proof]
 fn theory_bm_vec_string_dead_symbolic_live() {
-    let _v = LadderBM::Live { x: kani::any::<u32>() };
+    let _v = LadderBM::Live {
+        x: kani::any::<u32>(),
+    };
 }
 
 // ── Rung 5 / Theory BN ───────────────────────────────────────────────────────
@@ -244,7 +248,9 @@ fn theory_bn_connprofile_like_live_vec_dead() {
 // Pass → the count alone isn't the trigger; wrapping matters.
 // Hang → 7 Option<String> direct fields is itself enough to cause the hang.
 enum LadderBO {
-    Dead { x: u32 },
+    Dead {
+        x: u32,
+    },
     Live {
         a: Option<String>,
         b: Option<String>,
@@ -361,4 +367,3 @@ fn theory_bs_boxed_live_profile_btree_dead() {
         mode: 0,
     };
 }
-

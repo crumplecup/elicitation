@@ -80,5 +80,8 @@ fn gallery0_unit_closure() {
     let state = <GUnit as elicitation::KaniCompose>::kani_any();
     kani::assume(g_unit_consistent(&state));
     let result = g_unit_identity(state);
-    kani::assert(g_unit_consistent(&result), "L0 closure: invariant preserved");
+    kani::assert(
+        g_unit_consistent(&result),
+        "L0 closure: invariant preserved",
+    );
 }

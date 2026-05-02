@@ -122,7 +122,10 @@ fn gallery2b_str_d1_cheap_inv() {
     let state = <GStr as elicitation::KaniCompose>::kani_depth1();
     kani::assume(g_str_consistent_cheap(&state));
     let result = g_str_identity(state);
-    kani::assert(g_str_consistent_cheap(&result), "L2b d1 cheap: invariant preserved");
+    kani::assert(
+        g_str_consistent_cheap(&result),
+        "L2b d1 cheap: invariant preserved",
+    );
     forget(result);
 }
 
@@ -132,6 +135,9 @@ fn gallery2b_str_closure_cheap_inv() {
     let state = <GStr as elicitation::KaniCompose>::kani_any();
     kani::assume(g_str_consistent_cheap(&state));
     let result = g_str_identity(state);
-    kani::assert(g_str_consistent_cheap(&result), "L2b closure cheap: invariant preserved");
+    kani::assert(
+        g_str_consistent_cheap(&result),
+        "L2b closure cheap: invariant preserved",
+    );
     forget(result);
 }

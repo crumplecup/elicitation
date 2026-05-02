@@ -41,9 +41,15 @@ enum GF64Two {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for GF64Two {
-    fn kani_depth0() -> Self { GF64Two::A(0.0) }
-    fn kani_depth1() -> Self { GF64Two::B(1.0) }
-    fn kani_depth2() -> Self { GF64Two::A(2.0) }
+    fn kani_depth0() -> Self {
+        GF64Two::A(0.0)
+    }
+    fn kani_depth1() -> Self {
+        GF64Two::B(1.0)
+    }
+    fn kani_depth2() -> Self {
+        GF64Two::A(2.0)
+    }
     fn kani_any() -> Self {
         if kani::any::<bool>() {
             GF64Two::A(kani::any::<f64>())
@@ -54,10 +60,14 @@ impl elicitation::KaniCompose for GF64Two {
 }
 
 #[cfg(kani)]
-fn f64_two_consistent(_: &GF64Two) -> bool { true }
+fn f64_two_consistent(_: &GF64Two) -> bool {
+    true
+}
 
 #[cfg(kani)]
-fn f64_two_id(s: GF64Two) -> GF64Two { s }
+fn f64_two_id(s: GF64Two) -> GF64Two {
+    s
+}
 
 /// Baseline: 2-variant enum, one f64 per variant, trivial invariant.
 #[cfg(kani)]
@@ -75,14 +85,23 @@ fn gallery5a_f64_closure() {
 #[cfg(kani)]
 #[derive(Clone)]
 enum G4F64 {
-    V0(f64), V1(f64), V2(f64), V3(f64),
+    V0(f64),
+    V1(f64),
+    V2(f64),
+    V3(f64),
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4F64 {
-    fn kani_depth0() -> Self { G4F64::V0(0.0) }
-    fn kani_depth1() -> Self { G4F64::V1(1.0) }
-    fn kani_depth2() -> Self { G4F64::V2(2.0) }
+    fn kani_depth0() -> Self {
+        G4F64::V0(0.0)
+    }
+    fn kani_depth1() -> Self {
+        G4F64::V1(1.0)
+    }
+    fn kani_depth2() -> Self {
+        G4F64::V2(2.0)
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 4);
@@ -96,10 +115,14 @@ impl elicitation::KaniCompose for G4F64 {
 }
 
 #[cfg(kani)]
-fn f64_4_consistent(_: &G4F64) -> bool { true }
+fn f64_4_consistent(_: &G4F64) -> bool {
+    true
+}
 
 #[cfg(kani)]
-fn f64_4_id(s: G4F64) -> G4F64 { s }
+fn f64_4_id(s: G4F64) -> G4F64 {
+    s
+}
 
 /// 4-variant f64 enum.
 #[cfg(kani)]
@@ -115,15 +138,27 @@ fn gallery5b_f64_4_closure() {
 #[cfg(kani)]
 #[derive(Clone)]
 enum G8F64 {
-    V0(f64), V1(f64), V2(f64), V3(f64),
-    V4(f64), V5(f64), V6(f64), V7(f64),
+    V0(f64),
+    V1(f64),
+    V2(f64),
+    V3(f64),
+    V4(f64),
+    V5(f64),
+    V6(f64),
+    V7(f64),
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G8F64 {
-    fn kani_depth0() -> Self { G8F64::V0(0.0) }
-    fn kani_depth1() -> Self { G8F64::V1(1.0) }
-    fn kani_depth2() -> Self { G8F64::V2(2.0) }
+    fn kani_depth0() -> Self {
+        G8F64::V0(0.0)
+    }
+    fn kani_depth1() -> Self {
+        G8F64::V1(1.0)
+    }
+    fn kani_depth2() -> Self {
+        G8F64::V2(2.0)
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 8);
@@ -141,10 +176,14 @@ impl elicitation::KaniCompose for G8F64 {
 }
 
 #[cfg(kani)]
-fn f64_8_consistent(_: &G8F64) -> bool { true }
+fn f64_8_consistent(_: &G8F64) -> bool {
+    true
+}
 
 #[cfg(kani)]
-fn f64_8_id(s: G8F64) -> G8F64 { s }
+fn f64_8_id(s: G8F64) -> G8F64 {
+    s
+}
 
 /// 8-variant f64 enum.
 #[cfg(kani)]
@@ -179,9 +218,15 @@ impl elicitation::KaniCompose for GNode {
             plan_width: kani::any::<i32>(),
         }
     }
-    fn kani_depth1() -> Self { Self::kani_depth0() }
-    fn kani_depth2() -> Self { Self::kani_depth0() }
-    fn kani_any() -> Self { Self::kani_depth0() }
+    fn kani_depth1() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_depth2() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_any() -> Self {
+        Self::kani_depth0()
+    }
 }
 
 /// 4-variant enum where one arm carries Vec<GNode> (mimics ExplainView/ExplainCompare).
@@ -198,9 +243,15 @@ enum GPlan {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for GPlan {
-    fn kani_depth0() -> Self { GPlan::Unit0 }
-    fn kani_depth1() -> Self { GPlan::Unit1 }
-    fn kani_depth2() -> Self { GPlan::Unit2 }
+    fn kani_depth0() -> Self {
+        GPlan::Unit0
+    }
+    fn kani_depth1() -> Self {
+        GPlan::Unit1
+    }
+    fn kani_depth2() -> Self {
+        GPlan::Unit2
+    }
     /// Symbolic variant selector; WithNodes uses depth-2 (two concrete GNodes).
     fn kani_any() -> Self {
         let v: usize = kani::any();
@@ -215,10 +266,14 @@ impl elicitation::KaniCompose for GPlan {
 }
 
 #[cfg(kani)]
-fn plan_consistent(_: &GPlan) -> bool { true }
+fn plan_consistent(_: &GPlan) -> bool {
+    true
+}
 
 #[cfg(kani)]
-fn plan_id(s: GPlan) -> GPlan { s }
+fn plan_id(s: GPlan) -> GPlan {
+    s
+}
 
 /// 4-variant enum where one arm has Vec<ExplainNode-like struct> with symbolic f64 fields.
 ///
@@ -253,7 +308,7 @@ fn plan_to_unit(_s: GPlan) -> GPlan {
 fn gallery5d_drop_closure() {
     let s = <GPlan as elicitation::KaniCompose>::kani_any();
     kani::assume(plan_consistent(&s));
-    let r = plan_to_unit(s);   // s is dropped inside; WithNodes arm frees Vec
+    let r = plan_to_unit(s); // s is dropped inside; WithNodes arm frees Vec
     kani::assert(plan_consistent(&r), "5d: drop closure invariant preserved");
     forget(r);
 }

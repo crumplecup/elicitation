@@ -991,5 +991,12 @@ fn diag_data_grid_ready_with_column_detail_input() {
     let proof: Established<ArchivePanelConsistent> = Established::assert();
     let result = QueryResult { row_count: 0 };
     let display_mode = QueryResultMode::DataGrid;
-    let _r = data_grid_ready(state, proof, String::new(), String::new(), result, display_mode);
+    let _r = data_grid_ready(
+        state,
+        proof,
+        String::new(),
+        String::new(),
+        result,
+        display_mode,
+    );
 }

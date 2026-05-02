@@ -59,7 +59,9 @@
 //! cargo kani -p elicit_proofs --lib --features kani -Z function-contracts -Z stubbing --harness gallery11e_aps_stub_composition_fast
 //! ```
 
-use elicit_server::archive::vsm::{archive_panel_consistent, ArchivePanelState};
+#[cfg(kani)]
+use elicit_server::archive::vsm::archive_panel_consistent;
+use elicit_server::archive::vsm::ArchivePanelState;
 use elicitation::KaniCompose;
 
 // ── Mini-VSM: 3 unit variants, no heap ───────────────────────────────────────

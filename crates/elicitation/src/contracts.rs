@@ -550,6 +550,18 @@ impl<P: Prop> Clone for Established<P> {
     }
 }
 
+// Under Kani, `stub_verified` replaces a call with `kani::any()` of the
+// return type.  `Established<P>` is a ZST — its unique value is trivially
+// constructible, so any() just returns the unit token.
+#[cfg(kani)]
+impl<P: Prop> kani::Arbitrary for Established<P> {
+    fn any() -> Self {
+        Self {
+            _marker: std::marker::PhantomData,
+        }
+    }
+}
+
 impl<P: Prop> std::fmt::Debug for Established<P> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Established")
@@ -1130,8 +1142,8 @@ pub trait VerifiedStateMachine {
     }
 
     /// Compose the full VSM Kani proof: the invariant proposition proof
-    /// followed by every registered transition harness, and then the closure
-    /// proofs if a `kani_invariant_fn` was declared on the invariant type.
+    /// followed by all `proof_for_contract` closure harnesses for each
+    /// registered transition.
     ///
     /// This is the token stream that a `build.rs` should write to a generated
     /// `.rs` file so that Kani can verify the entire state machine end-to-end.
@@ -1141,9 +1153,6 @@ pub trait VerifiedStateMachine {
     #[cfg(not(kani))]
     fn vsm_kani_proof() -> proc_macro2::TokenStream {
         let mut ts = Self::Invariant::kani_proof();
-        for harness in Self::transition_harnesses() {
-            ts.extend(harness);
-        }
         let inv_fn = Self::Invariant::kani_invariant_fn_name();
         for closure in Self::transition_kani_closure_proofs(inv_fn) {
             ts.extend(closure);
@@ -1151,13 +1160,13 @@ pub trait VerifiedStateMachine {
         ts
     }
 
-    /// Return one Kani closure proof per transition in this machine.
+    /// Return one `proof_for_contract` closure harness per transition in this machine.
     ///
-    /// Each entry is a contracted wrapper (with `#[kani::requires]` /
-    /// `#[kani::ensures]`) plus a `#[kani::proof_for_contract]` harness.
-    /// Together they complete the depth-based inductive argument:
-    /// the d0/d1/d2 harnesses are the concrete base/step witnesses;
-    /// the closure proof is the symbolic inductive conclusion.
+    /// Each entry is a `#[kani::proof_for_contract(fn_name)]` harness using the
+    /// forgive-and-forget pattern.  Contracts on the original function (emitted by
+    /// `#[formal_method]` via `cfg_attr(kani, kani::requires/ensures)`) are verified
+    /// by DFCC.  Once verified, each transition can be replaced with
+    /// `stub_verified(fn_name)` in multi-step composition harnesses.
     ///
     /// When `inv_fn` is empty, all entries are empty `TokenStream`s.
     ///

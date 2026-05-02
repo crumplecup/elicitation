@@ -54,9 +54,15 @@ impl elicitation::KaniCompose for GNode6 {
             plan_width: kani::any::<i32>(),
         }
     }
-    fn kani_depth1() -> Self { Self::kani_depth0() }
-    fn kani_depth2() -> Self { Self::kani_depth0() }
-    fn kani_any() -> Self { Self::kani_depth0() }
+    fn kani_depth1() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_depth2() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_any() -> Self {
+        Self::kani_depth0()
+    }
 }
 
 // ── 6a: 2 heavy arms ─────────────────────────────────────────────────────────
@@ -70,9 +76,15 @@ enum G2Heavy {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G2Heavy {
-    fn kani_depth0() -> Self { G2Heavy::A(vec![]) }
-    fn kani_depth1() -> Self { G2Heavy::B(vec![]) }
-    fn kani_depth2() -> Self { G2Heavy::A(vec![]) }
+    fn kani_depth0() -> Self {
+        G2Heavy::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G2Heavy::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G2Heavy::A(vec![])
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 2);
@@ -108,9 +120,15 @@ enum G4Heavy {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4Heavy {
-    fn kani_depth0() -> Self { G4Heavy::A(vec![]) }
-    fn kani_depth1() -> Self { G4Heavy::B(vec![]) }
-    fn kani_depth2() -> Self { G4Heavy::C(vec![]) }
+    fn kani_depth0() -> Self {
+        G4Heavy::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G4Heavy::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G4Heavy::C(vec![])
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 4);
@@ -139,15 +157,27 @@ fn gallery6b_4heavy() {
 #[cfg(kani)]
 #[derive(Clone)]
 enum G8Heavy {
-    A(Vec<GNode6>), B(Vec<GNode6>), C(Vec<GNode6>), D(Vec<GNode6>),
-    E(Vec<GNode6>), F(Vec<GNode6>), G(Vec<GNode6>), H(Vec<GNode6>),
+    A(Vec<GNode6>),
+    B(Vec<GNode6>),
+    C(Vec<GNode6>),
+    D(Vec<GNode6>),
+    E(Vec<GNode6>),
+    F(Vec<GNode6>),
+    G(Vec<GNode6>),
+    H(Vec<GNode6>),
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G8Heavy {
-    fn kani_depth0() -> Self { G8Heavy::A(vec![]) }
-    fn kani_depth1() -> Self { G8Heavy::B(vec![]) }
-    fn kani_depth2() -> Self { G8Heavy::C(vec![]) }
+    fn kani_depth0() -> Self {
+        G8Heavy::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G8Heavy::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G8Heavy::C(vec![])
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 8);
@@ -180,38 +210,56 @@ fn gallery6c_8heavy() {
 #[cfg(kani)]
 #[derive(Clone)]
 enum G16Heavy {
-    V0(Vec<GNode6>),  V1(Vec<GNode6>),  V2(Vec<GNode6>),  V3(Vec<GNode6>),
-    V4(Vec<GNode6>),  V5(Vec<GNode6>),  V6(Vec<GNode6>),  V7(Vec<GNode6>),
-    V8(Vec<GNode6>),  V9(Vec<GNode6>),  V10(Vec<GNode6>), V11(Vec<GNode6>),
-    V12(Vec<GNode6>), V13(Vec<GNode6>), V14(Vec<GNode6>), V15(Vec<GNode6>),
+    V0(Vec<GNode6>),
+    V1(Vec<GNode6>),
+    V2(Vec<GNode6>),
+    V3(Vec<GNode6>),
+    V4(Vec<GNode6>),
+    V5(Vec<GNode6>),
+    V6(Vec<GNode6>),
+    V7(Vec<GNode6>),
+    V8(Vec<GNode6>),
+    V9(Vec<GNode6>),
+    V10(Vec<GNode6>),
+    V11(Vec<GNode6>),
+    V12(Vec<GNode6>),
+    V13(Vec<GNode6>),
+    V14(Vec<GNode6>),
+    V15(Vec<GNode6>),
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G16Heavy {
-    fn kani_depth0() -> Self { G16Heavy::V0(vec![]) }
-    fn kani_depth1() -> Self { G16Heavy::V1(vec![]) }
-    fn kani_depth2() -> Self { G16Heavy::V2(vec![]) }
+    fn kani_depth0() -> Self {
+        G16Heavy::V0(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G16Heavy::V1(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G16Heavy::V2(vec![])
+    }
     fn kani_any() -> Self {
         let v: usize = kani::any();
         kani::assume(v < 16);
         let nodes = || vec![GNode6::kani_depth0(), GNode6::kani_depth0()];
         match v {
-            0  => G16Heavy::V0(nodes()),
-            1  => G16Heavy::V1(nodes()),
-            2  => G16Heavy::V2(nodes()),
-            3  => G16Heavy::V3(nodes()),
-            4  => G16Heavy::V4(nodes()),
-            5  => G16Heavy::V5(nodes()),
-            6  => G16Heavy::V6(nodes()),
-            7  => G16Heavy::V7(nodes()),
-            8  => G16Heavy::V8(nodes()),
-            9  => G16Heavy::V9(nodes()),
+            0 => G16Heavy::V0(nodes()),
+            1 => G16Heavy::V1(nodes()),
+            2 => G16Heavy::V2(nodes()),
+            3 => G16Heavy::V3(nodes()),
+            4 => G16Heavy::V4(nodes()),
+            5 => G16Heavy::V5(nodes()),
+            6 => G16Heavy::V6(nodes()),
+            7 => G16Heavy::V7(nodes()),
+            8 => G16Heavy::V8(nodes()),
+            9 => G16Heavy::V9(nodes()),
             10 => G16Heavy::V10(nodes()),
             11 => G16Heavy::V11(nodes()),
             12 => G16Heavy::V12(nodes()),
             13 => G16Heavy::V13(nodes()),
             14 => G16Heavy::V14(nodes()),
-            _  => G16Heavy::V15(nodes()),
+            _ => G16Heavy::V15(nodes()),
         }
     }
 }
@@ -232,7 +280,7 @@ fn gallery6d_16heavy() {
 /// Like 6b but transition drops input, returns unit — mirrors `column_detail`.
 #[cfg(kani)]
 fn drop_to_unit(_s: G4Heavy) -> G4Heavy {
-    G4Heavy::A(vec![])  // input is dropped here
+    G4Heavy::A(vec![]) // input is dropped here
 }
 
 #[cfg(kani)]

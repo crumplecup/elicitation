@@ -33,7 +33,7 @@ use std::mem::forget;
 #[cfg(kani)]
 #[derive(Clone)]
 struct GNodeStr {
-    label: String,    // ← new: String field
+    label: String, // ← new: String field
     x: f64,
     y: f64,
     row: i64,
@@ -43,24 +43,48 @@ struct GNodeStr {
 #[cfg(kani)]
 impl elicitation::KaniCompose for GNodeStr {
     fn kani_depth0() -> Self {
-        GNodeStr { label: String::new(), x: kani::any(), y: kani::any(), row: kani::any(), width: kani::any() }
+        GNodeStr {
+            label: String::new(),
+            x: kani::any(),
+            y: kani::any(),
+            row: kani::any(),
+            width: kani::any(),
+        }
     }
-    fn kani_depth1() -> Self { Self::kani_depth0() }
-    fn kani_depth2() -> Self { Self::kani_depth0() }
-    fn kani_any() -> Self { Self::kani_depth0() }
+    fn kani_depth1() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_depth2() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_any() -> Self {
+        Self::kani_depth0()
+    }
 }
 
 #[cfg(kani)]
 #[derive(Clone)]
-enum G4Str { A(Vec<GNodeStr>), B(Vec<GNodeStr>), C(Vec<GNodeStr>), D(Vec<GNodeStr>) }
+enum G4Str {
+    A(Vec<GNodeStr>),
+    B(Vec<GNodeStr>),
+    C(Vec<GNodeStr>),
+    D(Vec<GNodeStr>),
+}
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4Str {
-    fn kani_depth0() -> Self { G4Str::A(vec![]) }
-    fn kani_depth1() -> Self { G4Str::B(vec![]) }
-    fn kani_depth2() -> Self { G4Str::C(vec![]) }
+    fn kani_depth0() -> Self {
+        G4Str::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G4Str::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G4Str::C(vec![])
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
             0 => G4Str::A(vec![GNodeStr::kani_depth0(), GNodeStr::kani_depth0()]),
             1 => G4Str::B(vec![GNodeStr::kani_depth0(), GNodeStr::kani_depth0()]),
@@ -90,37 +114,60 @@ struct GNodeOpt {
     y: f64,
     row: i64,
     width: i32,
-    opt_a: Option<f64>,  // ← new
-    opt_b: Option<f64>,  // ← new
-    opt_c: Option<i64>,  // ← new
-    opt_d: Option<i64>,  // ← new
+    opt_a: Option<f64>, // ← new
+    opt_b: Option<f64>, // ← new
+    opt_c: Option<i64>, // ← new
+    opt_d: Option<i64>, // ← new
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for GNodeOpt {
     fn kani_depth0() -> Self {
         GNodeOpt {
-            x: kani::any(), y: kani::any(), row: kani::any(), width: kani::any(),
-            opt_a: Some(kani::any()), opt_b: Some(kani::any()),
-            opt_c: Some(kani::any()), opt_d: Some(kani::any()),
+            x: kani::any(),
+            y: kani::any(),
+            row: kani::any(),
+            width: kani::any(),
+            opt_a: Some(kani::any()),
+            opt_b: Some(kani::any()),
+            opt_c: Some(kani::any()),
+            opt_d: Some(kani::any()),
         }
     }
-    fn kani_depth1() -> Self { Self::kani_depth0() }
-    fn kani_depth2() -> Self { Self::kani_depth0() }
-    fn kani_any() -> Self { Self::kani_depth0() }
+    fn kani_depth1() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_depth2() -> Self {
+        Self::kani_depth0()
+    }
+    fn kani_any() -> Self {
+        Self::kani_depth0()
+    }
 }
 
 #[cfg(kani)]
 #[derive(Clone)]
-enum G4Opt { A(Vec<GNodeOpt>), B(Vec<GNodeOpt>), C(Vec<GNodeOpt>), D(Vec<GNodeOpt>) }
+enum G4Opt {
+    A(Vec<GNodeOpt>),
+    B(Vec<GNodeOpt>),
+    C(Vec<GNodeOpt>),
+    D(Vec<GNodeOpt>),
+}
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4Opt {
-    fn kani_depth0() -> Self { G4Opt::A(vec![]) }
-    fn kani_depth1() -> Self { G4Opt::B(vec![]) }
-    fn kani_depth2() -> Self { G4Opt::C(vec![]) }
+    fn kani_depth0() -> Self {
+        G4Opt::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G4Opt::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G4Opt::C(vec![])
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
             0 => G4Opt::A(vec![GNodeOpt::kani_depth0(), GNodeOpt::kani_depth0()]),
             1 => G4Opt::B(vec![GNodeOpt::kani_depth0(), GNodeOpt::kani_depth0()]),
@@ -150,34 +197,66 @@ struct GNodeVecIdx {
     y: f64,
     row: i64,
     width: i32,
-    children: Vec<usize>,  // ← new: index vec
+    children: Vec<usize>, // ← new: index vec
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for GNodeVecIdx {
     fn kani_depth0() -> Self {
-        GNodeVecIdx { x: kani::any(), y: kani::any(), row: kani::any(), width: kani::any(), children: vec![] }
+        GNodeVecIdx {
+            x: kani::any(),
+            y: kani::any(),
+            row: kani::any(),
+            width: kani::any(),
+            children: vec![],
+        }
     }
     fn kani_depth1() -> Self {
-        GNodeVecIdx { x: kani::any(), y: kani::any(), row: kani::any(), width: kani::any(), children: vec![kani::any()] }
+        GNodeVecIdx {
+            x: kani::any(),
+            y: kani::any(),
+            row: kani::any(),
+            width: kani::any(),
+            children: vec![kani::any()],
+        }
     }
     fn kani_depth2() -> Self {
-        GNodeVecIdx { x: kani::any(), y: kani::any(), row: kani::any(), width: kani::any(), children: vec![kani::any(), kani::any()] }
+        GNodeVecIdx {
+            x: kani::any(),
+            y: kani::any(),
+            row: kani::any(),
+            width: kani::any(),
+            children: vec![kani::any(), kani::any()],
+        }
     }
-    fn kani_any() -> Self { Self::kani_depth2() }
+    fn kani_any() -> Self {
+        Self::kani_depth2()
+    }
 }
 
 #[cfg(kani)]
 #[derive(Clone)]
-enum G4VecIdx { A(Vec<GNodeVecIdx>), B(Vec<GNodeVecIdx>), C(Vec<GNodeVecIdx>), D(Vec<GNodeVecIdx>) }
+enum G4VecIdx {
+    A(Vec<GNodeVecIdx>),
+    B(Vec<GNodeVecIdx>),
+    C(Vec<GNodeVecIdx>),
+    D(Vec<GNodeVecIdx>),
+}
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4VecIdx {
-    fn kani_depth0() -> Self { G4VecIdx::A(vec![]) }
-    fn kani_depth1() -> Self { G4VecIdx::B(vec![]) }
-    fn kani_depth2() -> Self { G4VecIdx::C(vec![]) }
+    fn kani_depth0() -> Self {
+        G4VecIdx::A(vec![])
+    }
+    fn kani_depth1() -> Self {
+        G4VecIdx::B(vec![])
+    }
+    fn kani_depth2() -> Self {
+        G4VecIdx::C(vec![])
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
             0 => G4VecIdx::A(vec![GNodeVecIdx::kani_depth0(), GNodeVecIdx::kani_depth0()]),
             1 => G4VecIdx::B(vec![GNodeVecIdx::kani_depth0(), GNodeVecIdx::kani_depth0()]),
@@ -222,35 +301,55 @@ struct ExplainNodeR {
 impl elicitation::KaniCompose for ExplainNodeR {
     fn kani_depth0() -> Self {
         ExplainNodeR {
-            node_type: String::new(), relation_name: None, alias: None,
-            startup_cost: kani::any(), total_cost: kani::any(),
-            plan_rows: kani::any(), plan_width: kani::any(),
-            actual_startup_time: None, actual_total_time: None,
-            actual_rows: None, actual_loops: None,
+            node_type: String::new(),
+            relation_name: None,
+            alias: None,
+            startup_cost: kani::any(),
+            total_cost: kani::any(),
+            plan_rows: kani::any(),
+            plan_width: kani::any(),
+            actual_startup_time: None,
+            actual_total_time: None,
+            actual_rows: None,
+            actual_loops: None,
             children: vec![],
         }
     }
     fn kani_depth1() -> Self {
         ExplainNodeR {
-            node_type: String::new(), relation_name: None, alias: None,
-            startup_cost: kani::any(), total_cost: kani::any(),
-            plan_rows: kani::any(), plan_width: kani::any(),
-            actual_startup_time: Some(kani::any()), actual_total_time: Some(kani::any()),
-            actual_rows: Some(kani::any()), actual_loops: Some(kani::any()),
+            node_type: String::new(),
+            relation_name: None,
+            alias: None,
+            startup_cost: kani::any(),
+            total_cost: kani::any(),
+            plan_rows: kani::any(),
+            plan_width: kani::any(),
+            actual_startup_time: Some(kani::any()),
+            actual_total_time: Some(kani::any()),
+            actual_rows: Some(kani::any()),
+            actual_loops: Some(kani::any()),
             children: vec![kani::any()],
         }
     }
     fn kani_depth2() -> Self {
         ExplainNodeR {
-            node_type: String::new(), relation_name: None, alias: None,
-            startup_cost: kani::any(), total_cost: kani::any(),
-            plan_rows: kani::any(), plan_width: kani::any(),
-            actual_startup_time: Some(kani::any()), actual_total_time: Some(kani::any()),
-            actual_rows: Some(kani::any()), actual_loops: Some(kani::any()),
+            node_type: String::new(),
+            relation_name: None,
+            alias: None,
+            startup_cost: kani::any(),
+            total_cost: kani::any(),
+            plan_rows: kani::any(),
+            plan_width: kani::any(),
+            actual_startup_time: Some(kani::any()),
+            actual_total_time: Some(kani::any()),
+            actual_rows: Some(kani::any()),
+            actual_loops: Some(kani::any()),
             children: vec![kani::any(), kani::any()],
         }
     }
-    fn kani_any() -> Self { Self::kani_depth2() }
+    fn kani_any() -> Self {
+        Self::kani_depth2()
+    }
 }
 
 #[cfg(kani)]
@@ -264,13 +363,23 @@ enum G4ExplainNode {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4ExplainNode {
-    fn kani_depth0() -> Self { G4ExplainNode::Unit0 }
-    fn kani_depth1() -> Self { G4ExplainNode::Unit1 }
-    fn kani_depth2() -> Self { G4ExplainNode::Unit2 }
+    fn kani_depth0() -> Self {
+        G4ExplainNode::Unit0
+    }
+    fn kani_depth1() -> Self {
+        G4ExplainNode::Unit1
+    }
+    fn kani_depth2() -> Self {
+        G4ExplainNode::Unit2
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
-            0 => G4ExplainNode::Heavy(vec![ExplainNodeR::kani_depth0(), ExplainNodeR::kani_depth0()]),
+            0 => G4ExplainNode::Heavy(vec![
+                ExplainNodeR::kani_depth0(),
+                ExplainNodeR::kani_depth0(),
+            ]),
             1 => G4ExplainNode::Unit0,
             2 => G4ExplainNode::Unit1,
             _ => G4ExplainNode::Unit2,
@@ -301,15 +410,26 @@ struct ExplainPlanR {
 #[cfg(kani)]
 impl elicitation::KaniCompose for ExplainPlanR {
     fn kani_depth0() -> Self {
-        ExplainPlanR { nodes: vec![], root: kani::any() }
+        ExplainPlanR {
+            nodes: vec![],
+            root: kani::any(),
+        }
     }
     fn kani_depth1() -> Self {
-        ExplainPlanR { nodes: vec![ExplainNodeR::kani_depth0()], root: kani::any() }
+        ExplainPlanR {
+            nodes: vec![ExplainNodeR::kani_depth0()],
+            root: kani::any(),
+        }
     }
     fn kani_depth2() -> Self {
-        ExplainPlanR { nodes: vec![ExplainNodeR::kani_depth0(), ExplainNodeR::kani_depth0()], root: kani::any() }
+        ExplainPlanR {
+            nodes: vec![ExplainNodeR::kani_depth0(), ExplainNodeR::kani_depth0()],
+            root: kani::any(),
+        }
     }
-    fn kani_any() -> Self { Self::kani_depth2() }
+    fn kani_any() -> Self {
+        Self::kani_depth2()
+    }
 }
 
 #[cfg(kani)]
@@ -323,11 +443,18 @@ enum G4ExplainPlan {
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4ExplainPlan {
-    fn kani_depth0() -> Self { G4ExplainPlan::Unit0 }
-    fn kani_depth1() -> Self { G4ExplainPlan::Unit1 }
-    fn kani_depth2() -> Self { G4ExplainPlan::Unit2 }
+    fn kani_depth0() -> Self {
+        G4ExplainPlan::Unit0
+    }
+    fn kani_depth1() -> Self {
+        G4ExplainPlan::Unit1
+    }
+    fn kani_depth2() -> Self {
+        G4ExplainPlan::Unit2
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
             0 => G4ExplainPlan::Heavy(ExplainPlanR::kani_depth2()),
             1 => G4ExplainPlan::Unit0,
@@ -353,16 +480,26 @@ fn gallery7e_explain_plan_replica() {
 #[cfg(kani)]
 #[derive(Clone)]
 enum G4ExplainPlanAll {
-    A(ExplainPlanR), B(ExplainPlanR), C(ExplainPlanR), D(ExplainPlanR),
+    A(ExplainPlanR),
+    B(ExplainPlanR),
+    C(ExplainPlanR),
+    D(ExplainPlanR),
 }
 
 #[cfg(kani)]
 impl elicitation::KaniCompose for G4ExplainPlanAll {
-    fn kani_depth0() -> Self { G4ExplainPlanAll::A(ExplainPlanR::kani_depth0()) }
-    fn kani_depth1() -> Self { G4ExplainPlanAll::B(ExplainPlanR::kani_depth0()) }
-    fn kani_depth2() -> Self { G4ExplainPlanAll::C(ExplainPlanR::kani_depth0()) }
+    fn kani_depth0() -> Self {
+        G4ExplainPlanAll::A(ExplainPlanR::kani_depth0())
+    }
+    fn kani_depth1() -> Self {
+        G4ExplainPlanAll::B(ExplainPlanR::kani_depth0())
+    }
+    fn kani_depth2() -> Self {
+        G4ExplainPlanAll::C(ExplainPlanR::kani_depth0())
+    }
     fn kani_any() -> Self {
-        let v: usize = kani::any(); kani::assume(v < 4);
+        let v: usize = kani::any();
+        kani::assume(v < 4);
         match v {
             0 => G4ExplainPlanAll::A(ExplainPlanR::kani_depth2()),
             1 => G4ExplainPlanAll::B(ExplainPlanR::kani_depth2()),
@@ -374,7 +511,10 @@ impl elicitation::KaniCompose for G4ExplainPlanAll {
 
 #[cfg(kani)]
 fn explain_to_unit(_s: G4ExplainPlanAll) -> G4ExplainPlanAll {
-    G4ExplainPlanAll::A(ExplainPlanR { nodes: vec![], root: 0 })  // drops input
+    G4ExplainPlanAll::A(ExplainPlanR {
+        nodes: vec![],
+        root: 0,
+    }) // drops input
 }
 
 /// 4 ExplainPlan-bearing arms, drop transition. Mirrors column_detail pattern.

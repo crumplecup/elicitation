@@ -16,7 +16,15 @@ use crate::archive::nav_tree::NavTree;
 
 /// State of the archive navigation tree panel.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
     KaniVariantState,
 )]
 pub enum ArchiveNavState {
@@ -72,6 +80,16 @@ impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}
 #[cfg(kani)]
 pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
     true
+}
+
+/// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
+/// `stub_verified` can generate bounded symbolic return values.
+#[cfg(kani)]
+impl kani::Arbitrary for ArchiveNavState {
+    fn any() -> Self {
+        use elicitation::KaniCompose;
+        ArchiveNavState::kani_depth0()
+    }
 }
 
 // ── ArchiveNavMachine ─────────────────────────────────────────────────────────

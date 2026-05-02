@@ -12,8 +12,8 @@
 //! ### 9c — 12 variants with MonitorSnapshot
 //! ### 9d — 18 variants with MonitorSnapshot (mirrors ArchivePanelState count)
 
-use elicitation::KaniCompose;
 use elicit_server::archive::types::MonitorSnapshot;
+use elicitation::KaniCompose;
 
 // ── 9a: 4 variants ───────────────────────────────────────────────────────────
 
