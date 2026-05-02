@@ -427,6 +427,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 fn #kani_fn() {
                     #(#lets)*
                     let _result = #fn_name(#(#call_args),*);
+                    // Safe Rust only, no custom Drop impls: forget is sound.
+                    // Eliminates CBMC drop-glue reasoning for Vec-bearing return types.
+                    ::std::mem::forget(_result);
                 }
             };
 
@@ -488,7 +491,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + #fn_name_src
                             + " ("
                             + #call_args_src
-                            + ") ; }";
+                            + ") ; :: std :: mem :: forget (_result) ; }";
                         src.parse()
                             .expect("kani_harness_for_variant_at_depth: invalid TokenStream")
                     }

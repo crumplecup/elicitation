@@ -31,6 +31,7 @@ fn begin_connect_sql__kani__disconnected__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -43,6 +44,7 @@ fn begin_connect_sql__kani__disconnected__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -55,6 +57,7 @@ fn begin_connect_sql__kani__disconnected__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -66,6 +69,7 @@ fn begin_connect_kv__kani__disconnected__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -77,6 +81,7 @@ fn begin_connect_kv__kani__disconnected__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -88,6 +93,7 @@ fn begin_connect_kv__kani__disconnected__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -99,6 +105,7 @@ fn finish_connect_sql__kani__disconnected__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -110,6 +117,7 @@ fn finish_connect_sql__kani__disconnected__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -121,6 +129,7 @@ fn finish_connect_sql__kani__disconnected__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -132,6 +141,7 @@ fn finish_connect_kv__kani__disconnected__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -143,6 +153,7 @@ fn finish_connect_kv__kani__disconnected__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -154,6 +165,7 @@ fn finish_connect_kv__kani__disconnected__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -164,6 +176,7 @@ fn disconnect__kani__disconnected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -174,6 +187,7 @@ fn disconnect__kani__disconnected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -184,6 +198,7 @@ fn disconnect__kani__disconnected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -194,6 +209,7 @@ fn reconnect__kani__disconnected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -204,6 +220,7 @@ fn reconnect__kani__disconnected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -214,6 +231,7 @@ fn reconnect__kani__disconnected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -225,6 +243,7 @@ fn connection_error__kani__disconnected__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -236,6 +255,7 @@ fn connection_error__kani__disconnected__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -247,6 +267,7 @@ fn connection_error__kani__disconnected__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -262,6 +283,7 @@ fn begin_connect_sql__kani__connecting__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -277,6 +299,7 @@ fn begin_connect_sql__kani__connecting__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -292,6 +315,7 @@ fn begin_connect_sql__kani__connecting__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -306,6 +330,7 @@ fn begin_connect_kv__kani__connecting__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -320,6 +345,7 @@ fn begin_connect_kv__kani__connecting__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -334,6 +360,7 @@ fn begin_connect_kv__kani__connecting__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -348,6 +375,7 @@ fn finish_connect_sql__kani__connecting__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -362,6 +390,7 @@ fn finish_connect_sql__kani__connecting__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -376,6 +405,7 @@ fn finish_connect_sql__kani__connecting__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -390,6 +420,7 @@ fn finish_connect_kv__kani__connecting__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -404,6 +435,7 @@ fn finish_connect_kv__kani__connecting__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -418,6 +450,7 @@ fn finish_connect_kv__kani__connecting__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -431,6 +464,7 @@ fn disconnect__kani__connecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -444,6 +478,7 @@ fn disconnect__kani__connecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -457,6 +492,7 @@ fn disconnect__kani__connecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -470,6 +506,7 @@ fn reconnect__kani__connecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -483,6 +520,7 @@ fn reconnect__kani__connecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -496,6 +534,7 @@ fn reconnect__kani__connecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -510,6 +549,7 @@ fn connection_error__kani__connecting__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -524,6 +564,7 @@ fn connection_error__kani__connecting__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -538,6 +579,7 @@ fn connection_error__kani__connecting__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -552,6 +594,7 @@ fn begin_connect_sql__kani__sql_connected__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -566,6 +609,7 @@ fn begin_connect_sql__kani__sql_connected__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -580,6 +624,7 @@ fn begin_connect_sql__kani__sql_connected__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -593,6 +638,7 @@ fn begin_connect_kv__kani__sql_connected__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -606,6 +652,7 @@ fn begin_connect_kv__kani__sql_connected__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -619,6 +666,7 @@ fn begin_connect_kv__kani__sql_connected__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -632,6 +680,7 @@ fn finish_connect_sql__kani__sql_connected__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -645,6 +694,7 @@ fn finish_connect_sql__kani__sql_connected__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -658,6 +708,7 @@ fn finish_connect_sql__kani__sql_connected__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -671,6 +722,7 @@ fn finish_connect_kv__kani__sql_connected__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -684,6 +736,7 @@ fn finish_connect_kv__kani__sql_connected__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -697,6 +750,7 @@ fn finish_connect_kv__kani__sql_connected__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -709,6 +763,7 @@ fn disconnect__kani__sql_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -721,6 +776,7 @@ fn disconnect__kani__sql_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -733,6 +789,7 @@ fn disconnect__kani__sql_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -745,6 +802,7 @@ fn reconnect__kani__sql_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -757,6 +815,7 @@ fn reconnect__kani__sql_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -769,6 +828,7 @@ fn reconnect__kani__sql_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -782,6 +842,7 @@ fn connection_error__kani__sql_connected__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -795,6 +856,7 @@ fn connection_error__kani__sql_connected__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -808,6 +870,7 @@ fn connection_error__kani__sql_connected__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -822,6 +885,7 @@ fn begin_connect_sql__kani__kv_connected__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -836,6 +900,7 @@ fn begin_connect_sql__kani__kv_connected__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -850,6 +915,7 @@ fn begin_connect_sql__kani__kv_connected__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -863,6 +929,7 @@ fn begin_connect_kv__kani__kv_connected__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -876,6 +943,7 @@ fn begin_connect_kv__kani__kv_connected__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -889,6 +957,7 @@ fn begin_connect_kv__kani__kv_connected__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -902,6 +971,7 @@ fn finish_connect_sql__kani__kv_connected__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -915,6 +985,7 @@ fn finish_connect_sql__kani__kv_connected__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -928,6 +999,7 @@ fn finish_connect_sql__kani__kv_connected__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -941,6 +1013,7 @@ fn finish_connect_kv__kani__kv_connected__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -954,6 +1027,7 @@ fn finish_connect_kv__kani__kv_connected__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -967,6 +1041,7 @@ fn finish_connect_kv__kani__kv_connected__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -979,6 +1054,7 @@ fn disconnect__kani__kv_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -991,6 +1067,7 @@ fn disconnect__kani__kv_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1003,6 +1080,7 @@ fn disconnect__kani__kv_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1015,6 +1093,7 @@ fn reconnect__kani__kv_connected__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1027,6 +1106,7 @@ fn reconnect__kani__kv_connected__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1039,6 +1119,7 @@ fn reconnect__kani__kv_connected__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1052,6 +1133,7 @@ fn connection_error__kani__kv_connected__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1065,6 +1147,7 @@ fn connection_error__kani__kv_connected__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1078,6 +1161,7 @@ fn connection_error__kani__kv_connected__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1092,6 +1176,7 @@ fn begin_connect_sql__kani__reconnecting__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1106,6 +1191,7 @@ fn begin_connect_sql__kani__reconnecting__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1120,6 +1206,7 @@ fn begin_connect_sql__kani__reconnecting__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1133,6 +1220,7 @@ fn begin_connect_kv__kani__reconnecting__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1146,6 +1234,7 @@ fn begin_connect_kv__kani__reconnecting__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1159,6 +1248,7 @@ fn begin_connect_kv__kani__reconnecting__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1172,6 +1262,7 @@ fn finish_connect_sql__kani__reconnecting__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1185,6 +1276,7 @@ fn finish_connect_sql__kani__reconnecting__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1198,6 +1290,7 @@ fn finish_connect_sql__kani__reconnecting__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1211,6 +1304,7 @@ fn finish_connect_kv__kani__reconnecting__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1224,6 +1318,7 @@ fn finish_connect_kv__kani__reconnecting__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1237,6 +1332,7 @@ fn finish_connect_kv__kani__reconnecting__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1249,6 +1345,7 @@ fn disconnect__kani__reconnecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1261,6 +1358,7 @@ fn disconnect__kani__reconnecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1273,6 +1371,7 @@ fn disconnect__kani__reconnecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1285,6 +1384,7 @@ fn reconnect__kani__reconnecting__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1297,6 +1397,7 @@ fn reconnect__kani__reconnecting__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1309,6 +1410,7 @@ fn reconnect__kani__reconnecting__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1322,6 +1424,7 @@ fn connection_error__kani__reconnecting__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1335,6 +1438,7 @@ fn connection_error__kani__reconnecting__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1348,6 +1452,7 @@ fn connection_error__kani__reconnecting__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1362,6 +1467,7 @@ fn begin_connect_sql__kani__connection_error__d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1376,6 +1482,7 @@ fn begin_connect_sql__kani__connection_error__d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1390,6 +1497,7 @@ fn begin_connect_sql__kani__connection_error__d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1403,6 +1511,7 @@ fn begin_connect_kv__kani__connection_error__d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1416,6 +1525,7 @@ fn begin_connect_kv__kani__connection_error__d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1429,6 +1539,7 @@ fn begin_connect_kv__kani__connection_error__d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1442,6 +1553,7 @@ fn finish_connect_sql__kani__connection_error__d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1455,6 +1567,7 @@ fn finish_connect_sql__kani__connection_error__d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1468,6 +1581,7 @@ fn finish_connect_sql__kani__connection_error__d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1481,6 +1595,7 @@ fn finish_connect_kv__kani__connection_error__d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1494,6 +1609,7 @@ fn finish_connect_kv__kani__connection_error__d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1507,6 +1623,7 @@ fn finish_connect_kv__kani__connection_error__d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1519,6 +1636,7 @@ fn disconnect__kani__connection_error__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1531,6 +1649,7 @@ fn disconnect__kani__connection_error__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1543,6 +1662,7 @@ fn disconnect__kani__connection_error__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1555,6 +1675,7 @@ fn reconnect__kani__connection_error__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1567,6 +1688,7 @@ fn reconnect__kani__connection_error__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1579,6 +1701,7 @@ fn reconnect__kani__connection_error__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1592,6 +1715,7 @@ fn connection_error__kani__connection_error__d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1605,6 +1729,7 @@ fn connection_error__kani__connection_error__d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1618,4 +1743,5 @@ fn connection_error__kani__connection_error__d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
+    ::std::mem::forget(_result);
 }

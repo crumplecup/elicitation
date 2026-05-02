@@ -29,6 +29,7 @@ fn close_overlay__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -39,6 +40,7 @@ fn close_overlay__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -49,6 +51,7 @@ fn close_overlay__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -59,6 +62,7 @@ fn open_help__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -69,6 +73,7 @@ fn open_help__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -79,6 +84,7 @@ fn open_help__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -90,6 +96,7 @@ fn open_export_picker__kani__overlay_none__d0() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -101,6 +108,7 @@ fn open_export_picker__kani__overlay_none__d1() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -112,6 +120,7 @@ fn open_export_picker__kani__overlay_none__d2() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -122,6 +131,7 @@ fn picker_move_up__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -132,6 +142,7 @@ fn picker_move_up__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -142,6 +153,7 @@ fn picker_move_up__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -152,6 +164,7 @@ fn picker_move_down__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -162,6 +175,7 @@ fn picker_move_down__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -172,6 +186,7 @@ fn picker_move_down__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -182,6 +197,7 @@ fn open_save_prompt__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -192,6 +208,7 @@ fn open_save_prompt__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -202,6 +219,7 @@ fn open_save_prompt__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -213,6 +231,7 @@ fn prompt_push__kani__overlay_none__d0() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -224,6 +243,7 @@ fn prompt_push__kani__overlay_none__d1() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -235,6 +255,7 @@ fn prompt_push__kani__overlay_none__d2() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -245,6 +266,7 @@ fn prompt_backspace__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -255,6 +277,7 @@ fn prompt_backspace__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -265,6 +288,7 @@ fn prompt_backspace__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -276,6 +300,7 @@ fn open_saved_browser__kani__overlay_none__d0() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -287,6 +312,7 @@ fn open_saved_browser__kani__overlay_none__d1() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -298,6 +324,7 @@ fn open_saved_browser__kani__overlay_none__d2() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -308,6 +335,7 @@ fn saved_browser_up__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -318,6 +346,7 @@ fn saved_browser_up__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -328,6 +357,7 @@ fn saved_browser_up__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -338,6 +368,7 @@ fn saved_browser_down__kani__overlay_none__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -348,6 +379,7 @@ fn saved_browser_down__kani__overlay_none__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -358,6 +390,7 @@ fn saved_browser_down__kani__overlay_none__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -368,6 +401,7 @@ fn close_overlay__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -378,6 +412,7 @@ fn close_overlay__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -388,6 +423,7 @@ fn close_overlay__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -398,6 +434,7 @@ fn open_help__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -408,6 +445,7 @@ fn open_help__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -418,6 +456,7 @@ fn open_help__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -429,6 +468,7 @@ fn open_export_picker__kani__help_open__d0() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -440,6 +480,7 @@ fn open_export_picker__kani__help_open__d1() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -451,6 +492,7 @@ fn open_export_picker__kani__help_open__d2() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -461,6 +503,7 @@ fn picker_move_up__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -471,6 +514,7 @@ fn picker_move_up__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -481,6 +525,7 @@ fn picker_move_up__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -491,6 +536,7 @@ fn picker_move_down__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -501,6 +547,7 @@ fn picker_move_down__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -511,6 +558,7 @@ fn picker_move_down__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -521,6 +569,7 @@ fn open_save_prompt__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -531,6 +580,7 @@ fn open_save_prompt__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -541,6 +591,7 @@ fn open_save_prompt__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -552,6 +603,7 @@ fn prompt_push__kani__help_open__d0() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -563,6 +615,7 @@ fn prompt_push__kani__help_open__d1() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -574,6 +627,7 @@ fn prompt_push__kani__help_open__d2() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -584,6 +638,7 @@ fn prompt_backspace__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -594,6 +649,7 @@ fn prompt_backspace__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -604,6 +660,7 @@ fn prompt_backspace__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -615,6 +672,7 @@ fn open_saved_browser__kani__help_open__d0() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -626,6 +684,7 @@ fn open_saved_browser__kani__help_open__d1() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -637,6 +696,7 @@ fn open_saved_browser__kani__help_open__d2() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -647,6 +707,7 @@ fn saved_browser_up__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -657,6 +718,7 @@ fn saved_browser_up__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -667,6 +729,7 @@ fn saved_browser_up__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -677,6 +740,7 @@ fn saved_browser_down__kani__help_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -687,6 +751,7 @@ fn saved_browser_down__kani__help_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -697,6 +762,7 @@ fn saved_browser_down__kani__help_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -710,6 +776,7 @@ fn close_overlay__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -723,6 +790,7 @@ fn close_overlay__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -739,6 +807,7 @@ fn close_overlay__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -752,6 +821,7 @@ fn open_help__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -765,6 +835,7 @@ fn open_help__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -781,6 +852,7 @@ fn open_help__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -795,6 +867,7 @@ fn open_export_picker__kani__export_picker_open__d0() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -809,6 +882,7 @@ fn open_export_picker__kani__export_picker_open__d1() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -826,6 +900,7 @@ fn open_export_picker__kani__export_picker_open__d2() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -839,6 +914,7 @@ fn picker_move_up__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -852,6 +928,7 @@ fn picker_move_up__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -868,6 +945,7 @@ fn picker_move_up__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -881,6 +959,7 @@ fn picker_move_down__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -894,6 +973,7 @@ fn picker_move_down__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -910,6 +990,7 @@ fn picker_move_down__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -923,6 +1004,7 @@ fn open_save_prompt__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -936,6 +1018,7 @@ fn open_save_prompt__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -952,6 +1035,7 @@ fn open_save_prompt__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -966,6 +1050,7 @@ fn prompt_push__kani__export_picker_open__d0() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -980,6 +1065,7 @@ fn prompt_push__kani__export_picker_open__d1() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -997,6 +1083,7 @@ fn prompt_push__kani__export_picker_open__d2() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1010,6 +1097,7 @@ fn prompt_backspace__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1023,6 +1111,7 @@ fn prompt_backspace__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1039,6 +1128,7 @@ fn prompt_backspace__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1053,6 +1143,7 @@ fn open_saved_browser__kani__export_picker_open__d0() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1067,6 +1158,7 @@ fn open_saved_browser__kani__export_picker_open__d1() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1084,6 +1176,7 @@ fn open_saved_browser__kani__export_picker_open__d2() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1097,6 +1190,7 @@ fn saved_browser_up__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1110,6 +1204,7 @@ fn saved_browser_up__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1126,6 +1221,7 @@ fn saved_browser_up__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1139,6 +1235,7 @@ fn saved_browser_down__kani__export_picker_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1152,6 +1249,7 @@ fn saved_browser_down__kani__export_picker_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1168,6 +1266,7 @@ fn saved_browser_down__kani__export_picker_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1180,6 +1279,7 @@ fn close_overlay__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1192,6 +1292,7 @@ fn close_overlay__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1204,6 +1305,7 @@ fn close_overlay__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1216,6 +1318,7 @@ fn open_help__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1228,6 +1331,7 @@ fn open_help__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1240,6 +1344,7 @@ fn open_help__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1253,6 +1358,7 @@ fn open_export_picker__kani__save_prompt_open__d0() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1266,6 +1372,7 @@ fn open_export_picker__kani__save_prompt_open__d1() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1279,6 +1386,7 @@ fn open_export_picker__kani__save_prompt_open__d2() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1291,6 +1399,7 @@ fn picker_move_up__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1303,6 +1412,7 @@ fn picker_move_up__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1315,6 +1425,7 @@ fn picker_move_up__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1327,6 +1438,7 @@ fn picker_move_down__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1339,6 +1451,7 @@ fn picker_move_down__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1351,6 +1464,7 @@ fn picker_move_down__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1363,6 +1477,7 @@ fn open_save_prompt__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1375,6 +1490,7 @@ fn open_save_prompt__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1387,6 +1503,7 @@ fn open_save_prompt__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1400,6 +1517,7 @@ fn prompt_push__kani__save_prompt_open__d0() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1413,6 +1531,7 @@ fn prompt_push__kani__save_prompt_open__d1() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1426,6 +1545,7 @@ fn prompt_push__kani__save_prompt_open__d2() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1438,6 +1558,7 @@ fn prompt_backspace__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1450,6 +1571,7 @@ fn prompt_backspace__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1462,6 +1584,7 @@ fn prompt_backspace__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1475,6 +1598,7 @@ fn open_saved_browser__kani__save_prompt_open__d0() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1488,6 +1612,7 @@ fn open_saved_browser__kani__save_prompt_open__d1() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1501,6 +1626,7 @@ fn open_saved_browser__kani__save_prompt_open__d2() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1513,6 +1639,7 @@ fn saved_browser_up__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1525,6 +1652,7 @@ fn saved_browser_up__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1537,6 +1665,7 @@ fn saved_browser_up__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1549,6 +1678,7 @@ fn saved_browser_down__kani__save_prompt_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1561,6 +1691,7 @@ fn saved_browser_down__kani__save_prompt_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1573,6 +1704,7 @@ fn saved_browser_down__kani__save_prompt_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1586,6 +1718,7 @@ fn close_overlay__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1599,6 +1732,7 @@ fn close_overlay__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1615,6 +1749,7 @@ fn close_overlay__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = close_overlay(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1628,6 +1763,7 @@ fn open_help__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1641,6 +1777,7 @@ fn open_help__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1657,6 +1794,7 @@ fn open_help__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_help(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1671,6 +1809,7 @@ fn open_export_picker__kani__saved_browser_open__d0() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1685,6 +1824,7 @@ fn open_export_picker__kani__saved_browser_open__d1() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1702,6 +1842,7 @@ fn open_export_picker__kani__saved_browser_open__d2() {
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
     let _result = open_export_picker(_state, proof, formats);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1715,6 +1856,7 @@ fn picker_move_up__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1728,6 +1870,7 @@ fn picker_move_up__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1744,6 +1887,7 @@ fn picker_move_up__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1757,6 +1901,7 @@ fn picker_move_down__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1770,6 +1915,7 @@ fn picker_move_down__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1786,6 +1932,7 @@ fn picker_move_down__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = picker_move_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1799,6 +1946,7 @@ fn open_save_prompt__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1812,6 +1960,7 @@ fn open_save_prompt__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1828,6 +1977,7 @@ fn open_save_prompt__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = open_save_prompt(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1842,6 +1992,7 @@ fn prompt_push__kani__saved_browser_open__d0() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1856,6 +2007,7 @@ fn prompt_push__kani__saved_browser_open__d1() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1873,6 +2025,7 @@ fn prompt_push__kani__saved_browser_open__d2() {
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
     let _result = prompt_push(state, proof, ch);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1886,6 +2039,7 @@ fn prompt_backspace__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1899,6 +2053,7 @@ fn prompt_backspace__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1915,6 +2070,7 @@ fn prompt_backspace__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = prompt_backspace(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1929,6 +2085,7 @@ fn open_saved_browser__kani__saved_browser_open__d0() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1943,6 +2100,7 @@ fn open_saved_browser__kani__saved_browser_open__d1() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1960,6 +2118,7 @@ fn open_saved_browser__kani__saved_browser_open__d2() {
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let _result = open_saved_browser(_state, proof, entries);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1973,6 +2132,7 @@ fn saved_browser_up__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1986,6 +2146,7 @@ fn saved_browser_up__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -2002,6 +2163,7 @@ fn saved_browser_up__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -2015,6 +2177,7 @@ fn saved_browser_down__kani__saved_browser_open__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -2028,6 +2191,7 @@ fn saved_browser_down__kani__saved_browser_open__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -2044,4 +2208,5 @@ fn saved_browser_down__kani__saved_browser_open__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = saved_browser_down(state, proof);
+    ::std::mem::forget(_result);
 }

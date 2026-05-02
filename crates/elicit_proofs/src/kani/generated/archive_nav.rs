@@ -29,6 +29,7 @@ fn load_nav__kani__nav_unloaded__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -39,6 +40,7 @@ fn load_nav__kani__nav_unloaded__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -49,6 +51,7 @@ fn load_nav__kani__nav_unloaded__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -60,6 +63,7 @@ fn nav_loaded__kani__nav_unloaded__d0() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -71,6 +75,7 @@ fn nav_loaded__kani__nav_unloaded__d1() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -82,6 +87,7 @@ fn nav_loaded__kani__nav_unloaded__d2() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -92,6 +98,7 @@ fn nav_refresh__kani__nav_unloaded__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -102,6 +109,7 @@ fn nav_refresh__kani__nav_unloaded__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -112,6 +120,7 @@ fn nav_refresh__kani__nav_unloaded__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -124,6 +133,7 @@ fn expand_schema__kani__nav_unloaded__d0() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -136,6 +146,7 @@ fn expand_schema__kani__nav_unloaded__d1() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -148,6 +159,7 @@ fn expand_schema__kani__nav_unloaded__d2() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -159,6 +171,7 @@ fn collapse_schema__kani__nav_unloaded__d0() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -170,6 +183,7 @@ fn collapse_schema__kani__nav_unloaded__d1() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -181,6 +195,7 @@ fn collapse_schema__kani__nav_unloaded__d2() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -191,6 +206,7 @@ fn move_cursor_up__kani__nav_unloaded__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -201,6 +217,7 @@ fn move_cursor_up__kani__nav_unloaded__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -211,6 +228,7 @@ fn move_cursor_up__kani__nav_unloaded__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -222,6 +240,7 @@ fn move_cursor_down__kani__nav_unloaded__d0() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -233,6 +252,7 @@ fn move_cursor_down__kani__nav_unloaded__d1() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -244,6 +264,7 @@ fn move_cursor_down__kani__nav_unloaded__d2() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -255,6 +276,7 @@ fn apply_filter__kani__nav_unloaded__d0() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -266,6 +288,7 @@ fn apply_filter__kani__nav_unloaded__d1() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -277,6 +300,7 @@ fn apply_filter__kani__nav_unloaded__d2() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -287,6 +311,7 @@ fn clear_filter__kani__nav_unloaded__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -297,6 +322,7 @@ fn clear_filter__kani__nav_unloaded__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -307,6 +333,7 @@ fn clear_filter__kani__nav_unloaded__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -317,6 +344,7 @@ fn load_nav__kani__nav_loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -327,6 +355,7 @@ fn load_nav__kani__nav_loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -337,6 +366,7 @@ fn load_nav__kani__nav_loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -348,6 +378,7 @@ fn nav_loaded__kani__nav_loading__d0() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -359,6 +390,7 @@ fn nav_loaded__kani__nav_loading__d1() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -370,6 +402,7 @@ fn nav_loaded__kani__nav_loading__d2() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -380,6 +413,7 @@ fn nav_refresh__kani__nav_loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -390,6 +424,7 @@ fn nav_refresh__kani__nav_loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -400,6 +435,7 @@ fn nav_refresh__kani__nav_loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -412,6 +448,7 @@ fn expand_schema__kani__nav_loading__d0() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -424,6 +461,7 @@ fn expand_schema__kani__nav_loading__d1() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -436,6 +474,7 @@ fn expand_schema__kani__nav_loading__d2() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -447,6 +486,7 @@ fn collapse_schema__kani__nav_loading__d0() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -458,6 +498,7 @@ fn collapse_schema__kani__nav_loading__d1() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -469,6 +510,7 @@ fn collapse_schema__kani__nav_loading__d2() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -479,6 +521,7 @@ fn move_cursor_up__kani__nav_loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -489,6 +532,7 @@ fn move_cursor_up__kani__nav_loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -499,6 +543,7 @@ fn move_cursor_up__kani__nav_loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -510,6 +555,7 @@ fn move_cursor_down__kani__nav_loading__d0() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -521,6 +567,7 @@ fn move_cursor_down__kani__nav_loading__d1() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -532,6 +579,7 @@ fn move_cursor_down__kani__nav_loading__d2() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -543,6 +591,7 @@ fn apply_filter__kani__nav_loading__d0() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -554,6 +603,7 @@ fn apply_filter__kani__nav_loading__d1() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -565,6 +615,7 @@ fn apply_filter__kani__nav_loading__d2() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -575,6 +626,7 @@ fn clear_filter__kani__nav_loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -585,6 +637,7 @@ fn clear_filter__kani__nav_loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -595,6 +648,7 @@ fn clear_filter__kani__nav_loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -611,6 +665,7 @@ fn load_nav__kani__nav_ready__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -629,6 +684,7 @@ fn load_nav__kani__nav_ready__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -648,6 +704,7 @@ fn load_nav__kani__nav_ready__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -665,6 +722,7 @@ fn nav_loaded__kani__nav_ready__d0() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -684,6 +742,7 @@ fn nav_loaded__kani__nav_ready__d1() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -704,6 +763,7 @@ fn nav_loaded__kani__nav_ready__d2() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -720,6 +780,7 @@ fn nav_refresh__kani__nav_ready__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -738,6 +799,7 @@ fn nav_refresh__kani__nav_ready__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -757,6 +819,7 @@ fn nav_refresh__kani__nav_ready__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -775,6 +838,7 @@ fn expand_schema__kani__nav_ready__d0() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -795,6 +859,7 @@ fn expand_schema__kani__nav_ready__d1() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -816,6 +881,7 @@ fn expand_schema__kani__nav_ready__d2() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -833,6 +899,7 @@ fn collapse_schema__kani__nav_ready__d0() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -852,6 +919,7 @@ fn collapse_schema__kani__nav_ready__d1() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -872,6 +940,7 @@ fn collapse_schema__kani__nav_ready__d2() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -888,6 +957,7 @@ fn move_cursor_up__kani__nav_ready__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -906,6 +976,7 @@ fn move_cursor_up__kani__nav_ready__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -925,6 +996,7 @@ fn move_cursor_up__kani__nav_ready__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -942,6 +1014,7 @@ fn move_cursor_down__kani__nav_ready__d0() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -961,6 +1034,7 @@ fn move_cursor_down__kani__nav_ready__d1() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -981,6 +1055,7 @@ fn move_cursor_down__kani__nav_ready__d2() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -998,6 +1073,7 @@ fn apply_filter__kani__nav_ready__d0() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1017,6 +1093,7 @@ fn apply_filter__kani__nav_ready__d1() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1037,6 +1114,7 @@ fn apply_filter__kani__nav_ready__d2() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1053,6 +1131,7 @@ fn clear_filter__kani__nav_ready__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1071,6 +1150,7 @@ fn clear_filter__kani__nav_ready__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1090,6 +1170,7 @@ fn clear_filter__kani__nav_ready__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1104,6 +1185,7 @@ fn load_nav__kani__nav_filtered__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1120,6 +1202,7 @@ fn load_nav__kani__nav_filtered__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1137,6 +1220,7 @@ fn load_nav__kani__nav_filtered__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = load_nav(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1152,6 +1236,7 @@ fn nav_loaded__kani__nav_filtered__d0() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1169,6 +1254,7 @@ fn nav_loaded__kani__nav_filtered__d1() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1187,6 +1273,7 @@ fn nav_loaded__kani__nav_filtered__d2() {
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
     let _result = nav_loaded(_state, proof, nav);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1201,6 +1288,7 @@ fn nav_refresh__kani__nav_filtered__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1217,6 +1305,7 @@ fn nav_refresh__kani__nav_filtered__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1234,6 +1323,7 @@ fn nav_refresh__kani__nav_filtered__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = nav_refresh(_state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1250,6 +1340,7 @@ fn expand_schema__kani__nav_filtered__d0() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1268,6 +1359,7 @@ fn expand_schema__kani__nav_filtered__d1() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1287,6 +1379,7 @@ fn expand_schema__kani__nav_filtered__d2() {
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1302,6 +1395,7 @@ fn collapse_schema__kani__nav_filtered__d0() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1319,6 +1413,7 @@ fn collapse_schema__kani__nav_filtered__d1() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1337,6 +1432,7 @@ fn collapse_schema__kani__nav_filtered__d2() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1351,6 +1447,7 @@ fn move_cursor_up__kani__nav_filtered__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1367,6 +1464,7 @@ fn move_cursor_up__kani__nav_filtered__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1384,6 +1482,7 @@ fn move_cursor_up__kani__nav_filtered__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = move_cursor_up(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1399,6 +1498,7 @@ fn move_cursor_down__kani__nav_filtered__d0() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1416,6 +1516,7 @@ fn move_cursor_down__kani__nav_filtered__d1() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1434,6 +1535,7 @@ fn move_cursor_down__kani__nav_filtered__d2() {
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1449,6 +1551,7 @@ fn apply_filter__kani__nav_filtered__d0() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1466,6 +1569,7 @@ fn apply_filter__kani__nav_filtered__d1() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1484,6 +1588,7 @@ fn apply_filter__kani__nav_filtered__d2() {
     };
     let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1498,6 +1603,7 @@ fn clear_filter__kani__nav_filtered__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1514,6 +1620,7 @@ fn clear_filter__kani__nav_filtered__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
@@ -1531,4 +1638,5 @@ fn clear_filter__kani__nav_filtered__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let _result = clear_filter(state, proof);
+    ::std::mem::forget(_result);
 }
