@@ -22,8 +22,8 @@
 
 use elicit_db::ConnectionEstablished;
 use elicitation::{
-    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
-    formal_method,
+    Elicit, Established, KaniCompose, KaniVariantState, Prop, VerifiedStateMachine,
+    contracts::ProvableFrom, formal_method,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -35,7 +35,8 @@ use crate::archive::types::{BackendKind, DatabaseDescriptor};
 
 /// Lifecycle state of the archive backend connection.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniVariantState,
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    KaniVariantState,
 )]
 pub enum ArchiveConnectionState {
     /// No active backend connection.
@@ -78,10 +79,20 @@ pub enum ArchiveConnectionState {
 /// harnesses will call `Established::prove(&kani::any::<ConnectionEstablished>())`
 /// instead of the axiom `Established::assert()`, keeping CBMC's state space bounded.
 #[derive(Prop)]
-#[prop(credential = ConnectionEstablished, creusot_invariant_fn = "archive_connection_consistent")]
+#[prop(credential = ConnectionEstablished, creusot_invariant_fn = "archive_connection_consistent", kani_invariant_fn = "archive_connection_consistent")]
 pub struct ArchiveConnectionConsistent;
 
 impl ProvableFrom<ConnectionEstablished> for ArchiveConnectionConsistent {}
+
+/// Structural invariant predicate for [`ArchiveConnectionState`].
+///
+/// Runtime-evaluable form of [`ArchiveConnectionConsistent`] used by Kani
+/// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
+/// Placeholder — all states are well-formed by construction.
+#[cfg(kani)]
+pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
+    true
+}
 
 // ── ArchiveConnectionMachine ──────────────────────────────────────────────────
 

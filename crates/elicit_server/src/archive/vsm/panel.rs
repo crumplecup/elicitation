@@ -28,8 +28,8 @@
 
 use elicit_ui::WcagVerified;
 use elicitation::{
-    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
-    formal_method, kani_label,
+    Elicit, Established, KaniCompose, KaniVariantState, Prop, VerifiedStateMachine,
+    contracts::ProvableFrom, formal_method, kani_label,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -54,7 +54,8 @@ use crate::archive::types::{
 /// determines which AccessKit node tree is emitted, enforcing WCAG compliance
 /// at the type level.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniVariantState,
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    KaniVariantState,
 )]
 pub enum ArchivePanelState {
     /// Column-detail view for the selected nav item (default landing).

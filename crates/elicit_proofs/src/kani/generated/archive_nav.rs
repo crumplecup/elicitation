@@ -1640,3 +1640,633 @@ fn clear_filter__kani__nav_filtered__d2() {
     let _result = clear_filter(state, proof);
     ::std::mem::forget(_result);
 }
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&_state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn load_nav__kani_contracted(
+    _state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    load_nav(_state, proof)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani_closure_d0() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani_closure_d1() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani_closure_d2() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = load_nav(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn load_nav__kani_closure() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    ::std::mem::forget(_state);
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = load_nav(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&_state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn nav_loaded__kani_contracted(
+    _state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    nav: NavTree,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    nav_loaded(_state, proof, nav)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani_closure_d0() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = nav_loaded(_state, proof, nav);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani_closure_d1() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = nav_loaded(_state, proof, nav);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani_closure_d2() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = nav_loaded(_state, proof, nav);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_loaded__kani_closure() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = nav_loaded(_state, proof, nav);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&_state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn nav_refresh__kani_contracted(
+    _state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    nav_refresh(_state, proof)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani_closure_d0() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani_closure_d1() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani_closure_d2() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = nav_refresh(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn nav_refresh__kani_closure() {
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&_state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    ::std::mem::forget(_state);
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = nav_refresh(_state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn expand_schema__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    schema_idx: usize,
+    expanded: bool,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    expand_schema(state, proof, schema_idx, expanded)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn expand_schema__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = expand_schema(state, proof, schema_idx, expanded);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn collapse_schema__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    schema_idx: usize,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    collapse_schema(state, proof, schema_idx)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = collapse_schema(state, proof, schema_idx);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = collapse_schema(state, proof, schema_idx);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = collapse_schema(state, proof, schema_idx);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn collapse_schema__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = collapse_schema(state, proof, schema_idx);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn move_cursor_up__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    move_cursor_up(state, proof)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_up__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = move_cursor_up(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn move_cursor_down__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    max: usize,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    move_cursor_down(state, proof, max)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = move_cursor_down(state, proof, max);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = move_cursor_down(state, proof, max);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = move_cursor_down(state, proof, max);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn move_cursor_down__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = move_cursor_down(state, proof, max);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn apply_filter__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    filter: String,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    apply_filter(state, proof, filter)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn apply_filter__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let filter: String = ::std::string::String::new();
+    let _result = apply_filter(state, proof, filter);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::requires(archive_nav_consistent(&state))]
+#[::kani::ensures(|result|archive_nav_consistent(&result.0))]
+pub(crate) fn clear_filter__kani_contracted(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    clear_filter(state, proof)
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani_closure_d0() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani_closure_d1() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani_closure_d2() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn clear_filter__kani_closure() {
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_nav_consistent(&state));
+    let proof: Established<ArchiveNavConsistent> = {
+        let __cred = ArchiveNavConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = clear_filter(state, proof);
+    ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}

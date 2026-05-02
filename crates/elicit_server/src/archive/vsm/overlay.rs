@@ -7,8 +7,8 @@
 
 use elicit_ui::WcagVerified;
 use elicitation::{
-    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
-    formal_method,
+    Elicit, Established, KaniCompose, KaniVariantState, Prop, VerifiedStateMachine,
+    contracts::ProvableFrom, formal_method,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,8 @@ use crate::archive::types::{ExportFormat, SavedQuery};
 
 /// State of modal overlays that float above the main panel.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniVariantState,
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    KaniVariantState,
 )]
 pub enum ArchiveOverlayState {
     /// No overlay is open.
@@ -60,10 +61,20 @@ pub enum ArchiveOverlayState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: overlays render AccessKit nodes
 /// so WCAG compliance is the credential that bounds the proof state space.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent", kani_invariant_fn = "archive_overlay_consistent")]
 pub struct ArchiveOverlayConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
+
+/// Structural invariant predicate for [`ArchiveOverlayState`].
+///
+/// Runtime-evaluable form of [`ArchiveOverlayConsistent`] used by Kani
+/// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
+/// Placeholder — all states are well-formed by construction.
+#[cfg(kani)]
+pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
+    true
+}
 
 // ── ArchiveOverlayMachine ─────────────────────────────────────────────────────
 

@@ -22244,14 +22244,60 @@ pub(crate) fn column_detail__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(column_detail__kani_contracted)]
-fn column_detail__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn column_detail__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let _result = column_detail__kani_contracted(_state, proof);
+    let _result = column_detail(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = column_detail(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn column_detail__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = column_detail(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22268,16 +22314,68 @@ pub(crate) fn panel_loading__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(panel_loading__kani_contracted)]
-fn panel_loading__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn panel_loading__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let schema: String = ::std::string::String::new();
     let label: String = ::std::string::String::new();
-    let _result = panel_loading__kani_contracted(_state, proof, schema, label);
+    let _result = panel_loading(_state, proof, schema, label);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    let _result = panel_loading(_state, proof, schema, label);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_loading__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let label: String = ::std::string::String::new();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = panel_loading(_state, proof, schema, label);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22293,15 +22391,64 @@ pub(crate) fn panel_error__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(panel_error__kani_contracted)]
-fn panel_error__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn panel_error__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let message: String = ::std::string::String::new();
-    let _result = panel_error__kani_contracted(_state, proof, message);
+    let _result = panel_error(_state, proof, message);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    let _result = panel_error(_state, proof, message);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn panel_error__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let message: String = ::std::string::String::new();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = panel_error(_state, proof, message);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22320,9 +22467,10 @@ pub(crate) fn data_grid_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(data_grid_ready__kani_contracted)]
-fn data_grid_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn data_grid_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22331,14 +22479,64 @@ fn data_grid_ready__kani_closure() {
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = data_grid_ready__kani_contracted(
-        _state,
-        proof,
-        schema,
-        table,
-        result,
-        display_mode,
-    );
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn data_grid_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22354,15 +22552,62 @@ pub(crate) fn query_complete__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(query_complete__kani_contracted)]
-fn query_complete__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn query_complete__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = query_complete__kani_contracted(state, proof, result);
+    let _result = query_complete(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = query_complete(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = query_complete(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn query_complete__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = query_complete(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22377,14 +22622,58 @@ pub(crate) fn begin_edit__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(begin_edit__kani_contracted)]
-fn begin_edit__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn begin_edit__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let _result = begin_edit__kani_contracted(state, proof);
+    let _result = begin_edit(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn begin_edit__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = begin_edit(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22399,14 +22688,58 @@ pub(crate) fn commit_edits__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(commit_edits__kani_contracted)]
-fn commit_edits__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn commit_edits__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let _result = commit_edits__kani_contracted(state, proof);
+    let _result = commit_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn commit_edits__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = commit_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22421,14 +22754,58 @@ pub(crate) fn abort_edits__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(abort_edits__kani_contracted)]
-fn abort_edits__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn abort_edits__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let _result = abort_edits__kani_contracted(state, proof);
+    let _result = abort_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn abort_edits__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = abort_edits(state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22444,15 +22821,64 @@ pub(crate) fn open_sql_editor__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_sql_editor__kani_contracted)]
-fn open_sql_editor__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn open_sql_editor__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let initial_text: String = ::std::string::String::new();
-    let _result = open_sql_editor__kani_contracted(_state, proof, initial_text);
+    let _result = open_sql_editor(_state, proof, initial_text);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    let _result = open_sql_editor(_state, proof, initial_text);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_sql_editor__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let initial_text: String = ::std::string::String::new();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_sql_editor(_state, proof, initial_text);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22469,16 +22895,68 @@ pub(crate) fn open_export_panel__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_export_panel__kani_contracted)]
-fn open_export_panel__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn open_export_panel__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
-    let _result = open_export_panel__kani_contracted(_state, proof, schema, table);
+    let _result = open_export_panel(_state, proof, schema, table);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let _result = open_export_panel(_state, proof, schema, table);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_export_panel__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_export_panel(_state, proof, schema, table);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22493,14 +22971,60 @@ pub(crate) fn open_help_panel__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_help_panel__kani_contracted)]
-fn open_help_panel__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn open_help_panel__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let _result = open_help_panel__kani_contracted(_state, proof);
+    let _result = open_help_panel(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let _result = open_help_panel(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_help_panel__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_help_panel(_state, proof);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22517,21 +23041,68 @@ pub(crate) fn open_saved_panel__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_saved_panel__kani_contracted)]
-fn open_saved_panel__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn open_saved_panel__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = open_saved_panel__kani_contracted(
-        _state,
-        proof,
-        entries,
-        display_mode,
-    );
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_saved_panel__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_saved_panel(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22548,21 +23119,68 @@ pub(crate) fn open_connection_editor__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_connection_editor__kani_contracted)]
-fn open_connection_editor__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn open_connection_editor__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = open_connection_editor__kani_contracted(
-        _state,
-        proof,
-        profile,
-        display_mode,
-    );
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn open_connection_editor__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = open_connection_editor(_state, proof, profile, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22581,9 +23199,10 @@ pub(crate) fn ddl_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(ddl_ready__kani_contracted)]
-fn ddl_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn ddl_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22592,14 +23211,64 @@ fn ddl_ready__kani_closure() {
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = ddl_ready__kani_contracted(
-        _state,
-        proof,
-        schema,
-        table,
-        ddl,
-        display_mode,
-    );
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn ddl_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22618,9 +23287,10 @@ pub(crate) fn explain_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(explain_ready__kani_contracted)]
-fn explain_ready__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn explain_ready__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22629,14 +23299,62 @@ fn explain_ready__kani_closure() {
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = explain_ready__kani_contracted(
-        state,
-        proof,
-        schema,
-        table,
-        root,
-        display_mode,
-    );
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn explain_ready__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22652,15 +23370,62 @@ pub(crate) fn export_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(export_ready__kani_contracted)]
-fn export_ready__kani_closure() {
-    let state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn export_ready__kani_closure_d0() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = export_ready__kani_contracted(state, proof, result);
+    let _result = export_ready(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani_closure_d1() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = export_ready(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani_closure_d2() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = export_ready(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn export_ready__kani_closure() {
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = export_ready(state, proof, result);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22677,16 +23442,68 @@ pub(crate) fn history_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(history_ready__kani_contracted)]
-fn history_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn history_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
     let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = history_ready__kani_contracted(_state, proof, entries, display_mode);
+    let _result = history_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = history_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = history_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn history_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
+    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = history_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22703,16 +23520,68 @@ pub(crate) fn saved_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(saved_ready__kani_contracted)]
-fn saved_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn saved_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = saved_ready__kani_contracted(_state, proof, entries, display_mode);
+    let _result = saved_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn saved_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
+    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = saved_ready(_state, proof, entries, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22729,16 +23598,68 @@ pub(crate) fn monitor_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(monitor_ready__kani_contracted)]
-fn monitor_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn monitor_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = monitor_ready__kani_contracted(_state, proof, snapshot, display_mode);
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn monitor_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22755,16 +23676,68 @@ pub(crate) fn admin_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(admin_ready__kani_contracted)]
-fn admin_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn admin_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = admin_ready__kani_contracted(_state, proof, snapshot, display_mode);
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn admin_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = admin_ready(_state, proof, snapshot, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22783,9 +23756,10 @@ pub(crate) fn erd_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(erd_ready__kani_contracted)]
-fn erd_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn erd_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22794,14 +23768,64 @@ fn erd_ready__kani_closure() {
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
     let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = erd_ready__kani_contracted(
-        _state,
-        proof,
-        schema,
-        diagram,
-        layout,
-        display_mode,
-    );
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
+    let layout: Option<ErdLayout> = ::core::option::Option::None;
+    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
+    let layout: Option<ErdLayout> = ::core::option::Option::None;
+    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn erd_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
+    let layout: Option<ErdLayout> = ::core::option::Option::None;
+    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22820,9 +23844,10 @@ pub(crate) fn constraints_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(constraints_ready__kani_contracted)]
-fn constraints_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn constraints_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22831,7 +23856,7 @@ fn constraints_ready__kani_closure() {
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
     let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready__kani_contracted(
+    let _result = constraints_ready(
         _state,
         proof,
         schema,
@@ -22839,6 +23864,84 @@ fn constraints_ready__kani_closure() {
         constraints,
         display_mode,
     );
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn constraints_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
+    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -22857,9 +23960,10 @@ pub(crate) fn indexes_ready__kani_contracted(
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
-#[::kani::proof_for_contract(indexes_ready__kani_contracted)]
-fn indexes_ready__kani_closure() {
-    let _state: ArchivePanelState = ::kani::any();
+#[::kani::proof]
+fn indexes_ready__kani_closure_d0() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -22868,13 +23972,63 @@ fn indexes_ready__kani_closure() {
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
     let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = indexes_ready__kani_contracted(
-        _state,
-        proof,
-        schema,
-        table,
-        indexes,
-        display_mode,
-    );
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani_closure_d1() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani_closure_d2() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
+    ::std::mem::forget(_result);
+}
+#[allow(unexpected_cfgs)]
+#[cfg(kani)]
+#[::kani::proof]
+fn indexes_ready__kani_closure() {
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    ::kani::assume(archive_panel_consistent(&_state));
+    let proof: Established<ArchivePanelConsistent> = {
+        let __cred = ArchivePanelConsistent::kani_proof_credential();
+        ::elicitation::Established::prove(&__cred)
+    };
+    let schema: String = ::std::string::String::new();
+    let table: String = ::std::string::String::new();
+    let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
+    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(_state);
+    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+    ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }

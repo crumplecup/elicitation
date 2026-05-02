@@ -14,7 +14,7 @@
 //! ```bash
 //! # Kani
 //! cargo build -p elicit_proofs --features kani
-//! cargo kani -p elicit_proofs --features kani --harness disconnect__kani
+//! cargo kani -p elicit_proofs --features kani -Z function-contracts --harness disconnect__kani
 //!
 //! # Creusot (once implemented)
 //! cargo build -p elicit_proofs --features creusot

@@ -5,5 +5,6 @@
 
 pub mod composition;
 pub mod diag;
+pub mod gallery;
 pub mod generated;
 pub mod suite;

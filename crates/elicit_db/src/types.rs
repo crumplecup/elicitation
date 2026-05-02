@@ -16,7 +16,7 @@ use elicit_wkb::{WriteOptions as WkbWriteOptions, write_geometry};
 use elicit_wkt::trait_factories::{ToWktF64, TryFromWktF64};
 
 /// A spatial payload encoded as WKT text or WKB bytes.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose)]
 pub enum DbSpatialValue {
     /// Well-known text representation.
     Wkt(String),

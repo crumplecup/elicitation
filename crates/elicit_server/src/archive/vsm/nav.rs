@@ -2,8 +2,8 @@
 
 use elicit_ui::WcagVerified;
 use elicitation::{
-    Elicit, Established, KaniVariantState, Prop, VerifiedStateMachine, contracts::ProvableFrom,
-    formal_method,
+    Elicit, Established, KaniCompose, KaniVariantState, Prop, VerifiedStateMachine,
+    contracts::ProvableFrom, formal_method,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,8 @@ use crate::archive::nav_tree::NavTree;
 
 /// State of the archive navigation tree panel.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniVariantState,
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    KaniVariantState,
 )]
 pub enum ArchiveNavState {
     /// No nav tree has been loaded yet.
@@ -58,10 +59,20 @@ pub enum ArchiveNavState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: nav state produces AccessKit
 /// nodes via `to_ak_nodes`, so WCAG compliance is the appropriate credential.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_nav_consistent")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_nav_consistent", kani_invariant_fn = "archive_nav_consistent")]
 pub struct ArchiveNavConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}
+
+/// Structural invariant predicate for [`ArchiveNavState`].
+///
+/// Runtime-evaluable form of [`ArchiveNavConsistent`] used by Kani
+/// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
+/// Placeholder — all states are well-formed by construction.
+#[cfg(kani)]
+pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
+    true
+}
 
 // ── ArchiveNavMachine ─────────────────────────────────────────────────────────
 

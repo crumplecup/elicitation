@@ -241,6 +241,8 @@ fn run_harness(h: &VsmHarness, timeout_secs: u64) -> VsmResult {
             "--lib",
             "--features",
             "kani",
+            "-Z",
+            "function-contracts",
             "--harness",
             &h.name,
         ])
