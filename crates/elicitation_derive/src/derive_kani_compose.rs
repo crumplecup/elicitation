@@ -110,10 +110,10 @@ fn first_generic(ty: &Type) -> Option<&Type> {
         return None;
     };
     let last = path.segments.last()?;
-    if let syn::PathArguments::AngleBracketed(ab) = &last.arguments {
-        if let Some(syn::GenericArgument::Type(inner)) = ab.args.first() {
-            return Some(inner);
-        }
+    if let syn::PathArguments::AngleBracketed(ab) = &last.arguments
+        && let Some(syn::GenericArgument::Type(inner)) = ab.args.first()
+    {
+        return Some(inner);
     }
     None
 }
@@ -270,10 +270,7 @@ fn struct_unnamed_any_body(fields: &syn::FieldsUnnamed) -> proc_macro2::TokenStr
 /// because `field_exprs` already returns `kani::any::<T>()` for all primitive
 /// depths.  Only heap-allocated types (`String`, `Vec<T>`) use the bounded
 /// depth-2 construction.
-fn enum_any_body(
-    enum_ident: &syn::Ident,
-    data: &syn::DataEnum,
-) -> proc_macro2::TokenStream {
+fn enum_any_body(enum_ident: &syn::Ident, data: &syn::DataEnum) -> proc_macro2::TokenStream {
     let n = data.variants.len();
     let n_lit = n; // usize literal
     let arms: Vec<proc_macro2::TokenStream> = data

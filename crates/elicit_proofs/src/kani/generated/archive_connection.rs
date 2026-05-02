@@ -5,15 +5,15 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(kani)]
-use elicitation::Established;
-#[cfg(kani)]
-use elicit_server::archive::vsm::*;
-#[cfg(kani)]
-use elicit_server::archive::types::*;
-#[cfg(kani)]
 use elicit_server::archive::display::*;
 #[cfg(kani)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(kani)]
+use elicit_server::archive::types::*;
+#[cfg(kani)]
+use elicit_server::archive::vsm::*;
+#[cfg(kani)]
+use elicitation::Established;
 #[cfg(kani)]
 #[kani::proof]
 fn verify_archive_connection_consistent_prop_marker() {
@@ -1754,14 +1754,18 @@ pub(crate) fn begin_connect_sql__kani_contracted(
     proof: Established<ArchiveConnectionConsistent>,
     profile_name: String,
     backend: BackendKind,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     begin_connect_sql(_state, proof, profile_name, backend)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_sql__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1770,14 +1774,18 @@ fn begin_connect_sql__kani_closure_d0() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_sql__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1786,14 +1794,18 @@ fn begin_connect_sql__kani_closure_d1() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_sql__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1802,14 +1814,18 @@ fn begin_connect_sql__kani_closure_d2() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_sql__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1818,9 +1834,13 @@ fn begin_connect_sql__kani_closure() {
     let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -1831,14 +1851,18 @@ pub(crate) fn begin_connect_kv__kani_contracted(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     profile_name: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     begin_connect_kv(_state, proof, profile_name)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_kv__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1846,14 +1870,18 @@ fn begin_connect_kv__kani_closure_d0() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_kv__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1861,14 +1889,18 @@ fn begin_connect_kv__kani_closure_d1() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_kv__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1876,14 +1908,18 @@ fn begin_connect_kv__kani_closure_d2() {
     };
     let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn begin_connect_kv__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1891,9 +1927,13 @@ fn begin_connect_kv__kani_closure() {
     };
     let profile_name: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_kv(_state, proof, profile_name);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -1904,14 +1944,18 @@ pub(crate) fn finish_connect_sql__kani_contracted(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     db: DatabaseDescriptor,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     finish_connect_sql(_state, proof, db)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_sql__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1919,14 +1963,18 @@ fn finish_connect_sql__kani_closure_d0() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_sql__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1934,14 +1982,18 @@ fn finish_connect_sql__kani_closure_d1() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_sql__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1949,14 +2001,18 @@ fn finish_connect_sql__kani_closure_d2() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_sql__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1964,9 +2020,13 @@ fn finish_connect_sql__kani_closure() {
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_sql(_state, proof, db);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -1977,14 +2037,18 @@ pub(crate) fn finish_connect_kv__kani_contracted(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     path: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     finish_connect_kv(_state, proof, path)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_kv__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -1992,14 +2056,18 @@ fn finish_connect_kv__kani_closure_d0() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_kv__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2007,14 +2075,18 @@ fn finish_connect_kv__kani_closure_d1() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_kv__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2022,14 +2094,18 @@ fn finish_connect_kv__kani_closure_d2() {
     };
     let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn finish_connect_kv__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2037,9 +2113,13 @@ fn finish_connect_kv__kani_closure() {
     };
     let path: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = finish_connect_kv(_state, proof, path);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -2049,65 +2129,85 @@ fn finish_connect_kv__kani_closure() {
 pub(crate) fn disconnect__kani_contracted(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     disconnect(_state, proof)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn disconnect__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn disconnect__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn disconnect__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = disconnect(_state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn disconnect__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = disconnect(_state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -2117,63 +2217,85 @@ fn disconnect__kani_closure() {
 pub(crate) fn reconnect__kani_contracted(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     reconnect(state, proof)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn reconnect__kani_closure_d0() {
-    let state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn reconnect__kani_closure_d1() {
-    let state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn reconnect__kani_closure_d2() {
-    let state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let _result = reconnect(state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn reconnect__kani_closure() {
-    let state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = reconnect(state, proof);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -2184,14 +2306,18 @@ pub(crate) fn connection_error__kani_contracted(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     message: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     connection_error(_state, proof, message)
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn connection_error__kani_closure_d0() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2199,14 +2325,18 @@ fn connection_error__kani_closure_d0() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn connection_error__kani_closure_d1() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2214,14 +2344,18 @@ fn connection_error__kani_closure_d1() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn connection_error__kani_closure_d2() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2229,14 +2363,18 @@ fn connection_error__kani_closure_d2() {
     };
     let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
 #[cfg(kani)]
 #[::kani::proof]
 fn connection_error__kani_closure() {
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_connection_consistent(&_state));
     let proof: Established<ArchiveConnectionConsistent> = {
         let __cred = ArchiveConnectionConsistent::kani_proof_credential();
@@ -2244,8 +2382,12 @@ fn connection_error__kani_closure() {
     };
     let message: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchiveConnectionState = <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveConnectionState =
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = connection_error(_state, proof, message);
-    ::kani::assert(archive_connection_consistent(&_result.0), "invariant preserved");
+    ::kani::assert(
+        archive_connection_consistent(&_result.0),
+        "invariant preserved",
+    );
     ::std::mem::forget(_result);
 }

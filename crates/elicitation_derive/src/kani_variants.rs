@@ -83,10 +83,10 @@ fn extract_first_generic(ty: &syn::Type) -> Option<&syn::Type> {
         return None;
     };
     let last = tp.path.segments.last()?;
-    if let syn::PathArguments::AngleBracketed(ab) = &last.arguments {
-        if let Some(syn::GenericArgument::Type(inner)) = ab.args.first() {
-            return Some(inner);
-        }
+    if let syn::PathArguments::AngleBracketed(ab) = &last.arguments
+        && let Some(syn::GenericArgument::Type(inner)) = ab.args.first()
+    {
+        return Some(inner);
     }
     None
 }

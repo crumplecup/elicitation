@@ -5,15 +5,15 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(kani)]
-use elicitation::Established;
-#[cfg(kani)]
-use elicit_server::archive::vsm::*;
-#[cfg(kani)]
-use elicit_server::archive::types::*;
-#[cfg(kani)]
 use elicit_server::archive::display::*;
 #[cfg(kani)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(kani)]
+use elicit_server::archive::types::*;
+#[cfg(kani)]
+use elicit_server::archive::vsm::*;
+#[cfg(kani)]
+use elicitation::Established;
 #[cfg(kani)]
 #[kani::proof]
 fn verify_archive_nav_consistent_prop_marker() {
@@ -671,9 +671,7 @@ fn load_nav__kani__nav_ready__d0() {
 #[::kani::proof]
 fn load_nav__kani__nav_ready__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -691,8 +689,8 @@ fn load_nav__kani__nav_ready__d1() {
 fn load_nav__kani__nav_ready__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -728,9 +726,7 @@ fn nav_loaded__kani__nav_ready__d0() {
 #[::kani::proof]
 fn nav_loaded__kani__nav_ready__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -749,8 +745,8 @@ fn nav_loaded__kani__nav_ready__d1() {
 fn nav_loaded__kani__nav_ready__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -786,9 +782,7 @@ fn nav_refresh__kani__nav_ready__d0() {
 #[::kani::proof]
 fn nav_refresh__kani__nav_ready__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -806,8 +800,8 @@ fn nav_refresh__kani__nav_ready__d1() {
 fn nav_refresh__kani__nav_ready__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -844,9 +838,7 @@ fn expand_schema__kani__nav_ready__d0() {
 #[::kani::proof]
 fn expand_schema__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -866,8 +858,8 @@ fn expand_schema__kani__nav_ready__d1() {
 fn expand_schema__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -905,9 +897,7 @@ fn collapse_schema__kani__nav_ready__d0() {
 #[::kani::proof]
 fn collapse_schema__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -926,8 +916,8 @@ fn collapse_schema__kani__nav_ready__d1() {
 fn collapse_schema__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -963,9 +953,7 @@ fn move_cursor_up__kani__nav_ready__d0() {
 #[::kani::proof]
 fn move_cursor_up__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -983,8 +971,8 @@ fn move_cursor_up__kani__nav_ready__d1() {
 fn move_cursor_up__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -1020,9 +1008,7 @@ fn move_cursor_down__kani__nav_ready__d0() {
 #[::kani::proof]
 fn move_cursor_down__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -1041,8 +1027,8 @@ fn move_cursor_down__kani__nav_ready__d1() {
 fn move_cursor_down__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -1079,9 +1065,7 @@ fn apply_filter__kani__nav_ready__d0() {
 #[::kani::proof]
 fn apply_filter__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -1100,8 +1084,8 @@ fn apply_filter__kani__nav_ready__d1() {
 fn apply_filter__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -1137,9 +1121,7 @@ fn clear_filter__kani__nav_ready__d0() {
 #[::kani::proof]
 fn clear_filter__kani__nav_ready__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
         filter_active: ::kani::any::<bool>(),
@@ -1157,8 +1139,8 @@ fn clear_filter__kani__nav_ready__d1() {
 fn clear_filter__kani__nav_ready__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavReady {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         cursor: ::kani::any::<usize>(),
         filter: ::std::string::String::new(),
@@ -1191,9 +1173,7 @@ fn load_nav__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn load_nav__kani__nav_filtered__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1209,8 +1189,8 @@ fn load_nav__kani__nav_filtered__d1() {
 fn load_nav__kani__nav_filtered__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1242,9 +1222,7 @@ fn nav_loaded__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn nav_loaded__kani__nav_filtered__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1261,8 +1239,8 @@ fn nav_loaded__kani__nav_filtered__d1() {
 fn nav_loaded__kani__nav_filtered__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1294,9 +1272,7 @@ fn nav_refresh__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn nav_refresh__kani__nav_filtered__d1() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1312,8 +1288,8 @@ fn nav_refresh__kani__nav_filtered__d1() {
 fn nav_refresh__kani__nav_filtered__d2() {
     let _state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1346,9 +1322,7 @@ fn expand_schema__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn expand_schema__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1366,8 +1340,8 @@ fn expand_schema__kani__nav_filtered__d1() {
 fn expand_schema__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1401,9 +1375,7 @@ fn collapse_schema__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn collapse_schema__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1420,8 +1392,8 @@ fn collapse_schema__kani__nav_filtered__d1() {
 fn collapse_schema__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1453,9 +1425,7 @@ fn move_cursor_up__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn move_cursor_up__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1471,8 +1441,8 @@ fn move_cursor_up__kani__nav_filtered__d1() {
 fn move_cursor_up__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1504,9 +1474,7 @@ fn move_cursor_down__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn move_cursor_down__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1523,8 +1491,8 @@ fn move_cursor_down__kani__nav_filtered__d1() {
 fn move_cursor_down__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1557,9 +1525,7 @@ fn apply_filter__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn apply_filter__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1576,8 +1542,8 @@ fn apply_filter__kani__nav_filtered__d1() {
 fn apply_filter__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1609,9 +1575,7 @@ fn clear_filter__kani__nav_filtered__d0() {
 #[::kani::proof]
 fn clear_filter__kani__nav_filtered__d1() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
-        schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        schemas: vec![<SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0()],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
     };
@@ -1627,8 +1591,8 @@ fn clear_filter__kani__nav_filtered__d1() {
 fn clear_filter__kani__nav_filtered__d2() {
     let state: ArchiveNavState = ArchiveNavState::NavFiltered {
         schemas: vec![
-            < SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0(), <
-            SchemaWithExpand as ::elicitation::KaniCompose > ::kani_depth0()
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
+            <SchemaWithExpand as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         filter: ::std::string::String::new(),
         cursor: ::kani::any::<usize>(),
@@ -1921,6 +1885,8 @@ fn expand_schema__kani_closure() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = expand_schema(state, proof, schema_idx, expanded);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -1992,6 +1958,8 @@ fn collapse_schema__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = collapse_schema(state, proof, schema_idx);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -2058,6 +2026,8 @@ fn move_cursor_up__kani_closure() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_up(state, proof);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -2129,6 +2099,8 @@ fn move_cursor_down__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = move_cursor_down(state, proof, max);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -2200,6 +2172,8 @@ fn apply_filter__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let filter: String = ::std::string::String::new();
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = apply_filter(state, proof, filter);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -2266,6 +2240,8 @@ fn clear_filter__kani_closure() {
         let __cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = clear_filter(state, proof);
     ::kani::assert(archive_nav_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);

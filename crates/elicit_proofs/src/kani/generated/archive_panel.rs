@@ -5,15 +5,15 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(kani)]
-use elicitation::Established;
-#[cfg(kani)]
-use elicit_server::archive::vsm::*;
-#[cfg(kani)]
-use elicit_server::archive::types::*;
-#[cfg(kani)]
 use elicit_server::archive::display::*;
 #[cfg(kani)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(kani)]
+use elicit_server::archive::types::*;
+#[cfg(kani)]
+use elicit_server::archive::vsm::*;
+#[cfg(kani)]
+use elicitation::Established;
 #[cfg(kani)]
 #[kani::proof]
 fn verify_archive_panel_consistent_prop_marker() {
@@ -139,7 +139,8 @@ fn data_grid_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -154,7 +155,8 @@ fn data_grid_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -169,7 +171,8 @@ fn data_grid_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -425,7 +428,8 @@ fn open_saved_panel__kani__column_detail__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -438,7 +442,8 @@ fn open_saved_panel__kani__column_detail__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -451,7 +456,8 @@ fn open_saved_panel__kani__column_detail__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -463,8 +469,10 @@ fn open_connection_editor__kani__column_detail__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -476,8 +484,10 @@ fn open_connection_editor__kani__column_detail__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -489,8 +499,10 @@ fn open_connection_editor__kani__column_detail__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -505,7 +517,8 @@ fn ddl_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -520,7 +533,8 @@ fn ddl_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -535,7 +549,8 @@ fn ddl_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -550,7 +565,8 @@ fn explain_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -565,7 +581,8 @@ fn explain_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -580,7 +597,8 @@ fn explain_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -629,7 +647,8 @@ fn history_ready__kani__column_detail__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -642,7 +661,8 @@ fn history_ready__kani__column_detail__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -655,7 +675,8 @@ fn history_ready__kani__column_detail__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -668,7 +689,8 @@ fn saved_ready__kani__column_detail__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -681,7 +703,8 @@ fn saved_ready__kani__column_detail__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -694,7 +717,8 @@ fn saved_ready__kani__column_detail__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -707,7 +731,8 @@ fn monitor_ready__kani__column_detail__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -720,7 +745,8 @@ fn monitor_ready__kani__column_detail__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -733,7 +759,8 @@ fn monitor_ready__kani__column_detail__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -746,7 +773,8 @@ fn admin_ready__kani__column_detail__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -759,7 +787,8 @@ fn admin_ready__kani__column_detail__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -772,7 +801,8 @@ fn admin_ready__kani__column_detail__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -787,7 +817,8 @@ fn erd_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -802,7 +833,8 @@ fn erd_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -817,7 +849,8 @@ fn erd_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -832,15 +865,9 @@ fn constraints_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -854,15 +881,9 @@ fn constraints_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -876,15 +897,9 @@ fn constraints_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -898,7 +913,8 @@ fn indexes_ready__kani__column_detail__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -913,7 +929,8 @@ fn indexes_ready__kani__column_detail__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -928,7 +945,8 @@ fn indexes_ready__kani__column_detail__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1081,7 +1099,8 @@ fn data_grid_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1099,7 +1118,8 @@ fn data_grid_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1117,7 +1137,8 @@ fn data_grid_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1439,7 +1460,8 @@ fn open_saved_panel__kani__loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1455,7 +1477,8 @@ fn open_saved_panel__kani__loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1471,7 +1494,8 @@ fn open_saved_panel__kani__loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1486,8 +1510,10 @@ fn open_connection_editor__kani__loading__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1502,8 +1528,10 @@ fn open_connection_editor__kani__loading__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1518,8 +1546,10 @@ fn open_connection_editor__kani__loading__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1537,7 +1567,8 @@ fn ddl_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1555,7 +1586,8 @@ fn ddl_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1573,7 +1605,8 @@ fn ddl_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1591,7 +1624,8 @@ fn explain_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1609,7 +1643,8 @@ fn explain_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1627,7 +1662,8 @@ fn explain_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1688,7 +1724,8 @@ fn history_ready__kani__loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1704,7 +1741,8 @@ fn history_ready__kani__loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1720,7 +1758,8 @@ fn history_ready__kani__loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1736,7 +1775,8 @@ fn saved_ready__kani__loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1752,7 +1792,8 @@ fn saved_ready__kani__loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1768,7 +1809,8 @@ fn saved_ready__kani__loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1784,7 +1826,8 @@ fn monitor_ready__kani__loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1800,7 +1843,8 @@ fn monitor_ready__kani__loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1816,7 +1860,8 @@ fn monitor_ready__kani__loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1832,7 +1877,8 @@ fn admin_ready__kani__loading__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1848,7 +1894,8 @@ fn admin_ready__kani__loading__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1864,7 +1911,8 @@ fn admin_ready__kani__loading__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1882,7 +1930,8 @@ fn erd_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1900,7 +1949,8 @@ fn erd_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1918,7 +1968,8 @@ fn erd_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -1936,15 +1987,9 @@ fn constraints_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -1961,15 +2006,9 @@ fn constraints_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -1986,15 +2025,9 @@ fn constraints_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -2011,7 +2044,8 @@ fn indexes_ready__kani__loading__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2029,7 +2063,8 @@ fn indexes_ready__kani__loading__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2047,7 +2082,8 @@ fn indexes_ready__kani__loading__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2272,7 +2308,8 @@ fn data_grid_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2298,7 +2335,8 @@ fn data_grid_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2324,7 +2362,8 @@ fn data_grid_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2806,7 +2845,8 @@ fn open_saved_panel__kani__data_grid__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2830,7 +2870,8 @@ fn open_saved_panel__kani__data_grid__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2854,7 +2895,8 @@ fn open_saved_panel__kani__data_grid__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2875,8 +2917,10 @@ fn open_connection_editor__kani__data_grid__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2899,8 +2943,10 @@ fn open_connection_editor__kani__data_grid__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2923,8 +2969,10 @@ fn open_connection_editor__kani__data_grid__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2948,7 +2996,8 @@ fn ddl_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -2974,7 +3023,8 @@ fn ddl_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3000,7 +3050,8 @@ fn ddl_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3024,7 +3075,8 @@ fn explain_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3050,7 +3102,8 @@ fn explain_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3076,7 +3129,8 @@ fn explain_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3165,7 +3219,8 @@ fn history_ready__kani__data_grid__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3189,7 +3244,8 @@ fn history_ready__kani__data_grid__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3213,7 +3269,8 @@ fn history_ready__kani__data_grid__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3235,7 +3292,8 @@ fn saved_ready__kani__data_grid__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3259,7 +3317,8 @@ fn saved_ready__kani__data_grid__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3283,7 +3342,8 @@ fn saved_ready__kani__data_grid__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3305,7 +3365,8 @@ fn monitor_ready__kani__data_grid__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3329,7 +3390,8 @@ fn monitor_ready__kani__data_grid__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3353,7 +3415,8 @@ fn monitor_ready__kani__data_grid__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3375,7 +3438,8 @@ fn admin_ready__kani__data_grid__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3399,7 +3463,8 @@ fn admin_ready__kani__data_grid__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3423,7 +3488,8 @@ fn admin_ready__kani__data_grid__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3447,7 +3513,8 @@ fn erd_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3473,7 +3540,8 @@ fn erd_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3499,7 +3567,8 @@ fn erd_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3523,15 +3592,9 @@ fn constraints_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -3556,15 +3619,9 @@ fn constraints_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -3589,15 +3646,9 @@ fn constraints_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -3620,7 +3671,8 @@ fn indexes_ready__kani__data_grid__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3646,7 +3698,8 @@ fn indexes_ready__kani__data_grid__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3672,7 +3725,8 @@ fn indexes_ready__kani__data_grid__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3701,9 +3755,7 @@ fn column_detail__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3721,9 +3773,7 @@ fn column_detail__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3759,9 +3809,7 @@ fn panel_loading__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3781,9 +3829,7 @@ fn panel_loading__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3820,9 +3866,7 @@ fn panel_error__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3841,9 +3885,7 @@ fn panel_error__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3869,7 +3911,8 @@ fn data_grid_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3882,9 +3925,7 @@ fn data_grid_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3893,7 +3934,8 @@ fn data_grid_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3906,9 +3948,7 @@ fn data_grid_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3917,7 +3957,8 @@ fn data_grid_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -3947,9 +3988,7 @@ fn query_complete__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -3968,9 +4007,7 @@ fn query_complete__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4005,9 +4042,7 @@ fn begin_edit__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4025,9 +4060,7 @@ fn begin_edit__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4061,9 +4094,7 @@ fn commit_edits__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4081,9 +4112,7 @@ fn commit_edits__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4117,9 +4146,7 @@ fn abort_edits__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4137,9 +4164,7 @@ fn abort_edits__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4174,9 +4199,7 @@ fn open_sql_editor__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4195,9 +4218,7 @@ fn open_sql_editor__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4234,9 +4255,7 @@ fn open_export_panel__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4256,9 +4275,7 @@ fn open_export_panel__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4294,9 +4311,7 @@ fn open_help_panel__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4314,9 +4329,7 @@ fn open_help_panel__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4339,7 +4352,8 @@ fn open_saved_panel__kani__sql_editor__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4352,16 +4366,15 @@ fn open_saved_panel__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4374,16 +4387,15 @@ fn open_saved_panel__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4400,8 +4412,10 @@ fn open_connection_editor__kani__sql_editor__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4414,16 +4428,16 @@ fn open_connection_editor__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4436,16 +4450,16 @@ fn open_connection_editor__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4465,7 +4479,8 @@ fn ddl_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4478,9 +4493,7 @@ fn ddl_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4489,7 +4502,8 @@ fn ddl_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4502,9 +4516,7 @@ fn ddl_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4513,7 +4525,8 @@ fn ddl_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4533,7 +4546,8 @@ fn explain_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4546,9 +4560,7 @@ fn explain_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4557,7 +4569,8 @@ fn explain_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4570,9 +4583,7 @@ fn explain_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4581,7 +4592,8 @@ fn explain_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4611,9 +4623,7 @@ fn export_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4632,9 +4642,7 @@ fn export_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4658,7 +4666,8 @@ fn history_ready__kani__sql_editor__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4671,16 +4680,15 @@ fn history_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4693,16 +4701,15 @@ fn history_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4720,7 +4727,8 @@ fn saved_ready__kani__sql_editor__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4733,16 +4741,15 @@ fn saved_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4755,16 +4762,15 @@ fn saved_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4782,7 +4788,8 @@ fn monitor_ready__kani__sql_editor__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4795,16 +4802,15 @@ fn monitor_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4817,16 +4823,15 @@ fn monitor_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4844,7 +4849,8 @@ fn admin_ready__kani__sql_editor__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4857,16 +4863,15 @@ fn admin_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4879,16 +4884,15 @@ fn admin_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4908,7 +4912,8 @@ fn erd_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4921,9 +4926,7 @@ fn erd_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4932,7 +4935,8 @@ fn erd_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4945,9 +4949,7 @@ fn erd_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -4956,7 +4958,8 @@ fn erd_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -4976,15 +4979,9 @@ fn constraints_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -4996,9 +4993,7 @@ fn constraints_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -5007,15 +5002,9 @@ fn constraints_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -5027,9 +5016,7 @@ fn constraints_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -5038,15 +5025,9 @@ fn constraints_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -5065,7 +5046,8 @@ fn indexes_ready__kani__sql_editor__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5078,9 +5060,7 @@ fn indexes_ready__kani__sql_editor__d1() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -5089,7 +5069,8 @@ fn indexes_ready__kani__sql_editor__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5102,9 +5083,7 @@ fn indexes_ready__kani__sql_editor__d2() {
             <QueryResult as ::elicitation::KaniCompose>::kani_depth0(),
         ),
         running: ::kani::any::<bool>(),
-        error: ::core::option::Option::Some(
-            <String as ::elicitation::KaniCompose>::kani_depth0(),
-        ),
+        error: ::core::option::Option::Some(<String as ::elicitation::KaniCompose>::kani_depth0()),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -5113,7 +5092,8 @@ fn indexes_ready__kani__sql_editor__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5286,7 +5266,8 @@ fn data_grid_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5306,7 +5287,8 @@ fn data_grid_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5326,7 +5308,8 @@ fn data_grid_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5692,7 +5675,8 @@ fn open_saved_panel__kani__ddl_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5710,7 +5694,8 @@ fn open_saved_panel__kani__ddl_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5728,7 +5713,8 @@ fn open_saved_panel__kani__ddl_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5745,8 +5731,10 @@ fn open_connection_editor__kani__ddl_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5763,8 +5751,10 @@ fn open_connection_editor__kani__ddl_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5781,8 +5771,10 @@ fn open_connection_editor__kani__ddl_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5802,7 +5794,8 @@ fn ddl_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5822,7 +5815,8 @@ fn ddl_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5842,7 +5836,8 @@ fn ddl_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5862,7 +5857,8 @@ fn explain_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5882,7 +5878,8 @@ fn explain_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5902,7 +5899,8 @@ fn explain_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5971,7 +5969,8 @@ fn history_ready__kani__ddl_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -5989,7 +5988,8 @@ fn history_ready__kani__ddl_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6007,7 +6007,8 @@ fn history_ready__kani__ddl_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6025,7 +6026,8 @@ fn saved_ready__kani__ddl_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6043,7 +6045,8 @@ fn saved_ready__kani__ddl_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6061,7 +6064,8 @@ fn saved_ready__kani__ddl_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6079,7 +6083,8 @@ fn monitor_ready__kani__ddl_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6097,7 +6102,8 @@ fn monitor_ready__kani__ddl_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6115,7 +6121,8 @@ fn monitor_ready__kani__ddl_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6133,7 +6140,8 @@ fn admin_ready__kani__ddl_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6151,7 +6159,8 @@ fn admin_ready__kani__ddl_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6169,7 +6178,8 @@ fn admin_ready__kani__ddl_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6189,7 +6199,8 @@ fn erd_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6209,7 +6220,8 @@ fn erd_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6229,7 +6241,8 @@ fn erd_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6249,15 +6262,9 @@ fn constraints_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -6276,15 +6283,9 @@ fn constraints_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -6303,15 +6304,9 @@ fn constraints_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -6330,7 +6325,8 @@ fn indexes_ready__kani__ddl_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6350,7 +6346,8 @@ fn indexes_ready__kani__ddl_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6370,7 +6367,8 @@ fn indexes_ready__kani__ddl_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6543,7 +6541,8 @@ fn data_grid_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6563,7 +6562,8 @@ fn data_grid_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6583,7 +6583,8 @@ fn data_grid_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6949,7 +6950,8 @@ fn open_saved_panel__kani__explain_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6967,7 +6969,8 @@ fn open_saved_panel__kani__explain_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -6985,7 +6988,8 @@ fn open_saved_panel__kani__explain_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7002,8 +7006,10 @@ fn open_connection_editor__kani__explain_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7020,8 +7026,10 @@ fn open_connection_editor__kani__explain_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7038,8 +7046,10 @@ fn open_connection_editor__kani__explain_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7059,7 +7069,8 @@ fn ddl_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7079,7 +7090,8 @@ fn ddl_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7099,7 +7111,8 @@ fn ddl_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7119,7 +7132,8 @@ fn explain_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7139,7 +7153,8 @@ fn explain_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7159,7 +7174,8 @@ fn explain_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7228,7 +7244,8 @@ fn history_ready__kani__explain_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7246,7 +7263,8 @@ fn history_ready__kani__explain_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7264,7 +7282,8 @@ fn history_ready__kani__explain_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7282,7 +7301,8 @@ fn saved_ready__kani__explain_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7300,7 +7320,8 @@ fn saved_ready__kani__explain_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7318,7 +7339,8 @@ fn saved_ready__kani__explain_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7336,7 +7358,8 @@ fn monitor_ready__kani__explain_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7354,7 +7377,8 @@ fn monitor_ready__kani__explain_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7372,7 +7396,8 @@ fn monitor_ready__kani__explain_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7390,7 +7415,8 @@ fn admin_ready__kani__explain_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7408,7 +7434,8 @@ fn admin_ready__kani__explain_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7426,7 +7453,8 @@ fn admin_ready__kani__explain_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7446,7 +7474,8 @@ fn erd_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7466,7 +7495,8 @@ fn erd_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7486,7 +7516,8 @@ fn erd_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7506,15 +7537,9 @@ fn constraints_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -7533,15 +7558,9 @@ fn constraints_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -7560,15 +7579,9 @@ fn constraints_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -7587,7 +7600,8 @@ fn indexes_ready__kani__explain_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7607,7 +7621,8 @@ fn indexes_ready__kani__explain_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7627,7 +7642,8 @@ fn indexes_ready__kani__explain_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7790,7 +7806,8 @@ fn data_grid_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7809,7 +7826,8 @@ fn data_grid_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -7828,7 +7846,8 @@ fn data_grid_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8172,7 +8191,8 @@ fn open_saved_panel__kani__explain_compare__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8189,7 +8209,8 @@ fn open_saved_panel__kani__explain_compare__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8206,7 +8227,8 @@ fn open_saved_panel__kani__explain_compare__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8222,8 +8244,10 @@ fn open_connection_editor__kani__explain_compare__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8239,8 +8263,10 @@ fn open_connection_editor__kani__explain_compare__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8256,8 +8282,10 @@ fn open_connection_editor__kani__explain_compare__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8276,7 +8304,8 @@ fn ddl_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8295,7 +8324,8 @@ fn ddl_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8314,7 +8344,8 @@ fn ddl_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8333,7 +8364,8 @@ fn explain_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8352,7 +8384,8 @@ fn explain_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8371,7 +8404,8 @@ fn explain_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8436,7 +8470,8 @@ fn history_ready__kani__explain_compare__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8453,7 +8488,8 @@ fn history_ready__kani__explain_compare__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8470,7 +8506,8 @@ fn history_ready__kani__explain_compare__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8487,7 +8524,8 @@ fn saved_ready__kani__explain_compare__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8504,7 +8542,8 @@ fn saved_ready__kani__explain_compare__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8521,7 +8560,8 @@ fn saved_ready__kani__explain_compare__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8538,7 +8578,8 @@ fn monitor_ready__kani__explain_compare__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8555,7 +8596,8 @@ fn monitor_ready__kani__explain_compare__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8572,7 +8614,8 @@ fn monitor_ready__kani__explain_compare__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8589,7 +8632,8 @@ fn admin_ready__kani__explain_compare__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8606,7 +8650,8 @@ fn admin_ready__kani__explain_compare__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8623,7 +8668,8 @@ fn admin_ready__kani__explain_compare__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8642,7 +8688,8 @@ fn erd_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8661,7 +8708,8 @@ fn erd_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8680,7 +8728,8 @@ fn erd_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8699,15 +8748,9 @@ fn constraints_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -8725,15 +8768,9 @@ fn constraints_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -8751,15 +8788,9 @@ fn constraints_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -8777,7 +8808,8 @@ fn indexes_ready__kani__explain_compare__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8796,7 +8828,8 @@ fn indexes_ready__kani__explain_compare__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8815,7 +8848,8 @@ fn indexes_ready__kani__explain_compare__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8837,9 +8871,7 @@ fn column_detail__kani__history_view__d0() {
 #[::kani::proof]
 fn column_detail__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -8854,8 +8886,8 @@ fn column_detail__kani__history_view__d1() {
 fn column_detail__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -8886,9 +8918,7 @@ fn panel_loading__kani__history_view__d0() {
 #[::kani::proof]
 fn panel_loading__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -8905,8 +8935,8 @@ fn panel_loading__kani__history_view__d1() {
 fn panel_loading__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -8938,9 +8968,7 @@ fn panel_error__kani__history_view__d0() {
 #[::kani::proof]
 fn panel_error__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -8956,8 +8984,8 @@ fn panel_error__kani__history_view__d1() {
 fn panel_error__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -8983,7 +9011,8 @@ fn data_grid_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -8991,9 +9020,7 @@ fn data_grid_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn data_grid_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9003,7 +9030,8 @@ fn data_grid_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9012,8 +9040,8 @@ fn data_grid_ready__kani__history_view__d1() {
 fn data_grid_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9024,7 +9052,8 @@ fn data_grid_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9047,9 +9076,7 @@ fn query_complete__kani__history_view__d0() {
 #[::kani::proof]
 fn query_complete__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9065,8 +9092,8 @@ fn query_complete__kani__history_view__d1() {
 fn query_complete__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9096,9 +9123,7 @@ fn begin_edit__kani__history_view__d0() {
 #[::kani::proof]
 fn begin_edit__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9113,8 +9138,8 @@ fn begin_edit__kani__history_view__d1() {
 fn begin_edit__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9143,9 +9168,7 @@ fn commit_edits__kani__history_view__d0() {
 #[::kani::proof]
 fn commit_edits__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9160,8 +9183,8 @@ fn commit_edits__kani__history_view__d1() {
 fn commit_edits__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9190,9 +9213,7 @@ fn abort_edits__kani__history_view__d0() {
 #[::kani::proof]
 fn abort_edits__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9207,8 +9228,8 @@ fn abort_edits__kani__history_view__d1() {
 fn abort_edits__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9238,9 +9259,7 @@ fn open_sql_editor__kani__history_view__d0() {
 #[::kani::proof]
 fn open_sql_editor__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9256,8 +9275,8 @@ fn open_sql_editor__kani__history_view__d1() {
 fn open_sql_editor__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9289,9 +9308,7 @@ fn open_export_panel__kani__history_view__d0() {
 #[::kani::proof]
 fn open_export_panel__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9308,8 +9325,8 @@ fn open_export_panel__kani__history_view__d1() {
 fn open_export_panel__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9340,9 +9357,7 @@ fn open_help_panel__kani__history_view__d0() {
 #[::kani::proof]
 fn open_help_panel__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9357,8 +9372,8 @@ fn open_help_panel__kani__history_view__d1() {
 fn open_help_panel__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9381,7 +9396,8 @@ fn open_saved_panel__kani__history_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9389,9 +9405,7 @@ fn open_saved_panel__kani__history_view__d0() {
 #[::kani::proof]
 fn open_saved_panel__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9399,7 +9413,8 @@ fn open_saved_panel__kani__history_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9408,8 +9423,8 @@ fn open_saved_panel__kani__history_view__d1() {
 fn open_saved_panel__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9418,7 +9433,8 @@ fn open_saved_panel__kani__history_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9433,8 +9449,10 @@ fn open_connection_editor__kani__history_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9442,17 +9460,17 @@ fn open_connection_editor__kani__history_view__d0() {
 #[::kani::proof]
 fn open_connection_editor__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9461,8 +9479,8 @@ fn open_connection_editor__kani__history_view__d1() {
 fn open_connection_editor__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9470,8 +9488,10 @@ fn open_connection_editor__kani__history_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9489,7 +9509,8 @@ fn ddl_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9497,9 +9518,7 @@ fn ddl_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn ddl_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9509,7 +9528,8 @@ fn ddl_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9518,8 +9538,8 @@ fn ddl_ready__kani__history_view__d1() {
 fn ddl_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9530,7 +9550,8 @@ fn ddl_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9548,7 +9569,8 @@ fn explain_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9556,9 +9578,7 @@ fn explain_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn explain_ready__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9568,7 +9588,8 @@ fn explain_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9577,8 +9598,8 @@ fn explain_ready__kani__history_view__d1() {
 fn explain_ready__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9589,7 +9610,8 @@ fn explain_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9612,9 +9634,7 @@ fn export_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn export_ready__kani__history_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9630,8 +9650,8 @@ fn export_ready__kani__history_view__d1() {
 fn export_ready__kani__history_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9655,7 +9675,8 @@ fn history_ready__kani__history_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9663,9 +9684,7 @@ fn history_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn history_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9673,7 +9692,8 @@ fn history_ready__kani__history_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9682,8 +9702,8 @@ fn history_ready__kani__history_view__d1() {
 fn history_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9692,7 +9712,8 @@ fn history_ready__kani__history_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9708,7 +9729,8 @@ fn saved_ready__kani__history_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9716,9 +9738,7 @@ fn saved_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn saved_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9726,7 +9746,8 @@ fn saved_ready__kani__history_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9735,8 +9756,8 @@ fn saved_ready__kani__history_view__d1() {
 fn saved_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9745,7 +9766,8 @@ fn saved_ready__kani__history_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9761,7 +9783,8 @@ fn monitor_ready__kani__history_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9769,9 +9792,7 @@ fn monitor_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn monitor_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9779,7 +9800,8 @@ fn monitor_ready__kani__history_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9788,8 +9810,8 @@ fn monitor_ready__kani__history_view__d1() {
 fn monitor_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9798,7 +9820,8 @@ fn monitor_ready__kani__history_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9814,7 +9837,8 @@ fn admin_ready__kani__history_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9822,9 +9846,7 @@ fn admin_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn admin_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9832,7 +9854,8 @@ fn admin_ready__kani__history_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9841,8 +9864,8 @@ fn admin_ready__kani__history_view__d1() {
 fn admin_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9851,7 +9874,8 @@ fn admin_ready__kani__history_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9869,7 +9893,8 @@ fn erd_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9877,9 +9902,7 @@ fn erd_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn erd_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9889,7 +9912,8 @@ fn erd_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9898,8 +9922,8 @@ fn erd_ready__kani__history_view__d1() {
 fn erd_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9910,7 +9934,8 @@ fn erd_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -9928,24 +9953,16 @@ fn constraints_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
 fn constraints_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -9955,15 +9972,9 @@ fn constraints_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -9971,8 +9982,8 @@ fn constraints_ready__kani__history_view__d1() {
 fn constraints_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -9983,15 +9994,9 @@ fn constraints_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -10008,7 +10013,8 @@ fn indexes_ready__kani__history_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10016,9 +10022,7 @@ fn indexes_ready__kani__history_view__d0() {
 #[::kani::proof]
 fn indexes_ready__kani__history_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
-        entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        entries: vec![<QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10028,7 +10032,8 @@ fn indexes_ready__kani__history_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10037,8 +10042,8 @@ fn indexes_ready__kani__history_view__d1() {
 fn indexes_ready__kani__history_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::HistoryView {
         entries: vec![
-            < QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0(), <
-            QueryHistoryEntry as ::elicitation::KaniCompose > ::kani_depth0()
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
+            <QueryHistoryEntry as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10049,7 +10054,8 @@ fn indexes_ready__kani__history_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10071,7 +10077,7 @@ fn column_detail__kani__saved_view__d0() {
 #[::kani::proof]
 fn column_detail__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10086,8 +10092,8 @@ fn column_detail__kani__saved_view__d1() {
 fn column_detail__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10118,7 +10124,7 @@ fn panel_loading__kani__saved_view__d0() {
 #[::kani::proof]
 fn panel_loading__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10135,8 +10141,8 @@ fn panel_loading__kani__saved_view__d1() {
 fn panel_loading__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10168,7 +10174,7 @@ fn panel_error__kani__saved_view__d0() {
 #[::kani::proof]
 fn panel_error__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10184,8 +10190,8 @@ fn panel_error__kani__saved_view__d1() {
 fn panel_error__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10211,7 +10217,8 @@ fn data_grid_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10219,7 +10226,7 @@ fn data_grid_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn data_grid_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10229,7 +10236,8 @@ fn data_grid_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10238,8 +10246,8 @@ fn data_grid_ready__kani__saved_view__d1() {
 fn data_grid_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10250,7 +10258,8 @@ fn data_grid_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10273,7 +10282,7 @@ fn query_complete__kani__saved_view__d0() {
 #[::kani::proof]
 fn query_complete__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10289,8 +10298,8 @@ fn query_complete__kani__saved_view__d1() {
 fn query_complete__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10320,7 +10329,7 @@ fn begin_edit__kani__saved_view__d0() {
 #[::kani::proof]
 fn begin_edit__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10335,8 +10344,8 @@ fn begin_edit__kani__saved_view__d1() {
 fn begin_edit__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10365,7 +10374,7 @@ fn commit_edits__kani__saved_view__d0() {
 #[::kani::proof]
 fn commit_edits__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10380,8 +10389,8 @@ fn commit_edits__kani__saved_view__d1() {
 fn commit_edits__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10410,7 +10419,7 @@ fn abort_edits__kani__saved_view__d0() {
 #[::kani::proof]
 fn abort_edits__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10425,8 +10434,8 @@ fn abort_edits__kani__saved_view__d1() {
 fn abort_edits__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10456,7 +10465,7 @@ fn open_sql_editor__kani__saved_view__d0() {
 #[::kani::proof]
 fn open_sql_editor__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10472,8 +10481,8 @@ fn open_sql_editor__kani__saved_view__d1() {
 fn open_sql_editor__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10505,7 +10514,7 @@ fn open_export_panel__kani__saved_view__d0() {
 #[::kani::proof]
 fn open_export_panel__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10522,8 +10531,8 @@ fn open_export_panel__kani__saved_view__d1() {
 fn open_export_panel__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10554,7 +10563,7 @@ fn open_help_panel__kani__saved_view__d0() {
 #[::kani::proof]
 fn open_help_panel__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10569,8 +10578,8 @@ fn open_help_panel__kani__saved_view__d1() {
 fn open_help_panel__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10593,7 +10602,8 @@ fn open_saved_panel__kani__saved_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10601,7 +10611,7 @@ fn open_saved_panel__kani__saved_view__d0() {
 #[::kani::proof]
 fn open_saved_panel__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10609,7 +10619,8 @@ fn open_saved_panel__kani__saved_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10618,8 +10629,8 @@ fn open_saved_panel__kani__saved_view__d1() {
 fn open_saved_panel__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10628,7 +10639,8 @@ fn open_saved_panel__kani__saved_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10643,8 +10655,10 @@ fn open_connection_editor__kani__saved_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10652,15 +10666,17 @@ fn open_connection_editor__kani__saved_view__d0() {
 #[::kani::proof]
 fn open_connection_editor__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10669,8 +10685,8 @@ fn open_connection_editor__kani__saved_view__d1() {
 fn open_connection_editor__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10678,8 +10694,10 @@ fn open_connection_editor__kani__saved_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10697,7 +10715,8 @@ fn ddl_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10705,7 +10724,7 @@ fn ddl_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn ddl_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10715,7 +10734,8 @@ fn ddl_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10724,8 +10744,8 @@ fn ddl_ready__kani__saved_view__d1() {
 fn ddl_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10736,7 +10756,8 @@ fn ddl_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10754,7 +10775,8 @@ fn explain_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10762,7 +10784,7 @@ fn explain_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn explain_ready__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10772,7 +10794,8 @@ fn explain_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10781,8 +10804,8 @@ fn explain_ready__kani__saved_view__d1() {
 fn explain_ready__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10793,7 +10816,8 @@ fn explain_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10816,7 +10840,7 @@ fn export_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn export_ready__kani__saved_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10832,8 +10856,8 @@ fn export_ready__kani__saved_view__d1() {
 fn export_ready__kani__saved_view__d2() {
     let state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10857,7 +10881,8 @@ fn history_ready__kani__saved_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10865,7 +10890,7 @@ fn history_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn history_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10873,7 +10898,8 @@ fn history_ready__kani__saved_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10882,8 +10908,8 @@ fn history_ready__kani__saved_view__d1() {
 fn history_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10892,7 +10918,8 @@ fn history_ready__kani__saved_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10908,7 +10935,8 @@ fn saved_ready__kani__saved_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10916,7 +10944,7 @@ fn saved_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn saved_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10924,7 +10952,8 @@ fn saved_ready__kani__saved_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10933,8 +10962,8 @@ fn saved_ready__kani__saved_view__d1() {
 fn saved_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10943,7 +10972,8 @@ fn saved_ready__kani__saved_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10959,7 +10989,8 @@ fn monitor_ready__kani__saved_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10967,7 +10998,7 @@ fn monitor_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn monitor_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -10975,7 +11006,8 @@ fn monitor_ready__kani__saved_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -10984,8 +11016,8 @@ fn monitor_ready__kani__saved_view__d1() {
 fn monitor_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -10994,7 +11026,8 @@ fn monitor_ready__kani__saved_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11010,7 +11043,8 @@ fn admin_ready__kani__saved_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11018,7 +11052,7 @@ fn admin_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn admin_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -11026,7 +11060,8 @@ fn admin_ready__kani__saved_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11035,8 +11070,8 @@ fn admin_ready__kani__saved_view__d1() {
 fn admin_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -11045,7 +11080,8 @@ fn admin_ready__kani__saved_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11063,7 +11099,8 @@ fn erd_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11071,7 +11108,7 @@ fn erd_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn erd_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -11081,7 +11118,8 @@ fn erd_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11090,8 +11128,8 @@ fn erd_ready__kani__saved_view__d1() {
 fn erd_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -11102,7 +11140,8 @@ fn erd_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11120,22 +11159,16 @@ fn constraints_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
 #[::kani::proof]
 fn constraints_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -11145,15 +11178,9 @@ fn constraints_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -11161,8 +11188,8 @@ fn constraints_ready__kani__saved_view__d1() {
 fn constraints_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -11173,15 +11200,9 @@ fn constraints_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -11198,7 +11219,8 @@ fn indexes_ready__kani__saved_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11206,7 +11228,7 @@ fn indexes_ready__kani__saved_view__d0() {
 #[::kani::proof]
 fn indexes_ready__kani__saved_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
-        entries: vec![< SavedQuery as ::elicitation::KaniCompose > ::kani_depth0()],
+        entries: vec![<SavedQuery as ::elicitation::KaniCompose>::kani_depth0()],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
     let proof: Established<ArchivePanelConsistent> = {
@@ -11216,7 +11238,8 @@ fn indexes_ready__kani__saved_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11225,8 +11248,8 @@ fn indexes_ready__kani__saved_view__d1() {
 fn indexes_ready__kani__saved_view__d2() {
     let _state: ArchivePanelState = ArchivePanelState::SavedView {
         entries: vec![
-            < SavedQuery as ::elicitation::KaniCompose > ::kani_depth0(), < SavedQuery as
-            ::elicitation::KaniCompose > ::kani_depth0()
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
+            <SavedQuery as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         display_mode: <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth2(),
     };
@@ -11237,7 +11260,8 @@ fn indexes_ready__kani__saved_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11412,7 +11436,8 @@ fn data_grid_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11433,7 +11458,8 @@ fn data_grid_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11454,7 +11480,8 @@ fn data_grid_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11826,7 +11853,8 @@ fn open_saved_panel__kani__export_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11845,7 +11873,8 @@ fn open_saved_panel__kani__export_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11864,7 +11893,8 @@ fn open_saved_panel__kani__export_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11880,8 +11910,10 @@ fn open_connection_editor__kani__export_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11899,8 +11931,10 @@ fn open_connection_editor__kani__export_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11918,8 +11952,10 @@ fn open_connection_editor__kani__export_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11938,7 +11974,8 @@ fn ddl_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11959,7 +11996,8 @@ fn ddl_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11980,7 +12018,8 @@ fn ddl_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -11999,7 +12038,8 @@ fn explain_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12020,7 +12060,8 @@ fn explain_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12041,7 +12082,8 @@ fn explain_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12110,7 +12152,8 @@ fn history_ready__kani__export_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12129,7 +12172,8 @@ fn history_ready__kani__export_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12148,7 +12192,8 @@ fn history_ready__kani__export_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12165,7 +12210,8 @@ fn saved_ready__kani__export_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12184,7 +12230,8 @@ fn saved_ready__kani__export_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12203,7 +12250,8 @@ fn saved_ready__kani__export_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12220,7 +12268,8 @@ fn monitor_ready__kani__export_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12239,7 +12288,8 @@ fn monitor_ready__kani__export_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12258,7 +12308,8 @@ fn monitor_ready__kani__export_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12275,7 +12326,8 @@ fn admin_ready__kani__export_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12294,7 +12346,8 @@ fn admin_ready__kani__export_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12313,7 +12366,8 @@ fn admin_ready__kani__export_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12332,7 +12386,8 @@ fn erd_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12353,7 +12408,8 @@ fn erd_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12374,7 +12430,8 @@ fn erd_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12393,15 +12450,9 @@ fn constraints_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -12421,15 +12472,9 @@ fn constraints_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -12449,15 +12494,9 @@ fn constraints_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -12475,7 +12514,8 @@ fn indexes_ready__kani__export_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12496,7 +12536,8 @@ fn indexes_ready__kani__export_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12517,7 +12558,8 @@ fn indexes_ready__kani__export_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12640,7 +12682,8 @@ fn data_grid_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12655,7 +12698,8 @@ fn data_grid_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12670,7 +12714,8 @@ fn data_grid_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12926,7 +12971,8 @@ fn open_saved_panel__kani__help_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12939,7 +12985,8 @@ fn open_saved_panel__kani__help_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12952,7 +12999,8 @@ fn open_saved_panel__kani__help_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12964,8 +13012,10 @@ fn open_connection_editor__kani__help_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12977,8 +13027,10 @@ fn open_connection_editor__kani__help_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -12990,8 +13042,10 @@ fn open_connection_editor__kani__help_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13006,7 +13060,8 @@ fn ddl_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13021,7 +13076,8 @@ fn ddl_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13036,7 +13092,8 @@ fn ddl_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13051,7 +13108,8 @@ fn explain_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13066,7 +13124,8 @@ fn explain_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13081,7 +13140,8 @@ fn explain_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13130,7 +13190,8 @@ fn history_ready__kani__help_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13143,7 +13204,8 @@ fn history_ready__kani__help_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13156,7 +13218,8 @@ fn history_ready__kani__help_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13169,7 +13232,8 @@ fn saved_ready__kani__help_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13182,7 +13246,8 @@ fn saved_ready__kani__help_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13195,7 +13260,8 @@ fn saved_ready__kani__help_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13208,7 +13274,8 @@ fn monitor_ready__kani__help_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13221,7 +13288,8 @@ fn monitor_ready__kani__help_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13234,7 +13302,8 @@ fn monitor_ready__kani__help_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13247,7 +13316,8 @@ fn admin_ready__kani__help_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13260,7 +13330,8 @@ fn admin_ready__kani__help_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13273,7 +13344,8 @@ fn admin_ready__kani__help_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13288,7 +13360,8 @@ fn erd_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13303,7 +13376,8 @@ fn erd_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13318,7 +13392,8 @@ fn erd_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13333,15 +13408,9 @@ fn constraints_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -13355,15 +13424,9 @@ fn constraints_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -13377,15 +13440,9 @@ fn constraints_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -13399,7 +13456,8 @@ fn indexes_ready__kani__help_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13414,7 +13472,8 @@ fn indexes_ready__kani__help_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13429,7 +13488,8 @@ fn indexes_ready__kani__help_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13592,7 +13652,8 @@ fn data_grid_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13611,7 +13672,8 @@ fn data_grid_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13630,7 +13692,8 @@ fn data_grid_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13974,7 +14037,8 @@ fn open_saved_panel__kani__monitor_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -13991,7 +14055,8 @@ fn open_saved_panel__kani__monitor_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14008,7 +14073,8 @@ fn open_saved_panel__kani__monitor_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14024,8 +14090,10 @@ fn open_connection_editor__kani__monitor_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14041,8 +14109,10 @@ fn open_connection_editor__kani__monitor_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14058,8 +14128,10 @@ fn open_connection_editor__kani__monitor_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14078,7 +14150,8 @@ fn ddl_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14097,7 +14170,8 @@ fn ddl_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14116,7 +14190,8 @@ fn ddl_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14135,7 +14210,8 @@ fn explain_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14154,7 +14230,8 @@ fn explain_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14173,7 +14250,8 @@ fn explain_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14238,7 +14316,8 @@ fn history_ready__kani__monitor_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14255,7 +14334,8 @@ fn history_ready__kani__monitor_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14272,7 +14352,8 @@ fn history_ready__kani__monitor_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14289,7 +14370,8 @@ fn saved_ready__kani__monitor_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14306,7 +14388,8 @@ fn saved_ready__kani__monitor_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14323,7 +14406,8 @@ fn saved_ready__kani__monitor_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14340,7 +14424,8 @@ fn monitor_ready__kani__monitor_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14357,7 +14442,8 @@ fn monitor_ready__kani__monitor_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14374,7 +14460,8 @@ fn monitor_ready__kani__monitor_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14391,7 +14478,8 @@ fn admin_ready__kani__monitor_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14408,7 +14496,8 @@ fn admin_ready__kani__monitor_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14425,7 +14514,8 @@ fn admin_ready__kani__monitor_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14444,7 +14534,8 @@ fn erd_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14463,7 +14554,8 @@ fn erd_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14482,7 +14574,8 @@ fn erd_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14501,15 +14594,9 @@ fn constraints_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -14527,15 +14614,9 @@ fn constraints_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -14553,15 +14634,9 @@ fn constraints_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -14579,7 +14654,8 @@ fn indexes_ready__kani__monitor_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14598,7 +14674,8 @@ fn indexes_ready__kani__monitor_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14617,7 +14694,8 @@ fn indexes_ready__kani__monitor_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14780,7 +14858,8 @@ fn data_grid_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14799,7 +14878,8 @@ fn data_grid_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -14818,7 +14898,8 @@ fn data_grid_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15162,7 +15243,8 @@ fn open_saved_panel__kani__admin_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15179,7 +15261,8 @@ fn open_saved_panel__kani__admin_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15196,7 +15279,8 @@ fn open_saved_panel__kani__admin_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15212,8 +15296,10 @@ fn open_connection_editor__kani__admin_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15229,8 +15315,10 @@ fn open_connection_editor__kani__admin_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15246,8 +15334,10 @@ fn open_connection_editor__kani__admin_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15266,7 +15356,8 @@ fn ddl_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15285,7 +15376,8 @@ fn ddl_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15304,7 +15396,8 @@ fn ddl_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15323,7 +15416,8 @@ fn explain_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15342,7 +15436,8 @@ fn explain_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15361,7 +15456,8 @@ fn explain_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15426,7 +15522,8 @@ fn history_ready__kani__admin_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15443,7 +15540,8 @@ fn history_ready__kani__admin_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15460,7 +15558,8 @@ fn history_ready__kani__admin_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15477,7 +15576,8 @@ fn saved_ready__kani__admin_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15494,7 +15594,8 @@ fn saved_ready__kani__admin_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15511,7 +15612,8 @@ fn saved_ready__kani__admin_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15528,7 +15630,8 @@ fn monitor_ready__kani__admin_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15545,7 +15648,8 @@ fn monitor_ready__kani__admin_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15562,7 +15666,8 @@ fn monitor_ready__kani__admin_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15579,7 +15684,8 @@ fn admin_ready__kani__admin_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15596,7 +15702,8 @@ fn admin_ready__kani__admin_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15613,7 +15720,8 @@ fn admin_ready__kani__admin_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15632,7 +15740,8 @@ fn erd_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15651,7 +15760,8 @@ fn erd_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15670,7 +15780,8 @@ fn erd_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15689,15 +15800,9 @@ fn constraints_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -15715,15 +15820,9 @@ fn constraints_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -15741,15 +15840,9 @@ fn constraints_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -15767,7 +15860,8 @@ fn indexes_ready__kani__admin_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15786,7 +15880,8 @@ fn indexes_ready__kani__admin_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -15805,7 +15900,8 @@ fn indexes_ready__kani__admin_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16000,7 +16096,8 @@ fn data_grid_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16023,7 +16120,8 @@ fn data_grid_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16046,7 +16144,8 @@ fn data_grid_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16462,7 +16561,8 @@ fn open_saved_panel__kani__erd_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16483,7 +16583,8 @@ fn open_saved_panel__kani__erd_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16504,7 +16605,8 @@ fn open_saved_panel__kani__erd_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16522,8 +16624,10 @@ fn open_connection_editor__kani__erd_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16543,8 +16647,10 @@ fn open_connection_editor__kani__erd_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16564,8 +16670,10 @@ fn open_connection_editor__kani__erd_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16586,7 +16694,8 @@ fn ddl_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16609,7 +16718,8 @@ fn ddl_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16632,7 +16742,8 @@ fn ddl_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16653,7 +16764,8 @@ fn explain_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16676,7 +16788,8 @@ fn explain_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16699,7 +16812,8 @@ fn explain_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16776,7 +16890,8 @@ fn history_ready__kani__erd_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16797,7 +16912,8 @@ fn history_ready__kani__erd_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16818,7 +16934,8 @@ fn history_ready__kani__erd_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16837,7 +16954,8 @@ fn saved_ready__kani__erd_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16858,7 +16976,8 @@ fn saved_ready__kani__erd_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16879,7 +16998,8 @@ fn saved_ready__kani__erd_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16898,7 +17018,8 @@ fn monitor_ready__kani__erd_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16919,7 +17040,8 @@ fn monitor_ready__kani__erd_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16940,7 +17062,8 @@ fn monitor_ready__kani__erd_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16959,7 +17082,8 @@ fn admin_ready__kani__erd_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -16980,7 +17104,8 @@ fn admin_ready__kani__erd_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17001,7 +17126,8 @@ fn admin_ready__kani__erd_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17022,7 +17148,8 @@ fn erd_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17045,7 +17172,8 @@ fn erd_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17068,7 +17196,8 @@ fn erd_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17089,15 +17218,9 @@ fn constraints_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -17119,15 +17242,9 @@ fn constraints_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -17149,15 +17266,9 @@ fn constraints_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -17177,7 +17288,8 @@ fn indexes_ready__kani__erd_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17200,7 +17312,8 @@ fn indexes_ready__kani__erd_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17223,7 +17336,8 @@ fn indexes_ready__kani__erd_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17250,9 +17364,7 @@ fn column_detail__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17270,8 +17382,8 @@ fn column_detail__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17308,9 +17420,7 @@ fn panel_loading__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17330,8 +17440,8 @@ fn panel_loading__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17369,9 +17479,7 @@ fn panel_error__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17390,8 +17498,8 @@ fn panel_error__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17421,7 +17529,8 @@ fn data_grid_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17431,9 +17540,7 @@ fn data_grid_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17444,7 +17551,8 @@ fn data_grid_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17455,8 +17563,8 @@ fn data_grid_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17468,7 +17576,8 @@ fn data_grid_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17496,9 +17605,7 @@ fn query_complete__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17517,8 +17624,8 @@ fn query_complete__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17554,9 +17661,7 @@ fn begin_edit__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17574,8 +17679,8 @@ fn begin_edit__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17610,9 +17715,7 @@ fn commit_edits__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17630,8 +17733,8 @@ fn commit_edits__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17666,9 +17769,7 @@ fn abort_edits__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17686,8 +17787,8 @@ fn abort_edits__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17723,9 +17824,7 @@ fn open_sql_editor__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17744,8 +17843,8 @@ fn open_sql_editor__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17783,9 +17882,7 @@ fn open_export_panel__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17805,8 +17902,8 @@ fn open_export_panel__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17843,9 +17940,7 @@ fn open_help_panel__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17863,8 +17958,8 @@ fn open_help_panel__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17891,7 +17986,8 @@ fn open_saved_panel__kani__constraint_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17901,9 +17997,7 @@ fn open_saved_panel__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17912,7 +18006,8 @@ fn open_saved_panel__kani__constraint_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17923,8 +18018,8 @@ fn open_saved_panel__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17934,7 +18029,8 @@ fn open_saved_panel__kani__constraint_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17952,8 +18048,10 @@ fn open_connection_editor__kani__constraint_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17963,9 +18061,7 @@ fn open_connection_editor__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -17973,8 +18069,10 @@ fn open_connection_editor__kani__constraint_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -17985,8 +18083,8 @@ fn open_connection_editor__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -17995,8 +18093,10 @@ fn open_connection_editor__kani__constraint_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18017,7 +18117,8 @@ fn ddl_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18027,9 +18128,7 @@ fn ddl_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18040,7 +18139,8 @@ fn ddl_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18051,8 +18151,8 @@ fn ddl_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18064,7 +18164,8 @@ fn ddl_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18085,7 +18186,8 @@ fn explain_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18095,9 +18197,7 @@ fn explain_ready__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18108,7 +18208,8 @@ fn explain_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18119,8 +18220,8 @@ fn explain_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18132,7 +18233,8 @@ fn explain_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18160,9 +18262,7 @@ fn export_ready__kani__constraint_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18181,8 +18281,8 @@ fn export_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18210,7 +18310,8 @@ fn history_ready__kani__constraint_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18220,9 +18321,7 @@ fn history_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18231,7 +18330,8 @@ fn history_ready__kani__constraint_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18242,8 +18342,8 @@ fn history_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18253,7 +18353,8 @@ fn history_ready__kani__constraint_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18272,7 +18373,8 @@ fn saved_ready__kani__constraint_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18282,9 +18384,7 @@ fn saved_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18293,7 +18393,8 @@ fn saved_ready__kani__constraint_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18304,8 +18405,8 @@ fn saved_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18315,7 +18416,8 @@ fn saved_ready__kani__constraint_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18334,7 +18436,8 @@ fn monitor_ready__kani__constraint_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18344,9 +18447,7 @@ fn monitor_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18355,7 +18456,8 @@ fn monitor_ready__kani__constraint_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18366,8 +18468,8 @@ fn monitor_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18377,7 +18479,8 @@ fn monitor_ready__kani__constraint_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18396,7 +18499,8 @@ fn admin_ready__kani__constraint_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18406,9 +18510,7 @@ fn admin_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18417,7 +18519,8 @@ fn admin_ready__kani__constraint_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18428,8 +18531,8 @@ fn admin_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18439,7 +18542,8 @@ fn admin_ready__kani__constraint_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18460,7 +18564,8 @@ fn erd_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18470,9 +18575,7 @@ fn erd_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18483,7 +18586,8 @@ fn erd_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18494,8 +18598,8 @@ fn erd_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18507,7 +18611,8 @@ fn erd_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18528,15 +18633,9 @@ fn constraints_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -18545,9 +18644,7 @@ fn constraints_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18558,15 +18655,9 @@ fn constraints_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -18576,8 +18667,8 @@ fn constraints_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18589,15 +18680,9 @@ fn constraints_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -18617,7 +18702,8 @@ fn indexes_ready__kani__constraint_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18627,9 +18713,7 @@ fn indexes_ready__kani__constraint_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::ConstraintView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
-        ],
+        constraints: vec![<ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18640,7 +18724,8 @@ fn indexes_ready__kani__constraint_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18651,8 +18736,8 @@ fn indexes_ready__kani__constraint_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         constraints: vec![
-            < ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            ConstraintDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <ConstraintDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18664,7 +18749,8 @@ fn indexes_ready__kani__constraint_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18691,7 +18777,7 @@ fn column_detail__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18709,8 +18795,8 @@ fn column_detail__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18747,7 +18833,7 @@ fn panel_loading__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18767,8 +18853,8 @@ fn panel_loading__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18806,7 +18892,7 @@ fn panel_error__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18825,8 +18911,8 @@ fn panel_error__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18856,7 +18942,8 @@ fn data_grid_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18866,7 +18953,7 @@ fn data_grid_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18877,7 +18964,8 @@ fn data_grid_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18888,8 +18976,8 @@ fn data_grid_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18901,7 +18989,8 @@ fn data_grid_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -18929,7 +19018,7 @@ fn query_complete__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -18948,8 +19037,8 @@ fn query_complete__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -18985,7 +19074,7 @@ fn begin_edit__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19003,8 +19092,8 @@ fn begin_edit__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19039,7 +19128,7 @@ fn commit_edits__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19057,8 +19146,8 @@ fn commit_edits__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19093,7 +19182,7 @@ fn abort_edits__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19111,8 +19200,8 @@ fn abort_edits__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19148,7 +19237,7 @@ fn open_sql_editor__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19167,8 +19256,8 @@ fn open_sql_editor__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19206,7 +19295,7 @@ fn open_export_panel__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19226,8 +19315,8 @@ fn open_export_panel__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19264,7 +19353,7 @@ fn open_help_panel__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19282,8 +19371,8 @@ fn open_help_panel__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19310,7 +19399,8 @@ fn open_saved_panel__kani__index_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19320,7 +19410,7 @@ fn open_saved_panel__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19329,7 +19419,8 @@ fn open_saved_panel__kani__index_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19340,8 +19431,8 @@ fn open_saved_panel__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19351,7 +19442,8 @@ fn open_saved_panel__kani__index_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19369,8 +19461,10 @@ fn open_connection_editor__kani__index_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19380,7 +19474,7 @@ fn open_connection_editor__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19388,8 +19482,10 @@ fn open_connection_editor__kani__index_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19400,8 +19496,8 @@ fn open_connection_editor__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19410,8 +19506,10 @@ fn open_connection_editor__kani__index_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19432,7 +19530,8 @@ fn ddl_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19442,7 +19541,7 @@ fn ddl_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19453,7 +19552,8 @@ fn ddl_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19464,8 +19564,8 @@ fn ddl_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19477,7 +19577,8 @@ fn ddl_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19498,7 +19599,8 @@ fn explain_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19508,7 +19610,7 @@ fn explain_ready__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19519,7 +19621,8 @@ fn explain_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19530,8 +19633,8 @@ fn explain_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19543,7 +19646,8 @@ fn explain_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19571,7 +19675,7 @@ fn export_ready__kani__index_view__d1() {
     let state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19590,8 +19694,8 @@ fn export_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19619,7 +19723,8 @@ fn history_ready__kani__index_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19629,7 +19734,7 @@ fn history_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19638,7 +19743,8 @@ fn history_ready__kani__index_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19649,8 +19755,8 @@ fn history_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19660,7 +19766,8 @@ fn history_ready__kani__index_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19679,7 +19786,8 @@ fn saved_ready__kani__index_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19689,7 +19797,7 @@ fn saved_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19698,7 +19806,8 @@ fn saved_ready__kani__index_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19709,8 +19818,8 @@ fn saved_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19720,7 +19829,8 @@ fn saved_ready__kani__index_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19739,7 +19849,8 @@ fn monitor_ready__kani__index_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19749,7 +19860,7 @@ fn monitor_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19758,7 +19869,8 @@ fn monitor_ready__kani__index_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19769,8 +19881,8 @@ fn monitor_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19780,7 +19892,8 @@ fn monitor_ready__kani__index_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19799,7 +19912,8 @@ fn admin_ready__kani__index_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19809,7 +19923,7 @@ fn admin_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19818,7 +19932,8 @@ fn admin_ready__kani__index_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19829,8 +19944,8 @@ fn admin_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19840,7 +19955,8 @@ fn admin_ready__kani__index_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19861,7 +19977,8 @@ fn erd_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19871,7 +19988,7 @@ fn erd_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19882,7 +19999,8 @@ fn erd_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19893,8 +20011,8 @@ fn erd_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19906,7 +20024,8 @@ fn erd_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -19927,15 +20046,9 @@ fn constraints_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -19944,7 +20057,7 @@ fn constraints_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -19955,15 +20068,9 @@ fn constraints_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -19973,8 +20080,8 @@ fn constraints_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -19986,15 +20093,9 @@ fn constraints_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -20014,7 +20115,8 @@ fn indexes_ready__kani__index_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20024,7 +20126,7 @@ fn indexes_ready__kani__index_view__d1() {
     let _state: ArchivePanelState = ArchivePanelState::IndexView {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
-        indexes: vec![< IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()],
+        indexes: vec![<IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0()],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth1(),
     };
@@ -20035,7 +20137,8 @@ fn indexes_ready__kani__index_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20046,8 +20149,8 @@ fn indexes_ready__kani__index_view__d2() {
         schema: ::std::string::String::new(),
         table: ::std::string::String::new(),
         indexes: vec![
-            < IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0(), <
-            IndexDescriptor as ::elicitation::KaniCompose > ::kani_depth0()
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
+            <IndexDescriptor as ::elicitation::KaniCompose>::kani_depth0(),
         ],
         loading: ::kani::any::<bool>(),
         display_mode: <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth2(),
@@ -20059,7 +20162,8 @@ fn indexes_ready__kani__index_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20212,7 +20316,8 @@ fn data_grid_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20230,7 +20335,8 @@ fn data_grid_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20248,7 +20354,8 @@ fn data_grid_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20570,7 +20677,8 @@ fn open_saved_panel__kani__connection_edit__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20586,7 +20694,8 @@ fn open_saved_panel__kani__connection_edit__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20602,7 +20711,8 @@ fn open_saved_panel__kani__connection_edit__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20617,8 +20727,10 @@ fn open_connection_editor__kani__connection_edit__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20633,8 +20745,10 @@ fn open_connection_editor__kani__connection_edit__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20649,8 +20763,10 @@ fn open_connection_editor__kani__connection_edit__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20668,7 +20784,8 @@ fn ddl_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20686,7 +20803,8 @@ fn ddl_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20704,7 +20822,8 @@ fn ddl_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20722,7 +20841,8 @@ fn explain_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20740,7 +20860,8 @@ fn explain_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20758,7 +20879,8 @@ fn explain_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20819,7 +20941,8 @@ fn history_ready__kani__connection_edit__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20835,7 +20958,8 @@ fn history_ready__kani__connection_edit__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20851,7 +20975,8 @@ fn history_ready__kani__connection_edit__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20867,7 +20992,8 @@ fn saved_ready__kani__connection_edit__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20883,7 +21009,8 @@ fn saved_ready__kani__connection_edit__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20899,7 +21026,8 @@ fn saved_ready__kani__connection_edit__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20915,7 +21043,8 @@ fn monitor_ready__kani__connection_edit__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20931,7 +21060,8 @@ fn monitor_ready__kani__connection_edit__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20947,7 +21077,8 @@ fn monitor_ready__kani__connection_edit__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20963,7 +21094,8 @@ fn admin_ready__kani__connection_edit__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20979,7 +21111,8 @@ fn admin_ready__kani__connection_edit__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -20995,7 +21128,8 @@ fn admin_ready__kani__connection_edit__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21013,7 +21147,8 @@ fn erd_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21031,7 +21166,8 @@ fn erd_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21049,7 +21185,8 @@ fn erd_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21067,15 +21204,9 @@ fn constraints_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -21092,15 +21223,9 @@ fn constraints_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -21117,15 +21242,9 @@ fn constraints_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -21142,7 +21261,8 @@ fn indexes_ready__kani__connection_edit__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21160,7 +21280,8 @@ fn indexes_ready__kani__connection_edit__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21178,7 +21299,8 @@ fn indexes_ready__kani__connection_edit__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21321,7 +21443,8 @@ fn data_grid_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21338,7 +21461,8 @@ fn data_grid_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21355,7 +21479,8 @@ fn data_grid_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21655,7 +21780,8 @@ fn open_saved_panel__kani__error_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21670,7 +21796,8 @@ fn open_saved_panel__kani__error_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21685,7 +21812,8 @@ fn open_saved_panel__kani__error_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21699,8 +21827,10 @@ fn open_connection_editor__kani__error_view__d0() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21714,8 +21844,10 @@ fn open_connection_editor__kani__error_view__d1() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21729,8 +21861,10 @@ fn open_connection_editor__kani__error_view__d2() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21747,7 +21881,8 @@ fn ddl_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21764,7 +21899,8 @@ fn ddl_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21781,7 +21917,8 @@ fn ddl_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21798,7 +21935,8 @@ fn explain_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21815,7 +21953,8 @@ fn explain_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21832,7 +21971,8 @@ fn explain_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21889,7 +22029,8 @@ fn history_ready__kani__error_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21904,7 +22045,8 @@ fn history_ready__kani__error_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21919,7 +22061,8 @@ fn history_ready__kani__error_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21934,7 +22077,8 @@ fn saved_ready__kani__error_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21949,7 +22093,8 @@ fn saved_ready__kani__error_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21964,7 +22109,8 @@ fn saved_ready__kani__error_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21979,7 +22125,8 @@ fn monitor_ready__kani__error_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -21994,7 +22141,8 @@ fn monitor_ready__kani__error_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22009,7 +22157,8 @@ fn monitor_ready__kani__error_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22024,7 +22173,8 @@ fn admin_ready__kani__error_view__d0() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22039,7 +22189,8 @@ fn admin_ready__kani__error_view__d1() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22054,7 +22205,8 @@ fn admin_ready__kani__error_view__d2() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22071,7 +22223,8 @@ fn erd_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22088,7 +22241,8 @@ fn erd_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22105,7 +22259,8 @@ fn erd_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22122,15 +22277,9 @@ fn constraints_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -22146,15 +22295,9 @@ fn constraints_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -22170,15 +22313,9 @@ fn constraints_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 #[cfg(kani)]
@@ -22194,7 +22331,8 @@ fn indexes_ready__kani__error_view__d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22211,7 +22349,8 @@ fn indexes_ready__kani__error_view__d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22228,7 +22367,8 @@ fn indexes_ready__kani__error_view__d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }
@@ -22246,7 +22386,8 @@ pub(crate) fn column_detail__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn column_detail__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22260,7 +22401,8 @@ fn column_detail__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn column_detail__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22274,7 +22416,8 @@ fn column_detail__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn column_detail__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22295,7 +22438,8 @@ fn column_detail__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = column_detail(_state, proof);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22316,7 +22460,8 @@ pub(crate) fn panel_loading__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_loading__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22332,7 +22477,8 @@ fn panel_loading__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_loading__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22348,7 +22494,8 @@ fn panel_loading__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_loading__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22373,7 +22520,8 @@ fn panel_loading__kani_closure() {
     let schema: String = ::std::string::String::new();
     let label: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = panel_loading(_state, proof, schema, label);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22393,7 +22541,8 @@ pub(crate) fn panel_error__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_error__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22408,7 +22557,8 @@ fn panel_error__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_error__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22423,7 +22573,8 @@ fn panel_error__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn panel_error__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22446,7 +22597,8 @@ fn panel_error__kani_closure() {
     };
     let message: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = panel_error(_state, proof, message);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22469,7 +22621,8 @@ pub(crate) fn data_grid_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn data_grid_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22478,7 +22631,8 @@ fn data_grid_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22487,7 +22641,8 @@ fn data_grid_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn data_grid_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22496,7 +22651,8 @@ fn data_grid_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22505,7 +22661,8 @@ fn data_grid_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn data_grid_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22514,7 +22671,8 @@ fn data_grid_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22532,9 +22690,11 @@ fn data_grid_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryResultMode =
+        <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22606,6 +22766,8 @@ fn query_complete__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = query_complete(state, proof, result);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22672,6 +22834,8 @@ fn begin_edit__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_edit(state, proof);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22738,6 +22902,8 @@ fn commit_edits__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = commit_edits(state, proof);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22804,6 +22970,8 @@ fn abort_edits__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = abort_edits(state, proof);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22823,7 +22991,8 @@ pub(crate) fn open_sql_editor__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn open_sql_editor__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22838,7 +23007,8 @@ fn open_sql_editor__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_sql_editor__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22853,7 +23023,8 @@ fn open_sql_editor__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_sql_editor__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22876,7 +23047,8 @@ fn open_sql_editor__kani_closure() {
     };
     let initial_text: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_sql_editor(_state, proof, initial_text);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22897,7 +23069,8 @@ pub(crate) fn open_export_panel__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn open_export_panel__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22913,7 +23086,8 @@ fn open_export_panel__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_export_panel__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22929,7 +23103,8 @@ fn open_export_panel__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_export_panel__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22954,7 +23129,8 @@ fn open_export_panel__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_export_panel(_state, proof, schema, table);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -22973,7 +23149,8 @@ pub(crate) fn open_help_panel__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn open_help_panel__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -22987,7 +23164,8 @@ fn open_help_panel__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_help_panel__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23001,7 +23179,8 @@ fn open_help_panel__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_help_panel__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23022,7 +23201,8 @@ fn open_help_panel__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_help_panel(_state, proof);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23043,14 +23223,16 @@ pub(crate) fn open_saved_panel__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn open_saved_panel__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23059,14 +23241,16 @@ fn open_saved_panel__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_saved_panel__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23075,14 +23259,16 @@ fn open_saved_panel__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_saved_panel__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23098,9 +23284,11 @@ fn open_saved_panel__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_saved_panel(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23121,14 +23309,17 @@ pub(crate) fn open_connection_editor__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn open_connection_editor__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23137,14 +23328,17 @@ fn open_connection_editor__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_connection_editor__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23153,14 +23347,17 @@ fn open_connection_editor__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn open_connection_editor__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23175,10 +23372,13 @@ fn open_connection_editor__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let profile: ConnectionProfile = <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ConnectionProfileMode = <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
+    let profile: ConnectionProfile =
+        <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConnectionProfileMode =
+        <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = open_connection_editor(_state, proof, profile, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23201,7 +23401,8 @@ pub(crate) fn ddl_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn ddl_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23210,7 +23411,8 @@ fn ddl_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23219,7 +23421,8 @@ fn ddl_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn ddl_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23228,7 +23431,8 @@ fn ddl_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23237,7 +23441,8 @@ fn ddl_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn ddl_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23246,7 +23451,8 @@ fn ddl_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23264,9 +23470,11 @@ fn ddl_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: DdlDescriptorMode = <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: DdlDescriptorMode =
+        <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23298,7 +23506,8 @@ fn explain_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23316,7 +23525,8 @@ fn explain_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23334,7 +23544,8 @@ fn explain_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23352,7 +23563,10 @@ fn explain_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: ExplainNodeMode = <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ExplainNodeMode =
+        <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23424,6 +23638,8 @@ fn export_ready__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
+    ::std::mem::forget(state);
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = export_ready(state, proof, result);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23444,14 +23660,16 @@ pub(crate) fn history_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn history_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23460,14 +23678,16 @@ fn history_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn history_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23476,14 +23696,16 @@ fn history_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn history_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23499,9 +23721,11 @@ fn history_ready__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
-    let display_mode: QueryHistoryEntryMode = <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: QueryHistoryEntryMode =
+        <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = history_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23522,14 +23746,16 @@ pub(crate) fn saved_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn saved_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23538,14 +23764,16 @@ fn saved_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn saved_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23554,14 +23782,16 @@ fn saved_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn saved_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23577,9 +23807,11 @@ fn saved_ready__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let display_mode: SavedQueryMode = <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: SavedQueryMode =
+        <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = saved_ready(_state, proof, entries, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23600,14 +23832,16 @@ pub(crate) fn monitor_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn monitor_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23616,14 +23850,16 @@ fn monitor_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn monitor_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23632,14 +23868,16 @@ fn monitor_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn monitor_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23655,9 +23893,11 @@ fn monitor_ready__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: MonitorSnapshotMode = <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: MonitorSnapshotMode =
+        <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = monitor_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23678,14 +23918,16 @@ pub(crate) fn admin_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn admin_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23694,14 +23936,16 @@ fn admin_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn admin_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23710,14 +23954,16 @@ fn admin_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn admin_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23733,9 +23979,11 @@ fn admin_ready__kani_closure() {
         ::elicitation::Established::prove(&__cred)
     };
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
-    let display_mode: AdminSnapshotMode = <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: AdminSnapshotMode =
+        <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = admin_ready(_state, proof, snapshot, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23758,7 +24006,8 @@ pub(crate) fn erd_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn erd_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23767,7 +24016,8 @@ fn erd_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23776,7 +24026,8 @@ fn erd_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn erd_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23785,7 +24036,8 @@ fn erd_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23794,7 +24046,8 @@ fn erd_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn erd_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23803,7 +24056,8 @@ fn erd_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23821,9 +24075,11 @@ fn erd_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
-    let display_mode: ErdDiagramMode = <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ErdDiagramMode =
+        <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23846,7 +24102,8 @@ pub(crate) fn constraints_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn constraints_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23855,15 +24112,9 @@ fn constraints_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
@@ -23871,7 +24122,8 @@ fn constraints_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn constraints_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23880,15 +24132,9 @@ fn constraints_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
@@ -23896,7 +24142,8 @@ fn constraints_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn constraints_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23905,15 +24152,9 @@ fn constraints_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
@@ -23930,17 +24171,12 @@ fn constraints_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
-    let display_mode: ConstraintDescriptorMode = <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: ConstraintDescriptorMode =
+        <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(
-        _state,
-        proof,
-        schema,
-        table,
-        constraints,
-        display_mode,
-    );
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
 }
@@ -23962,7 +24198,8 @@ pub(crate) fn indexes_ready__kani_contracted(
 #[cfg(kani)]
 #[::kani::proof]
 fn indexes_ready__kani_closure_d0() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23971,7 +24208,8 @@ fn indexes_ready__kani_closure_d0() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23980,7 +24218,8 @@ fn indexes_ready__kani_closure_d0() {
 #[cfg(kani)]
 #[::kani::proof]
 fn indexes_ready__kani_closure_d1() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -23989,7 +24228,8 @@ fn indexes_ready__kani_closure_d1() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -23998,7 +24238,8 @@ fn indexes_ready__kani_closure_d1() {
 #[cfg(kani)]
 #[::kani::proof]
 fn indexes_ready__kani_closure_d2() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     let proof: Established<ArchivePanelConsistent> = {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
@@ -24007,7 +24248,8 @@ fn indexes_ready__kani_closure_d2() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
@@ -24025,9 +24267,11 @@ fn indexes_ready__kani_closure() {
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
-    let display_mode: IndexDescriptorMode = <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
+    let display_mode: IndexDescriptorMode =
+        <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
     ::std::mem::forget(_state);
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
     ::kani::assert(archive_panel_consistent(&_result.0), "invariant preserved");
     ::std::mem::forget(_result);
