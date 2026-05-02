@@ -34,10 +34,11 @@ use heck::ToSnakeCase;
 
 // ── Attribute parsing ──────────────────────────────────────────────────────────
 
-/// Parsed content of `#[prop(credential = SomeType, creusot_invariant_fn = "fn_name")]`.
+/// Parsed content of `#[prop(credential = SomeType, creusot_invariant_fn = "fn_name", kani_invariant_fn = "fn_name")]`.
 struct PropArgs {
     credential: Option<Path>,
     creusot_invariant_fn: Option<String>,
+    kani_invariant_fn: Option<String>,
 }
 
 impl Parse for PropArgs {
@@ -46,10 +47,12 @@ impl Parse for PropArgs {
             return Ok(PropArgs {
                 credential: None,
                 creusot_invariant_fn: None,
+                kani_invariant_fn: None,
             });
         }
         let mut credential = None;
         let mut creusot_invariant_fn = None;
+        let mut kani_invariant_fn = None;
         loop {
             let ident: syn::Ident = input.parse()?;
             let _: Token![=] = input.parse()?;
@@ -62,11 +65,15 @@ impl Parse for PropArgs {
                     let lit: syn::LitStr = input.parse()?;
                     creusot_invariant_fn = Some(lit.value());
                 }
+                "kani_invariant_fn" => {
+                    let lit: syn::LitStr = input.parse()?;
+                    kani_invariant_fn = Some(lit.value());
+                }
                 other => {
                     return Err(syn::Error::new(
                         ident.span(),
                         format!(
-                            "unknown prop key `{other}`; expected `credential` or `creusot_invariant_fn`"
+                            "unknown prop key `{other}`; expected `credential`, `creusot_invariant_fn`, or `kani_invariant_fn`"
                         ),
                     ));
                 }
@@ -83,6 +90,7 @@ impl Parse for PropArgs {
         Ok(PropArgs {
             credential,
             creusot_invariant_fn,
+            kani_invariant_fn,
         })
     }
 }
@@ -98,6 +106,7 @@ fn extract_prop_args(input: &DeriveInput) -> syn::Result<PropArgs> {
     Ok(PropArgs {
         credential: None,
         creusot_invariant_fn: None,
+        kani_invariant_fn: None,
     })
 }
 
@@ -115,6 +124,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
     };
     let credential = prop_args.credential;
     let creusot_fn_name = prop_args.creusot_invariant_fn;
+    let kani_fn_name = prop_args.kani_invariant_fn;
 
     let snake_name = name.to_string().to_snake_case();
 
@@ -122,6 +132,16 @@ pub fn expand(input: TokenStream) -> TokenStream {
     let creusot_fn_override = match &creusot_fn_name {
         Some(fn_name) => quote! {
             fn creusot_invariant_fn_name() -> &'static str {
+                #fn_name
+            }
+        },
+        None => quote! {},
+    };
+
+    // Generate the optional `kani_invariant_fn_name()` override when specified.
+    let kani_fn_override = match &kani_fn_name {
+        Some(fn_name) => quote! {
+            fn kani_invariant_fn_name() -> &'static str {
                 #fn_name
             }
         },
@@ -142,6 +162,8 @@ pub fn expand(input: TokenStream) -> TokenStream {
         }
 
         #creusot_fn_override
+
+        #kani_fn_override
     };
 
     // Generate `kani_proof_credential()` inherent method and, for the

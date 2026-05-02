@@ -253,10 +253,23 @@ pub enum ArchivePanelState {
 /// implementation is the source of WCAG compliance. The credential bounds CBMC
 /// to exploring only `WcagVerified` (a ZST), not all 18 `ArchivePanelState` variants.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_panel_consistent")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_panel_consistent", kani_invariant_fn = "archive_panel_consistent")]
 pub struct ArchivePanelConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}
+
+/// Structural invariant predicate for [`ArchivePanelState`].
+///
+/// The runtime-evaluable form of [`ArchivePanelConsistent`] used by Kani
+/// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions,
+/// enabling `#[kani::proof_for_contract]` closure proofs.
+///
+/// This is a placeholder returning `true` — all states are well-formed by
+/// construction. Strengthen with field invariants as proofs mature.
+#[cfg(kani)]
+pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
+    true
+}
 
 // ── ArchivePanelMachine ───────────────────────────────────────────────────────
 

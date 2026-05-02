@@ -612,6 +612,64 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         src.parse()
                             .expect("creusot_contract: invalid TokenStream")
                     }
+
+                    /// Return a Kani closure proof `TokenStream` for this transition.
+                    ///
+                    /// When `inv_fn` is non-empty and this transition has a state parameter,
+                    /// emits two items:
+                    /// 1. A contracted wrapper `fn_name__kani_contracted` annotated with
+                    ///    `#[kani::requires(inv_fn(&state))]` and `#[kani::ensures(|result| inv_fn(&result.0))]`.
+                    /// 2. A `#[kani::proof_for_contract(fn_name__kani_contracted)]` harness
+                    ///    that closes the depth-based inductive argument symbolically.
+                    ///
+                    /// When `inv_fn` is empty or this transition has no state parameter,
+                    /// an empty `TokenStream` is returned.
+                    pub fn kani_closure_proof(inv_fn: &str) -> ::proc_macro2::TokenStream {
+                        if inv_fn.is_empty() || !#has_state_param {
+                            return ::proc_macro2::TokenStream::new();
+                        }
+                        let contracted_fn = String::new() + #fn_name_src + "__kani_contracted";
+                        let closure_fn = String::new() + #fn_name_src + "__kani_closure";
+                        let src = String::new()
+                            // Contracted wrapper with requires/ensures
+                            + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
+                            + "# [:: kani :: requires ("
+                            + inv_fn
+                            + " (& "
+                            + #state_pat_s
+                            + "))] # [:: kani :: ensures (| result | "
+                            + inv_fn
+                            + " (& result . 0))] pub (crate) fn "
+                            + &contracted_fn
+                            + " ("
+                            + #inputs_src
+                            + ") "
+                            + #output_src
+                            + " { "
+                            + #fn_name_src
+                            + " ("
+                            + #call_args_src
+                            + ") } "
+                            // proof_for_contract harness
+                            + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
+                            + "# [:: kani :: proof_for_contract ("
+                            + &contracted_fn
+                            + ")] fn "
+                            + &closure_fn
+                            + " () { let "
+                            + #state_pat_s
+                            + " : "
+                            + #state_ty_s
+                            + " = :: kani :: any () ; "
+                            + #non_state_lets_d0_src
+                            + "let _result = "
+                            + &contracted_fn
+                            + " ("
+                            + #call_args_src
+                            + ") ; :: std :: mem :: forget (_result) ; }";
+                        src.parse()
+                            .expect("kani_closure_proof: invalid TokenStream")
+                    }
                 }
             };
 

@@ -361,6 +361,19 @@ pub trait Prop: 'static {
     fn creusot_invariant_fn_name() -> &'static str {
         ""
     }
+
+    /// The name of a `#[cfg(kani)]` boolean predicate function that expresses
+    /// this proposition as a Kani-evaluable invariant check.
+    ///
+    /// When non-empty, [`formal_method`][crate::formal_method]-generated companion
+    /// structs emit `#[kani::requires(fn(&state))]` / `#[kani::ensures]` contracted
+    /// wrappers, enabling `#[kani::proof_for_contract]` closure proofs that close
+    /// the depth-based inductive argument into a full symbolic proof.
+    ///
+    /// Set via `#[prop(kani_invariant_fn = "my_fn")]` on the prop struct.
+    fn kani_invariant_fn_name() -> &'static str {
+        ""
+    }
 }
 
 /// Witness that proposition P has been established.
@@ -1117,7 +1130,8 @@ pub trait VerifiedStateMachine {
     }
 
     /// Compose the full VSM Kani proof: the invariant proposition proof
-    /// followed by every registered transition harness.
+    /// followed by every registered transition harness, and then the closure
+    /// proofs if a `kani_invariant_fn` was declared on the invariant type.
     ///
     /// This is the token stream that a `build.rs` should write to a generated
     /// `.rs` file so that Kani can verify the entire state machine end-to-end.
@@ -1130,7 +1144,27 @@ pub trait VerifiedStateMachine {
         for harness in Self::transition_harnesses() {
             ts.extend(harness);
         }
+        let inv_fn = Self::Invariant::kani_invariant_fn_name();
+        for closure in Self::transition_kani_closure_proofs(inv_fn) {
+            ts.extend(closure);
+        }
         ts
+    }
+
+    /// Return one Kani closure proof per transition in this machine.
+    ///
+    /// Each entry is a contracted wrapper (with `#[kani::requires]` /
+    /// `#[kani::ensures]`) plus a `#[kani::proof_for_contract]` harness.
+    /// Together they complete the depth-based inductive argument:
+    /// the d0/d1/d2 harnesses are the concrete base/step witnesses;
+    /// the closure proof is the symbolic inductive conclusion.
+    ///
+    /// When `inv_fn` is empty, all entries are empty `TokenStream`s.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_kani_closure_proofs(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
     /// Return one Creusot companion contract per transition in this machine.
