@@ -54,7 +54,15 @@ use crate::archive::types::{
 /// determines which AccessKit node tree is emitted, enforcing WCAG compliance
 /// at the type level.
 #[derive(
-    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    KaniCompose,
     KaniVariantState,
 )]
 pub enum ArchivePanelState {
@@ -270,6 +278,21 @@ impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}
 #[cfg(kani)]
 pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
     true
+}
+
+/// Bridge `kani::Arbitrary` to our `KaniCompose::kani_any()` so that
+/// `stub_verified` can generate symbolic return values for functions that
+/// return `ArchivePanelState`.
+///
+/// `stub_verified` replaces a contracted function call with
+/// `kani::any::<ReturnType>()` + `kani::assume(postcondition)`.  Without this
+/// impl the stub cannot be generated.
+#[cfg(kani)]
+impl kani::Arbitrary for ArchivePanelState {
+    fn any() -> Self {
+        use elicitation::KaniCompose;
+        ArchivePanelState::kani_depth0()
+    }
 }
 
 // ── ArchivePanelMachine ───────────────────────────────────────────────────────
