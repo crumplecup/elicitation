@@ -1,0 +1,54 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 117 0 117 53 *)
+
+let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 117 20 117 27
+let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 115 11 115 29
+let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 117 40 117 53
+let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 116 10 116 33
+let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 86 8 91 9
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+predicate inv_String (_1: t_String)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 84 0 84 48] (s: t_MiniConnState) =
+  [%#slevel10'3] match s with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c10_mk_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 117 0 117 53]
+  (message: t_String) (return (x: t_MiniConnState)) =
+  {[@stop_split] [@expl:c10_mk_error requires] ([@stop_split] [@expl:c10_mk_error 'message' type invariant] [%#slevel10] inv_String message)
+  /\ ([@stop_split] [@expl:c10_mk_error requires] [%#slevel10'0] Seq.length (view_String message) > 0)}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- Error message ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_MiniConnState = Any.any_l () | & message: t_String = message ])
+  [ return (result: t_MiniConnState) ->
+  {[@stop_split] [@expl:c10_mk_error ensures] ([@stop_split] [@expl:c10_mk_error result type invariant] [%#slevel10'1] inv_MiniConnState result)
+    /\ ([@stop_split] [@expl:c10_mk_error ensures] [%#slevel10'2] c10_consistent result)}
+    (! return {result}) ]

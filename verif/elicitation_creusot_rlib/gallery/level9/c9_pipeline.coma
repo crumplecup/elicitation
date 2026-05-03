@@ -1,0 +1,63 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 106 0 106 27 *)
+
+let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 107 13 107 25
+let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 108 13 108 29
+let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 109 4 109 18
+let%span slevel9'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 104 11 104 15
+let%span slevel9'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 105 10 105 22
+let%span slevel9'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 68 11 68 15
+let%span slevel9'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 69 10 69 27
+let%span slevel9'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 70 10 70 31
+let%span slevel9'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 92 11 92 23
+let%span slevel9'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 93 11 93 27
+let%span slevel9'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 94 10 94 27
+let%span slevel9'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 82 11 82 23
+let%span slevel9'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 83 10 83 22
+let%span slevel9'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 52 16 52 29
+let%span slevel9'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 59 16 59 50
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C9State = { value: Int64.t }
+
+predicate c9_holds [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 51 0 51 36] (s: t_C9State) =
+  [%#slevel9'12] Int64.to_int s.value >= 0
+
+predicate c9_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 58 0 58 40] (s: t_C9State) =
+  [%#slevel9'13] Int64.to_int s.value < 9223372036854775807
+
+let rec c9_produce (return (x: t_C9State)) = any
+  [ return (result: t_C9State) ->
+  {[@stop_split] [@expl:c9_produce ensures] ([@stop_split] [@expl:c9_produce ensures #0] [%#slevel9'5] c9_holds result)
+    /\ ([@stop_split] [@expl:c9_produce ensures #1] [%#slevel9'6] c9_below_max result)}
+    (! return {result}) ]
+
+let rec c9_increment (s: t_C9State) (return (x: t_C9State)) =
+  {[@stop_split] [@expl:c9_increment requires] ([@stop_split] [@expl:c9_increment requires #0] [%#slevel9'7] c9_holds s)
+  /\ ([@stop_split] [@expl:c9_increment requires #1] [%#slevel9'8] c9_below_max s)}
+  any
+  [ return (result: t_C9State) -> {[@stop_split] [@expl:c9_increment ensures] [%#slevel9'9] c9_holds result}
+    (! return {result}) ]
+
+let rec c9_consume (s: t_C9State) (return (x: Int64.t)) =
+  {[@stop_split] [@expl:c9_consume requires] [%#slevel9'10] c9_holds s}
+  any
+  [ return (result: Int64.t) -> {[@stop_split] [@expl:c9_consume ensures] [%#slevel9'11] Int64.to_int result >= 0}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c9_pipeline [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 106 0 106 27]
+  (return (x: Int64.t)) = (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c9_produce [%#slevel9] (fun (_x: t_C9State) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c9_increment [%#slevel9'0] {s0} (fun (_x: t_C9State) -> [ &s1 <- _x ] s2)
+    | s2 = c9_consume [%#slevel9'1] {s1} (fun (_x: Int64.t) -> [ &_ret <- _x ] s3)
+    | s3 = return {_ret} ] ]
+  [ & _ret: Int64.t = Any.any_l () | & s0: t_C9State = Any.any_l () | & s1: t_C9State = Any.any_l () ])
+  [ return (result: Int64.t) -> {[@stop_split] [@expl:c9_pipeline ensures] [%#slevel9'3] Int64.to_int result >= 0}
+    (! return {result}) ]

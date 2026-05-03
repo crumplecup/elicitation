@@ -1,0 +1,52 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 100 0 100 44 *)
+
+let%span slevel8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 103 47 103 48
+let%span slevel8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 103 26 103 48
+let%span slevel8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 97 11 97 28
+let%span slevel8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 98 11 98 27
+let%span slevel8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 99 10 99 32
+let%span slevel8'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 64 8 64 57
+let%span slevel8'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 72 16 72 61
+let%span slevel8'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 38 4 41 5
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C8ConnState = Disconnected | Connected
+
+type t_C8Machine = { state: t_C8ConnState; transition_count: Int64.t }
+
+predicate c8_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 37 0 37 43] (s: t_C8ConnState) =
+  [%#slevel8'6] match s with
+    | Disconnected -> true
+    | Connected -> true
+    end
+
+predicate c8_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 62 0 62 43] (m: t_C8Machine) =
+  [%#slevel8'4] c8_state_ok m.state /\ Int64.to_int m.transition_count >= 0
+
+predicate c8_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 71 0 71 42] (m: t_C8Machine) =
+  [%#slevel8'5] Int64.to_int m.transition_count < 9223372036854775807
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c8_connect [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 100 0 100 44]
+  (m: t_C8Machine) (return (x: t_C8Machine)) =
+  {[@stop_split] [@expl:c8_connect requires] ([@stop_split] [@expl:c8_connect requires #0] [%#slevel8'1] c8_consistent m)
+  /\ ([@stop_split] [@expl:c8_connect requires #1] [%#slevel8'2] c8_below_max m)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_7 <- Connected ] s1
+    | s1 = Int64.add [%#slevel8'0] {m.transition_count} {[%#slevel8] (1: Int64.t)}
+        (fun (_x: Int64.t) -> [ &_8 <- _x ] s2)
+    | s2 = [ &_ret <- { state = _7; transition_count = _8 } ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C8Machine = Any.any_l ()
+  | & m: t_C8Machine = m
+  | & _7: t_C8ConnState = Any.any_l ()
+  | & _8: Int64.t = Any.any_l () ])
+  [ return (result: t_C8Machine) -> {[@stop_split] [@expl:c8_connect ensures] [%#slevel8'3] c8_consistent result}
+    (! return {result}) ]

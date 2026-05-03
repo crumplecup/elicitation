@@ -1,0 +1,26 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 84 0 84 36 *)
+
+let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 82 11 82 23
+let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 83 10 83 22
+let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 52 16 52 29
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C9State = { value: Int64.t }
+
+predicate c9_holds [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 51 0 51 36] (s: t_C9State) =
+  [%#slevel9'1] Int64.to_int s.value >= 0
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c9_consume [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 84 0 84 36]
+  (s: t_C9State) (return (x: Int64.t)) = {[@stop_split] [@expl:c9_consume requires] [%#slevel9] c9_holds s}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- s.value ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: Int64.t = Any.any_l () | & s: t_C9State = s ])
+  [ return (result: Int64.t) -> {[@stop_split] [@expl:c9_consume ensures] [%#slevel9'0] Int64.to_int result >= 0}
+    (! return {result}) ]

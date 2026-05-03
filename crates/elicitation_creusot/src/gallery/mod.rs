@@ -12,14 +12,18 @@
 //!
 //! ## Gallery levels
 //!
-//! | Level   | Subject                              | Key question                          |
-//! |---------|--------------------------------------|---------------------------------------|
-//! | [`level1`] | Unit type, trivial invariant      | Does basic `#[logic]` / `#[requires]` work? |
-//! | [`level2`] | Integer bounds (`@` model)        | Can Pearlite do arithmetic?           |
-//! | [`level3`] | Unit enum, `match` in `#[logic]`  | Can predicates match on enum variants? |
-//! | [`level4`] | String length via `@.len()`       | Can Pearlite reason about String?     |
-//! | [`level5`] | Data-carrying enum (String payload) | Invariant over data variant field?   |
-//! | [`level6`] | Composition (postcond → precond)  | Is composition free (no `stub_verified`)? |
+//! | Level        | Subject                              | Key question                                    |
+//! |--------------|--------------------------------------|-------------------------------------------------|
+//! | [`level1`]  | Unit type, trivial invariant         | Does basic `#[logic]` / `#[requires]` work?    |
+//! | [`level2`]  | Integer bounds (`@` model)           | Can Pearlite do arithmetic?                     |
+//! | [`level3`]  | Unit enum, `match` in `#[logic]`    | Can predicates match on enum variants?          |
+//! | [`level4`]  | String length via `@.len()`          | Can Pearlite reason about String?               |
+//! | [`level5`]  | Data-carrying enum (String payload)  | Invariant over data variant field?              |
+//! | [`level6`]  | Composition (postcond → precond)    | Is composition free (no `stub_verified`)?       |
+//! | [`level7`]  | Named struct fields in variants      | Can predicates access named enum struct fields? |
+//! | [`level8`]  | Machine wrapper struct               | Invariant over state enum + numeric metadata?   |
+//! | [`level9`]  | Contract chains vs proof tokens      | Is `Established<P>` unnecessary in Creusot?     |
+//! | [`level10`] | Full mini connection machine         | Complete 4-state VSM lifecycle provable?        |
 //!
 //! ## Run all levels
 //!
@@ -29,6 +33,12 @@
 //!
 //! The output is WhyML in `verif/elicitation_creusot_rlib/`.
 //! Each level's functions appear as separate Why3 modules.
+//!
+//! ## Prove gallery
+//!
+//! ```bash
+//! just verify-creusot-gallery
+//! ```
 
 pub mod level1;
 pub mod level2;
@@ -36,3 +46,7 @@ pub mod level3;
 pub mod level4;
 pub mod level5;
 pub mod level6;
+pub mod level7;
+pub mod level8;
+pub mod level9;
+pub mod level10;

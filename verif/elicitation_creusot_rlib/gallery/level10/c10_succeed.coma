@@ -1,0 +1,74 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 0 143 53 *)
+
+let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 19 143 20
+let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 141 11 141 29
+let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 40 143 53
+let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 142 10 142 33
+let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 86 8 91 9
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+let rec elim_Connecting (_x: t_MiniConnState) (return (name: t_String)) = any
+  [ _k (name: t_String) -> {Connecting name = _x} (! return {name})
+  | _chk -> (! {[@expl:elim Connecting] match _x with
+      | Connecting _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 84 0 84 48] (s: t_MiniConnState) =
+  [%#slevel10'3] match s with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c10_succeed [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 0 143 53]
+  (s: t_MiniConnState) (return (x: t_MiniConnState)) =
+  {[@stop_split] [@expl:c10_succeed requires] ([@stop_split] [@expl:c10_succeed 's' type invariant] [%#slevel10] inv_MiniConnState s)
+  /\ ([@stop_split] [@expl:c10_succeed requires] [%#slevel10'0] c10_consistent s)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {s = Disconnected} (! bb1)
+    | br1 (x0: t_String) -> {s = Connecting x0} (! bb3)
+    | br2 (x0: t_String) -> {s = Connected x0} (! bb1)
+    | br3 (x0: t_String) -> {s = Error x0} (! bb1) ]
+  | bb1 = s0 [ s0 = [ &other <- s ] s1 | s1 = [ &_ret <- other ] s2 | s2 = return {_ret} ]
+  | bb3 = s0
+    [ s0 = elim_Connecting {s} (fun (rname: t_String) -> [ &name <- rname ] s1)
+    | s1 = [ &_ret <- Connected name ] s2
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_MiniConnState = Any.any_l ()
+  | & s: t_MiniConnState = s
+  | & name: t_String = Any.any_l ()
+  | & other: t_MiniConnState = Any.any_l () ])
+  [ return (result: t_MiniConnState) ->
+  {[@stop_split] [@expl:c10_succeed ensures] ([@stop_split] [@expl:c10_succeed result type invariant] [%#slevel10'1] inv_MiniConnState result)
+    /\ ([@stop_split] [@expl:c10_succeed ensures] [%#slevel10'2] c10_consistent result)}
+    (! return {result}) ]
