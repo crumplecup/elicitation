@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c2_clamp_to_byte": { "prover": "cvc5", "time": 0.016 } }
+  }
+}

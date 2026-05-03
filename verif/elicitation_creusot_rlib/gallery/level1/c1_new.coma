@@ -1,19 +1,19 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 50 0 50 24 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 49 0 49 24 *)
 
-let%span slevel1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 48 11 48 15
-let%span slevel1'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 49 10 49 31
-let%span slevel1'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 31 4 31 8
+let%span slevel1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 47 11 47 15
+let%span slevel1'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 48 10 48 31
+let%span slevel1'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 30 4 30 8
 
 use creusot.prelude.Any
 
-predicate c1_invariant [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 30 0 30 38] (_1: ()) =
+predicate c1_invariant [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 29 0 29 38] (_1: ()) =
   [%#slevel1'1] true
 
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c1_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 50 0 50 24]
+let rec c1_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level1.rs" 49 0 49 24]
   (return (x: ())) = (! bb0
   [ bb0 = s0 [ s0 = [ &_ret <- () ] s1 | s1 = return {_ret} ] ] [ & _ret: () = Any.any_l () ])
   [ return (result: ()) -> {[@stop_split] [@expl:c1_new ensures] [%#slevel1'0] c1_invariant result}

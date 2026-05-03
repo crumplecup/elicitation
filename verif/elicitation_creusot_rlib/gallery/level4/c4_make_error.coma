@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 0 77 51 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 85 0 85 51 *)
 
-let%span slevel4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 21 77 28
-let%span slevel4'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 75 11 75 32
-let%span slevel4'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 41 77 51
-let%span slevel4'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 76 10 76 39
-let%span slevel4'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 37 16 37 28
-let%span slevel4'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 70 16 70 36
+let%span slevel4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 85 21 85 28
+let%span slevel4'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 83 11 83 32
+let%span slevel4'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 85 41 85 51
+let%span slevel4'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 84 10 84 39
+let%span slevel4'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 36 16 36 28
+let%span slevel4'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 78 16 78 36
 
 use creusot.prelude.Any
 use seq.Seq
@@ -20,21 +20,21 @@ predicate inv_String (_1: t_String)
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c4_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 36 0 36 38] (s: t_String) =
+predicate c4_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 35 0 35 38] (s: t_String) =
   [%#slevel4'3] Seq.length (view_String s) > 0
 
 predicate inv_ErrorState (_1: t_ErrorState)
 
 axiom inv_axiom [@rewrite]: forall x: t_ErrorState [inv_ErrorState x]. inv_ErrorState x = inv_String x.message
 
-predicate c4_error_has_message [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 69 0 69 51] (e: t_ErrorState) =
+predicate c4_error_has_message [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 0 77 51] (e: t_ErrorState) =
   [%#slevel4'4] Seq.length (view_String e.message) > 0
 
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c4_make_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 0 77 51]
+let rec c4_make_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 85 0 85 51]
   (message'0: t_String) (return (x: t_ErrorState)) =
   {[@stop_split] [@expl:c4_make_error requires] ([@stop_split] [@expl:c4_make_error 'message' type invariant] [%#slevel4] inv_String message'0)
   /\ ([@stop_split] [@expl:c4_make_error requires] [%#slevel4'0] c4_nonempty message'0)}

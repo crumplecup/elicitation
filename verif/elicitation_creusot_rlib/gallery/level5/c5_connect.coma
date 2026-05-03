@@ -1,9 +1,9 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 56 0 56 32 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 55 0 55 32 *)
 
-let%span slevel5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 54 11 54 15
-let%span slevel5'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 56 23 56 32
-let%span slevel5'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 55 10 55 32
-let%span slevel5'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 45 8 48 9
+let%span slevel5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 53 11 53 15
+let%span slevel5'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 55 23 55 32
+let%span slevel5'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 54 10 54 32
+let%span slevel5'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 44 8 47 9
 
 use creusot.prelude.Any
 use seq.Seq
@@ -26,7 +26,7 @@ axiom inv_axiom [@rewrite]: forall x: t_ConnState [inv_ConnState x]. inv_ConnSta
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c5_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 43 0 43 43] (s: t_ConnState) =
+predicate c5_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 42 0 42 43] (s: t_ConnState) =
   [%#slevel5'2] match s with
     | Connected -> true
     | Error msg -> Seq.length (view_String msg) > 0
@@ -36,7 +36,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c5_connect [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 56 0 56 32]
+let rec c5_connect [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 55 0 55 32]
   (return (x: t_ConnState)) = (! bb0
   [ bb0 = s0 [ s0 = [ &_ret <- Connected ] s1 | s1 = return {_ret} ] ] [ & _ret: t_ConnState = Any.any_l () ])
   [ return (result: t_ConnState) ->

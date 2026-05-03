@@ -769,6 +769,13 @@ verify-creusot-list:
 verify-creusot-prove csv="creusot_module_results.csv" goals="creusot_goal_results.csv":
     cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot prove --output "{{csv}}" --goals "{{goals}}"
 
+# Prove gallery C1–C6 directly via why3find (bypasses full workspace compilation)
+verify-creusot-gallery:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+    WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+    "${HOME}/.local/share/creusot/bin/why3find" prove verif/elicitation_creusot_rlib/gallery/
+
 # Show goal-level summary
 verify-creusot-goal-summary goals="creusot_goal_results.csv":
     #!/usr/bin/env python3

@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c6_finish": { "prover": "cvc5", "time": 0.014 },
+      "vc_c6_start": { "prover": "cvc5", "time": 0.014 },
+      "vc_c6_start_then_finish": { "prover": "cvc5", "time": 0.014 }
+    }
+  }
+}

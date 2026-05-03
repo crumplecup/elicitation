@@ -1,0 +1,17 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c4_hello": {
+        "tactic": "split_vc",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [ { "prover": "cvc5", "time": 0.014 }, null ]
+          }
+        ]
+      },
+      "vc_from_String": { "prover": "cvc5", "time": 0.014 }
+    }
+  }
+}

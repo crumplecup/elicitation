@@ -689,16 +689,28 @@ pub fn run_creusot_module_prove(
         cmd.env("LD_LIBRARY_PATH", new_path);
     }
 
-    // Add opam bin directory to PATH so why3find is available.
+    // Add the creusot data bin directory to PATH so why3find is available.
+    // cargo-creusot installs why3find to ~/.local/share/creusot/bin (the
+    // data_dir set by creusot-setup), not to the opam switch bin.
     let home = std::env::var("HOME").unwrap_or_default();
-    let opam_bin = format!("{home}/.opam/default/bin");
+    let creusot_bin = format!("{home}/.local/share/creusot/bin");
     let existing_path = std::env::var("PATH").unwrap_or_default();
     let new_path = if existing_path.is_empty() {
-        opam_bin
+        creusot_bin
     } else {
-        format!("{opam_bin}:{existing_path}")
+        format!("{creusot_bin}:{existing_path}")
     };
     cmd.env("PATH", new_path);
+    // DUNE_DIR_LOCATIONS and WHY3CONFIG are required by why3find to locate
+    // the creusot package and prover configuration.
+    cmd.env(
+        "DUNE_DIR_LOCATIONS",
+        format!("why3find:lib:{home}/.local/share/creusot/share/why3find"),
+    );
+    cmd.env(
+        "WHY3CONFIG",
+        format!("{home}/.config/creusot/why3.conf"),
+    );
 
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 

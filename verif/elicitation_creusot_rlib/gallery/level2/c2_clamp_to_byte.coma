@@ -1,12 +1,12 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 62 0 62 50 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 74 0 74 50 *)
 
-let%span slevel2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 63 17 63 18
-let%span slevel2'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 64 18 64 19
-let%span slevel2'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 65 24 65 27
-let%span slevel2'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 66 18 66 21
-let%span slevel2'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 60 11 60 15
-let%span slevel2'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 61 10 61 35
-let%span slevel2'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 55 16 55 48
+let%span slevel2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 75 17 75 18
+let%span slevel2'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 76 18 76 19
+let%span slevel2'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 77 24 77 27
+let%span slevel2'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 78 18 78 21
+let%span slevel2'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 72 11 72 15
+let%span slevel2'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 73 10 73 35
+let%span slevel2'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 67 16 67 48
 
 use creusot.int.Int64
 use creusot.prelude.Any
@@ -14,14 +14,14 @@ use int.Int
 
 type t_Counter = { count: Int64.t }
 
-predicate c2_in_byte_range [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 54 0 54 44] (c: t_Counter) =
+predicate c2_in_byte_range [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 66 0 66 44] (c: t_Counter) =
   [%#slevel2'5] Int64.to_int c.count >= 0 /\ Int64.to_int c.count <= 255
 
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c2_clamp_to_byte [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 62 0 62 50]
+let rec c2_clamp_to_byte [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 74 0 74 50]
   (c: t_Counter) (return (x: t_Counter)) = (! bb0
   [ bb0 = s0
     [ s0 = [ &_5 <- Int64.lt c.count ([%#slevel2] (0: Int64.t)) ] s1

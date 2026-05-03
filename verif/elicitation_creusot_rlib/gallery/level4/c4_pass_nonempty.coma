@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 56 0 56 44 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 64 0 64 44 *)
 
-let%span slevel4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 56 24 56 25
-let%span slevel4'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 54 11 54 26
-let%span slevel4'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 56 38 56 44
-let%span slevel4'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 55 10 55 30
-let%span slevel4'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 37 16 37 28
+let%span slevel4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 64 24 64 25
+let%span slevel4'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 62 11 62 26
+let%span slevel4'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 64 38 64 44
+let%span slevel4'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 63 10 63 30
+let%span slevel4'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 36 16 36 28
 
 use creusot.prelude.Any
 use seq.Seq
@@ -17,14 +17,14 @@ predicate inv_String (_1: t_String)
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c4_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 36 0 36 38] (s: t_String) =
+predicate c4_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 35 0 35 38] (s: t_String) =
   [%#slevel4'3] Seq.length (view_String s) > 0
 
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c4_pass_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 56 0 56 44]
+let rec c4_pass_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 64 0 64 44]
   (s: t_String) (return (x: t_String)) =
   {[@stop_split] [@expl:c4_pass_nonempty requires] ([@stop_split] [@expl:c4_pass_nonempty 's' type invariant] [%#slevel4] inv_String s)
   /\ ([@stop_split] [@expl:c4_pass_nonempty requires] [%#slevel4'0] c4_nonempty s)}

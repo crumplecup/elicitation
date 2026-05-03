@@ -34,11 +34,24 @@ pub fn c2_positive(c: &Counter) -> bool {
     pearlite! { c.count@ > 0 }
 }
 
+/// C2a′: counter is below `i64::MAX` (guards overflow in `c2_increment`).
+
+#[logic]
+pub fn c2_below_max(c: &Counter) -> bool {
+    pearlite! { c.count@ < 9223372036854775807i64@ }
+}
+
 /// C2b: increment preserves the positivity invariant.
 ///
 /// Verifies: `count@ > 0 ==> count@ + 1 > 0` is expressible and provable.
+///
+/// The `c2_below_max` precondition guards against `i64` overflow — Creusot
+/// generates an overflow verification condition for `+=` on machine integers.
+/// Without bounding the top, the SMT solver cannot rule out `i64::MAX + 1`,
+/// so the overflow goal would be unproved despite the arithmetic being trivial.
 
 #[requires(c2_positive(&c))]
+#[requires(c2_below_max(&c))]
 #[ensures(c2_positive(&result))]
 pub fn c2_increment(mut c: Counter) -> Counter {
     c.count += 1;
