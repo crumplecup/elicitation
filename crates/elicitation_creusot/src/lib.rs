@@ -49,6 +49,9 @@ mod utf8;
 #[cfg(unix)]
 mod pathbytes;
 
+// Proof gallery: tests expressibility of Pearlite predicates for VSM invariants
+pub mod gallery;
+
 // Feature-gated module declarations
 #[cfg(feature = "uuid")]
 mod uuids;
