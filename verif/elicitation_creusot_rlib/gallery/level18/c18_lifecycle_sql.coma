@@ -1,0 +1,205 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 318 0 318 83 *)
+
+let%span slevel18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 319 13 319 22
+let%span slevel18'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 320 13 320 44
+let%span slevel18'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 321 13 321 37
+let%span slevel18'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 322 4 322 22
+let%span slevel18'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 318 25 318 37
+let%span slevel18'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 318 47 318 51
+let%span slevel18'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 314 11 314 34
+let%span slevel18'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 315 11 315 37
+let%span slevel18'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 318 71 318 83
+let%span slevel18'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 316 10 316 33
+let%span slevel18'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 317 10 317 38
+let%span slevel18'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 217 20 217 32
+let%span slevel18'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 215 10 215 33
+let%span slevel18'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 216 10 216 38
+let%span slevel18'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 227 21 227 22
+let%span slevel18'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 227 38 227 50
+let%span slevel18'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 222 11 222 34
+let%span slevel18'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 223 11 223 34
+let%span slevel18'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 227 63 227 75
+let%span slevel18'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 224 10 224 33
+let%span slevel18'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 225 10 225 36
+let%span slevel18'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 226 10 226 37
+let%span slevel18'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 249 22 249 23
+let%span slevel18'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 249 39 249 43
+let%span slevel18'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 244 11 244 29
+let%span slevel18'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 245 11 245 33
+let%span slevel18'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 246 11 246 37
+let%span slevel18'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 249 63 249 75
+let%span slevel18'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 247 10 247 33
+let%span slevel18'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 248 10 248 39
+let%span slevel18'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 304 22 304 23
+let%span slevel18'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 11 300 29
+let%span slevel18'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 301 11 301 36
+let%span slevel18'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 304 42 304 54
+let%span slevel18'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 302 10 302 33
+let%span slevel18'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 303 10 303 38
+let%span slevel18'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 100 16 100 48
+let%span slevel18'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 145 8 152 9
+let%span slevel18'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 158 16 158 74
+let%span slevel18'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 163 16 163 79
+let%span slevel18'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 180 8 183 9
+let%span slevel18'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 168 16 168 81
+let%span slevel18'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 202 8 208 9
+
+use creusot.int.Int32
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C18BackendKind = Sql | Kv
+
+type t_C18Descriptor = { name: t_String; port: Int32.t }
+
+type t_C18ConnState =
+  | Disconnected
+  | Connecting t_String t_C18BackendKind
+  | SqlConnected t_C18Descriptor
+  | KvConnected t_String
+  | Reconnecting t_C18Descriptor
+  | ConnectionError t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C18Descriptor (_1: t_C18Descriptor)
+
+axiom inv_axiom [@rewrite]: forall x: t_C18Descriptor [inv_C18Descriptor x]. inv_C18Descriptor x = inv_String x.name
+
+predicate inv_C18ConnState (_1: t_C18ConnState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C18ConnState [inv_C18ConnState x]. inv_C18ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend -> inv_String profile_name
+      | SqlConnected desc -> inv_C18Descriptor desc
+      | KvConnected path -> inv_String path
+      | Reconnecting desc -> inv_C18Descriptor desc
+      | ConnectionError message -> inv_String message
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c18_desc_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 99 0 99 53] (d: t_C18Descriptor) =
+  [%#slevel18'35] Seq.length (view_String d.name) > 0 /\ Int32.to_int d.port > 0
+
+predicate c18_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 143 0 143 47] (s: t_C18ConnState) =
+  [%#slevel18'36] match s with
+    | Disconnected -> true
+    | Connecting profile_name _ -> Seq.length (view_String profile_name) > 0
+    | SqlConnected desc -> c18_desc_consistent desc
+    | KvConnected path -> Seq.length (view_String path) > 0
+    | Reconnecting desc -> c18_desc_consistent desc
+    | ConnectionError message -> Seq.length (view_String message) > 0
+    end
+
+predicate c18_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 157 0 157 52] (s: t_C18ConnState) =
+  [%#slevel18'37] match s with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+let rec c18_new (return (x: t_C18ConnState)) = any
+  [ return (result: t_C18ConnState) ->
+  {[@stop_split] [@expl:c18_new ensures] ([@stop_split] [@expl:c18_new result type invariant] [%#slevel18'10] inv_C18ConnState result)
+    /\ ([@stop_split] [@expl:c18_new ensures #0] [%#slevel18'11] c18_consistent result)
+    /\ ([@stop_split] [@expl:c18_new ensures #1] [%#slevel18'12] c18_is_disconnected result)}
+    (! return {result}) ]
+
+predicate c18_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 162 0 162 50] (s: t_C18ConnState) =
+  [%#slevel18'38] match s with
+    | Connecting _ _ -> true
+    | _ -> false
+    end
+
+predicate c18_backend_is_sql [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 178 0 178 51] (s: t_C18ConnState) =
+  [%#slevel18'39] match s with
+    | Connecting _ (Sql) -> true
+    | _ -> false
+    end
+
+let rec c18_begin_sql (s: t_C18ConnState) (profile_name: t_String) (return (x: t_C18ConnState)) =
+  {[@stop_split] [@expl:c18_begin_sql requires] ([@stop_split] [@expl:c18_begin_sql 's' type invariant] [%#slevel18'13] inv_C18ConnState s)
+  /\ ([@stop_split] [@expl:c18_begin_sql 'profile_name' type invariant] [%#slevel18'14] inv_String profile_name)
+  /\ ([@stop_split] [@expl:c18_begin_sql requires #0] [%#slevel18'15] c18_is_disconnected s)
+  /\ ([@stop_split] [@expl:c18_begin_sql requires #1] [%#slevel18'16] Seq.length (view_String profile_name) > 0)}
+  any
+  [ return (result: t_C18ConnState) ->
+  {[@stop_split] [@expl:c18_begin_sql ensures] ([@stop_split] [@expl:c18_begin_sql result type invariant] [%#slevel18'17] inv_C18ConnState result)
+    /\ ([@stop_split] [@expl:c18_begin_sql ensures #0] [%#slevel18'18] c18_consistent result)
+    /\ ([@stop_split] [@expl:c18_begin_sql ensures #1] [%#slevel18'19] c18_is_connecting result)
+    /\ ([@stop_split] [@expl:c18_begin_sql ensures #2] [%#slevel18'20] c18_backend_is_sql result)}
+    (! return {result}) ]
+
+predicate c18_is_sql_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 167 0 167 53] (s: t_C18ConnState) =
+  [%#slevel18'40] match s with
+    | SqlConnected _ -> true
+    | _ -> false
+    end
+
+let rec c18_finish_sql (s: t_C18ConnState) (desc: t_C18Descriptor) (return (x: t_C18ConnState)) =
+  {[@stop_split] [@expl:c18_finish_sql requires] ([@stop_split] [@expl:c18_finish_sql 's' type invariant] [%#slevel18'21] inv_C18ConnState s)
+  /\ ([@stop_split] [@expl:c18_finish_sql 'desc' type invariant] [%#slevel18'22] inv_C18Descriptor desc)
+  /\ ([@stop_split] [@expl:c18_finish_sql requires #0] [%#slevel18'23] c18_consistent s)
+  /\ ([@stop_split] [@expl:c18_finish_sql requires #1] [%#slevel18'24] c18_backend_is_sql s)
+  /\ ([@stop_split] [@expl:c18_finish_sql requires #2] [%#slevel18'25] c18_desc_consistent desc)}
+  any
+  [ return (result: t_C18ConnState) ->
+  {[@stop_split] [@expl:c18_finish_sql ensures] ([@stop_split] [@expl:c18_finish_sql result type invariant] [%#slevel18'26] inv_C18ConnState result)
+    /\ ([@stop_split] [@expl:c18_finish_sql ensures #0] [%#slevel18'27] c18_consistent result)
+    /\ ([@stop_split] [@expl:c18_finish_sql ensures #1] [%#slevel18'28] c18_is_sql_connected result)}
+    (! return {result}) ]
+
+predicate c18_is_disconnectable [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 200 0 200 54] (s: t_C18ConnState) =
+  [%#slevel18'41] match s with
+    | SqlConnected _ -> true
+    | KvConnected _ -> true
+    | Reconnecting _ -> true
+    | ConnectionError _ -> true
+    | _ -> false
+    end
+
+let rec c18_disconnect (s: t_C18ConnState) (return (x: t_C18ConnState)) =
+  {[@stop_split] [@expl:c18_disconnect requires] ([@stop_split] [@expl:c18_disconnect 's' type invariant] [%#slevel18'29] inv_C18ConnState s)
+  /\ ([@stop_split] [@expl:c18_disconnect requires #0] [%#slevel18'30] c18_consistent s)
+  /\ ([@stop_split] [@expl:c18_disconnect requires #1] [%#slevel18'31] c18_is_disconnectable s)}
+  any
+  [ return (result: t_C18ConnState) ->
+  {[@stop_split] [@expl:c18_disconnect ensures] ([@stop_split] [@expl:c18_disconnect result type invariant] [%#slevel18'32] inv_C18ConnState result)
+    /\ ([@stop_split] [@expl:c18_disconnect ensures #0] [%#slevel18'33] c18_consistent result)
+    /\ ([@stop_split] [@expl:c18_disconnect ensures #1] [%#slevel18'34] c18_is_disconnected result)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c18_lifecycle_sql
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 318 0 318 83]
+  (profile_name: t_String) (desc: t_C18Descriptor) (return (x: t_C18ConnState)) =
+  {[@stop_split] [@expl:c18_lifecycle_sql requires] ([@stop_split] [@expl:c18_lifecycle_sql 'profile_name' type invariant] [%#slevel18'3] inv_String profile_name)
+  /\ ([@stop_split] [@expl:c18_lifecycle_sql 'desc' type invariant] [%#slevel18'4] inv_C18Descriptor desc)
+  /\ ([@stop_split] [@expl:c18_lifecycle_sql requires #0] [%#slevel18'5] Seq.length (view_String profile_name) > 0)
+  /\ ([@stop_split] [@expl:c18_lifecycle_sql requires #1] [%#slevel18'6] c18_desc_consistent desc)}
+  (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c18_new [%#slevel18] (fun (_x: t_C18ConnState) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c18_begin_sql [%#slevel18'0] {s0} {profile_name} (fun (_x: t_C18ConnState) -> [ &s1 <- _x ] s2'0)
+    | s2'0 = c18_finish_sql [%#slevel18'1] {s1} {desc} (fun (_x: t_C18ConnState) -> [ &s2 <- _x ] s3)
+    | s3 = c18_disconnect [%#slevel18'2] {s2} (fun (_x: t_C18ConnState) -> [ &_ret <- _x ] s4)
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C18ConnState = Any.any_l ()
+  | & profile_name: t_String = profile_name
+  | & desc: t_C18Descriptor = desc
+  | & s0: t_C18ConnState = Any.any_l ()
+  | & s1: t_C18ConnState = Any.any_l ()
+  | & s2: t_C18ConnState = Any.any_l () ])
+  [ return (result: t_C18ConnState) ->
+  {[@stop_split] [@expl:c18_lifecycle_sql ensures] ([@stop_split] [@expl:c18_lifecycle_sql result type invariant] [%#slevel18'7] inv_C18ConnState result)
+    /\ ([@stop_split] [@expl:c18_lifecycle_sql ensures #0] [%#slevel18'8] c18_consistent result)
+    /\ ([@stop_split] [@expl:c18_lifecycle_sql ensures #1] [%#slevel18'9] c18_is_disconnected result)}
+    (! return {result}) ]

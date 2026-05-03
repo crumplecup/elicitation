@@ -31,6 +31,7 @@
 //! | [`level15`] | Six-variant state, two-field variant | Two-field `Connecting`, tag propagation through `match`? |
 //! | [`level16`] | Nested struct field in enum variant  | Struct consistency predicate, field propagation across variants? |
 //! | [`level17`] | Nested enum field + backend routing  | Nested enum match in `#[logic]`; routing guard chains through lifecycle? |
+//! | [`level18`] | Full `ArchiveConnectionState` replica | All C15–C17 patterns combined; production-identical structure? |
 //!
 //! ## Run all levels
 //!
@@ -64,3 +65,4 @@ pub mod level14;
 pub mod level15;
 pub mod level16;
 pub mod level17;
+pub mod level18;
