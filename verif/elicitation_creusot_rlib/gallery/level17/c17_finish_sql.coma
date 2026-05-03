@@ -1,0 +1,102 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 230 0 230 67 *)
+
+let%span slevel17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 230 22 230 23
+let%span slevel17'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 230 39 230 42
+let%span slevel17'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 225 11 225 29
+let%span slevel17'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 226 11 226 33
+let%span slevel17'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 227 11 227 25
+let%span slevel17'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 230 55 230 67
+let%span slevel17'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 228 10 228 33
+let%span slevel17'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 229 10 229 39
+let%span slevel17'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 117 8 123 9
+let%span slevel17'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 154 8 157 9
+let%span slevel17'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 139 16 139 81
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_C17BackendKind = Sql | Kv
+
+type t_C17ConnState =
+  | Disconnected
+  | Connecting t_String t_C17BackendKind
+  | SqlConnected t_String
+  | KvConnected t_String
+  | ConnectionError t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C17ConnState (_1: t_C17ConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_C17ConnState [inv_C17ConnState x]. inv_C17ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend -> inv_String profile_name
+      | SqlConnected tag -> inv_String tag
+      | KvConnected path -> inv_String path
+      | ConnectionError message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C17ConnState (_1: t_C17ConnState)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C17ConnState [resolve_C17ConnState x]. resolve_C17ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting x0 x1 -> resolve_String x0
+      | SqlConnected x0 -> resolve_String x0
+      | KvConnected x0 -> resolve_String x0
+      | ConnectionError x0 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c17_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 115 0 115 47] (s: t_C17ConnState) =
+  [%#slevel17'7] match s with
+    | Disconnected -> true
+    | Connecting profile_name _ -> Seq.length (view_String profile_name) > 0
+    | SqlConnected tag -> Seq.length (view_String tag) > 0
+    | KvConnected path -> Seq.length (view_String path) > 0
+    | ConnectionError message -> Seq.length (view_String message) > 0
+    end
+
+predicate c17_backend_is_sql [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 152 0 152 51] (s: t_C17ConnState) =
+  [%#slevel17'8] match s with
+    | Connecting _ (Sql) -> true
+    | _ -> false
+    end
+
+predicate c17_is_sql_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 138 0 138 53] (s: t_C17ConnState) =
+  [%#slevel17'9] match s with
+    | SqlConnected _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c17_finish_sql [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level17.rs" 230 0 230 67]
+  (s: t_C17ConnState) (tag: t_String) (return (x: t_C17ConnState)) =
+  {[@stop_split] [@expl:c17_finish_sql requires] ([@stop_split] [@expl:c17_finish_sql 's' type invariant] [%#slevel17] inv_C17ConnState s)
+  /\ ([@stop_split] [@expl:c17_finish_sql 'tag' type invariant] [%#slevel17'0] inv_String tag)
+  /\ ([@stop_split] [@expl:c17_finish_sql requires #0] [%#slevel17'1] c17_consistent s)
+  /\ ([@stop_split] [@expl:c17_finish_sql requires #1] [%#slevel17'2] c17_backend_is_sql s)
+  /\ ([@stop_split] [@expl:c17_finish_sql requires #2] [%#slevel17'3] Seq.length (view_String tag) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C17ConnState s} any) ]
+    | s1 = -{resolve_C17ConnState s}- s2
+    | s2 = [ &_ret <- SqlConnected tag ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C17ConnState = Any.any_l () | & s: t_C17ConnState = s | & tag: t_String = tag ])
+  [ return (result: t_C17ConnState) ->
+  {[@stop_split] [@expl:c17_finish_sql ensures] ([@stop_split] [@expl:c17_finish_sql result type invariant] [%#slevel17'4] inv_C17ConnState result)
+    /\ ([@stop_split] [@expl:c17_finish_sql ensures #0] [%#slevel17'5] c17_consistent result)
+    /\ ([@stop_split] [@expl:c17_finish_sql ensures #1] [%#slevel17'6] c17_is_sql_connected result)}
+    (! return {result}) ]
