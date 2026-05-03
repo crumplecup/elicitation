@@ -1,0 +1,309 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 283 0 287 15 *)
+
+let%span slevel19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 288 13 288 22
+let%span slevel19'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 289 13 289 44
+let%span slevel19'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 290 13 290 38
+let%span slevel19'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 291 13 291 34
+let%span slevel19'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 292 13 292 48
+let%span slevel19'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 293 4 293 22
+let%span slevel19'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 284 4 284 16
+let%span slevel19'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 285 4 285 9
+let%span slevel19'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 286 4 286 9
+let%span slevel19'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 277 11 277 34
+let%span slevel19'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 278 11 278 38
+let%span slevel19'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 279 11 279 38
+let%span slevel19'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 287 5 287 15
+let%span slevel19'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 280 10 280 41
+let%span slevel19'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 281 10 281 44
+let%span slevel19'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 282 10 282 28
+let%span slevel19'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 171 20 171 30
+let%span slevel19'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 168 10 168 41
+let%span slevel19'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 169 10 169 44
+let%span slevel19'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 170 10 170 28
+let%span slevel19'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 189 21 189 22
+let%span slevel19'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 189 36 189 48
+let%span slevel19'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 181 11 181 37
+let%span slevel19'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 182 11 182 32
+let%span slevel19'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 183 11 183 40
+let%span slevel19'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 184 11 184 34
+let%span slevel19'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 189 61 189 71
+let%span slevel19'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 185 10 185 41
+let%span slevel19'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 186 10 186 42
+let%span slevel19'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 187 10 187 43
+let%span slevel19'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 188 10 188 39
+let%span slevel19'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 209 22 209 23
+let%span slevel19'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 209 37 209 41
+let%span slevel19'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 202 11 202 37
+let%span slevel19'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 203 11 203 32
+let%span slevel19'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 204 11 204 39
+let%span slevel19'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 205 11 205 37
+let%span slevel19'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 209 61 209 71
+let%span slevel19'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 206 10 206 41
+let%span slevel19'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 207 10 207 45
+let%span slevel19'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 208 10 208 39
+let%span slevel19'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 225 25 225 26
+let%span slevel19'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 219 11 219 37
+let%span slevel19'42 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 220 11 220 32
+let%span slevel19'43 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 221 11 221 41
+let%span slevel19'44 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 225 43 225 53
+let%span slevel19'45 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 222 10 222 41
+let%span slevel19'46 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 223 10 223 44
+let%span slevel19'47 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 224 10 224 39
+let%span slevel19'48 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 246 32 246 33
+let%span slevel19'49 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 246 47 246 51
+let%span slevel19'50 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 239 11 239 37
+let%span slevel19'51 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 240 11 240 32
+let%span slevel19'52 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 241 11 241 40
+let%span slevel19'53 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 242 11 242 37
+let%span slevel19'54 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 246 71 246 81
+let%span slevel19'55 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 243 10 243 41
+let%span slevel19'56 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 244 10 244 45
+let%span slevel19'57 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 245 10 245 39
+let%span slevel19'58 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 260 22 260 23
+let%span slevel19'59 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 254 11 254 37
+let%span slevel19'60 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 255 11 255 32
+let%span slevel19'61 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 256 11 256 42
+let%span slevel19'62 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 260 40 260 50
+let%span slevel19'63 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 257 10 257 41
+let%span slevel19'64 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 258 10 258 44
+let%span slevel19'65 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 259 10 259 39
+let%span slevel19'66 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 87 16 87 48
+let%span slevel19'67 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 108 16 108 63
+let%span slevel19'68 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 122 16 122 74
+let%span slevel19'69 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 117 16 117 36
+let%span slevel19'70 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 127 16 127 79
+let%span slevel19'71 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 144 8 147 9
+let%span slevel19'72 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 132 16 132 81
+let%span slevel19'73 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 137 16 137 81
+let%span slevel19'74 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 155 8 161 9
+let%span slevel19'75 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 94 8 101 9
+
+use creusot.int.Int32
+use creusot.int.Int64
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C18BackendKind = Sql | Kv
+
+type t_C18Descriptor = { name: t_String; port: Int32.t }
+
+type t_C18ConnState =
+  | Disconnected
+  | Connecting t_String t_C18BackendKind
+  | SqlConnected t_C18Descriptor
+  | KvConnected t_String
+  | Reconnecting t_C18Descriptor
+  | ConnectionError t_String
+
+type t_C19Machine = { state: t_C18ConnState; count: Int64.t }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C18Descriptor (_1: t_C18Descriptor)
+
+axiom inv_axiom [@rewrite]: forall x: t_C18Descriptor [inv_C18Descriptor x]. inv_C18Descriptor x = inv_String x.name
+
+predicate inv_C18ConnState (_1: t_C18ConnState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C18ConnState [inv_C18ConnState x]. inv_C18ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend -> inv_String profile_name
+      | SqlConnected desc -> inv_C18Descriptor desc
+      | KvConnected path -> inv_String path
+      | Reconnecting desc -> inv_C18Descriptor desc
+      | ConnectionError message -> inv_String message
+      end
+
+predicate inv_C19Machine (_1: t_C19Machine)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_C19Machine [inv_C19Machine x]. inv_C19Machine x = inv_C18ConnState x.state
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c19_desc_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 86 0 86 53] (d: t_C18Descriptor) =
+  [%#slevel19'66] Seq.length (view_String d.name) > 0 /\ Int32.to_int d.port > 0
+
+predicate c19_state_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 92 0 92 53] (s: t_C18ConnState) =
+  [%#slevel19'75] match s with
+    | Disconnected -> true
+    | Connecting profile_name _ -> Seq.length (view_String profile_name) > 0
+    | SqlConnected desc -> c19_desc_consistent desc
+    | KvConnected path -> Seq.length (view_String path) > 0
+    | Reconnecting desc -> c19_desc_consistent desc
+    | ConnectionError message -> Seq.length (view_String message) > 0
+    end
+
+predicate c19_machine_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 107 0 107 53] (m: t_C19Machine) =
+  [%#slevel19'67] c19_state_consistent m.state /\ Int64.to_int m.count >= 0
+
+predicate c19_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 121 0 121 52] (s: t_C18ConnState) =
+  [%#slevel19'68] match s with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+let rec c19_new (return (x: t_C19Machine)) = any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_new ensures] ([@stop_split] [@expl:c19_new result type invariant] [%#slevel19'15] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_new ensures #0] [%#slevel19'16] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_new ensures #1] [%#slevel19'17] c19_is_disconnected result.state)
+    /\ ([@stop_split] [@expl:c19_new ensures #2] [%#slevel19'18] Int64.to_int result.count = 0)}
+    (! return {result}) ]
+
+constant const_MAX: Int64.t = (9223372036854775807: Int64.t)
+
+predicate c19_count_bounded [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 116 0 116 48] (m: t_C19Machine) =
+  [%#slevel19'69] Int64.to_int m.count < Int64.to_int const_MAX
+
+predicate c19_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 126 0 126 50] (s: t_C18ConnState) =
+  [%#slevel19'70] match s with
+    | Connecting _ _ -> true
+    | _ -> false
+    end
+
+predicate c19_backend_is_sql [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 142 0 142 51] (s: t_C18ConnState) =
+  [%#slevel19'71] match s with
+    | Connecting _ (Sql) -> true
+    | _ -> false
+    end
+
+let rec c19_begin_sql (m: t_C19Machine) (profile_name: t_String) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_begin_sql requires] ([@stop_split] [@expl:c19_begin_sql 'm' type invariant] [%#slevel19'19] inv_C19Machine m)
+  /\ ([@stop_split] [@expl:c19_begin_sql 'profile_name' type invariant] [%#slevel19'20] inv_String profile_name)
+  /\ ([@stop_split] [@expl:c19_begin_sql requires #0] [%#slevel19'21] c19_machine_consistent m)
+  /\ ([@stop_split] [@expl:c19_begin_sql requires #1] [%#slevel19'22] c19_count_bounded m)
+  /\ ([@stop_split] [@expl:c19_begin_sql requires #2] [%#slevel19'23] c19_is_disconnected m.state)
+  /\ ([@stop_split] [@expl:c19_begin_sql requires #3] [%#slevel19'24] Seq.length (view_String profile_name) > 0)}
+  any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_begin_sql ensures] ([@stop_split] [@expl:c19_begin_sql result type invariant] [%#slevel19'25] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_begin_sql ensures #0] [%#slevel19'26] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_begin_sql ensures #1] [%#slevel19'27] c19_is_connecting result.state)
+    /\ ([@stop_split] [@expl:c19_begin_sql ensures #2] [%#slevel19'28] c19_backend_is_sql result.state)
+    /\ ([@stop_split] [@expl:c19_begin_sql ensures #3] [%#slevel19'29] Int64.to_int result.count
+    = Int64.to_int m.count + 1)}
+    (! return {result}) ]
+
+predicate c19_is_sql_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 131 0 131 53] (s: t_C18ConnState) =
+  [%#slevel19'72] match s with
+    | SqlConnected _ -> true
+    | _ -> false
+    end
+
+let rec c19_finish_sql (m: t_C19Machine) (desc: t_C18Descriptor) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_finish_sql requires] ([@stop_split] [@expl:c19_finish_sql 'm' type invariant] [%#slevel19'30] inv_C19Machine m)
+  /\ ([@stop_split] [@expl:c19_finish_sql 'desc' type invariant] [%#slevel19'31] inv_C18Descriptor desc)
+  /\ ([@stop_split] [@expl:c19_finish_sql requires #0] [%#slevel19'32] c19_machine_consistent m)
+  /\ ([@stop_split] [@expl:c19_finish_sql requires #1] [%#slevel19'33] c19_count_bounded m)
+  /\ ([@stop_split] [@expl:c19_finish_sql requires #2] [%#slevel19'34] c19_backend_is_sql m.state)
+  /\ ([@stop_split] [@expl:c19_finish_sql requires #3] [%#slevel19'35] c19_desc_consistent desc)}
+  any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_finish_sql ensures] ([@stop_split] [@expl:c19_finish_sql result type invariant] [%#slevel19'36] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_finish_sql ensures #0] [%#slevel19'37] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_finish_sql ensures #1] [%#slevel19'38] c19_is_sql_connected result.state)
+    /\ ([@stop_split] [@expl:c19_finish_sql ensures #2] [%#slevel19'39] Int64.to_int result.count
+    = Int64.to_int m.count + 1)}
+    (! return {result}) ]
+
+predicate c19_is_reconnecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 136 0 136 52] (s: t_C18ConnState) =
+  [%#slevel19'73] match s with
+    | Reconnecting _ -> true
+    | _ -> false
+    end
+
+let rec c19_reconnect_sql (m: t_C19Machine) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_reconnect_sql requires] ([@stop_split] [@expl:c19_reconnect_sql 'm' type invariant] [%#slevel19'40] inv_C19Machine m)
+  /\ ([@stop_split] [@expl:c19_reconnect_sql requires #0] [%#slevel19'41] c19_machine_consistent m)
+  /\ ([@stop_split] [@expl:c19_reconnect_sql requires #1] [%#slevel19'42] c19_count_bounded m)
+  /\ ([@stop_split] [@expl:c19_reconnect_sql requires #2] [%#slevel19'43] c19_is_sql_connected m.state)}
+  any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_reconnect_sql ensures] ([@stop_split] [@expl:c19_reconnect_sql result type invariant] [%#slevel19'44] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_reconnect_sql ensures #0] [%#slevel19'45] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_reconnect_sql ensures #1] [%#slevel19'46] c19_is_reconnecting result.state)
+    /\ ([@stop_split] [@expl:c19_reconnect_sql ensures #2] [%#slevel19'47] Int64.to_int result.count
+    = Int64.to_int m.count + 1)}
+    (! return {result}) ]
+
+let rec c19_finish_reconnect_sql (m: t_C19Machine) (desc: t_C18Descriptor) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_finish_reconnect_sql requires] ([@stop_split] [@expl:c19_finish_reconnect_sql 'm' type invariant] [%#slevel19'48] inv_C19Machine m)
+  /\ ([@stop_split] [@expl:c19_finish_reconnect_sql 'desc' type invariant] [%#slevel19'49] inv_C18Descriptor desc)
+  /\ ([@stop_split] [@expl:c19_finish_reconnect_sql requires #0] [%#slevel19'50] c19_machine_consistent m)
+  /\ ([@stop_split] [@expl:c19_finish_reconnect_sql requires #1] [%#slevel19'51] c19_count_bounded m)
+  /\ ([@stop_split] [@expl:c19_finish_reconnect_sql requires #2] [%#slevel19'52] c19_is_reconnecting m.state)
+  /\ ([@stop_split] [@expl:c19_finish_reconnect_sql requires #3] [%#slevel19'53] c19_desc_consistent desc)}
+  any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_finish_reconnect_sql ensures] ([@stop_split] [@expl:c19_finish_reconnect_sql result type invariant] [%#slevel19'54] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_finish_reconnect_sql ensures #0] [%#slevel19'55] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_finish_reconnect_sql ensures #1] [%#slevel19'56] c19_is_sql_connected result.state)
+    /\ ([@stop_split] [@expl:c19_finish_reconnect_sql ensures #2] [%#slevel19'57] Int64.to_int result.count
+    = Int64.to_int m.count + 1)}
+    (! return {result}) ]
+
+predicate c19_is_disconnectable [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 153 0 153 54] (s: t_C18ConnState) =
+  [%#slevel19'74] match s with
+    | SqlConnected _ -> true
+    | KvConnected _ -> true
+    | Reconnecting _ -> true
+    | ConnectionError _ -> true
+    | _ -> false
+    end
+
+let rec c19_disconnect (m: t_C19Machine) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_disconnect requires] ([@stop_split] [@expl:c19_disconnect 'm' type invariant] [%#slevel19'58] inv_C19Machine m)
+  /\ ([@stop_split] [@expl:c19_disconnect requires #0] [%#slevel19'59] c19_machine_consistent m)
+  /\ ([@stop_split] [@expl:c19_disconnect requires #1] [%#slevel19'60] c19_count_bounded m)
+  /\ ([@stop_split] [@expl:c19_disconnect requires #2] [%#slevel19'61] c19_is_disconnectable m.state)}
+  any
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_disconnect ensures] ([@stop_split] [@expl:c19_disconnect result type invariant] [%#slevel19'62] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_disconnect ensures #0] [%#slevel19'63] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_disconnect ensures #1] [%#slevel19'64] c19_is_disconnected result.state)
+    /\ ([@stop_split] [@expl:c19_disconnect ensures #2] [%#slevel19'65] Int64.to_int result.count
+    = Int64.to_int m.count + 1)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c19_full_lifecycle
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level19.rs" 283 0 287 15]
+  (profile_name: t_String) (desc1: t_C18Descriptor) (desc2: t_C18Descriptor) (return (x: t_C19Machine)) =
+  {[@stop_split] [@expl:c19_full_lifecycle requires] ([@stop_split] [@expl:c19_full_lifecycle 'profile_name' type invariant] [%#slevel19'5] inv_String profile_name)
+  /\ ([@stop_split] [@expl:c19_full_lifecycle 'desc1' type invariant] [%#slevel19'6] inv_C18Descriptor desc1)
+  /\ ([@stop_split] [@expl:c19_full_lifecycle 'desc2' type invariant] [%#slevel19'7] inv_C18Descriptor desc2)
+  /\ ([@stop_split] [@expl:c19_full_lifecycle requires #0] [%#slevel19'8] Seq.length (view_String profile_name) > 0)
+  /\ ([@stop_split] [@expl:c19_full_lifecycle requires #1] [%#slevel19'9] c19_desc_consistent desc1)
+  /\ ([@stop_split] [@expl:c19_full_lifecycle requires #2] [%#slevel19'10] c19_desc_consistent desc2)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = c19_new [%#slevel19] (fun (_x: t_C19Machine) -> [ &m0 <- _x ] s1)
+    | s1 = c19_begin_sql [%#slevel19'0] {m0} {profile_name} (fun (_x: t_C19Machine) -> [ &m1 <- _x ] s2)
+    | s2 = c19_finish_sql [%#slevel19'1] {m1} {desc1} (fun (_x: t_C19Machine) -> [ &m2 <- _x ] s3)
+    | s3 = c19_reconnect_sql [%#slevel19'2] {m2} (fun (_x: t_C19Machine) -> [ &m3 <- _x ] s4)
+    | s4 = c19_finish_reconnect_sql [%#slevel19'3] {m3} {desc2} (fun (_x: t_C19Machine) -> [ &m4 <- _x ] s5)
+    | s5 = c19_disconnect [%#slevel19'4] {m4} (fun (_x: t_C19Machine) -> [ &_ret <- _x ] s6)
+    | s6 = return {_ret} ] ]
+  [ & _ret: t_C19Machine = Any.any_l ()
+  | & profile_name: t_String = profile_name
+  | & desc1: t_C18Descriptor = desc1
+  | & desc2: t_C18Descriptor = desc2
+  | & m0: t_C19Machine = Any.any_l ()
+  | & m1: t_C19Machine = Any.any_l ()
+  | & m2: t_C19Machine = Any.any_l ()
+  | & m3: t_C19Machine = Any.any_l ()
+  | & m4: t_C19Machine = Any.any_l () ])
+  [ return (result: t_C19Machine) ->
+  {[@stop_split] [@expl:c19_full_lifecycle ensures] ([@stop_split] [@expl:c19_full_lifecycle result type invariant] [%#slevel19'11] inv_C19Machine result)
+    /\ ([@stop_split] [@expl:c19_full_lifecycle ensures #0] [%#slevel19'12] c19_machine_consistent result)
+    /\ ([@stop_split] [@expl:c19_full_lifecycle ensures #1] [%#slevel19'13] c19_is_disconnected result.state)
+    /\ ([@stop_split] [@expl:c19_full_lifecycle ensures #2] [%#slevel19'14] Int64.to_int result.count = 5)}
+    (! return {result}) ]

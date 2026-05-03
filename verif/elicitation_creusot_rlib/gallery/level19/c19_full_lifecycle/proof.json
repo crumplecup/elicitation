@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c19_begin_sql": { "prover": "cvc5", "time": 0.016 },
+      "vc_c19_disconnect": { "prover": "cvc5", "time": 0.012 },
+      "vc_c19_finish_reconnect_sql": { "prover": "cvc5", "time": 0.012 },
+      "vc_c19_finish_sql": { "prover": "cvc5", "time": 0.016 },
+      "vc_c19_full_lifecycle": { "prover": "cvc5", "time": 0.031 },
+      "vc_c19_new": { "prover": "cvc5", "time": 0.021 },
+      "vc_c19_reconnect_sql": { "prover": "cvc5", "time": 0.018 }
+    }
+  }
+}
