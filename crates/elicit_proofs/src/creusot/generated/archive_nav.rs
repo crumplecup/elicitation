@@ -9,6 +9,8 @@ use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
+use elicitation::kani_label;
+#[cfg(creusot)]
 use elicit_server::archive::vsm::*;
 #[cfg(creusot)]
 use elicit_server::archive::types::*;
@@ -20,7 +22,7 @@ use elicit_server::archive::nav_tree::*;
 use crate::creusot::vsm_invariants::archive_nav_consistent;
 #[cfg(creusot)]
 #[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result = = true)]
+#[::creusot_std::macros::ensures(result)]
 #[trusted]
 pub fn verify_archive_nav_consistent_prop_creusot() -> bool {
     true
@@ -32,7 +34,7 @@ pub(crate) fn load_nav__creusot(
     _state: ArchiveNavState,
     proof: Established<ArchiveNavConsistent>,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    load_nav(_state, proof)
+    (ArchiveNavState::NavLoading, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&_state))]
@@ -42,7 +44,28 @@ pub(crate) fn nav_loaded__creusot(
     proof: Established<ArchiveNavConsistent>,
     nav: NavTree,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    nav_loaded(_state, proof, nav)
+    let schemas = nav
+        .schemas
+        .into_iter()
+        .map(|e| SchemaWithExpand {
+            entry: e,
+            expanded: false,
+            functions_expanded: false,
+            sequences_expanded: false,
+            types_expanded: false,
+            triggers_expanded: false,
+        })
+        .collect();
+    (
+        ArchiveNavState::NavReady {
+            schemas,
+            cursor: 0,
+            filter: String::new(),
+            filter_active: false,
+            show_help: false,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&_state))]
@@ -51,7 +74,7 @@ pub(crate) fn nav_refresh__creusot(
     _state: ArchiveNavState,
     proof: Established<ArchiveNavConsistent>,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    nav_refresh(_state, proof)
+    (ArchiveNavState::NavLoading, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -62,7 +85,28 @@ pub(crate) fn expand_schema__creusot(
     schema_idx: usize,
     expanded: bool,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    expand_schema(state, proof, schema_idx, expanded)
+    let next = match state {
+        ArchiveNavState::NavReady {
+            mut schemas,
+            cursor,
+            filter,
+            filter_active,
+            show_help,
+        } => {
+            if let Some(s) = schemas.get_mut(schema_idx) {
+                s.expanded = expanded;
+            }
+            ArchiveNavState::NavReady {
+                schemas,
+                cursor,
+                filter,
+                filter_active,
+                show_help,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -72,7 +116,7 @@ pub(crate) fn collapse_schema__creusot(
     proof: Established<ArchiveNavConsistent>,
     schema_idx: usize,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    collapse_schema(state, proof, schema_idx)
+    expand_schema__creusot(state, proof, schema_idx, false)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -81,7 +125,25 @@ pub(crate) fn move_cursor_up__creusot(
     state: ArchiveNavState,
     proof: Established<ArchiveNavConsistent>,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    move_cursor_up(state, proof)
+    let next = match state {
+        ArchiveNavState::NavReady {
+            schemas,
+            cursor,
+            filter,
+            filter_active,
+            show_help,
+        } => {
+            ArchiveNavState::NavReady {
+                schemas,
+                cursor: cursor.saturating_sub(1),
+                filter,
+                filter_active,
+                show_help,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -91,7 +153,25 @@ pub(crate) fn move_cursor_down__creusot(
     proof: Established<ArchiveNavConsistent>,
     max: usize,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    move_cursor_down(state, proof, max)
+    let next = match state {
+        ArchiveNavState::NavReady {
+            schemas,
+            cursor,
+            filter,
+            filter_active,
+            show_help,
+        } => {
+            ArchiveNavState::NavReady {
+                schemas,
+                cursor: cursor.saturating_add(1).min(max.saturating_sub(1)),
+                filter,
+                filter_active,
+                show_help,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -101,7 +181,28 @@ pub(crate) fn apply_filter__creusot(
     proof: Established<ArchiveNavConsistent>,
     filter: String,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    apply_filter(state, proof, filter)
+    let next = match state {
+        ArchiveNavState::NavReady { schemas, .. }
+        | ArchiveNavState::NavFiltered { schemas, .. } => {
+            if filter.is_empty() {
+                ArchiveNavState::NavReady {
+                    schemas,
+                    cursor: 0,
+                    filter: String::new(),
+                    filter_active: true,
+                    show_help: false,
+                }
+            } else {
+                ArchiveNavState::NavFiltered {
+                    schemas,
+                    filter,
+                    cursor: 0,
+                }
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
@@ -110,5 +211,5 @@ pub(crate) fn clear_filter__creusot(
     state: ArchiveNavState,
     proof: Established<ArchiveNavConsistent>,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    clear_filter(state, proof)
+    apply_filter__creusot(state, proof, String::new())
 }

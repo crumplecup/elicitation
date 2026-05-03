@@ -1,0 +1,1450 @@
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 153 0 156 61 *)
+
+let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
+let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
+let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 74 20 74 76
+let%span svec'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 44 20 44 29
+let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 154 4 154 9
+let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 155 4 155 9
+let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 151 11 151 43
+let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 156 5 156 61
+let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 152 10 152 45
+let%span sboxed = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/boxed.rs" 48 8 48 18
+
+use creusot.int.UInt64
+use creusot.int.UInt32
+use creusot.float.Float64
+use creusot.float.Float32
+use creusot.int.UInt16
+use seq.Seq
+use creusot.prelude.Any
+use creusot.int.Int64
+use creusot.int.Int32
+use int.Int
+
+type t_String
+
+type t_Vec_ColumnDescriptor_Global
+
+type t_Vec_DbRow_Global
+
+type t_DbRows = { rows: t_Vec_DbRow_Global; affected: UInt64.t }
+
+type t_Vec_String_Global
+
+type t_QueryResult = {
+  columns'0: t_Vec_ColumnDescriptor_Global;
+  rows'0: t_DbRows;
+  row_count'0: UInt64.t;
+  spatial_column_names'0: t_Vec_String_Global }
+
+type t_Vec_StagedEdit_Global
+
+type tup2_usize_usize = { f0: UInt64.t; f1: UInt64.t }
+
+type t_Option_tup2_usize_usize = None | Some tup2_usize_usize
+
+type t_Vec_usize_Global
+
+type t_Vec_tup2_String_String_Global
+
+type t_Option_Vec_tup2_String_String_Global = None'0 | Some'0 t_Vec_tup2_String_String_Global
+
+type t_RowEditState = {
+  pending_edits: t_Vec_StagedEdit_Global;
+  editing_cell: t_Option_tup2_usize_usize;
+  input_buffer: t_String;
+  rows_marked_deleted: t_Vec_usize_Global;
+  inserting_row: t_Option_Vec_tup2_String_String_Global;
+  insert_col_cursor: UInt64.t }
+
+type t_Option_RowEditState = None'1 | Some'1 t_RowEditState
+
+type t_QueryResultMode = DataGrid | StatsSummary | SpatialMap
+
+type t_Option_QueryResult = None'2 | Some'2 t_QueryResult
+
+type t_Option_String = None'3 | Some'3 t_String
+
+type t_DdlDescriptor = { schema: t_String; object_name: t_String; ddl: t_String }
+
+type t_DdlDescriptorMode = Block
+
+type t_Vec_ExplainNode_Global
+
+type t_ExplainPlan = { nodes: t_Vec_ExplainNode_Global; root: UInt64.t }
+
+type t_ExplainNodeMode = TreeNode
+
+type t_ExplainComparison = { left: t_ExplainPlan; right: t_ExplainPlan; label_left: t_String; label_right: t_String }
+
+type t_Vec_QueryHistoryEntry_Global
+
+type t_QueryHistoryEntryMode = Row | Detailed
+
+type t_Vec_SavedQuery_Global
+
+type t_SavedQueryMode = Row'0 | Detailed'0
+
+type t_ExportFormat = Csv | Json | Ndjson | Tsv
+
+type t_ExportResult = { format: t_ExportFormat; row_count: UInt64.t; content: t_String }
+
+type t_Option_ExportResult = None'4 | Some'4 t_ExportResult
+
+type t_Vec_DbSessionInfo_Global
+
+type t_Vec_DbRoleInfo_Global
+
+type t_Option_f64 = None'5 | Some'5 Float64.t
+
+type t_Vec_tup2_i32_i32_Global
+
+type t_Vec_tup2_String_f64_Global
+
+type t_Vec_tup2_String_u64_Global
+
+type t_MonitorTab = Sessions | SlowQueries | LockWaits | TableBloat | IndexUsage
+
+type t_MonitorSnapshot = {
+  sessions: t_Vec_DbSessionInfo_Global;
+  roles: t_Vec_DbRoleInfo_Global;
+  cache_hit: t_Option_f64;
+  backups: t_Vec_String_Global;
+  slow_queries: t_Vec_DbSessionInfo_Global;
+  lock_waits: t_Vec_tup2_i32_i32_Global;
+  table_bloat: t_Vec_tup2_String_f64_Global;
+  index_usage: t_Vec_tup2_String_u64_Global;
+  active_tab: t_MonitorTab }
+
+type t_MonitorSnapshotMode = Dashboard | SessionList
+
+type t_AdminTab = Roles | Backups | Settings
+
+type t_AdminSnapshot = {
+  roles'0: t_Vec_DbRoleInfo_Global;
+  backups'0: t_Vec_String_Global;
+  wal_ready'0: bool;
+  server_version'0: t_String;
+  extensions'0: t_Vec_String_Global;
+  settings'0: t_Vec_tup2_String_String_Global;
+  active_tab'0: t_AdminTab }
+
+type t_AdminSnapshotMode = RoleList'0 | BackupList'0 | WalStatus'0 | ExtList'0 | Settings'0
+
+type t_Vec_ErdNode_Global
+
+type t_Vec_ErdEdge_Global
+
+type t_ErdDiagram = { schema'0: t_String; nodes'0: t_Vec_ErdNode_Global; edges'0: t_Vec_ErdEdge_Global }
+
+type t_BTreeMap_String_tup4_f32_f32_f32_f32_Global
+
+type t_ErdLayout = { canvas_w: Float32.t; canvas_h: Float32.t; boxes: t_BTreeMap_String_tup4_f32_f32_f32_f32_Global }
+
+type t_Option_ErdLayout = None'6 | Some'6 t_ErdLayout
+
+type t_ErdDiagramMode = NodeList | EdgeList | Visual
+
+type t_Vec_ConstraintDescriptor_Global
+
+type t_ConstraintDescriptorMode = Inline'1 | Detailed'1
+
+type t_Vec_IndexDescriptor_Global
+
+type t_IndexDescriptorMode = Row'2 | Detailed'2
+
+type t_BackendKind = Postgres | Sqlite | Mysql | Redb | Unknown
+
+type t_Option_u16 = None'7 | Some'7 UInt16.t
+
+type t_SslMode = Disable | Allow | Prefer | Require | VerifyCa | VerifyFull
+
+type t_ConnectionProfile = {
+  name: t_String;
+  url_env_key: t_String;
+  backend: t_BackendKind;
+  color: t_Option_String;
+  ssh_host: t_Option_String;
+  ssh_port: t_Option_u16;
+  ssh_user: t_Option_String;
+  ssh_key_env: t_Option_String;
+  ssl_mode: t_SslMode;
+  ssl_cert_env: t_Option_String;
+  ssl_key_env: t_Option_String;
+  ssl_ca_env: t_Option_String }
+
+type t_ConnectionProfileMode = Card'1 | Row'1 | Editor'1
+
+type t_ArchivePanelState =
+  | ColumnDetail'0
+  | Loading'0 t_String t_String
+  | DataGrid'0 t_String t_String t_QueryResult UInt32.t UInt64.t UInt64.t t_Option_RowEditState t_QueryResultMode
+  | SqlEditor'0 t_String t_Option_QueryResult bool t_Option_String
+  | DdlView'0 t_String t_String t_DdlDescriptor t_DdlDescriptorMode
+  | ExplainView'0 t_String t_String t_ExplainPlan t_ExplainNodeMode
+  | ExplainCompare'0 t_String t_String t_ExplainComparison
+  | HistoryView'0 t_Vec_QueryHistoryEntry_Global t_QueryHistoryEntryMode
+  | SavedView'0 t_Vec_SavedQuery_Global t_SavedQueryMode
+  | ExportView'0 t_String t_String t_Option_ExportResult
+  | HelpView'0
+  | MonitorView'0 t_MonitorSnapshot bool t_MonitorSnapshotMode
+  | AdminView'0 t_AdminSnapshot bool t_AdminSnapshotMode
+  | ErdView'0 t_String t_ErdDiagram t_Option_ErdLayout bool t_ErdDiagramMode
+  | ConstraintView'0 t_String t_String t_Vec_ConstraintDescriptor_Global bool t_ConstraintDescriptorMode
+  | IndexView'0 t_String t_String t_Vec_IndexDescriptor_Global bool t_IndexDescriptorMode
+  | ConnectionEdit'0 t_ConnectionProfile t_ConnectionProfileMode
+  | ErrorView'0 t_String
+
+let rec elim_DataGrid (_x: t_ArchivePanelState)
+  (return (schema'1: t_String) (table: t_String) (result: t_QueryResult) (page: UInt32.t) (grid_row: UInt64.t) (grid_col: UInt64.t) (edit_state: t_Option_RowEditState) (display_mode: t_QueryResultMode)) =
+  any
+  [ _k (schema'1: t_String) (table: t_String) (result: t_QueryResult) (page: UInt32.t) (grid_row: UInt64.t)
+    (grid_col: UInt64.t) (edit_state: t_Option_RowEditState) (display_mode: t_QueryResultMode) ->
+  {DataGrid'0 schema'1 table result page grid_row grid_col edit_state display_mode = _x}
+    (! return {schema'1} {table} {result} {page} {grid_row} {grid_col} {edit_state} {display_mode})
+  | _chk -> (! {[@expl:elim DataGrid] match _x with
+      | DataGrid'0 _ _ _ _ _ _ _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+type t_RowEditKind =
+  | Update t_Vec_tup2_String_String_Global t_String t_String
+  | Insert t_Vec_tup2_String_String_Global
+  | Delete t_Vec_tup2_String_String_Global
+
+type t_StagedEdit = { schema'1: t_String; table'1: t_String; kind'1: t_RowEditKind }
+
+predicate inv_String (_1: t_String)
+
+type tup2_String_String = { f0'0: t_String; f1'0: t_String }
+
+predicate inv_tup2_String_String [@inline:trivial] (_1: tup2_String_String) = inv_String _1.f0'0 /\ inv_String _1.f1'0
+
+meta "rewrite_def" predicate inv_tup2_String_String
+
+predicate invariant_ref_tup2_String_String [@inline:trivial] (self: tup2_String_String) =
+  [%#sinvariant] inv_tup2_String_String self
+
+meta "rewrite_def" predicate invariant_ref_tup2_String_String
+
+predicate inv_ref_tup2_String_String [@inline:trivial] (_1: tup2_String_String) = invariant_ref_tup2_String_String _1
+
+meta "rewrite_def" predicate inv_ref_tup2_String_String
+
+predicate invariant_Seq_tup2_String_String [@inline:trivial] (self: Seq.seq tup2_String_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_tup2_String_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_tup2_String_String
+
+predicate inv_Seq_tup2_String_String [@inline:trivial] (_1: Seq.seq tup2_String_String) =
+  invariant_Seq_tup2_String_String _1
+
+meta "rewrite_def" predicate inv_Seq_tup2_String_String
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_tup2_String_String_Global (self: t_Vec_tup2_String_String_Global) : Seq.seq tup2_String_String
+
+axiom view_Vec_tup2_String_String_Global_spec:
+  forall self: t_Vec_tup2_String_String_Global. [%#svec'0] Seq.length (view_Vec_tup2_String_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_tup2_String_String_Global (self: t_Vec_tup2_String_String_Global) =
+  [%#svec] inv_Seq_tup2_String_String (view_Vec_tup2_String_String_Global self)
+
+predicate inv_Vec_tup2_String_String_Global (_1: t_Vec_tup2_String_String_Global)
+
+axiom inv_axiom:
+  forall x: t_Vec_tup2_String_String_Global [inv_Vec_tup2_String_String_Global x]. inv_Vec_tup2_String_String_Global x
+    -> invariant_Vec_tup2_String_String_Global x
+
+predicate inv_RowEditKind (_1: t_RowEditKind)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_RowEditKind [inv_RowEditKind x]. inv_RowEditKind x
+    = match x with
+      | Update pk_values column new_value -> inv_Vec_tup2_String_String_Global pk_values
+      /\ inv_String column /\ inv_String new_value
+      | Insert row -> inv_Vec_tup2_String_String_Global row
+      | Delete pk_values -> inv_Vec_tup2_String_String_Global pk_values
+      end
+
+predicate inv_StagedEdit (_1: t_StagedEdit)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_StagedEdit [inv_StagedEdit x]. inv_StagedEdit x
+    = (inv_String x.schema'1 /\ inv_String x.table'1 /\ inv_RowEditKind x.kind'1)
+
+predicate invariant_ref_StagedEdit [@inline:trivial] (self: t_StagedEdit) = [%#sinvariant] inv_StagedEdit self
+
+meta "rewrite_def" predicate invariant_ref_StagedEdit
+
+predicate inv_ref_StagedEdit [@inline:trivial] (_1: t_StagedEdit) = invariant_ref_StagedEdit _1
+
+meta "rewrite_def" predicate inv_ref_StagedEdit
+
+predicate invariant_Seq_StagedEdit [@inline:trivial] (self: Seq.seq t_StagedEdit) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_StagedEdit (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_StagedEdit
+
+predicate inv_Seq_StagedEdit [@inline:trivial] (_1: Seq.seq t_StagedEdit) = invariant_Seq_StagedEdit _1
+
+meta "rewrite_def" predicate inv_Seq_StagedEdit
+
+function view_Vec_StagedEdit_Global (self: t_Vec_StagedEdit_Global) : Seq.seq t_StagedEdit
+
+axiom view_Vec_StagedEdit_Global_spec:
+  forall self: t_Vec_StagedEdit_Global. [%#svec'0] Seq.length (view_Vec_StagedEdit_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_StagedEdit_Global (self: t_Vec_StagedEdit_Global) =
+  [%#svec] inv_Seq_StagedEdit (view_Vec_StagedEdit_Global self)
+
+predicate inv_Vec_StagedEdit_Global (_1: t_Vec_StagedEdit_Global)
+
+axiom inv_axiom'2: forall x: t_Vec_StagedEdit_Global [inv_Vec_StagedEdit_Global x]. inv_Vec_StagedEdit_Global x
+    -> invariant_Vec_StagedEdit_Global x
+
+predicate inv_Option_Vec_tup2_String_String_Global (_1: t_Option_Vec_tup2_String_String_Global)
+
+axiom inv_axiom'3 [@rewrite]:
+  forall x: t_Option_Vec_tup2_String_String_Global [inv_Option_Vec_tup2_String_String_Global x]. inv_Option_Vec_tup2_String_String_Global x
+    = match x with
+      | None'0 -> true
+      | Some'0 f0'1 -> inv_Vec_tup2_String_String_Global f0'1
+      end
+
+predicate inv_RowEditState (_1: t_RowEditState)
+
+axiom inv_axiom'4 [@rewrite]: forall x: t_RowEditState [inv_RowEditState x]. inv_RowEditState x
+    = (inv_Vec_StagedEdit_Global x.pending_edits
+    /\ inv_String x.input_buffer /\ inv_Option_Vec_tup2_String_String_Global x.inserting_row)
+
+predicate inv_Option_RowEditState (_1: t_Option_RowEditState)
+
+axiom inv_axiom'5 [@rewrite]: forall x: t_Option_RowEditState [inv_Option_RowEditState x]. inv_Option_RowEditState x
+    = match x with
+      | None'1 -> true
+      | Some'1 f0'1 -> inv_RowEditState f0'1
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_tup2_String_String [@inline:trivial] (_1: tup2_String_String) =
+  resolve_String _1.f0'0 /\ resolve_String _1.f1'0
+
+meta "rewrite_def" predicate resolve_tup2_String_String
+
+function index_Vec_tup2_String_String_Global [@inline:trivial] (self: t_Vec_tup2_String_String_Global) (ix: int) : tup2_String_String
+ = [%#svec'2] Seq.get (view_Vec_tup2_String_String_Global self) ix
+
+meta "rewrite_def" function index_Vec_tup2_String_String_Global
+
+predicate resolve_Vec_tup2_String_String_Global [@inline:trivial] (self: t_Vec_tup2_String_String_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_tup2_String_String_Global self)
+    -> resolve_tup2_String_String (index_Vec_tup2_String_String_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_tup2_String_String_Global
+
+predicate resolve_Vec_tup2_String_String_Global'0 (_1: t_Vec_tup2_String_String_Global)
+
+axiom resolve_axiom:
+  forall x: t_Vec_tup2_String_String_Global [resolve_Vec_tup2_String_String_Global'0 x]. resolve_Vec_tup2_String_String_Global'0 x
+    -> resolve_Vec_tup2_String_String_Global x
+
+predicate resolve_RowEditKind (_1: t_RowEditKind)
+
+axiom resolve_axiom'0 [@rewrite]: forall x: t_RowEditKind [resolve_RowEditKind x]. resolve_RowEditKind x
+    = match x with
+      | Update x0 x1 x2 -> resolve_Vec_tup2_String_String_Global'0 x0 /\ resolve_String x1 /\ resolve_String x2
+      | Insert x0 -> resolve_Vec_tup2_String_String_Global'0 x0
+      | Delete x0 -> resolve_Vec_tup2_String_String_Global'0 x0
+      end
+
+predicate resolve_StagedEdit (_1: t_StagedEdit)
+
+axiom resolve_axiom'1 [@rewrite]: forall x: t_StagedEdit [resolve_StagedEdit x]. resolve_StagedEdit x
+    = (resolve_String x.schema'1 /\ resolve_String x.table'1 /\ resolve_RowEditKind x.kind'1)
+
+function index_Vec_StagedEdit_Global [@inline:trivial] (self: t_Vec_StagedEdit_Global) (ix: int) : t_StagedEdit =
+  [%#svec'2] Seq.get (view_Vec_StagedEdit_Global self) ix
+
+meta "rewrite_def" function index_Vec_StagedEdit_Global
+
+predicate resolve_Vec_StagedEdit_Global [@inline:trivial] (self: t_Vec_StagedEdit_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_StagedEdit_Global self)
+    -> resolve_StagedEdit (index_Vec_StagedEdit_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_StagedEdit_Global
+
+predicate resolve_Vec_StagedEdit_Global'0 (_1: t_Vec_StagedEdit_Global)
+
+axiom resolve_axiom'2:
+  forall x: t_Vec_StagedEdit_Global [resolve_Vec_StagedEdit_Global'0 x]. resolve_Vec_StagedEdit_Global'0 x
+    -> resolve_Vec_StagedEdit_Global x
+
+predicate resolve_Option_Vec_tup2_String_String_Global (_1: t_Option_Vec_tup2_String_String_Global)
+
+axiom resolve_axiom'3 [@rewrite]:
+  forall x: t_Option_Vec_tup2_String_String_Global [resolve_Option_Vec_tup2_String_String_Global x]. resolve_Option_Vec_tup2_String_String_Global x
+    = match x with
+      | None'0 -> true
+      | Some'0 x0 -> resolve_Vec_tup2_String_String_Global'0 x0
+      end
+
+predicate resolve_RowEditState (_1: t_RowEditState)
+
+axiom resolve_axiom'4 [@rewrite]: forall x: t_RowEditState [resolve_RowEditState x]. resolve_RowEditState x
+    = (resolve_Vec_StagedEdit_Global'0 x.pending_edits
+    /\ resolve_String x.input_buffer /\ resolve_Option_Vec_tup2_String_String_Global x.inserting_row)
+
+predicate resolve_Option_RowEditState (_1: t_Option_RowEditState)
+
+axiom resolve_axiom'5 [@rewrite]:
+  forall x: t_Option_RowEditState [resolve_Option_RowEditState x]. resolve_Option_RowEditState x
+    = match x with
+      | None'1 -> true
+      | Some'1 x0 -> resolve_RowEditState x0
+      end
+
+type t_Established_ArchivePanelConsistent
+
+type tup2_ArchivePanelState_Established_ArchivePanelConsistent = {
+  f0'1: t_ArchivePanelState;
+  f1'1: t_Established_ArchivePanelConsistent }
+
+type t_ColumnDescriptor = {
+  name'0: t_String;
+  sql_type'0: t_String;
+  nullable'0: bool;
+  is_primary_key'0: bool;
+  is_foreign_key'0: bool;
+  default_value'0: t_Option_String;
+  is_spatial'0: bool }
+
+predicate inv_Option_String (_1: t_Option_String)
+
+axiom inv_axiom'6 [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
+    = match x with
+      | None'3 -> true
+      | Some'3 f0'2 -> inv_String f0'2
+      end
+
+predicate inv_ColumnDescriptor (_1: t_ColumnDescriptor)
+
+axiom inv_axiom'7 [@rewrite]: forall x: t_ColumnDescriptor [inv_ColumnDescriptor x]. inv_ColumnDescriptor x
+    = (inv_String x.name'0 /\ inv_String x.sql_type'0 /\ inv_Option_String x.default_value'0)
+
+predicate invariant_ref_ColumnDescriptor [@inline:trivial] (self: t_ColumnDescriptor) =
+  [%#sinvariant] inv_ColumnDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_ColumnDescriptor
+
+predicate inv_ref_ColumnDescriptor [@inline:trivial] (_1: t_ColumnDescriptor) = invariant_ref_ColumnDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_ColumnDescriptor
+
+predicate invariant_Seq_ColumnDescriptor [@inline:trivial] (self: Seq.seq t_ColumnDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ColumnDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ColumnDescriptor
+
+predicate inv_Seq_ColumnDescriptor [@inline:trivial] (_1: Seq.seq t_ColumnDescriptor) =
+  invariant_Seq_ColumnDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_ColumnDescriptor
+
+function view_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) : Seq.seq t_ColumnDescriptor
+
+axiom view_Vec_ColumnDescriptor_Global_spec:
+  forall self: t_Vec_ColumnDescriptor_Global. [%#svec'0] Seq.length (view_Vec_ColumnDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) =
+  [%#svec] inv_Seq_ColumnDescriptor (view_Vec_ColumnDescriptor_Global self)
+
+predicate inv_Vec_ColumnDescriptor_Global (_1: t_Vec_ColumnDescriptor_Global)
+
+axiom inv_axiom'8:
+  forall x: t_Vec_ColumnDescriptor_Global [inv_Vec_ColumnDescriptor_Global x]. inv_Vec_ColumnDescriptor_Global x
+    -> invariant_Vec_ColumnDescriptor_Global x
+
+type t_Vec_tup2_String_DbValue_Global
+
+type t_DbRow = { f0'2: t_Vec_tup2_String_DbValue_Global }
+
+type t_Vec_u8_Global
+
+type t_Number
+
+type t_Vec_Value_Global
+
+type t_Map_String_Value
+
+type t_Value =
+  | Null
+  | Bool bool
+  | Number t_Number
+  | String t_String
+  | Array t_Vec_Value_Global
+  | Object t_Map_String_Value
+
+type t_DbSpatialValue = Wkt t_String | Wkb t_Vec_u8_Global
+
+type t_DbValue =
+  | Null'0
+  | Bool'0 bool
+  | Int'0 Int64.t
+  | Float'0 Float64.t
+  | Text'0 t_String
+  | Bytes'0 t_Vec_u8_Global
+  | Json'0 t_Value
+  | Geometry'0 t_DbSpatialValue
+  | Geography'0 t_DbSpatialValue
+
+type tup2_String_DbValue = { f0'3: t_String; f1'3: t_DbValue }
+
+predicate inv_Number (_1: t_Number)
+
+function view_Vec_Value_Global (self: t_Vec_Value_Global) : Seq.seq t_Value
+
+axiom view_Vec_Value_Global_spec: forall self: t_Vec_Value_Global. [%#svec'0] Seq.length (view_Vec_Value_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate inv_Map_String_Value (_1: t_Map_String_Value)
+
+predicate inv_Value (_1: t_Value)
+
+predicate invariant_ref_Value [@inline:trivial] (self: t_Value) = [%#sinvariant] inv_Value self
+
+meta "rewrite_def" predicate invariant_ref_Value
+
+predicate inv_ref_Value [@inline:trivial] (_1: t_Value) = invariant_ref_Value _1
+
+meta "rewrite_def" predicate inv_ref_Value
+
+predicate invariant_Seq_Value [@inline:trivial] (self: Seq.seq t_Value) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_Value (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_Value
+
+predicate inv_Seq_Value [@inline:trivial] (_1: Seq.seq t_Value) = invariant_Seq_Value _1
+
+meta "rewrite_def" predicate inv_Seq_Value
+
+predicate invariant_Vec_Value_Global (self: t_Vec_Value_Global) = [%#svec] inv_Seq_Value (view_Vec_Value_Global self)
+
+predicate inv_Vec_Value_Global (_1: t_Vec_Value_Global)
+
+axiom inv_axiom'9: forall x: t_Vec_Value_Global [inv_Vec_Value_Global x]. inv_Vec_Value_Global x
+    -> invariant_Vec_Value_Global x
+
+axiom inv_axiom'10 [@rewrite]: forall x: t_Value [inv_Value x]. inv_Value x
+    = match x with
+      | Null -> true
+      | Bool f0'4 -> true
+      | Number f0'4 -> inv_Number f0'4
+      | String f0'4 -> inv_String f0'4
+      | Array f0'4 -> inv_Vec_Value_Global f0'4
+      | Object f0'4 -> inv_Map_String_Value f0'4
+      end
+
+predicate inv_DbSpatialValue (_1: t_DbSpatialValue)
+
+axiom inv_axiom'11 [@rewrite]: forall x: t_DbSpatialValue [inv_DbSpatialValue x]. inv_DbSpatialValue x
+    = match x with
+      | Wkt f0'4 -> inv_String f0'4
+      | Wkb f0'4 -> true
+      end
+
+predicate inv_DbValue (_1: t_DbValue)
+
+axiom inv_axiom'12 [@rewrite]: forall x: t_DbValue [inv_DbValue x]. inv_DbValue x
+    = match x with
+      | Null'0 -> true
+      | Bool'0 f0'4 -> true
+      | Int'0 f0'4 -> true
+      | Float'0 f0'4 -> true
+      | Text'0 f0'4 -> inv_String f0'4
+      | Bytes'0 f0'4 -> true
+      | Json'0 f0'4 -> inv_Value f0'4
+      | Geometry'0 f0'4 -> inv_DbSpatialValue f0'4
+      | Geography'0 f0'4 -> inv_DbSpatialValue f0'4
+      end
+
+predicate inv_tup2_String_DbValue [@inline:trivial] (_1: tup2_String_DbValue) =
+  inv_String _1.f0'3 /\ inv_DbValue _1.f1'3
+
+meta "rewrite_def" predicate inv_tup2_String_DbValue
+
+predicate invariant_ref_tup2_String_DbValue [@inline:trivial] (self: tup2_String_DbValue) =
+  [%#sinvariant] inv_tup2_String_DbValue self
+
+meta "rewrite_def" predicate invariant_ref_tup2_String_DbValue
+
+predicate inv_ref_tup2_String_DbValue [@inline:trivial] (_1: tup2_String_DbValue) = invariant_ref_tup2_String_DbValue _1
+
+meta "rewrite_def" predicate inv_ref_tup2_String_DbValue
+
+predicate invariant_Seq_tup2_String_DbValue [@inline:trivial] (self: Seq.seq tup2_String_DbValue) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_tup2_String_DbValue (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_tup2_String_DbValue
+
+predicate inv_Seq_tup2_String_DbValue [@inline:trivial] (_1: Seq.seq tup2_String_DbValue) =
+  invariant_Seq_tup2_String_DbValue _1
+
+meta "rewrite_def" predicate inv_Seq_tup2_String_DbValue
+
+function view_Vec_tup2_String_DbValue_Global (self: t_Vec_tup2_String_DbValue_Global) : Seq.seq tup2_String_DbValue
+
+axiom view_Vec_tup2_String_DbValue_Global_spec:
+  forall self: t_Vec_tup2_String_DbValue_Global. [%#svec'0] Seq.length (view_Vec_tup2_String_DbValue_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_tup2_String_DbValue_Global (self: t_Vec_tup2_String_DbValue_Global) =
+  [%#svec] inv_Seq_tup2_String_DbValue (view_Vec_tup2_String_DbValue_Global self)
+
+predicate inv_Vec_tup2_String_DbValue_Global (_1: t_Vec_tup2_String_DbValue_Global)
+
+axiom inv_axiom'13:
+  forall x: t_Vec_tup2_String_DbValue_Global [inv_Vec_tup2_String_DbValue_Global x]. inv_Vec_tup2_String_DbValue_Global x
+    -> invariant_Vec_tup2_String_DbValue_Global x
+
+predicate inv_DbRow (_1: t_DbRow)
+
+axiom inv_axiom'14 [@rewrite]: forall x: t_DbRow [inv_DbRow x]. inv_DbRow x = inv_Vec_tup2_String_DbValue_Global x.f0'2
+
+predicate invariant_ref_DbRow [@inline:trivial] (self: t_DbRow) = [%#sinvariant] inv_DbRow self
+
+meta "rewrite_def" predicate invariant_ref_DbRow
+
+predicate inv_ref_DbRow [@inline:trivial] (_1: t_DbRow) = invariant_ref_DbRow _1
+
+meta "rewrite_def" predicate inv_ref_DbRow
+
+predicate invariant_Seq_DbRow [@inline:trivial] (self: Seq.seq t_DbRow) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_DbRow (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_DbRow
+
+predicate inv_Seq_DbRow [@inline:trivial] (_1: Seq.seq t_DbRow) = invariant_Seq_DbRow _1
+
+meta "rewrite_def" predicate inv_Seq_DbRow
+
+function view_Vec_DbRow_Global (self: t_Vec_DbRow_Global) : Seq.seq t_DbRow
+
+axiom view_Vec_DbRow_Global_spec: forall self: t_Vec_DbRow_Global. [%#svec'0] Seq.length (view_Vec_DbRow_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_DbRow_Global (self: t_Vec_DbRow_Global) = [%#svec] inv_Seq_DbRow (view_Vec_DbRow_Global self)
+
+predicate inv_Vec_DbRow_Global (_1: t_Vec_DbRow_Global)
+
+axiom inv_axiom'15: forall x: t_Vec_DbRow_Global [inv_Vec_DbRow_Global x]. inv_Vec_DbRow_Global x
+    -> invariant_Vec_DbRow_Global x
+
+predicate inv_DbRows (_1: t_DbRows)
+
+axiom inv_axiom'16 [@rewrite]: forall x: t_DbRows [inv_DbRows x]. inv_DbRows x = inv_Vec_DbRow_Global x.rows
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec'0] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom'17: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_QueryResult (_1: t_QueryResult)
+
+axiom inv_axiom'18 [@rewrite]: forall x: t_QueryResult [inv_QueryResult x]. inv_QueryResult x
+    = (inv_Vec_ColumnDescriptor_Global x.columns'0
+    /\ inv_DbRows x.rows'0 /\ inv_Vec_String_Global x.spatial_column_names'0)
+
+predicate inv_Option_QueryResult (_1: t_Option_QueryResult)
+
+axiom inv_axiom'19 [@rewrite]: forall x: t_Option_QueryResult [inv_Option_QueryResult x]. inv_Option_QueryResult x
+    = match x with
+      | None'2 -> true
+      | Some'2 f0'4 -> inv_QueryResult f0'4
+      end
+
+predicate inv_DdlDescriptor (_1: t_DdlDescriptor)
+
+axiom inv_axiom'20 [@rewrite]: forall x: t_DdlDescriptor [inv_DdlDescriptor x]. inv_DdlDescriptor x
+    = (inv_String x.schema /\ inv_String x.object_name /\ inv_String x.ddl)
+
+type t_Option_i64 = None'8 | Some'8 Int64.t
+
+type t_ExplainNode = {
+  node_type: t_String;
+  relation_name: t_Option_String;
+  alias': t_Option_String;
+  startup_cost: Float64.t;
+  total_cost: Float64.t;
+  plan_rows: Int64.t;
+  plan_width: Int32.t;
+  actual_startup_time: t_Option_f64;
+  actual_total_time: t_Option_f64;
+  actual_rows: t_Option_i64;
+  actual_loops: t_Option_i64;
+  children: t_Vec_usize_Global }
+
+predicate inv_ExplainNode (_1: t_ExplainNode)
+
+axiom inv_axiom'21 [@rewrite]: forall x: t_ExplainNode [inv_ExplainNode x]. inv_ExplainNode x
+    = (inv_String x.node_type /\ inv_Option_String x.relation_name /\ inv_Option_String x.alias')
+
+predicate invariant_ref_ExplainNode [@inline:trivial] (self: t_ExplainNode) = [%#sinvariant] inv_ExplainNode self
+
+meta "rewrite_def" predicate invariant_ref_ExplainNode
+
+predicate inv_ref_ExplainNode [@inline:trivial] (_1: t_ExplainNode) = invariant_ref_ExplainNode _1
+
+meta "rewrite_def" predicate inv_ref_ExplainNode
+
+predicate invariant_Seq_ExplainNode [@inline:trivial] (self: Seq.seq t_ExplainNode) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ExplainNode (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ExplainNode
+
+predicate inv_Seq_ExplainNode [@inline:trivial] (_1: Seq.seq t_ExplainNode) = invariant_Seq_ExplainNode _1
+
+meta "rewrite_def" predicate inv_Seq_ExplainNode
+
+function view_Vec_ExplainNode_Global (self: t_Vec_ExplainNode_Global) : Seq.seq t_ExplainNode
+
+axiom view_Vec_ExplainNode_Global_spec:
+  forall self: t_Vec_ExplainNode_Global. [%#svec'0] Seq.length (view_Vec_ExplainNode_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ExplainNode_Global (self: t_Vec_ExplainNode_Global) =
+  [%#svec] inv_Seq_ExplainNode (view_Vec_ExplainNode_Global self)
+
+predicate inv_Vec_ExplainNode_Global (_1: t_Vec_ExplainNode_Global)
+
+axiom inv_axiom'22: forall x: t_Vec_ExplainNode_Global [inv_Vec_ExplainNode_Global x]. inv_Vec_ExplainNode_Global x
+    -> invariant_Vec_ExplainNode_Global x
+
+predicate inv_ExplainPlan (_1: t_ExplainPlan)
+
+axiom inv_axiom'23 [@rewrite]: forall x: t_ExplainPlan [inv_ExplainPlan x]. inv_ExplainPlan x
+    = inv_Vec_ExplainNode_Global x.nodes
+
+predicate inv_ExplainComparison (_1: t_ExplainComparison)
+
+axiom inv_axiom'24 [@rewrite]: forall x: t_ExplainComparison [inv_ExplainComparison x]. inv_ExplainComparison x
+    = (inv_ExplainPlan x.left /\ inv_ExplainPlan x.right /\ inv_String x.label_left /\ inv_String x.label_right)
+
+type t_DateTime_Utc
+
+type t_Option_u64 = None'9 | Some'9 UInt64.t
+
+type t_QueryHistoryEntry = {
+  id'1: Int64.t;
+  executed_at'1: t_DateTime_Utc;
+  sql'1: t_String;
+  duration_ms'1: UInt64.t;
+  row_count'1: t_Option_u64;
+  error'1: t_Option_String }
+
+predicate inv_DateTime_Utc (_1: t_DateTime_Utc)
+
+predicate inv_QueryHistoryEntry (_1: t_QueryHistoryEntry)
+
+axiom inv_axiom'25 [@rewrite]: forall x: t_QueryHistoryEntry [inv_QueryHistoryEntry x]. inv_QueryHistoryEntry x
+    = (inv_DateTime_Utc x.executed_at'1 /\ inv_String x.sql'1 /\ inv_Option_String x.error'1)
+
+predicate invariant_ref_QueryHistoryEntry [@inline:trivial] (self: t_QueryHistoryEntry) =
+  [%#sinvariant] inv_QueryHistoryEntry self
+
+meta "rewrite_def" predicate invariant_ref_QueryHistoryEntry
+
+predicate inv_ref_QueryHistoryEntry [@inline:trivial] (_1: t_QueryHistoryEntry) = invariant_ref_QueryHistoryEntry _1
+
+meta "rewrite_def" predicate inv_ref_QueryHistoryEntry
+
+predicate invariant_Seq_QueryHistoryEntry [@inline:trivial] (self: Seq.seq t_QueryHistoryEntry) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_QueryHistoryEntry (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_QueryHistoryEntry
+
+predicate inv_Seq_QueryHistoryEntry [@inline:trivial] (_1: Seq.seq t_QueryHistoryEntry) =
+  invariant_Seq_QueryHistoryEntry _1
+
+meta "rewrite_def" predicate inv_Seq_QueryHistoryEntry
+
+function view_Vec_QueryHistoryEntry_Global (self: t_Vec_QueryHistoryEntry_Global) : Seq.seq t_QueryHistoryEntry
+
+axiom view_Vec_QueryHistoryEntry_Global_spec:
+  forall self: t_Vec_QueryHistoryEntry_Global. [%#svec'0] Seq.length (view_Vec_QueryHistoryEntry_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_QueryHistoryEntry_Global (self: t_Vec_QueryHistoryEntry_Global) =
+  [%#svec] inv_Seq_QueryHistoryEntry (view_Vec_QueryHistoryEntry_Global self)
+
+predicate inv_Vec_QueryHistoryEntry_Global (_1: t_Vec_QueryHistoryEntry_Global)
+
+axiom inv_axiom'26:
+  forall x: t_Vec_QueryHistoryEntry_Global [inv_Vec_QueryHistoryEntry_Global x]. inv_Vec_QueryHistoryEntry_Global x
+    -> invariant_Vec_QueryHistoryEntry_Global x
+
+type t_SavedQuery = {
+  id'2: Int64.t;
+  name'2: t_String;
+  sql'2: t_String;
+  created_at'2: t_DateTime_Utc;
+  updated_at'2: t_DateTime_Utc }
+
+predicate inv_SavedQuery (_1: t_SavedQuery)
+
+axiom inv_axiom'27 [@rewrite]: forall x: t_SavedQuery [inv_SavedQuery x]. inv_SavedQuery x
+    = (inv_String x.name'2 /\ inv_String x.sql'2 /\ inv_DateTime_Utc x.created_at'2 /\ inv_DateTime_Utc x.updated_at'2)
+
+predicate invariant_ref_SavedQuery [@inline:trivial] (self: t_SavedQuery) = [%#sinvariant] inv_SavedQuery self
+
+meta "rewrite_def" predicate invariant_ref_SavedQuery
+
+predicate inv_ref_SavedQuery [@inline:trivial] (_1: t_SavedQuery) = invariant_ref_SavedQuery _1
+
+meta "rewrite_def" predicate inv_ref_SavedQuery
+
+predicate invariant_Seq_SavedQuery [@inline:trivial] (self: Seq.seq t_SavedQuery) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_SavedQuery (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_SavedQuery
+
+predicate inv_Seq_SavedQuery [@inline:trivial] (_1: Seq.seq t_SavedQuery) = invariant_Seq_SavedQuery _1
+
+meta "rewrite_def" predicate inv_Seq_SavedQuery
+
+function view_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) : Seq.seq t_SavedQuery
+
+axiom view_Vec_SavedQuery_Global_spec:
+  forall self: t_Vec_SavedQuery_Global. [%#svec'0] Seq.length (view_Vec_SavedQuery_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) =
+  [%#svec] inv_Seq_SavedQuery (view_Vec_SavedQuery_Global self)
+
+predicate inv_Vec_SavedQuery_Global (_1: t_Vec_SavedQuery_Global)
+
+axiom inv_axiom'28: forall x: t_Vec_SavedQuery_Global [inv_Vec_SavedQuery_Global x]. inv_Vec_SavedQuery_Global x
+    -> invariant_Vec_SavedQuery_Global x
+
+predicate inv_ExportResult (_1: t_ExportResult)
+
+axiom inv_axiom'29 [@rewrite]: forall x: t_ExportResult [inv_ExportResult x]. inv_ExportResult x = inv_String x.content
+
+predicate inv_Option_ExportResult (_1: t_Option_ExportResult)
+
+axiom inv_axiom'30 [@rewrite]: forall x: t_Option_ExportResult [inv_Option_ExportResult x]. inv_Option_ExportResult x
+    = match x with
+      | None'4 -> true
+      | Some'4 f0'4 -> inv_ExportResult f0'4
+      end
+
+type t_DbSessionInfo = {
+  pid: Int32.t;
+  app_name: t_String;
+  database: t_Option_String;
+  state: t_String;
+  query: t_Option_String;
+  duration_ms: t_Option_u64 }
+
+predicate inv_DbSessionInfo (_1: t_DbSessionInfo)
+
+axiom inv_axiom'31 [@rewrite]: forall x: t_DbSessionInfo [inv_DbSessionInfo x]. inv_DbSessionInfo x
+    = (inv_String x.app_name /\ inv_Option_String x.database /\ inv_String x.state /\ inv_Option_String x.query)
+
+predicate invariant_ref_DbSessionInfo [@inline:trivial] (self: t_DbSessionInfo) = [%#sinvariant] inv_DbSessionInfo self
+
+meta "rewrite_def" predicate invariant_ref_DbSessionInfo
+
+predicate inv_ref_DbSessionInfo [@inline:trivial] (_1: t_DbSessionInfo) = invariant_ref_DbSessionInfo _1
+
+meta "rewrite_def" predicate inv_ref_DbSessionInfo
+
+predicate invariant_Seq_DbSessionInfo [@inline:trivial] (self: Seq.seq t_DbSessionInfo) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_DbSessionInfo (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_DbSessionInfo
+
+predicate inv_Seq_DbSessionInfo [@inline:trivial] (_1: Seq.seq t_DbSessionInfo) = invariant_Seq_DbSessionInfo _1
+
+meta "rewrite_def" predicate inv_Seq_DbSessionInfo
+
+function view_Vec_DbSessionInfo_Global (self: t_Vec_DbSessionInfo_Global) : Seq.seq t_DbSessionInfo
+
+axiom view_Vec_DbSessionInfo_Global_spec:
+  forall self: t_Vec_DbSessionInfo_Global. [%#svec'0] Seq.length (view_Vec_DbSessionInfo_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_DbSessionInfo_Global (self: t_Vec_DbSessionInfo_Global) =
+  [%#svec] inv_Seq_DbSessionInfo (view_Vec_DbSessionInfo_Global self)
+
+predicate inv_Vec_DbSessionInfo_Global (_1: t_Vec_DbSessionInfo_Global)
+
+axiom inv_axiom'32:
+  forall x: t_Vec_DbSessionInfo_Global [inv_Vec_DbSessionInfo_Global x]. inv_Vec_DbSessionInfo_Global x
+    -> invariant_Vec_DbSessionInfo_Global x
+
+type t_DbRoleInfo = {
+  name'1: t_String;
+  superuser'1: bool;
+  can_login'1: bool;
+  can_create_db'1: bool;
+  can_create_role'1: bool }
+
+predicate inv_DbRoleInfo (_1: t_DbRoleInfo)
+
+axiom inv_axiom'33 [@rewrite]: forall x: t_DbRoleInfo [inv_DbRoleInfo x]. inv_DbRoleInfo x = inv_String x.name'1
+
+predicate invariant_ref_DbRoleInfo [@inline:trivial] (self: t_DbRoleInfo) = [%#sinvariant] inv_DbRoleInfo self
+
+meta "rewrite_def" predicate invariant_ref_DbRoleInfo
+
+predicate inv_ref_DbRoleInfo [@inline:trivial] (_1: t_DbRoleInfo) = invariant_ref_DbRoleInfo _1
+
+meta "rewrite_def" predicate inv_ref_DbRoleInfo
+
+predicate invariant_Seq_DbRoleInfo [@inline:trivial] (self: Seq.seq t_DbRoleInfo) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_DbRoleInfo (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_DbRoleInfo
+
+predicate inv_Seq_DbRoleInfo [@inline:trivial] (_1: Seq.seq t_DbRoleInfo) = invariant_Seq_DbRoleInfo _1
+
+meta "rewrite_def" predicate inv_Seq_DbRoleInfo
+
+function view_Vec_DbRoleInfo_Global (self: t_Vec_DbRoleInfo_Global) : Seq.seq t_DbRoleInfo
+
+axiom view_Vec_DbRoleInfo_Global_spec:
+  forall self: t_Vec_DbRoleInfo_Global. [%#svec'0] Seq.length (view_Vec_DbRoleInfo_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_DbRoleInfo_Global (self: t_Vec_DbRoleInfo_Global) =
+  [%#svec] inv_Seq_DbRoleInfo (view_Vec_DbRoleInfo_Global self)
+
+predicate inv_Vec_DbRoleInfo_Global (_1: t_Vec_DbRoleInfo_Global)
+
+axiom inv_axiom'34: forall x: t_Vec_DbRoleInfo_Global [inv_Vec_DbRoleInfo_Global x]. inv_Vec_DbRoleInfo_Global x
+    -> invariant_Vec_DbRoleInfo_Global x
+
+type tup2_String_f64 = { f0'4: t_String; f1'4: Float64.t }
+
+predicate inv_tup2_String_f64 [@inline:trivial] (_1: tup2_String_f64) = inv_String _1.f0'4
+
+meta "rewrite_def" predicate inv_tup2_String_f64
+
+predicate invariant_ref_tup2_String_f64 [@inline:trivial] (self: tup2_String_f64) =
+  [%#sinvariant] inv_tup2_String_f64 self
+
+meta "rewrite_def" predicate invariant_ref_tup2_String_f64
+
+predicate inv_ref_tup2_String_f64 [@inline:trivial] (_1: tup2_String_f64) = invariant_ref_tup2_String_f64 _1
+
+meta "rewrite_def" predicate inv_ref_tup2_String_f64
+
+predicate invariant_Seq_tup2_String_f64 [@inline:trivial] (self: Seq.seq tup2_String_f64) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_tup2_String_f64 (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_tup2_String_f64
+
+predicate inv_Seq_tup2_String_f64 [@inline:trivial] (_1: Seq.seq tup2_String_f64) = invariant_Seq_tup2_String_f64 _1
+
+meta "rewrite_def" predicate inv_Seq_tup2_String_f64
+
+function view_Vec_tup2_String_f64_Global (self: t_Vec_tup2_String_f64_Global) : Seq.seq tup2_String_f64
+
+axiom view_Vec_tup2_String_f64_Global_spec:
+  forall self: t_Vec_tup2_String_f64_Global. [%#svec'0] Seq.length (view_Vec_tup2_String_f64_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_tup2_String_f64_Global (self: t_Vec_tup2_String_f64_Global) =
+  [%#svec] inv_Seq_tup2_String_f64 (view_Vec_tup2_String_f64_Global self)
+
+predicate inv_Vec_tup2_String_f64_Global (_1: t_Vec_tup2_String_f64_Global)
+
+axiom inv_axiom'35:
+  forall x: t_Vec_tup2_String_f64_Global [inv_Vec_tup2_String_f64_Global x]. inv_Vec_tup2_String_f64_Global x
+    -> invariant_Vec_tup2_String_f64_Global x
+
+type tup2_String_u64 = { f0'5: t_String; f1'5: UInt64.t }
+
+predicate inv_tup2_String_u64 [@inline:trivial] (_1: tup2_String_u64) = inv_String _1.f0'5
+
+meta "rewrite_def" predicate inv_tup2_String_u64
+
+predicate invariant_ref_tup2_String_u64 [@inline:trivial] (self: tup2_String_u64) =
+  [%#sinvariant] inv_tup2_String_u64 self
+
+meta "rewrite_def" predicate invariant_ref_tup2_String_u64
+
+predicate inv_ref_tup2_String_u64 [@inline:trivial] (_1: tup2_String_u64) = invariant_ref_tup2_String_u64 _1
+
+meta "rewrite_def" predicate inv_ref_tup2_String_u64
+
+predicate invariant_Seq_tup2_String_u64 [@inline:trivial] (self: Seq.seq tup2_String_u64) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_tup2_String_u64 (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_tup2_String_u64
+
+predicate inv_Seq_tup2_String_u64 [@inline:trivial] (_1: Seq.seq tup2_String_u64) = invariant_Seq_tup2_String_u64 _1
+
+meta "rewrite_def" predicate inv_Seq_tup2_String_u64
+
+function view_Vec_tup2_String_u64_Global (self: t_Vec_tup2_String_u64_Global) : Seq.seq tup2_String_u64
+
+axiom view_Vec_tup2_String_u64_Global_spec:
+  forall self: t_Vec_tup2_String_u64_Global. [%#svec'0] Seq.length (view_Vec_tup2_String_u64_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_tup2_String_u64_Global (self: t_Vec_tup2_String_u64_Global) =
+  [%#svec] inv_Seq_tup2_String_u64 (view_Vec_tup2_String_u64_Global self)
+
+predicate inv_Vec_tup2_String_u64_Global (_1: t_Vec_tup2_String_u64_Global)
+
+axiom inv_axiom'36:
+  forall x: t_Vec_tup2_String_u64_Global [inv_Vec_tup2_String_u64_Global x]. inv_Vec_tup2_String_u64_Global x
+    -> invariant_Vec_tup2_String_u64_Global x
+
+predicate inv_MonitorSnapshot (_1: t_MonitorSnapshot)
+
+axiom inv_axiom'37 [@rewrite]: forall x: t_MonitorSnapshot [inv_MonitorSnapshot x]. inv_MonitorSnapshot x
+    = (inv_Vec_DbSessionInfo_Global x.sessions
+    /\ inv_Vec_DbRoleInfo_Global x.roles
+    /\ inv_Vec_String_Global x.backups
+    /\ inv_Vec_DbSessionInfo_Global x.slow_queries
+    /\ inv_Vec_tup2_String_f64_Global x.table_bloat /\ inv_Vec_tup2_String_u64_Global x.index_usage)
+
+predicate inv_AdminSnapshot (_1: t_AdminSnapshot)
+
+axiom inv_axiom'38 [@rewrite]: forall x: t_AdminSnapshot [inv_AdminSnapshot x]. inv_AdminSnapshot x
+    = (inv_Vec_DbRoleInfo_Global x.roles'0
+    /\ inv_Vec_String_Global x.backups'0
+    /\ inv_String x.server_version'0
+    /\ inv_Vec_String_Global x.extensions'0 /\ inv_Vec_tup2_String_String_Global x.settings'0)
+
+type t_Vec_ErdColumn_Global
+
+type t_ErdNode = { schema'2: t_String; table'2: t_String; columns'2: t_Vec_ErdColumn_Global }
+
+type t_ErdColumn = { name'3: t_String; sql_type'3: t_String; is_pk'3: bool; is_fk'3: bool }
+
+predicate inv_ErdColumn (_1: t_ErdColumn)
+
+axiom inv_axiom'39 [@rewrite]: forall x: t_ErdColumn [inv_ErdColumn x]. inv_ErdColumn x
+    = (inv_String x.name'3 /\ inv_String x.sql_type'3)
+
+predicate invariant_ref_ErdColumn [@inline:trivial] (self: t_ErdColumn) = [%#sinvariant] inv_ErdColumn self
+
+meta "rewrite_def" predicate invariant_ref_ErdColumn
+
+predicate inv_ref_ErdColumn [@inline:trivial] (_1: t_ErdColumn) = invariant_ref_ErdColumn _1
+
+meta "rewrite_def" predicate inv_ref_ErdColumn
+
+predicate invariant_Seq_ErdColumn [@inline:trivial] (self: Seq.seq t_ErdColumn) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ErdColumn (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ErdColumn
+
+predicate inv_Seq_ErdColumn [@inline:trivial] (_1: Seq.seq t_ErdColumn) = invariant_Seq_ErdColumn _1
+
+meta "rewrite_def" predicate inv_Seq_ErdColumn
+
+function view_Vec_ErdColumn_Global (self: t_Vec_ErdColumn_Global) : Seq.seq t_ErdColumn
+
+axiom view_Vec_ErdColumn_Global_spec:
+  forall self: t_Vec_ErdColumn_Global. [%#svec'0] Seq.length (view_Vec_ErdColumn_Global self) <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ErdColumn_Global (self: t_Vec_ErdColumn_Global) =
+  [%#svec] inv_Seq_ErdColumn (view_Vec_ErdColumn_Global self)
+
+predicate inv_Vec_ErdColumn_Global (_1: t_Vec_ErdColumn_Global)
+
+axiom inv_axiom'40: forall x: t_Vec_ErdColumn_Global [inv_Vec_ErdColumn_Global x]. inv_Vec_ErdColumn_Global x
+    -> invariant_Vec_ErdColumn_Global x
+
+predicate inv_ErdNode (_1: t_ErdNode)
+
+axiom inv_axiom'41 [@rewrite]: forall x: t_ErdNode [inv_ErdNode x]. inv_ErdNode x
+    = (inv_String x.schema'2 /\ inv_String x.table'2 /\ inv_Vec_ErdColumn_Global x.columns'2)
+
+predicate invariant_ref_ErdNode [@inline:trivial] (self: t_ErdNode) = [%#sinvariant] inv_ErdNode self
+
+meta "rewrite_def" predicate invariant_ref_ErdNode
+
+predicate inv_ref_ErdNode [@inline:trivial] (_1: t_ErdNode) = invariant_ref_ErdNode _1
+
+meta "rewrite_def" predicate inv_ref_ErdNode
+
+predicate invariant_Seq_ErdNode [@inline:trivial] (self: Seq.seq t_ErdNode) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ErdNode (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ErdNode
+
+predicate inv_Seq_ErdNode [@inline:trivial] (_1: Seq.seq t_ErdNode) = invariant_Seq_ErdNode _1
+
+meta "rewrite_def" predicate inv_Seq_ErdNode
+
+function view_Vec_ErdNode_Global (self: t_Vec_ErdNode_Global) : Seq.seq t_ErdNode
+
+axiom view_Vec_ErdNode_Global_spec:
+  forall self: t_Vec_ErdNode_Global. [%#svec'0] Seq.length (view_Vec_ErdNode_Global self) <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ErdNode_Global (self: t_Vec_ErdNode_Global) =
+  [%#svec] inv_Seq_ErdNode (view_Vec_ErdNode_Global self)
+
+predicate inv_Vec_ErdNode_Global (_1: t_Vec_ErdNode_Global)
+
+axiom inv_axiom'42: forall x: t_Vec_ErdNode_Global [inv_Vec_ErdNode_Global x]. inv_Vec_ErdNode_Global x
+    -> invariant_Vec_ErdNode_Global x
+
+type t_ErdEdge = {
+  constraint_name: t_String;
+  from_schema: t_String;
+  from_table: t_String;
+  from_column: t_String;
+  to_schema: t_String;
+  to_table: t_String;
+  to_column: t_String }
+
+predicate inv_ErdEdge (_1: t_ErdEdge)
+
+axiom inv_axiom'43 [@rewrite]: forall x: t_ErdEdge [inv_ErdEdge x]. inv_ErdEdge x
+    = (inv_String x.constraint_name
+    /\ inv_String x.from_schema
+    /\ inv_String x.from_table
+    /\ inv_String x.from_column /\ inv_String x.to_schema /\ inv_String x.to_table /\ inv_String x.to_column)
+
+predicate invariant_ref_ErdEdge [@inline:trivial] (self: t_ErdEdge) = [%#sinvariant] inv_ErdEdge self
+
+meta "rewrite_def" predicate invariant_ref_ErdEdge
+
+predicate inv_ref_ErdEdge [@inline:trivial] (_1: t_ErdEdge) = invariant_ref_ErdEdge _1
+
+meta "rewrite_def" predicate inv_ref_ErdEdge
+
+predicate invariant_Seq_ErdEdge [@inline:trivial] (self: Seq.seq t_ErdEdge) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ErdEdge (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ErdEdge
+
+predicate inv_Seq_ErdEdge [@inline:trivial] (_1: Seq.seq t_ErdEdge) = invariant_Seq_ErdEdge _1
+
+meta "rewrite_def" predicate inv_Seq_ErdEdge
+
+function view_Vec_ErdEdge_Global (self: t_Vec_ErdEdge_Global) : Seq.seq t_ErdEdge
+
+axiom view_Vec_ErdEdge_Global_spec:
+  forall self: t_Vec_ErdEdge_Global. [%#svec'0] Seq.length (view_Vec_ErdEdge_Global self) <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ErdEdge_Global (self: t_Vec_ErdEdge_Global) =
+  [%#svec] inv_Seq_ErdEdge (view_Vec_ErdEdge_Global self)
+
+predicate inv_Vec_ErdEdge_Global (_1: t_Vec_ErdEdge_Global)
+
+axiom inv_axiom'44: forall x: t_Vec_ErdEdge_Global [inv_Vec_ErdEdge_Global x]. inv_Vec_ErdEdge_Global x
+    -> invariant_Vec_ErdEdge_Global x
+
+predicate inv_ErdDiagram (_1: t_ErdDiagram)
+
+axiom inv_axiom'45 [@rewrite]: forall x: t_ErdDiagram [inv_ErdDiagram x]. inv_ErdDiagram x
+    = (inv_String x.schema'0 /\ inv_Vec_ErdNode_Global x.nodes'0 /\ inv_Vec_ErdEdge_Global x.edges'0)
+
+predicate inv_BTreeMap_String_tup4_f32_f32_f32_f32_Global (_1: t_BTreeMap_String_tup4_f32_f32_f32_f32_Global)
+
+predicate inv_ErdLayout (_1: t_ErdLayout)
+
+axiom inv_axiom'46 [@rewrite]: forall x: t_ErdLayout [inv_ErdLayout x]. inv_ErdLayout x
+    = inv_BTreeMap_String_tup4_f32_f32_f32_f32_Global x.boxes
+
+predicate inv_Option_ErdLayout (_1: t_Option_ErdLayout)
+
+axiom inv_axiom'47 [@rewrite]: forall x: t_Option_ErdLayout [inv_Option_ErdLayout x]. inv_Option_ErdLayout x
+    = match x with
+      | None'6 -> true
+      | Some'6 f0'6 -> inv_ErdLayout f0'6
+      end
+
+type t_ConstraintKind = PrimaryKey | ForeignKey | Unique | Check | Exclusion
+
+type t_ConstraintDescriptor = {
+  name'4: t_String;
+  kind'4: t_ConstraintKind;
+  columns'4: t_Vec_String_Global;
+  definition'4: t_Option_String }
+
+predicate inv_ConstraintDescriptor (_1: t_ConstraintDescriptor)
+
+axiom inv_axiom'48 [@rewrite]: forall x: t_ConstraintDescriptor [inv_ConstraintDescriptor x]. inv_ConstraintDescriptor x
+    = (inv_String x.name'4 /\ inv_Vec_String_Global x.columns'4 /\ inv_Option_String x.definition'4)
+
+predicate invariant_ref_ConstraintDescriptor [@inline:trivial] (self: t_ConstraintDescriptor) =
+  [%#sinvariant] inv_ConstraintDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_ConstraintDescriptor
+
+predicate inv_ref_ConstraintDescriptor [@inline:trivial] (_1: t_ConstraintDescriptor) =
+  invariant_ref_ConstraintDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_ConstraintDescriptor
+
+predicate invariant_Seq_ConstraintDescriptor [@inline:trivial] (self: Seq.seq t_ConstraintDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ConstraintDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ConstraintDescriptor
+
+predicate inv_Seq_ConstraintDescriptor [@inline:trivial] (_1: Seq.seq t_ConstraintDescriptor) =
+  invariant_Seq_ConstraintDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_ConstraintDescriptor
+
+function view_Vec_ConstraintDescriptor_Global (self: t_Vec_ConstraintDescriptor_Global) : Seq.seq t_ConstraintDescriptor
+
+axiom view_Vec_ConstraintDescriptor_Global_spec:
+  forall self: t_Vec_ConstraintDescriptor_Global. [%#svec'0] Seq.length (view_Vec_ConstraintDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ConstraintDescriptor_Global (self: t_Vec_ConstraintDescriptor_Global) =
+  [%#svec] inv_Seq_ConstraintDescriptor (view_Vec_ConstraintDescriptor_Global self)
+
+predicate inv_Vec_ConstraintDescriptor_Global (_1: t_Vec_ConstraintDescriptor_Global)
+
+axiom inv_axiom'49:
+  forall x: t_Vec_ConstraintDescriptor_Global [inv_Vec_ConstraintDescriptor_Global x]. inv_Vec_ConstraintDescriptor_Global x
+    -> invariant_Vec_ConstraintDescriptor_Global x
+
+type t_IndexDescriptor = {
+  index_name'3: t_String;
+  schema'3: t_String;
+  table_name'3: t_String;
+  column_names'3: t_Vec_String_Global;
+  is_unique'3: bool;
+  index_method'3: t_String }
+
+predicate inv_IndexDescriptor (_1: t_IndexDescriptor)
+
+axiom inv_axiom'50 [@rewrite]: forall x: t_IndexDescriptor [inv_IndexDescriptor x]. inv_IndexDescriptor x
+    = (inv_String x.index_name'3
+    /\ inv_String x.schema'3
+    /\ inv_String x.table_name'3 /\ inv_Vec_String_Global x.column_names'3 /\ inv_String x.index_method'3)
+
+predicate invariant_ref_IndexDescriptor [@inline:trivial] (self: t_IndexDescriptor) =
+  [%#sinvariant] inv_IndexDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_IndexDescriptor
+
+predicate inv_ref_IndexDescriptor [@inline:trivial] (_1: t_IndexDescriptor) = invariant_ref_IndexDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_IndexDescriptor
+
+predicate invariant_Seq_IndexDescriptor [@inline:trivial] (self: Seq.seq t_IndexDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_IndexDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_IndexDescriptor
+
+predicate inv_Seq_IndexDescriptor [@inline:trivial] (_1: Seq.seq t_IndexDescriptor) = invariant_Seq_IndexDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_IndexDescriptor
+
+function view_Vec_IndexDescriptor_Global (self: t_Vec_IndexDescriptor_Global) : Seq.seq t_IndexDescriptor
+
+axiom view_Vec_IndexDescriptor_Global_spec:
+  forall self: t_Vec_IndexDescriptor_Global. [%#svec'0] Seq.length (view_Vec_IndexDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_IndexDescriptor_Global (self: t_Vec_IndexDescriptor_Global) =
+  [%#svec] inv_Seq_IndexDescriptor (view_Vec_IndexDescriptor_Global self)
+
+predicate inv_Vec_IndexDescriptor_Global (_1: t_Vec_IndexDescriptor_Global)
+
+axiom inv_axiom'51:
+  forall x: t_Vec_IndexDescriptor_Global [inv_Vec_IndexDescriptor_Global x]. inv_Vec_IndexDescriptor_Global x
+    -> invariant_Vec_IndexDescriptor_Global x
+
+predicate inv_ConnectionProfile (_1: t_ConnectionProfile)
+
+axiom inv_axiom'52 [@rewrite]: forall x: t_ConnectionProfile [inv_ConnectionProfile x]. inv_ConnectionProfile x
+    = (inv_String x.name
+    /\ inv_String x.url_env_key
+    /\ inv_Option_String x.color
+    /\ inv_Option_String x.ssh_host
+    /\ inv_Option_String x.ssh_user
+    /\ inv_Option_String x.ssh_key_env
+    /\ inv_Option_String x.ssl_cert_env /\ inv_Option_String x.ssl_key_env /\ inv_Option_String x.ssl_ca_env)
+
+predicate invariant_Box_ConnectionProfile_Global (self: t_ConnectionProfile) = [%#sboxed] inv_ConnectionProfile self
+
+predicate inv_Box_ConnectionProfile_Global [@inline:trivial] (_1: t_ConnectionProfile) =
+  invariant_Box_ConnectionProfile_Global _1
+
+meta "rewrite_def" predicate inv_Box_ConnectionProfile_Global
+
+predicate inv_ArchivePanelState (_1: t_ArchivePanelState)
+
+axiom inv_axiom'53 [@rewrite]: forall x: t_ArchivePanelState [inv_ArchivePanelState x]. inv_ArchivePanelState x
+    = match x with
+      | ColumnDetail'0 -> true
+      | Loading'0 schema'4 label' -> inv_String schema'4 /\ inv_String label'
+      | DataGrid'0 schema'4 table result page grid_row grid_col edit_state display_mode -> inv_String schema'4
+      /\ inv_String table /\ inv_QueryResult result /\ inv_Option_RowEditState edit_state
+      | SqlEditor'0 text result running error -> inv_String text
+      /\ inv_Option_QueryResult result /\ inv_Option_String error
+      | DdlView'0 schema'4 table ddl'0 display_mode -> inv_String schema'4
+      /\ inv_String table /\ inv_DdlDescriptor ddl'0
+      | ExplainView'0 schema'4 table root'0 display_mode -> inv_String schema'4
+      /\ inv_String table /\ inv_ExplainPlan root'0
+      | ExplainCompare'0 schema'4 table comparison -> inv_String schema'4
+      /\ inv_String table /\ inv_ExplainComparison comparison
+      | HistoryView'0 entries display_mode -> inv_Vec_QueryHistoryEntry_Global entries
+      | SavedView'0 entries display_mode -> inv_Vec_SavedQuery_Global entries
+      | ExportView'0 schema'4 table result -> inv_String schema'4 /\ inv_String table /\ inv_Option_ExportResult result
+      | HelpView'0 -> true
+      | MonitorView'0 snapshot loading display_mode -> inv_MonitorSnapshot snapshot
+      | AdminView'0 snapshot loading display_mode -> inv_AdminSnapshot snapshot
+      | ErdView'0 schema'4 diagram layout loading display_mode -> inv_String schema'4
+      /\ inv_ErdDiagram diagram /\ inv_Option_ErdLayout layout
+      | ConstraintView'0 schema'4 table constraints loading display_mode -> inv_String schema'4
+      /\ inv_String table /\ inv_Vec_ConstraintDescriptor_Global constraints
+      | IndexView'0 schema'4 table indexes loading display_mode -> inv_String schema'4
+      /\ inv_String table /\ inv_Vec_IndexDescriptor_Global indexes
+      | ConnectionEdit'0 profile display_mode -> inv_Box_ConnectionProfile_Global profile
+      | ErrorView'0 message -> inv_String message
+      end
+
+predicate inv_Established_ArchivePanelConsistent (_1: t_Established_ArchivePanelConsistent)
+
+predicate archive_panel_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 50 0 50 66] (state'0: t_ArchivePanelState)
+
+predicate inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent [@inline:trivial] (_1: tup2_ArchivePanelState_Established_ArchivePanelConsistent) =
+  inv_ArchivePanelState _1.f0'1 /\ inv_Established_ArchivePanelConsistent _1.f1'1
+
+meta "rewrite_def" predicate inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec commit_edits__creusot
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 153 0 156 61]
+  (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent)
+  (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
+  {[@stop_split] [@expl:commit_edits__creusot requires] ([@stop_split] [@expl:commit_edits__creusot 'state' type invariant] [%#sarchive_panel] inv_ArchivePanelState state'0)
+  /\ ([@stop_split] [@expl:commit_edits__creusot 'proof' type invariant] [%#sarchive_panel'0] inv_Established_ArchivePanelConsistent proof)
+  /\ ([@stop_split] [@expl:commit_edits__creusot requires] [%#sarchive_panel'1] archive_panel_consistent state'0)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {state'0 = ColumnDetail'0} (! bb1)
+    | br1 (x0: t_String) (x1: t_String) -> {state'0 = Loading'0 x0 x1} (! bb1)
+    | br2 (x0: t_String) (x1: t_String) (x2: t_QueryResult) (x3: UInt32.t) (x4: UInt64.t) (x5: UInt64.t)
+      (x6: t_Option_RowEditState) (x7: t_QueryResultMode) -> {state'0 = DataGrid'0 x0 x1 x2 x3 x4 x5 x6 x7} (! bb3)
+    | br3 (x0: t_String) (x1: t_Option_QueryResult) (x2: bool) (x3: t_Option_String) -> {state'0
+      = SqlEditor'0 x0 x1 x2 x3}
+      (! bb1)
+    | br4 (x0: t_String) (x1: t_String) (x2: t_DdlDescriptor) (x3: t_DdlDescriptorMode) -> {state'0
+      = DdlView'0 x0 x1 x2 x3}
+      (! bb1)
+    | br5 (x0: t_String) (x1: t_String) (x2: t_ExplainPlan) (x3: t_ExplainNodeMode) -> {state'0
+      = ExplainView'0 x0 x1 x2 x3}
+      (! bb1)
+    | br6 (x0: t_String) (x1: t_String) (x2: t_ExplainComparison) -> {state'0 = ExplainCompare'0 x0 x1 x2} (! bb1)
+    | br7 (x0: t_Vec_QueryHistoryEntry_Global) (x1: t_QueryHistoryEntryMode) -> {state'0 = HistoryView'0 x0 x1} (! bb1)
+    | br8 (x0: t_Vec_SavedQuery_Global) (x1: t_SavedQueryMode) -> {state'0 = SavedView'0 x0 x1} (! bb1)
+    | br9 (x0: t_String) (x1: t_String) (x2: t_Option_ExportResult) -> {state'0 = ExportView'0 x0 x1 x2} (! bb1)
+    | br10 -> {state'0 = HelpView'0} (! bb1)
+    | br11 (x0: t_MonitorSnapshot) (x1: bool) (x2: t_MonitorSnapshotMode) -> {state'0 = MonitorView'0 x0 x1 x2} (! bb1)
+    | br12 (x0: t_AdminSnapshot) (x1: bool) (x2: t_AdminSnapshotMode) -> {state'0 = AdminView'0 x0 x1 x2} (! bb1)
+    | br13 (x0: t_String) (x1: t_ErdDiagram) (x2: t_Option_ErdLayout) (x3: bool) (x4: t_ErdDiagramMode) -> {state'0
+      = ErdView'0 x0 x1 x2 x3 x4}
+      (! bb1)
+    | br14 (x0: t_String) (x1: t_String) (x2: t_Vec_ConstraintDescriptor_Global) (x3: bool)
+      (x4: t_ConstraintDescriptorMode) -> {state'0 = ConstraintView'0 x0 x1 x2 x3 x4} (! bb1)
+    | br15 (x0: t_String) (x1: t_String) (x2: t_Vec_IndexDescriptor_Global) (x3: bool) (x4: t_IndexDescriptorMode) ->
+    {state'0 = IndexView'0 x0 x1 x2 x3 x4}
+      (! bb1)
+    | br16 (x0: t_ConnectionProfile) (x1: t_ConnectionProfileMode) -> {state'0 = ConnectionEdit'0 x0 x1} (! bb1)
+    | br17 (x0: t_String) -> {state'0 = ErrorView'0 x0} (! bb1) ]
+  | bb1 = s0 [ s0 = [ &other <- state'0 ] s1 | s1 = [ &next <- other ] s2 | s2 = bb12 ]
+  | bb3 = s0
+    [ s0 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &schema'4 <- rschema ] s1)
+    | s1 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &table <- rtable ] s2)
+    | s2 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &result <- rresult ] s3)
+    | s3 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &page <- rpage ] s4)
+    | s4 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &grid_row <- rgrid_row ] s5)
+    | s5 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &grid_col <- rgrid_col ] s6)
+    | s6 = s7
+      [ _ck -> (! {[@expl:type invariant] match state'0 with
+          | DataGrid'0 _ _ _ _ _ _ x _ -> inv_Option_RowEditState x
+          | _ -> true
+          end}
+        any) ]
+    | s7 = -{match state'0 with
+        | DataGrid'0 _ _ _ _ _ _ x _ -> resolve_Option_RowEditState x
+        | _ -> true
+        end}-
+      s8
+    | s8 = elim_DataGrid {state'0}
+        (fun (rschema: t_String) (rtable: t_String) (rresult: t_QueryResult) (rpage: UInt32.t) (rgrid_row: UInt64.t) (rgrid_col: UInt64.t) (redit_state: t_Option_RowEditState) (rdisplay_mode: t_QueryResultMode) ->
+          [ &display_mode <- rdisplay_mode ] s9)
+    | s9 = [ &_21 <- None'1 ] s10
+    | s10 = [ &next <- DataGrid'0 schema'4 table result page grid_row grid_col _21 display_mode ] s11
+    | s11 = bb12 ]
+  | bb12 = s0 [ s0 = [ &_ret <- { f0'1 = next; f1'1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: tup2_ArchivePanelState_Established_ArchivePanelConsistent = Any.any_l ()
+  | & state'0: t_ArchivePanelState = state'0
+  | & proof: t_Established_ArchivePanelConsistent = proof
+  | & next: t_ArchivePanelState = Any.any_l ()
+  | & schema'4: t_String = Any.any_l ()
+  | & table: t_String = Any.any_l ()
+  | & result: t_QueryResult = Any.any_l ()
+  | & page: UInt32.t = Any.any_l ()
+  | & grid_row: UInt64.t = Any.any_l ()
+  | & grid_col: UInt64.t = Any.any_l ()
+  | & display_mode: t_QueryResultMode = Any.any_l ()
+  | & _21: t_Option_RowEditState = Any.any_l ()
+  | & other: t_ArchivePanelState = Any.any_l () ])
+  [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
+  {[@stop_split] [@expl:commit_edits__creusot ensures] ([@stop_split] [@expl:commit_edits__creusot result type invariant] [%#sarchive_panel'2] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
+    /\ ([@stop_split] [@expl:commit_edits__creusot ensures] [%#sarchive_panel'3] archive_panel_consistent result.f0'1)}
+    (! return {result}) ]

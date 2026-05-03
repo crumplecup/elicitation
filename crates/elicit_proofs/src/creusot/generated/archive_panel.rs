@@ -9,6 +9,8 @@ use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
+use elicitation::kani_label;
+#[cfg(creusot)]
 use elicit_server::archive::vsm::*;
 #[cfg(creusot)]
 use elicit_server::archive::types::*;
@@ -20,7 +22,7 @@ use elicit_server::archive::nav_tree::*;
 use crate::creusot::vsm_invariants::archive_panel_consistent;
 #[cfg(creusot)]
 #[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result = = true)]
+#[::creusot_std::macros::ensures(result)]
 #[trusted]
 pub fn verify_archive_panel_consistent_prop_creusot() -> bool {
     true
@@ -32,7 +34,7 @@ pub(crate) fn column_detail__creusot(
     _state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    column_detail(_state, proof)
+    (ArchivePanelState::ColumnDetail, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -43,7 +45,13 @@ pub(crate) fn panel_loading__creusot(
     schema: String,
     label: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    panel_loading(_state, proof, schema, label)
+    (
+        ArchivePanelState::Loading {
+            schema,
+            label,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -53,7 +61,12 @@ pub(crate) fn panel_error__creusot(
     proof: Established<ArchivePanelConsistent>,
     message: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    panel_error(_state, proof, message)
+    (
+        ArchivePanelState::ErrorView {
+            message,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -66,7 +79,19 @@ pub(crate) fn data_grid_ready__creusot(
     result: QueryResult,
     display_mode: QueryResultMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    data_grid_ready(_state, proof, schema, table, result, display_mode)
+    (
+        ArchivePanelState::DataGrid {
+            schema,
+            table,
+            result,
+            page: 0,
+            grid_row: 0,
+            grid_col: 0,
+            edit_state: None,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -76,7 +101,18 @@ pub(crate) fn query_complete__creusot(
     proof: Established<ArchivePanelConsistent>,
     result: QueryResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    query_complete(state, proof, result)
+    let next = match state {
+        ArchivePanelState::SqlEditor { text, error, .. } => {
+            ArchivePanelState::SqlEditor {
+                text,
+                result: Some(result),
+                running: false,
+                error,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -85,7 +121,31 @@ pub(crate) fn begin_edit__creusot(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    begin_edit(state, proof)
+    let next = match state {
+        ArchivePanelState::DataGrid {
+            schema,
+            table,
+            result,
+            page,
+            grid_row,
+            grid_col,
+            display_mode,
+            ..
+        } => {
+            ArchivePanelState::DataGrid {
+                schema,
+                table,
+                result,
+                page,
+                grid_row,
+                grid_col,
+                edit_state: Some(RowEditState::default()),
+                display_mode,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -94,7 +154,31 @@ pub(crate) fn commit_edits__creusot(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    commit_edits(state, proof)
+    let next = match state {
+        ArchivePanelState::DataGrid {
+            schema,
+            table,
+            result,
+            page,
+            grid_row,
+            grid_col,
+            display_mode,
+            ..
+        } => {
+            ArchivePanelState::DataGrid {
+                schema,
+                table,
+                result,
+                page,
+                grid_row,
+                grid_col,
+                edit_state: None,
+                display_mode,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -103,7 +187,7 @@ pub(crate) fn abort_edits__creusot(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    abort_edits(state, proof)
+    commit_edits__creusot(state, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -113,7 +197,15 @@ pub(crate) fn open_sql_editor__creusot(
     proof: Established<ArchivePanelConsistent>,
     initial_text: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    open_sql_editor(_state, proof, initial_text)
+    (
+        ArchivePanelState::SqlEditor {
+            text: initial_text,
+            result: None,
+            running: false,
+            error: None,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -124,7 +216,14 @@ pub(crate) fn open_export_panel__creusot(
     schema: String,
     table: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    open_export_panel(_state, proof, schema, table)
+    (
+        ArchivePanelState::ExportView {
+            schema,
+            table,
+            result: None,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -133,7 +232,7 @@ pub(crate) fn open_help_panel__creusot(
     _state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    open_help_panel(_state, proof)
+    (ArchivePanelState::HelpView, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -144,7 +243,13 @@ pub(crate) fn open_saved_panel__creusot(
     entries: Vec<SavedQuery>,
     display_mode: SavedQueryMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    open_saved_panel(_state, proof, entries, display_mode)
+    (
+        ArchivePanelState::SavedView {
+            entries,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -155,7 +260,13 @@ pub(crate) fn open_connection_editor__creusot(
     profile: ConnectionProfile,
     display_mode: ConnectionProfileMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    open_connection_editor(_state, proof, profile, display_mode)
+    (
+        ArchivePanelState::ConnectionEdit {
+            profile: Box::new(profile),
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -168,7 +279,15 @@ pub(crate) fn ddl_ready__creusot(
     ddl: DdlDescriptor,
     display_mode: DdlDescriptorMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    ddl_ready(_state, proof, schema, table, ddl, display_mode)
+    (
+        ArchivePanelState::DdlView {
+            schema,
+            table,
+            ddl,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -181,7 +300,34 @@ pub(crate) fn explain_ready__creusot(
     root: ExplainPlan,
     display_mode: ExplainNodeMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    explain_ready(state, proof, schema, table, root, display_mode)
+    let next = match state {
+        ArchivePanelState::ExplainView {
+            schema: old_schema,
+            table: old_table,
+            root: old_root,
+            ..
+        } => {
+            ArchivePanelState::ExplainCompare {
+                schema: schema.clone(),
+                table: table.clone(),
+                comparison: ExplainComparison {
+                    left: old_root,
+                    right: root,
+                    label_left: kani_label!("{old_schema}.{old_table}"),
+                    label_right: kani_label!("{schema}.{table}"),
+                },
+            }
+        }
+        _ => {
+            ArchivePanelState::ExplainView {
+                schema,
+                table,
+                root,
+                display_mode,
+            }
+        }
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
@@ -191,7 +337,17 @@ pub(crate) fn export_ready__creusot(
     proof: Established<ArchivePanelConsistent>,
     result: ExportResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    export_ready(state, proof, result)
+    let next = match state {
+        ArchivePanelState::ExportView { schema, table, .. } => {
+            ArchivePanelState::ExportView {
+                schema,
+                table,
+                result: Some(result),
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -202,7 +358,13 @@ pub(crate) fn history_ready__creusot(
     entries: Vec<QueryHistoryEntry>,
     display_mode: QueryHistoryEntryMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    history_ready(_state, proof, entries, display_mode)
+    (
+        ArchivePanelState::HistoryView {
+            entries,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -213,7 +375,13 @@ pub(crate) fn saved_ready__creusot(
     entries: Vec<SavedQuery>,
     display_mode: SavedQueryMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    saved_ready(_state, proof, entries, display_mode)
+    (
+        ArchivePanelState::SavedView {
+            entries,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -224,7 +392,14 @@ pub(crate) fn monitor_ready__creusot(
     snapshot: MonitorSnapshot,
     display_mode: MonitorSnapshotMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    monitor_ready(_state, proof, snapshot, display_mode)
+    (
+        ArchivePanelState::MonitorView {
+            snapshot,
+            loading: false,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -235,7 +410,14 @@ pub(crate) fn admin_ready__creusot(
     snapshot: AdminSnapshot,
     display_mode: AdminSnapshotMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    admin_ready(_state, proof, snapshot, display_mode)
+    (
+        ArchivePanelState::AdminView {
+            snapshot,
+            loading: false,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -248,7 +430,16 @@ pub(crate) fn erd_ready__creusot(
     layout: Option<ErdLayout>,
     display_mode: ErdDiagramMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    erd_ready(_state, proof, schema, diagram, layout, display_mode)
+    (
+        ArchivePanelState::ErdView {
+            schema,
+            diagram,
+            layout,
+            loading: false,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -261,7 +452,16 @@ pub(crate) fn constraints_ready__creusot(
     constraints: Vec<ConstraintDescriptor>,
     display_mode: ConstraintDescriptorMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    constraints_ready(_state, proof, schema, table, constraints, display_mode)
+    (
+        ArchivePanelState::ConstraintView {
+            schema,
+            table,
+            constraints,
+            loading: false,
+            display_mode,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -274,5 +474,14 @@ pub(crate) fn indexes_ready__creusot(
     indexes: Vec<IndexDescriptor>,
     display_mode: IndexDescriptorMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    indexes_ready(_state, proof, schema, table, indexes, display_mode)
+    (
+        ArchivePanelState::IndexView {
+            schema,
+            table,
+            indexes,
+            loading: false,
+            display_mode,
+        },
+        proof,
+    )
 }

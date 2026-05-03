@@ -1,0 +1,42 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 120 0 120 59 *)
+
+let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 121 4 121 25
+let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 118 11 118 33
+let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 119 10 119 33
+let%span slevel25'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 107 11 107 33
+let%span slevel25'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 108 10 108 33
+let%span slevel25'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 94 8 97 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C25State = Idle | Active Int64.t
+
+predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 92 0 92 43] (s: t_C25State) =
+  [%#slevel25'4] match s with
+    | Idle -> true
+    | Active value -> Int64.to_int value > 0
+    end
+
+let rec c25_deactivate (state: t_C25State) (return (x: t_C25State)) =
+  {[@stop_split] [@expl:c25_deactivate requires] [%#slevel25'2] c25_consistent state}
+  any
+  [ return (result: t_C25State) -> {[@stop_split] [@expl:c25_deactivate ensures] [%#slevel25'3] c25_consistent result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c25_deactivate__harness
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 120 0 120 59] (state: t_C25State)
+  (return (x: t_C25State)) =
+  {[@stop_split] [@expl:c25_deactivate__harness requires] [%#slevel25'0] c25_consistent state}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = c25_deactivate [%#slevel25] {state} (fun (_x: t_C25State) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
+  [ & _ret: t_C25State = Any.any_l () | & state: t_C25State = state ])
+  [ return (result: t_C25State) ->
+  {[@stop_split] [@expl:c25_deactivate__harness ensures] [%#slevel25'1] c25_consistent result}
+    (! return {result}) ]

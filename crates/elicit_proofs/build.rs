@@ -150,6 +150,7 @@ fn write_creusot_vsm_file(
     let raw = format!(
         "#[cfg(creusot)] use ::creusot_std::prelude::*;\n\
          #[cfg(creusot)] use elicitation::Established;\n\
+         #[cfg(creusot)] use elicitation::kani_label;\n\
          #[cfg(creusot)] use elicit_server::archive::vsm::*;\n\
          #[cfg(creusot)] use elicit_server::archive::types::*;\n\
          #[cfg(creusot)] use elicit_server::archive::display::*;\n\

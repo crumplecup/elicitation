@@ -38,11 +38,22 @@ impl Prompt for GeoGeometryCollection {
 impl Elicitation for GeoGeometryCollection {
     type Style = GeoGeometryCollectionStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting GeoGeometryCollection");
-        let geometries = Vec::<GeoGeometry>::elicit(communicator).await?;
-        Ok(Self(geometries))
+    // Use Box::pin + concrete Pin<Box<dyn Future>> return type (same pattern as
+    // GeoGeometry::elicit) to break the compile-time Send-bound inference cycle.
+    // async fn would return an opaque impl Future, forcing the compiler to
+    // recurse through GeoGeometry→GeoGeometryCollection→Vec<GeoGeometry>→…
+    // indefinitely to verify Send. With dyn Future + Send the bound is trivially
+    // satisfied at the await site without inspecting the body.
+    fn elicit<C: ElicitCommunicator>(
+        communicator: &C,
+    ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {
+        let comm = communicator.clone();
+        Box::pin(async move {
+            let communicator = &comm;
+            tracing::debug!("Eliciting GeoGeometryCollection");
+            let geometries = Vec::<GeoGeometry>::elicit(communicator).await?;
+            Ok(Self(geometries))
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {

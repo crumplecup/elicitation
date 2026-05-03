@@ -46,11 +46,18 @@ impl Prompt for WktGeometryCollection {
 impl Elicitation for WktGeometryCollection {
     type Style = WktGeometryCollectionStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting WktGeometryCollection");
-        let geometries = Vec::<WktGeom>::elicit(communicator).await?;
-        Ok(Self { geometries })
+    // Box::pin + concrete return type breaks the Send-bound inference cycle.
+    // See geo_types/geometry.rs for full rationale.
+    fn elicit<C: ElicitCommunicator>(
+        communicator: &C,
+    ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {
+        let comm = communicator.clone();
+        Box::pin(async move {
+            let communicator = &comm;
+            tracing::debug!("Eliciting WktGeometryCollection");
+            let geometries = Vec::<WktGeom>::elicit(communicator).await?;
+            Ok(Self { geometries })
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {

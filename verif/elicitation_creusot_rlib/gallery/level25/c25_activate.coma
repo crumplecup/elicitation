@@ -1,0 +1,30 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 127 0 127 43 *)
+
+let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 125 11 125 21
+let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 126 10 126 33
+let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 94 8 97 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C25State = Idle | Active Int64.t
+
+predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 92 0 92 43] (s: t_C25State) =
+  [%#slevel25'1] match s with
+    | Idle -> true
+    | Active value -> Int64.to_int value > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c25_activate [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 127 0 127 43]
+  (value: Int64.t) (return (x: t_C25State)) =
+  {[@stop_split] [@expl:c25_activate requires] [%#slevel25] Int64.to_int value > 0}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- Active value ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_C25State = Any.any_l () | & value: Int64.t = value ])
+  [ return (result: t_C25State) -> {[@stop_split] [@expl:c25_activate ensures] [%#slevel25'0] c25_consistent result}
+    (! return {result}) ]

@@ -104,7 +104,7 @@ pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
 
 /// Creusot logic predicate mirroring the Kani invariant.
 /// Placeholder — all states are well-formed by construction.
-#[cfg(creusot)]
+#[cfg(all(creusot, feature = "creusot"))]
 #[::creusot_std::macros::logic]
 pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
     true

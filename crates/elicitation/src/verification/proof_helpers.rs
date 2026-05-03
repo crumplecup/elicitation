@@ -1093,7 +1093,7 @@ pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
     quote! {
         #[cfg(creusot)]
         #[::creusot_std::macros::requires(true)]
-        #[::creusot_std::macros::ensures(result == true)]
+        #[::creusot_std::macros::ensures(result)]
         #[trusted]
         pub fn #fn_ident() -> bool {
             true
@@ -1690,7 +1690,7 @@ pub fn creusot_type_stub(type_name: &str) -> TokenStream {
     quote! {
         #[cfg(creusot)]
         #[::creusot_std::macros::requires(true)]
-        #[::creusot_std::macros::ensures(result == true)]
+        #[::creusot_std::macros::ensures(result)]
         #[trusted]
         pub fn #fn_ident() -> bool {
             true
@@ -1859,7 +1859,7 @@ pub fn creusot_newtype_wrapper_harness(wrapper_name: &str) -> TokenStream {
     quote! {
         #[cfg(creusot)]
         #[::creusot_std::macros::requires(true)]
-        #[::creusot_std::macros::ensures(result == true)]
+        #[::creusot_std::macros::ensures(result)]
         pub fn #fn_ident() -> bool {
             // Structural wrapper proof for this newtype.
             // Inner type proofs are composed via ElicitComplete::creusot_proof().
@@ -1935,7 +1935,7 @@ pub fn verus_formal_method_spec(
 /// `contracts_in` and `contracts_out` are the proposition type names.
 ///
 /// Generates `{fn_name}__creusot_spec` with `#[::creusot_std::macros::requires(true)]` /
-/// `#[::creusot_std::macros::ensures(result == true)]` / `#[trusted]` annotations.
+/// `#[::creusot_std::macros::ensures(result)]` / `#[trusted]` annotations.
 pub fn creusot_formal_method_spec(
     fn_name: &str,
     contracts_in: &[&str],
@@ -1950,7 +1950,7 @@ pub fn creusot_formal_method_spec(
         #[doc = #doc]
         #[cfg(creusot)]
         #[::creusot_std::macros::requires(true)]
-        #[::creusot_std::macros::ensures(result == true)]
+        #[::creusot_std::macros::ensures(result)]
         #[trusted]
         pub fn #spec_fn() -> bool {
             true

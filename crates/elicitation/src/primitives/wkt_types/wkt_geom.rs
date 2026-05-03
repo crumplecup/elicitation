@@ -137,8 +137,8 @@ impl Elicitation for WktGeom {
     type Style = WktGeomStyle;
 
     // Use explicit fn + Box::pin to break the mutual-recursion cycle between
-    // WktGeom and WktGeometryCollection.
-    #[tracing::instrument(skip(communicator))]
+    // WktGeom and WktGeometryCollection. #[tracing::instrument] is omitted —
+    // see geo_types/geometry.rs for the full rationale.
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {

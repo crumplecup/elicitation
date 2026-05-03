@@ -136,52 +136,141 @@ impl Select for TomlValue {
 
 crate::default_style!(TomlValue => TomlValueStyle);
 
+/// Maximum nesting depth for depth-bounded inductive elicitation.
+///
+/// See `elicit_toml_value_inner` for the full rationale.
+const TOML_VALUE_MAX_DEPTH: usize = 32;
+
+/// Depth-bounded inductive elicitation for the self-referential `TomlValue` type.
+///
+/// ## Why `impl Future + Send` fails for self-recursive types
+///
+/// For mutually-recursive types (e.g. `GeoGeometry` ↔ `GeoGeometryCollection`),
+/// removing `#[tracing::instrument]` and using `Box::pin` is sufficient: each side
+/// returns `impl Future + Send`, and when checking `Send` on side A, the compiler
+/// trusts B's *declared* `impl Future + Send` return type without re-entering B's
+/// body.
+///
+/// For directly self-recursive types the same trick does not work.  
+/// `TomlValue::elicit()` awaits `Vec::<TomlValue>::elicit()`.  
+/// `Vec<T>::elicit()` is an `async fn` — to check whether it is `Send`, the
+/// compiler must analyse its body, which awaits `T::elicit()`, i.e.
+/// `TomlValue::elicit()` again.  Because every step is an opaque `impl Trait` type
+/// that the compiler must peel open, the check never terminates.
+///
+/// ## Solution: concrete `Pin<Box<dyn Future + Send>>`
+///
+/// `Pin<Box<dyn Future<Output = _> + Send>>` is a *concrete* type.  Its `Send`
+/// bound is structural — `Box<dyn … + Send>` is `Send` by definition, no body
+/// analysis required.  Using it as the return type of the recursive helper stops
+/// the inference cycle at the boundary of each recursive call site.
+///
+/// The depth parameter makes the recursion well-founded: if a user somehow builds
+/// a TOML structure deeper than `TOML_VALUE_MAX_DEPTH`, elicitation returns an
+/// error rather than looping.  The decrement at each recursive call also serves as
+/// an inductive measure for formal-methods reasoning (see gallery C24).
+///
+/// ## What this replaces
+///
+/// The array and table arms bypass `Vec::<TomlValue>::elicit()` and
+/// `Vec::<(String, TomlValue)>::elicit()` entirely, using local loops that call
+/// this helper directly.  The standard `Vec<T>` impl (which uses `async fn` with
+/// `#[tracing::instrument]`) would re-introduce the inference cycle.
+fn elicit_toml_value_inner<C: ElicitCommunicator>(
+    comm: C,
+    depth: usize,
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<TomlValue>> + Send>> {
+    Box::pin(async move {
+        let communicator = &comm;
+        if depth == 0 {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                "TomlValue: maximum nesting depth exceeded".to_string(),
+            )));
+        }
+        tracing::debug!(depth, "Eliciting TomlValue");
+        let params = mcp::select_params(
+            TomlValue::prompt().unwrap_or("Choose value type:"),
+            &TomlValue::labels(),
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        tracing::debug!(variant = %label, depth, "TomlValue variant selected");
+        match label.as_str() {
+            "String" => Ok(TomlValue::String(String::elicit(communicator).await?)),
+            "Integer" => Ok(TomlValue::Integer(i64::elicit(communicator).await?)),
+            "Float" => Ok(TomlValue::Float(f64::elicit(communicator).await?)),
+            "Boolean" => Ok(TomlValue::Boolean(bool::elicit(communicator).await?)),
+            "Datetime" => Ok(TomlValue::Datetime(TomlDatetime::elicit(communicator).await?)),
+            "Array" => {
+                let items = elicit_toml_value_vec(comm.clone(), depth - 1).await?;
+                Ok(TomlValue::Array(items))
+            }
+            "Table" => {
+                let entries = elicit_toml_value_table(comm.clone(), depth - 1).await?;
+                Ok(TomlValue::Table(entries))
+            }
+            _ => Err(ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid TomlValue: {label}"
+            )))),
+        }
+    })
+}
+
+/// Collect `Vec<TomlValue>` via depth-bounded inner elicitation.
+///
+/// Replicates the standard `Vec<T>` bool-gated loop without going through the
+/// generic `async fn Vec<T>::elicit()`, which would re-introduce the Send
+/// inference cycle for `T = TomlValue`.
+fn elicit_toml_value_vec<C: ElicitCommunicator>(
+    comm: C,
+    depth: usize,
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Vec<TomlValue>>> + Send>> {
+    Box::pin(async move {
+        let mut items = Vec::new();
+        loop {
+            if !bool::elicit(&comm).await? {
+                break;
+            }
+            items.push(elicit_toml_value_inner(comm.clone(), depth).await?);
+        }
+        Ok(items)
+    })
+}
+
+/// Collect `Vec<(String, TomlValue)>` via depth-bounded inner elicitation.
+fn elicit_toml_value_table<C: ElicitCommunicator>(
+    comm: C,
+    depth: usize,
+) -> std::pin::Pin<
+    Box<dyn std::future::Future<Output = ElicitResult<Vec<(String, TomlValue)>>> + Send>,
+> {
+    Box::pin(async move {
+        let mut entries = Vec::new();
+        loop {
+            if !bool::elicit(&comm).await? {
+                break;
+            }
+            let key = String::elicit(&comm).await?;
+            let value = elicit_toml_value_inner(comm.clone(), depth).await?;
+            entries.push((key, value));
+        }
+        Ok(entries)
+    })
+}
+
 impl Elicitation for TomlValue {
     type Style = TomlValueStyle;
 
-    // Use explicit fn + Box::pin to break the self-referential cycle between
-    // TomlValue and Vec<TomlValue>. Without boxing the compiler cannot resolve
-    // the opaque Future type for the recursive async call.
-    #[tracing::instrument(skip(communicator))]
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {
-        let comm = communicator.clone();
-        Box::pin(async move {
-            let communicator = &comm;
-            tracing::debug!("Eliciting TomlValue");
-            let params = mcp::select_params(
-                Self::prompt().unwrap_or("Choose value type:"),
-                &Self::labels(),
-            );
-            let result = communicator
-                .call_tool(
-                    rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                        .with_arguments(params),
-                )
-                .await?;
-            let value = mcp::extract_value(result)?;
-            let label = mcp::parse_string(value)?;
-            tracing::debug!(variant = %label, "TomlValue variant selected");
-            match label.as_str() {
-                "String" => Ok(TomlValue::String(String::elicit(communicator).await?)),
-                "Integer" => Ok(TomlValue::Integer(i64::elicit(communicator).await?)),
-                "Float" => Ok(TomlValue::Float(f64::elicit(communicator).await?)),
-                "Boolean" => Ok(TomlValue::Boolean(bool::elicit(communicator).await?)),
-                "Datetime" => Ok(TomlValue::Datetime(
-                    TomlDatetime::elicit(communicator).await?,
-                )),
-                "Array" => Ok(TomlValue::Array(
-                    Vec::<TomlValue>::elicit(communicator).await?,
-                )),
-                "Table" => Ok(TomlValue::Table(
-                    Vec::<(String, TomlValue)>::elicit(communicator).await?,
-                )),
-                _ => Err(ElicitError::new(ElicitErrorKind::ParseError(format!(
-                    "Invalid TomlValue: {label}"
-                )))),
-            }
-        })
+        elicit_toml_value_inner(communicator.clone(), TOML_VALUE_MAX_DEPTH)
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {

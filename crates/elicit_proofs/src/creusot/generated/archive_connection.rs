@@ -9,6 +9,8 @@ use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
+use elicitation::kani_label;
+#[cfg(creusot)]
 use elicit_server::archive::vsm::*;
 #[cfg(creusot)]
 use elicit_server::archive::types::*;
@@ -20,7 +22,7 @@ use elicit_server::archive::nav_tree::*;
 use crate::creusot::vsm_invariants::archive_connection_consistent;
 #[cfg(creusot)]
 #[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result = = true)]
+#[::creusot_std::macros::ensures(result)]
 #[trusted]
 pub fn verify_archive_connection_consistent_prop_creusot() -> bool {
     true
@@ -34,7 +36,13 @@ pub(crate) fn begin_connect_sql__creusot(
     profile_name: String,
     backend: BackendKind,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    begin_connect_sql(_state, proof, profile_name, backend)
+    (
+        ArchiveConnectionState::Connecting {
+            profile_name,
+            backend,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -44,7 +52,13 @@ pub(crate) fn begin_connect_kv__creusot(
     proof: Established<ArchiveConnectionConsistent>,
     profile_name: String,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    begin_connect_kv(_state, proof, profile_name)
+    (
+        ArchiveConnectionState::Connecting {
+            profile_name,
+            backend: BackendKind::Redb,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -54,7 +68,12 @@ pub(crate) fn finish_connect_sql__creusot(
     proof: Established<ArchiveConnectionConsistent>,
     db: DatabaseDescriptor,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    finish_connect_sql(_state, proof, db)
+    (
+        ArchiveConnectionState::SqlConnected {
+            db,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -64,7 +83,12 @@ pub(crate) fn finish_connect_kv__creusot(
     proof: Established<ArchiveConnectionConsistent>,
     path: String,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    finish_connect_kv(_state, proof, path)
+    (
+        ArchiveConnectionState::KvConnected {
+            path,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -73,7 +97,7 @@ pub(crate) fn disconnect__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    disconnect(_state, proof)
+    (ArchiveConnectionState::Disconnected, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&state))]
@@ -82,7 +106,17 @@ pub(crate) fn reconnect__creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    reconnect(state, proof)
+    let db = match state {
+        ArchiveConnectionState::SqlConnected { db }
+        | ArchiveConnectionState::Reconnecting { db } => db,
+        other => return (other, proof),
+    };
+    (
+        ArchiveConnectionState::Reconnecting {
+            db,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -92,5 +126,10 @@ pub(crate) fn connection_error__creusot(
     proof: Established<ArchiveConnectionConsistent>,
     message: String,
 ) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    connection_error(_state, proof, message)
+    (
+        ArchiveConnectionState::ConnectionError {
+            message,
+        },
+        proof,
+    )
 }

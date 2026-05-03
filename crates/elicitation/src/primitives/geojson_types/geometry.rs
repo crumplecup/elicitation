@@ -22,7 +22,7 @@ impl Prompt for Geometry {
 impl Elicitation for Geometry {
     type Style = GeoJsonGeometryStyle;
 
-    #[tracing::instrument(skip(communicator))]
+    // #[tracing::instrument] omitted — see geo_types/geometry.rs for rationale.
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {

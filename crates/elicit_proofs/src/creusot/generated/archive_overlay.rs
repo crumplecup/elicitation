@@ -9,6 +9,8 @@ use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
+use elicitation::kani_label;
+#[cfg(creusot)]
 use elicit_server::archive::vsm::*;
 #[cfg(creusot)]
 use elicit_server::archive::types::*;
@@ -20,7 +22,7 @@ use elicit_server::archive::nav_tree::*;
 use crate::creusot::vsm_invariants::archive_overlay_consistent;
 #[cfg(creusot)]
 #[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result = = true)]
+#[::creusot_std::macros::ensures(result)]
 #[trusted]
 pub fn verify_archive_overlay_consistent_prop_creusot() -> bool {
     true
@@ -32,7 +34,7 @@ pub(crate) fn close_overlay__creusot(
     _state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    close_overlay(_state, proof)
+    (ArchiveOverlayState::OverlayNone, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&_state))]
@@ -41,7 +43,7 @@ pub(crate) fn open_help__creusot(
     _state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    open_help(_state, proof)
+    (ArchiveOverlayState::HelpOpen, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&_state))]
@@ -51,7 +53,13 @@ pub(crate) fn open_export_picker__creusot(
     proof: Established<ArchiveOverlayConsistent>,
     formats: Vec<ExportFormat>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    open_export_picker(_state, proof, formats)
+    (
+        ArchiveOverlayState::ExportPickerOpen {
+            idx: 0,
+            formats,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -60,7 +68,16 @@ pub(crate) fn picker_move_up__creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    picker_move_up(state, proof)
+    let next = match state {
+        ArchiveOverlayState::ExportPickerOpen { idx, formats } => {
+            ArchiveOverlayState::ExportPickerOpen {
+                idx: idx.saturating_sub(1),
+                formats,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -69,7 +86,17 @@ pub(crate) fn picker_move_down__creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    picker_move_down(state, proof)
+    let next = match state {
+        ArchiveOverlayState::ExportPickerOpen { idx, formats } => {
+            let new_idx = idx.saturating_add(1).min(formats.len().saturating_sub(1));
+            ArchiveOverlayState::ExportPickerOpen {
+                idx: new_idx,
+                formats,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&_state))]
@@ -78,7 +105,12 @@ pub(crate) fn open_save_prompt__creusot(
     _state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    open_save_prompt(_state, proof)
+    (
+        ArchiveOverlayState::SavePromptOpen {
+            text: String::new(),
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -88,7 +120,16 @@ pub(crate) fn prompt_push__creusot(
     proof: Established<ArchiveOverlayConsistent>,
     ch: char,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    prompt_push(state, proof, ch)
+    let next = match state {
+        ArchiveOverlayState::SavePromptOpen { mut text } => {
+            text.push(ch);
+            ArchiveOverlayState::SavePromptOpen {
+                text,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -97,7 +138,16 @@ pub(crate) fn prompt_backspace__creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    prompt_backspace(state, proof)
+    let next = match state {
+        ArchiveOverlayState::SavePromptOpen { mut text } => {
+            text.pop();
+            ArchiveOverlayState::SavePromptOpen {
+                text,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&_state))]
@@ -107,7 +157,13 @@ pub(crate) fn open_saved_browser__creusot(
     proof: Established<ArchiveOverlayConsistent>,
     entries: Vec<SavedQuery>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    open_saved_browser(_state, proof, entries)
+    (
+        ArchiveOverlayState::SavedBrowserOpen {
+            entries,
+            idx: 0,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -116,7 +172,16 @@ pub(crate) fn saved_browser_up__creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    saved_browser_up(state, proof)
+    let next = match state {
+        ArchiveOverlayState::SavedBrowserOpen { entries, idx } => {
+            ArchiveOverlayState::SavedBrowserOpen {
+                entries,
+                idx: idx.saturating_sub(1),
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_overlay_consistent(&state))]
@@ -125,5 +190,15 @@ pub(crate) fn saved_browser_down__creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
-    saved_browser_down(state, proof)
+    let next = match state {
+        ArchiveOverlayState::SavedBrowserOpen { entries, idx } => {
+            let new_idx = idx.saturating_add(1).min(entries.len().saturating_sub(1));
+            ArchiveOverlayState::SavedBrowserOpen {
+                entries,
+                idx: new_idx,
+            }
+        }
+        other => other,
+    };
+    (next, proof)
 }

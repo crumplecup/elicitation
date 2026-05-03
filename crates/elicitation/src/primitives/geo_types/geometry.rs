@@ -176,7 +176,11 @@ impl Elicitation for GeoGeometry {
     // Use explicit fn + Box::pin to break the mutual-recursion cycle between
     // GeoGeometry and GeoGeometryCollection. Without boxing, the Rust compiler
     // cannot verify `Send` for the recursive opaque Future type.
-    #[tracing::instrument(skip(communicator))]
+    //
+    // Note: #[tracing::instrument] is intentionally absent here — it wraps the
+    // return in a new impl Future and re-evaluates Send bounds, which recurses
+    // infinitely through GeoGeometry→GeoGeometryCollection→Vec<GeoGeometry>.
+    // Manual tracing::debug! calls below provide equivalent observability.
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {

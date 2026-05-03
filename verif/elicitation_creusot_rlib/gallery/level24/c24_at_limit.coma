@@ -1,0 +1,33 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 194 0 194 67 *)
+
+let%span slevel24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 192 11 192 22
+let%span slevel24'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 193 10 193 29
+let%span slevel24'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 139 8 142 9
+
+use creusot.int.UInt64
+use creusot.int.Int32
+use creusot.prelude.Any
+
+type t_C24Node = { remaining_depth: UInt64.t; value: Int32.t }
+
+type t_C24Result_C24Node = DepthExceeded | Ok UInt64.t t_C24Node
+
+predicate c24_is_ok_C24Node [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 137 0 137 45] (r: t_C24Result_C24Node) =
+  [%#slevel24'1] match r with
+    | Ok _ _ -> true
+    | DepthExceeded -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c24_at_limit [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 194 0 194 67]
+  (depth: UInt64.t) (_leaf: Int32.t) (return (x: t_C24Result_C24Node)) =
+  {[@stop_split] [@expl:c24_at_limit requires] [%#slevel24] UInt64.t'int depth = 0}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- DepthExceeded ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_C24Result_C24Node = Any.any_l () ])
+  [ return (result: t_C24Result_C24Node) ->
+  {[@stop_split] [@expl:c24_at_limit ensures] [%#slevel24'0] not c24_is_ok_C24Node result}
+    (! return {result}) ]

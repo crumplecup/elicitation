@@ -86,7 +86,7 @@ pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
 
 /// Creusot logic predicate mirroring the Kani invariant.
 /// Placeholder — all states are well-formed by construction.
-#[cfg(creusot)]
+#[cfg(all(creusot, feature = "creusot"))]
 #[::creusot_std::macros::logic]
 pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
     true

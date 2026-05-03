@@ -37,6 +37,8 @@
 //! | [`level21`] | `Vec<T>` sequence + `usize` cursor    | `forall` quantifier over Vec; cursor-in-bounds after saturating move?      |
 //! | [`level22`] | `Box<T>` field access in `#[logic]`   | Pearlite deref of boxed struct fields; invariant on boxed content?         |
 //! | [`level23`] | 18-variant scale test (panel machine) | Alt-Ergo closes 18-arm match? All patterns combined at production scale?   |
+//! | [`level24`] | Depth-bounded inductive closure       | `depth > 0 ==> Ok`? Well-foundedness of depth-decrement? Error at limit?  |
+//! | [`level26`] | `#[instrument]` delegation + `format!` pitfalls | `{ f(args) }` body rewritten to `__creusot`? `String::new()` safe for labels? |
 //!
 //! ## Run all levels
 //!
@@ -76,3 +78,6 @@ pub mod level20;
 pub mod level21;
 pub mod level22;
 pub mod level23;
+pub mod level24;
+pub mod level25;
+pub mod level26;

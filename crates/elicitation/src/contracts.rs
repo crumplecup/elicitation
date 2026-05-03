@@ -1299,10 +1299,10 @@ pub trait KaniVariantState {
 #[macro_export]
 macro_rules! kani_label {
     ($($arg:tt)*) => {{
-        #[cfg(not(kani))]
-        let _s = format!($($arg)*);
-        #[cfg(kani)]
+        #[cfg(any(kani, creusot))]
         let _s = ::std::string::String::new();
+        #[cfg(not(any(kani, creusot)))]
+        let _s = format!($($arg)*);
         _s
     }};
 }

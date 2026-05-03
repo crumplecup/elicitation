@@ -90,6 +90,35 @@ use syn::{
 
 // ── String helpers ─────────────────────────────────────────────────────────────
 
+/// If `block` is `{ f(args) }` (single tail-call with no semicolon), return a
+/// version rewritten to `{ f__creusot(args) }`.
+///
+/// This prevents Creusot from descending into the original `f` (which may have
+/// `#[instrument]`-generated static string slices in its MIR) and instead uses
+/// the clean `f__creusot` companion that has no tracing overhead.
+fn creusot_delegation_rewrite(block: &syn::Block) -> Option<String> {
+    if block.stmts.len() != 1 {
+        return None;
+    }
+    let syn::Stmt::Expr(syn::Expr::Call(call), None) = &block.stmts[0] else {
+        return None;
+    };
+    let syn::Expr::Path(path_expr) = call.func.as_ref() else {
+        return None;
+    };
+    let mut new_path = path_expr.path.clone();
+    let last = new_path.segments.last_mut()?;
+    let new_name = format!("{}__creusot", last.ident);
+    last.ident = syn::Ident::new(&new_name, last.ident.span());
+    let new_func = syn::Expr::Path(syn::ExprPath {
+        attrs: path_expr.attrs.clone(),
+        qself: path_expr.qself.clone(),
+        path: new_path,
+    });
+    let args = &call.args;
+    Some(quote!({ #new_func(#args) }).to_string())
+}
+
 /// Convert a `snake_case` identifier string to `PascalCase`.
 fn to_pascal_case(s: &str) -> String {
     s.split('_')
@@ -419,6 +448,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let inputs_src = quote!(#inputs).to_string();
         let output_src = quote!(#output).to_string();
         let creusot_fn_src = format!("{fn_name}__creusot");
+        let body_src = { let b = &func.block; quote!(#b).to_string() };
+        // For Creusot: if the body is a simple delegation `{ f(args) }`, rewrite
+        // to `{ f__creusot(args) }` so Creusot uses the clean companion rather than
+        // the original (which may have #[instrument]-generated string literals).
+        let creusot_body_src = creusot_delegation_rewrite(&func.block)
+            .unwrap_or_else(|| body_src.clone());
 
         // ── Kani contracts on the original function ───────────────────────
         // When contracts = [SomeType] is provided and there is a state
@@ -466,20 +501,22 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             func.attrs.push(ensures_attr);
 
             // ── Creusot contracts on the original function ────────────
-            // Mirror the Kani cfg_attr approach: emit real
-            // #[requires]/#[ensures] directly on the original function
-            // so `cargo creusot -p elicit_server --features creusot`
-            // verifies the bodies.
-            // Use full ::creusot_std::macros:: paths so that no
-            // `use creusot_std::prelude::*;` import is needed at each
-            // call site — only `creusot-std` must be a dep.
-            // cfg_attr is dropped before attr resolution under regular
-            // cargo (cfg(creusot) = false), so the dep can be optional.
+            // Gate on BOTH `creusot` cfg (set by cargo creusot globally)
+            // AND `feature = "creusot"` (only enabled when the crate itself
+            // is being verified with --features creusot).
+            //
+            // Without the feature guard, `cargo creusot -p elicit_proofs`
+            // would set the `creusot` cfg for ALL transitive deps including
+            // `elicit_server`, activating these attributes in a crate that
+            // doesn't have `creusot-std` as a dependency — causing E0433.
+            //
+            // With both guards: the annotations activate only when running
+            // `cargo creusot -p elicit_server --features creusot` directly.
             let creusot_requires_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(creusot, ::creusot_std::macros::requires(#inv_fn_ident(&#state_pat_tokens)))]
+                #[cfg_attr(all(creusot, feature = "creusot"), ::creusot_std::macros::requires(#inv_fn_ident(&#state_pat_tokens)))]
             };
             let creusot_ensures_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(creusot, ::creusot_std::macros::ensures(#inv_fn_ident(&result.0)))]
+                #[cfg_attr(all(creusot, feature = "creusot"), ::creusot_std::macros::ensures(#inv_fn_ident(&result.0)))]
             };
             func.attrs.push(creusot_requires_attr);
             func.attrs.push(creusot_ensures_attr);
@@ -636,7 +673,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 ///
                 /// When `inv_fn` is non-empty and this transition has a state parameter,
                 /// a real `#[requires(inv_fn(&state))]` / `#[ensures(inv_fn(&result.0))]`
-                /// contract is emitted (no `#[trusted]`) — Creusot will verify the body.
+                /// contract is emitted with the **inlined function body** — Creusot verifies
+                /// the ensures directly from the body, with no cross-crate spec dependency.
+                ///
+                /// If the body is a simple delegation `{ f(args) }`, the emitted body is
+                /// `{ f__creusot(args) }` so Creusot uses the clean companion rather than
+                /// the original (which may have `#[instrument]`-generated string literals).
                 ///
                 /// When `inv_fn` is empty or this transition has no state parameter,
                 /// a `#[trusted]` placeholder is emitted instead.
@@ -655,11 +697,8 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + #inputs_src
                             + ") "
                             + #output_src
-                            + " { "
-                            + #fn_name_src
-                            + " ("
-                            + #call_args_src
-                            + ") }"
+                            + " "
+                            + &#creusot_body_src
                     } else {
                         String::new()
                             + "# [cfg (creusot)] # [requires (true)] # [ensures (true)] # [trusted] pub (crate) fn "

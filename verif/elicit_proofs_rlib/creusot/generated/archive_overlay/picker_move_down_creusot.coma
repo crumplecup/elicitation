@@ -1,0 +1,240 @@
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 85 0 88 65 *)
+
+let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 114 18 114 40
+let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
+let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
+let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span snum = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 325 20 326 51
+let%span snum'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 329 26 329 83
+let%span snum'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 330 26 330 83
+let%span snum'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 325 20 326 51
+let%span snum'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 329 26 329 83
+let%span snum'4 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 330 26 330 83
+let%span snum'5 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 25 28 25 33
+let%span scmp = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 87 26 87 66
+let%span scmp'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 88 26 88 63
+let%span scmp'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 89 26 89 55
+let%span scmp'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 90 26 90 79
+let%span scmp'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 91 26 91 77
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 45 91 46
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 26 91 47
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 52 91 65
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 81 91 82
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 52 91 83
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 91 26 91 84
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 86 4 86 9
+let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 87 4 87 9
+let%span sarchive_overlay'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 83 11 83 45
+let%span sarchive_overlay'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 88 5 88 65
+let%span sarchive_overlay'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 84 10 84 47
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.prelude.Any
+use creusot.int.Int64
+use int.Int
+
+type t_Vec_ExportFormat_Global
+
+type t_String
+
+type t_Vec_SavedQuery_Global
+
+type t_ArchiveOverlayState =
+  | OverlayNone
+  | HelpOpen
+  | ExportPickerOpen UInt64.t t_Vec_ExportFormat_Global
+  | SavePromptOpen t_String
+  | SavedBrowserOpen t_Vec_SavedQuery_Global UInt64.t
+
+let rec elim_ExportPickerOpen (_x: t_ArchiveOverlayState)
+  (return (idx: UInt64.t) (formats: t_Vec_ExportFormat_Global)) = any
+  [ _k (idx: UInt64.t) (formats: t_Vec_ExportFormat_Global) -> {ExportPickerOpen idx formats = _x}
+    (! return {idx} {formats})
+  | _chk -> (! {[@expl:elim ExportPickerOpen] match _x with
+      | ExportPickerOpen _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+constant const_MIN: UInt64.t = (0: UInt64.t)
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+let rec saturating_add (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:saturating_add ensures] ([@stop_split] [@expl:saturating_add ensures #0] [%#snum] UInt64.t'int self_
+            + UInt64.t'int rhs
+          >= UInt64.t'int const_MIN
+        /\ UInt64.t'int self_ + UInt64.t'int rhs <= UInt64.t'int const_MAX
+      -> UInt64.t'int result = UInt64.t'int self_ + UInt64.t'int rhs)
+    /\ ([@stop_split] [@expl:saturating_add ensures #1] [%#snum'0] UInt64.t'int self_ + UInt64.t'int rhs
+        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
+    /\ ([@stop_split] [@expl:saturating_add ensures #2] [%#snum'1] UInt64.t'int self_ + UInt64.t'int rhs
+      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
+    (! return {result}) ]
+
+type t_ExportFormat = Csv | Json | Ndjson | Tsv
+
+function view_Vec_ExportFormat_Global (self: t_Vec_ExportFormat_Global) : Seq.seq t_ExportFormat
+
+axiom view_Vec_ExportFormat_Global_spec:
+  forall self: t_Vec_ExportFormat_Global. [%#svec'0] Seq.length (view_Vec_ExportFormat_Global self)
+    <= UInt64.t'int const_MAX
+
+let rec len_ExportFormat (self_: t_Vec_ExportFormat_Global) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) -> {[@stop_split] [@expl:len ensures] [%#svec] UInt64.t'int result
+    = Seq.length (view_Vec_ExportFormat_Global self_)}
+    (! return {result}) ]
+
+let rec saturating_sub (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:saturating_sub ensures] ([@stop_split] [@expl:saturating_sub ensures #0] [%#snum'2] UInt64.t'int self_
+            - UInt64.t'int rhs
+          >= UInt64.t'int const_MIN
+        /\ UInt64.t'int self_ - UInt64.t'int rhs <= UInt64.t'int const_MAX
+      -> UInt64.t'int result = UInt64.t'int self_ - UInt64.t'int rhs)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #1] [%#snum'3] UInt64.t'int self_ - UInt64.t'int rhs
+        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #2] [%#snum'4] UInt64.t'int self_ - UInt64.t'int rhs
+      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
+    (! return {result}) ]
+
+function deep_model_usize [@inline:trivial] (self: UInt64.t) : int = [%#snum'5] UInt64.t'int self
+
+meta "rewrite_def" function deep_model_usize
+
+let rec min_usize (self_: UInt64.t) (o: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:min_usize ensures] ([@stop_split] [@expl:min ensures #0] [%#scmp] deep_model_usize result
+      <= deep_model_usize self_)
+    /\ ([@stop_split] [@expl:min ensures #1] [%#scmp'0] deep_model_usize result <= deep_model_usize o)
+    /\ ([@stop_split] [@expl:min ensures #2] [%#scmp'1] result = self_ \/ result = o)
+    /\ ([@stop_split] [@expl:min ensures #3] [%#scmp'2] deep_model_usize self_ < deep_model_usize o -> result = self_)
+    /\ ([@stop_split] [@expl:min ensures #4] [%#scmp'3] deep_model_usize o <= deep_model_usize self_ -> result = o)}
+    (! return {result}) ]
+
+type t_Established_ArchiveOverlayConsistent
+
+type tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = {
+  f0: t_ArchiveOverlayState;
+  f1: t_Established_ArchiveOverlayConsistent }
+
+predicate inv_String (_1: t_String)
+
+type t_DateTime_Utc
+
+type t_SavedQuery = {
+  id: Int64.t;
+  name: t_String;
+  sql: t_String;
+  created_at: t_DateTime_Utc;
+  updated_at: t_DateTime_Utc }
+
+predicate inv_DateTime_Utc (_1: t_DateTime_Utc)
+
+predicate inv_SavedQuery (_1: t_SavedQuery)
+
+axiom inv_axiom [@rewrite]: forall x: t_SavedQuery [inv_SavedQuery x]. inv_SavedQuery x
+    = (inv_String x.name /\ inv_String x.sql /\ inv_DateTime_Utc x.created_at /\ inv_DateTime_Utc x.updated_at)
+
+predicate invariant_ref_SavedQuery [@inline:trivial] (self: t_SavedQuery) = [%#sinvariant] inv_SavedQuery self
+
+meta "rewrite_def" predicate invariant_ref_SavedQuery
+
+predicate inv_ref_SavedQuery [@inline:trivial] (_1: t_SavedQuery) = invariant_ref_SavedQuery _1
+
+meta "rewrite_def" predicate inv_ref_SavedQuery
+
+predicate invariant_Seq_SavedQuery [@inline:trivial] (self: Seq.seq t_SavedQuery) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_SavedQuery (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_SavedQuery
+
+predicate inv_Seq_SavedQuery [@inline:trivial] (_1: Seq.seq t_SavedQuery) = invariant_Seq_SavedQuery _1
+
+meta "rewrite_def" predicate inv_Seq_SavedQuery
+
+function view_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) : Seq.seq t_SavedQuery
+
+axiom view_Vec_SavedQuery_Global_spec:
+  forall self: t_Vec_SavedQuery_Global. [%#svec'0] Seq.length (view_Vec_SavedQuery_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) =
+  [%#svec'1] inv_Seq_SavedQuery (view_Vec_SavedQuery_Global self)
+
+predicate inv_Vec_SavedQuery_Global (_1: t_Vec_SavedQuery_Global)
+
+axiom inv_axiom'0: forall x: t_Vec_SavedQuery_Global [inv_Vec_SavedQuery_Global x]. inv_Vec_SavedQuery_Global x
+    -> invariant_Vec_SavedQuery_Global x
+
+predicate inv_ArchiveOverlayState (_1: t_ArchiveOverlayState)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_ArchiveOverlayState [inv_ArchiveOverlayState x]. inv_ArchiveOverlayState x
+    = match x with
+      | OverlayNone -> true
+      | HelpOpen -> true
+      | ExportPickerOpen idx formats -> true
+      | SavePromptOpen text -> inv_String text
+      | SavedBrowserOpen entries idx -> inv_Vec_SavedQuery_Global entries
+      end
+
+predicate inv_Established_ArchiveOverlayConsistent (_1: t_Established_ArchiveOverlayConsistent)
+
+predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 103 0 103 70] (state: t_ArchiveOverlayState)
+
+predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent [@inline:trivial] (_1: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) =
+  inv_ArchiveOverlayState _1.f0 /\ inv_Established_ArchiveOverlayConsistent _1.f1
+
+meta "rewrite_def" predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec picker_move_down__creusot
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 85 0 88 65]
+  (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent)
+  (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
+  {[@stop_split] [@expl:picker_move_down__creusot requires] ([@stop_split] [@expl:picker_move_down__creusot 'state' type invariant] [%#sarchive_overlay'5] inv_ArchiveOverlayState state)
+  /\ ([@stop_split] [@expl:picker_move_down__creusot 'proof' type invariant] [%#sarchive_overlay'6] inv_Established_ArchiveOverlayConsistent proof)
+  /\ ([@stop_split] [@expl:picker_move_down__creusot requires] [%#sarchive_overlay'7] archive_overlay_consistent state)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {state = OverlayNone} (! bb1)
+    | br1 -> {state = HelpOpen} (! bb1)
+    | br2 (x0: UInt64.t) (x1: t_Vec_ExportFormat_Global) -> {state = ExportPickerOpen x0 x1} (! bb3)
+    | br3 (x0: t_String) -> {state = SavePromptOpen x0} (! bb1)
+    | br4 (x0: t_Vec_SavedQuery_Global) (x1: UInt64.t) -> {state = SavedBrowserOpen x0 x1} (! bb1) ]
+  | bb1 = s0 [ s0 = [ &other <- state ] s1 | s1 = [ &next <- other ] s2 | s2 = bb11 ]
+  | bb3 = s0
+    [ s0 = elim_ExportPickerOpen {state}
+        (fun (ridx: UInt64.t) (rformats: t_Vec_ExportFormat_Global) -> [ &idx <- ridx ] s1)
+    | s1 = elim_ExportPickerOpen {state}
+        (fun (ridx: UInt64.t) (rformats: t_Vec_ExportFormat_Global) -> [ &formats <- rformats ] s2)
+    | s2 = saturating_add [%#sarchive_overlay'0] {idx} {[%#sarchive_overlay] (1: UInt64.t)}
+        (fun (_x: UInt64.t) -> [ &_11 <- _x ] s3)
+    | s3 = len_ExportFormat [%#sarchive_overlay'1] {formats} (fun (_x: UInt64.t) -> [ &_14 <- _x ] s4)
+    | s4 = saturating_sub [%#sarchive_overlay'3] {_14} {[%#sarchive_overlay'2] (1: UInt64.t)}
+        (fun (_x: UInt64.t) -> [ &_13 <- _x ] s5)
+    | s5 = min_usize [%#sarchive_overlay'4] {_11} {_13} (fun (_x: UInt64.t) -> [ &new_idx <- _x ] s6)
+    | s6 = [ &next <- ExportPickerOpen new_idx formats ] s7
+    | s7 = bb11 ]
+  | bb11 = s0 [ s0 = [ &_ret <- { f0 = next; f1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = Any.any_l ()
+  | & state: t_ArchiveOverlayState = state
+  | & proof: t_Established_ArchiveOverlayConsistent = proof
+  | & next: t_ArchiveOverlayState = Any.any_l ()
+  | & idx: UInt64.t = Any.any_l ()
+  | & formats: t_Vec_ExportFormat_Global = Any.any_l ()
+  | & new_idx: UInt64.t = Any.any_l ()
+  | & _11: UInt64.t = Any.any_l ()
+  | & _13: UInt64.t = Any.any_l ()
+  | & _14: UInt64.t = Any.any_l ()
+  | & other: t_ArchiveOverlayState = Any.any_l () ])
+  [ return (result: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) ->
+  {[@stop_split] [@expl:picker_move_down__creusot ensures] ([@stop_split] [@expl:picker_move_down__creusot result type invariant] [%#sarchive_overlay'8] inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent result)
+    /\ ([@stop_split] [@expl:picker_move_down__creusot ensures] [%#sarchive_overlay'9] archive_overlay_consistent result.f0)}
+    (! return {result}) ]
