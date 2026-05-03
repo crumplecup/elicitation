@@ -468,16 +468,18 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             // ── Creusot contracts on the original function ────────────
             // Mirror the Kani cfg_attr approach: emit real
             // #[requires]/#[ensures] directly on the original function
-            // so `cargo creusot -p elicit_server` verifies the bodies.
-            // Use bare requires/ensures (Creusot built-in attributes,
-            // recognized natively by cargo-creusot without an import).
+            // so `cargo creusot -p elicit_server --features creusot`
+            // verifies the bodies.
+            // Use full ::creusot_std::macros:: paths so that no
+            // `use creusot_std::prelude::*;` import is needed at each
+            // call site — only `creusot-std` must be a dep.
             // cfg_attr is dropped before attr resolution under regular
-            // cargo (cfg(creusot) = false), so no creusot-std dep needed.
+            // cargo (cfg(creusot) = false), so the dep can be optional.
             let creusot_requires_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(creusot, requires(#inv_fn_ident(&#state_pat_tokens)))]
+                #[cfg_attr(creusot, ::creusot_std::macros::requires(#inv_fn_ident(&#state_pat_tokens)))]
             };
             let creusot_ensures_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(creusot, ensures(#inv_fn_ident(&result.0)))]
+                #[cfg_attr(creusot, ::creusot_std::macros::ensures(#inv_fn_ident(&result.0)))]
             };
             func.attrs.push(creusot_requires_attr);
             func.attrs.push(creusot_ensures_attr);

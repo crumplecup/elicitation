@@ -5,20 +5,22 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(creusot)]
-use crate::creusot::vsm_invariants::archive_overlay_consistent;
+use ::creusot_std::prelude::*;
+#[cfg(creusot)]
+use elicitation::Established;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
 #[cfg(creusot)]
 use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
-use elicit_server::archive::types::*;
+use crate::creusot::vsm_invariants::archive_overlay_consistent;
 #[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicitation::Established;
-#[cfg(creusot)]
-#[requires(true)]
-#[ensures(result = = true)]
+#[::creusot_std::macros::requires(true)]
+#[::creusot_std::macros::ensures(result = = true)]
 #[trusted]
 pub fn verify_archive_overlay_consistent_prop_creusot() -> bool {
     true

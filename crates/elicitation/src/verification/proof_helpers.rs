@@ -1092,8 +1092,8 @@ pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
     let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_creusot"), Span::call_site());
     quote! {
         #[cfg(creusot)]
-        #[requires(true)]
-        #[ensures(result == true)]
+        #[::creusot_std::macros::requires(true)]
+        #[::creusot_std::macros::ensures(result == true)]
         #[trusted]
         pub fn #fn_ident() -> bool {
             true
@@ -1689,8 +1689,8 @@ pub fn creusot_type_stub(type_name: &str) -> TokenStream {
     );
     quote! {
         #[cfg(creusot)]
-        #[requires(true)]
-        #[ensures(result == true)]
+        #[::creusot_std::macros::requires(true)]
+        #[::creusot_std::macros::ensures(result == true)]
         #[trusted]
         pub fn #fn_ident() -> bool {
             true
@@ -1858,8 +1858,8 @@ pub fn creusot_newtype_wrapper_harness(wrapper_name: &str) -> TokenStream {
     );
     quote! {
         #[cfg(creusot)]
-        #[requires(true)]
-        #[ensures(result == true)]
+        #[::creusot_std::macros::requires(true)]
+        #[::creusot_std::macros::ensures(result == true)]
         pub fn #fn_ident() -> bool {
             // Structural wrapper proof for this newtype.
             // Inner type proofs are composed via ElicitComplete::creusot_proof().
@@ -1934,8 +1934,8 @@ pub fn verus_formal_method_spec(
 /// `fn_name` is the snake_case function name.
 /// `contracts_in` and `contracts_out` are the proposition type names.
 ///
-/// Generates `{fn_name}__creusot_spec` with `#[requires(true)]` /
-/// `#[ensures(result == true)]` / `#[trusted]` annotations.
+/// Generates `{fn_name}__creusot_spec` with `#[::creusot_std::macros::requires(true)]` /
+/// `#[::creusot_std::macros::ensures(result == true)]` / `#[trusted]` annotations.
 pub fn creusot_formal_method_spec(
     fn_name: &str,
     contracts_in: &[&str],
@@ -1949,8 +1949,8 @@ pub fn creusot_formal_method_spec(
     quote! {
         #[doc = #doc]
         #[cfg(creusot)]
-        #[requires(true)]
-        #[ensures(result == true)]
+        #[::creusot_std::macros::requires(true)]
+        #[::creusot_std::macros::ensures(result == true)]
         #[trusted]
         pub fn #spec_fn() -> bool {
             true

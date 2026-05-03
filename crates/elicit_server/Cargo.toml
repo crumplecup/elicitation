@@ -88,6 +88,9 @@ proc-macro2 = { workspace = true }
 quote = { workspace = true }
 anyhow = { workspace = true }
 
+# Formal verification
+creusot-std = { workspace = true, optional = true }
+
 [features]
 emit = [
   "elicitation/emit",
@@ -102,6 +105,8 @@ emit = [
   "elicit_egui/emit",
 ]
 api = []
+## Enable Creusot deductive verification support.
+creusot = ["dep:creusot-std"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
