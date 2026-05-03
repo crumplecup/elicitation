@@ -1,0 +1,540 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 342 0 347 13 *)
+
+let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
+let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
+let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 74 20 74 76
+let%span svec'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 44 20 44 29
+let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span sboxed = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/boxed.rs" 48 8 48 18
+let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 352 18 352 19
+let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 343 4 343 6
+let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 344 4 344 10
+let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 345 4 345 9
+let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 346 4 346 11
+let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 338 11 338 28
+let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 339 11 339 27
+let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 347 5 347 13
+let%span slevel23'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 340 10 340 33
+let%span slevel23'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 341 10 341 35
+let%span slevel23'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 213 8 244 9
+let%span slevel23'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 274 8 277 9
+
+use creusot.int.UInt64
+use creusot.int.Int32
+use seq.Seq
+use creusot.prelude.Any
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_Vec_String_Global
+
+type t_C23EditState = { tag: t_String }
+
+type t_Option_C23EditState = None | Some t_C23EditState
+
+type t_Option_String = None'0 | Some'0 t_String
+
+type t_Vec_C23HistoryEntry_Global
+
+type t_Vec_C23SavedQuery_Global
+
+type t_Vec_C23Constraint_Global
+
+type t_Vec_C23Index_Global
+
+type t_C23Profile = { name: t_String; port: Int32.t }
+
+type t_C23State =
+  | ColumnDetail
+  | Loading t_String t_String
+  | DataGrid t_String t_String t_Vec_String_Global UInt64.t t_Option_C23EditState
+  | SqlEditor t_String t_Option_String bool t_Option_String
+  | DdlView t_String t_String t_String
+  | ExplainView t_String t_String t_String
+  | ExplainCompare t_String t_String t_String t_String
+  | HistoryView t_Vec_C23HistoryEntry_Global
+  | SavedView t_Vec_C23SavedQuery_Global
+  | ExportView t_String t_String t_Option_String
+  | HelpView
+  | MonitorView t_String bool
+  | AdminView t_String bool
+  | ErdView t_String t_String t_Option_String bool
+  | ConstraintView t_String t_String t_Vec_C23Constraint_Global bool
+  | IndexView t_String t_String t_Vec_C23Index_Global bool
+  | ConnectionEdit t_C23Profile
+  | ErrorView t_String
+
+predicate inv_String (_1: t_String)
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec'0] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_C23EditState (_1: t_C23EditState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C23EditState [inv_C23EditState x]. inv_C23EditState x = inv_String x.tag
+
+predicate inv_Option_C23EditState (_1: t_Option_C23EditState)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_Option_C23EditState [inv_Option_C23EditState x]. inv_Option_C23EditState x
+    = match x with
+      | None -> true
+      | Some f0 -> inv_C23EditState f0
+      end
+
+predicate inv_Option_String (_1: t_Option_String)
+
+axiom inv_axiom'2 [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
+    = match x with
+      | None'0 -> true
+      | Some'0 f0 -> inv_String f0
+      end
+
+type t_C23HistoryEntry = { text: t_String }
+
+predicate inv_C23HistoryEntry (_1: t_C23HistoryEntry)
+
+axiom inv_axiom'3 [@rewrite]: forall x: t_C23HistoryEntry [inv_C23HistoryEntry x]. inv_C23HistoryEntry x
+    = inv_String x.text
+
+predicate invariant_ref_C23HistoryEntry [@inline:trivial] (self: t_C23HistoryEntry) =
+  [%#sinvariant] inv_C23HistoryEntry self
+
+meta "rewrite_def" predicate invariant_ref_C23HistoryEntry
+
+predicate inv_ref_C23HistoryEntry [@inline:trivial] (_1: t_C23HistoryEntry) = invariant_ref_C23HistoryEntry _1
+
+meta "rewrite_def" predicate inv_ref_C23HistoryEntry
+
+predicate invariant_Seq_C23HistoryEntry [@inline:trivial] (self: Seq.seq t_C23HistoryEntry) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_C23HistoryEntry (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_C23HistoryEntry
+
+predicate inv_Seq_C23HistoryEntry [@inline:trivial] (_1: Seq.seq t_C23HistoryEntry) = invariant_Seq_C23HistoryEntry _1
+
+meta "rewrite_def" predicate inv_Seq_C23HistoryEntry
+
+function view_Vec_C23HistoryEntry_Global (self: t_Vec_C23HistoryEntry_Global) : Seq.seq t_C23HistoryEntry
+
+axiom view_Vec_C23HistoryEntry_Global_spec:
+  forall self: t_Vec_C23HistoryEntry_Global. [%#svec] Seq.length (view_Vec_C23HistoryEntry_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_C23HistoryEntry_Global (self: t_Vec_C23HistoryEntry_Global) =
+  [%#svec'0] inv_Seq_C23HistoryEntry (view_Vec_C23HistoryEntry_Global self)
+
+predicate inv_Vec_C23HistoryEntry_Global (_1: t_Vec_C23HistoryEntry_Global)
+
+axiom inv_axiom'4:
+  forall x: t_Vec_C23HistoryEntry_Global [inv_Vec_C23HistoryEntry_Global x]. inv_Vec_C23HistoryEntry_Global x
+    -> invariant_Vec_C23HistoryEntry_Global x
+
+type t_C23SavedQuery = { name'0: t_String }
+
+predicate inv_C23SavedQuery (_1: t_C23SavedQuery)
+
+axiom inv_axiom'5 [@rewrite]: forall x: t_C23SavedQuery [inv_C23SavedQuery x]. inv_C23SavedQuery x = inv_String x.name'0
+
+predicate invariant_ref_C23SavedQuery [@inline:trivial] (self: t_C23SavedQuery) = [%#sinvariant] inv_C23SavedQuery self
+
+meta "rewrite_def" predicate invariant_ref_C23SavedQuery
+
+predicate inv_ref_C23SavedQuery [@inline:trivial] (_1: t_C23SavedQuery) = invariant_ref_C23SavedQuery _1
+
+meta "rewrite_def" predicate inv_ref_C23SavedQuery
+
+predicate invariant_Seq_C23SavedQuery [@inline:trivial] (self: Seq.seq t_C23SavedQuery) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_C23SavedQuery (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_C23SavedQuery
+
+predicate inv_Seq_C23SavedQuery [@inline:trivial] (_1: Seq.seq t_C23SavedQuery) = invariant_Seq_C23SavedQuery _1
+
+meta "rewrite_def" predicate inv_Seq_C23SavedQuery
+
+function view_Vec_C23SavedQuery_Global (self: t_Vec_C23SavedQuery_Global) : Seq.seq t_C23SavedQuery
+
+axiom view_Vec_C23SavedQuery_Global_spec:
+  forall self: t_Vec_C23SavedQuery_Global. [%#svec] Seq.length (view_Vec_C23SavedQuery_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_C23SavedQuery_Global (self: t_Vec_C23SavedQuery_Global) =
+  [%#svec'0] inv_Seq_C23SavedQuery (view_Vec_C23SavedQuery_Global self)
+
+predicate inv_Vec_C23SavedQuery_Global (_1: t_Vec_C23SavedQuery_Global)
+
+axiom inv_axiom'6: forall x: t_Vec_C23SavedQuery_Global [inv_Vec_C23SavedQuery_Global x]. inv_Vec_C23SavedQuery_Global x
+    -> invariant_Vec_C23SavedQuery_Global x
+
+type t_C23Constraint = { name'1: t_String }
+
+predicate inv_C23Constraint (_1: t_C23Constraint)
+
+axiom inv_axiom'7 [@rewrite]: forall x: t_C23Constraint [inv_C23Constraint x]. inv_C23Constraint x = inv_String x.name'1
+
+predicate invariant_ref_C23Constraint [@inline:trivial] (self: t_C23Constraint) = [%#sinvariant] inv_C23Constraint self
+
+meta "rewrite_def" predicate invariant_ref_C23Constraint
+
+predicate inv_ref_C23Constraint [@inline:trivial] (_1: t_C23Constraint) = invariant_ref_C23Constraint _1
+
+meta "rewrite_def" predicate inv_ref_C23Constraint
+
+predicate invariant_Seq_C23Constraint [@inline:trivial] (self: Seq.seq t_C23Constraint) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_C23Constraint (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_C23Constraint
+
+predicate inv_Seq_C23Constraint [@inline:trivial] (_1: Seq.seq t_C23Constraint) = invariant_Seq_C23Constraint _1
+
+meta "rewrite_def" predicate inv_Seq_C23Constraint
+
+function view_Vec_C23Constraint_Global (self: t_Vec_C23Constraint_Global) : Seq.seq t_C23Constraint
+
+axiom view_Vec_C23Constraint_Global_spec:
+  forall self: t_Vec_C23Constraint_Global. [%#svec] Seq.length (view_Vec_C23Constraint_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_C23Constraint_Global (self: t_Vec_C23Constraint_Global) =
+  [%#svec'0] inv_Seq_C23Constraint (view_Vec_C23Constraint_Global self)
+
+predicate inv_Vec_C23Constraint_Global (_1: t_Vec_C23Constraint_Global)
+
+axiom inv_axiom'8: forall x: t_Vec_C23Constraint_Global [inv_Vec_C23Constraint_Global x]. inv_Vec_C23Constraint_Global x
+    -> invariant_Vec_C23Constraint_Global x
+
+type t_C23Index = { name'2: t_String }
+
+predicate inv_C23Index (_1: t_C23Index)
+
+axiom inv_axiom'9 [@rewrite]: forall x: t_C23Index [inv_C23Index x]. inv_C23Index x = inv_String x.name'2
+
+predicate invariant_ref_C23Index [@inline:trivial] (self: t_C23Index) = [%#sinvariant] inv_C23Index self
+
+meta "rewrite_def" predicate invariant_ref_C23Index
+
+predicate inv_ref_C23Index [@inline:trivial] (_1: t_C23Index) = invariant_ref_C23Index _1
+
+meta "rewrite_def" predicate inv_ref_C23Index
+
+predicate invariant_Seq_C23Index [@inline:trivial] (self: Seq.seq t_C23Index) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_C23Index (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_C23Index
+
+predicate inv_Seq_C23Index [@inline:trivial] (_1: Seq.seq t_C23Index) = invariant_Seq_C23Index _1
+
+meta "rewrite_def" predicate inv_Seq_C23Index
+
+function view_Vec_C23Index_Global (self: t_Vec_C23Index_Global) : Seq.seq t_C23Index
+
+axiom view_Vec_C23Index_Global_spec:
+  forall self: t_Vec_C23Index_Global. [%#svec] Seq.length (view_Vec_C23Index_Global self) <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_C23Index_Global (self: t_Vec_C23Index_Global) =
+  [%#svec'0] inv_Seq_C23Index (view_Vec_C23Index_Global self)
+
+predicate inv_Vec_C23Index_Global (_1: t_Vec_C23Index_Global)
+
+axiom inv_axiom'10: forall x: t_Vec_C23Index_Global [inv_Vec_C23Index_Global x]. inv_Vec_C23Index_Global x
+    -> invariant_Vec_C23Index_Global x
+
+predicate inv_C23Profile (_1: t_C23Profile)
+
+axiom inv_axiom'11 [@rewrite]: forall x: t_C23Profile [inv_C23Profile x]. inv_C23Profile x = inv_String x.name
+
+predicate invariant_Box_C23Profile_Global (self: t_C23Profile) = [%#sboxed] inv_C23Profile self
+
+predicate inv_Box_C23Profile_Global [@inline:trivial] (_1: t_C23Profile) = invariant_Box_C23Profile_Global _1
+
+meta "rewrite_def" predicate inv_Box_C23Profile_Global
+
+predicate inv_C23State (_1: t_C23State)
+
+axiom inv_axiom'12 [@rewrite]: forall x: t_C23State [inv_C23State x]. inv_C23State x
+    = match x with
+      | ColumnDetail -> true
+      | Loading schema label' -> inv_String schema /\ inv_String label'
+      | DataGrid schema table entries grid_row edit_state -> inv_String schema
+      /\ inv_String table /\ inv_Vec_String_Global entries /\ inv_Option_C23EditState edit_state
+      | SqlEditor text'0 result running error -> inv_String text'0
+      /\ inv_Option_String result /\ inv_Option_String error
+      | DdlView schema table ddl -> inv_String schema /\ inv_String table /\ inv_String ddl
+      | ExplainView schema table plan -> inv_String schema /\ inv_String table /\ inv_String plan
+      | ExplainCompare schema table left right -> inv_String schema
+      /\ inv_String table /\ inv_String left /\ inv_String right
+      | HistoryView entries -> inv_Vec_C23HistoryEntry_Global entries
+      | SavedView entries -> inv_Vec_C23SavedQuery_Global entries
+      | ExportView schema table result -> inv_String schema /\ inv_String table /\ inv_Option_String result
+      | HelpView -> true
+      | MonitorView snapshot loading -> inv_String snapshot
+      | AdminView snapshot loading -> inv_String snapshot
+      | ErdView schema diagram layout loading -> inv_String schema /\ inv_String diagram /\ inv_Option_String layout
+      | ConstraintView schema table constraints loading -> inv_String schema
+      /\ inv_String table /\ inv_Vec_C23Constraint_Global constraints
+      | IndexView schema table indexes loading -> inv_String schema
+      /\ inv_String table /\ inv_Vec_C23Index_Global indexes
+      | ConnectionEdit profile -> inv_Box_C23Profile_Global profile
+      | ErrorView message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+function index_Vec_String_Global [@inline:trivial] (self: t_Vec_String_Global) (ix: int) : t_String =
+  [%#svec'2] Seq.get (view_Vec_String_Global self) ix
+
+meta "rewrite_def" function index_Vec_String_Global
+
+predicate resolve_Vec_String_Global [@inline:trivial] (self: t_Vec_String_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global self)
+    -> resolve_String (index_Vec_String_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_String_Global
+
+predicate resolve_Vec_String_Global'0 (_1: t_Vec_String_Global)
+
+axiom resolve_axiom: forall x: t_Vec_String_Global [resolve_Vec_String_Global'0 x]. resolve_Vec_String_Global'0 x
+    -> resolve_Vec_String_Global x
+
+predicate resolve_C23EditState (_1: t_C23EditState)
+
+axiom resolve_axiom'0 [@rewrite]: forall x: t_C23EditState [resolve_C23EditState x]. resolve_C23EditState x
+    = resolve_String x.tag
+
+predicate resolve_Option_C23EditState (_1: t_Option_C23EditState)
+
+axiom resolve_axiom'1 [@rewrite]:
+  forall x: t_Option_C23EditState [resolve_Option_C23EditState x]. resolve_Option_C23EditState x
+    = match x with
+      | None -> true
+      | Some x0 -> resolve_C23EditState x0
+      end
+
+predicate resolve_Option_String (_1: t_Option_String)
+
+axiom resolve_axiom'2 [@rewrite]: forall x: t_Option_String [resolve_Option_String x]. resolve_Option_String x
+    = match x with
+      | None'0 -> true
+      | Some'0 x0 -> resolve_String x0
+      end
+
+predicate resolve_C23HistoryEntry (_1: t_C23HistoryEntry)
+
+axiom resolve_axiom'3 [@rewrite]: forall x: t_C23HistoryEntry [resolve_C23HistoryEntry x]. resolve_C23HistoryEntry x
+    = resolve_String x.text
+
+function index_Vec_C23HistoryEntry_Global [@inline:trivial] (self: t_Vec_C23HistoryEntry_Global) (ix: int) : t_C23HistoryEntry
+ = [%#svec'2] Seq.get (view_Vec_C23HistoryEntry_Global self) ix
+
+meta "rewrite_def" function index_Vec_C23HistoryEntry_Global
+
+predicate resolve_Vec_C23HistoryEntry_Global [@inline:trivial] (self: t_Vec_C23HistoryEntry_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_C23HistoryEntry_Global self)
+    -> resolve_C23HistoryEntry (index_Vec_C23HistoryEntry_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_C23HistoryEntry_Global
+
+predicate resolve_Vec_C23HistoryEntry_Global'0 (_1: t_Vec_C23HistoryEntry_Global)
+
+axiom resolve_axiom'4:
+  forall x: t_Vec_C23HistoryEntry_Global [resolve_Vec_C23HistoryEntry_Global'0 x]. resolve_Vec_C23HistoryEntry_Global'0 x
+    -> resolve_Vec_C23HistoryEntry_Global x
+
+predicate resolve_C23SavedQuery (_1: t_C23SavedQuery)
+
+axiom resolve_axiom'5 [@rewrite]: forall x: t_C23SavedQuery [resolve_C23SavedQuery x]. resolve_C23SavedQuery x
+    = resolve_String x.name'0
+
+function index_Vec_C23SavedQuery_Global [@inline:trivial] (self: t_Vec_C23SavedQuery_Global) (ix: int) : t_C23SavedQuery
+ = [%#svec'2] Seq.get (view_Vec_C23SavedQuery_Global self) ix
+
+meta "rewrite_def" function index_Vec_C23SavedQuery_Global
+
+predicate resolve_Vec_C23SavedQuery_Global [@inline:trivial] (self: t_Vec_C23SavedQuery_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_C23SavedQuery_Global self)
+    -> resolve_C23SavedQuery (index_Vec_C23SavedQuery_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_C23SavedQuery_Global
+
+predicate resolve_Vec_C23SavedQuery_Global'0 (_1: t_Vec_C23SavedQuery_Global)
+
+axiom resolve_axiom'6:
+  forall x: t_Vec_C23SavedQuery_Global [resolve_Vec_C23SavedQuery_Global'0 x]. resolve_Vec_C23SavedQuery_Global'0 x
+    -> resolve_Vec_C23SavedQuery_Global x
+
+predicate resolve_C23Constraint (_1: t_C23Constraint)
+
+axiom resolve_axiom'7 [@rewrite]: forall x: t_C23Constraint [resolve_C23Constraint x]. resolve_C23Constraint x
+    = resolve_String x.name'1
+
+function index_Vec_C23Constraint_Global [@inline:trivial] (self: t_Vec_C23Constraint_Global) (ix: int) : t_C23Constraint
+ = [%#svec'2] Seq.get (view_Vec_C23Constraint_Global self) ix
+
+meta "rewrite_def" function index_Vec_C23Constraint_Global
+
+predicate resolve_Vec_C23Constraint_Global [@inline:trivial] (self: t_Vec_C23Constraint_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_C23Constraint_Global self)
+    -> resolve_C23Constraint (index_Vec_C23Constraint_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_C23Constraint_Global
+
+predicate resolve_Vec_C23Constraint_Global'0 (_1: t_Vec_C23Constraint_Global)
+
+axiom resolve_axiom'8:
+  forall x: t_Vec_C23Constraint_Global [resolve_Vec_C23Constraint_Global'0 x]. resolve_Vec_C23Constraint_Global'0 x
+    -> resolve_Vec_C23Constraint_Global x
+
+predicate resolve_C23Index (_1: t_C23Index)
+
+axiom resolve_axiom'9 [@rewrite]: forall x: t_C23Index [resolve_C23Index x]. resolve_C23Index x
+    = resolve_String x.name'2
+
+function index_Vec_C23Index_Global [@inline:trivial] (self: t_Vec_C23Index_Global) (ix: int) : t_C23Index =
+  [%#svec'2] Seq.get (view_Vec_C23Index_Global self) ix
+
+meta "rewrite_def" function index_Vec_C23Index_Global
+
+predicate resolve_Vec_C23Index_Global [@inline:trivial] (self: t_Vec_C23Index_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_C23Index_Global self)
+    -> resolve_C23Index (index_Vec_C23Index_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_C23Index_Global
+
+predicate resolve_Vec_C23Index_Global'0 (_1: t_Vec_C23Index_Global)
+
+axiom resolve_axiom'10:
+  forall x: t_Vec_C23Index_Global [resolve_Vec_C23Index_Global'0 x]. resolve_Vec_C23Index_Global'0 x
+    -> resolve_Vec_C23Index_Global x
+
+predicate resolve_C23Profile (_1: t_C23Profile)
+
+axiom resolve_axiom'11 [@rewrite]: forall x: t_C23Profile [resolve_C23Profile x]. resolve_C23Profile x
+    = resolve_String x.name
+
+predicate resolve_Box_C23Profile_Global [@inline:trivial] (_1: t_C23Profile) = resolve_C23Profile _1
+
+meta "rewrite_def" predicate resolve_Box_C23Profile_Global
+
+predicate resolve_C23State (_1: t_C23State)
+
+axiom resolve_axiom'12 [@rewrite]: forall x: t_C23State [resolve_C23State x]. resolve_C23State x
+    = match x with
+      | ColumnDetail -> true
+      | Loading x0 x1 -> resolve_String x0 /\ resolve_String x1
+      | DataGrid x0 x1 x2 x3 x4 -> resolve_String x0
+      /\ resolve_String x1 /\ resolve_Vec_String_Global'0 x2 /\ resolve_Option_C23EditState x4
+      | SqlEditor x0 x1 x2 x3 -> resolve_String x0 /\ resolve_Option_String x1 /\ resolve_Option_String x3
+      | DdlView x0 x1 x2 -> resolve_String x0 /\ resolve_String x1 /\ resolve_String x2
+      | ExplainView x0 x1 x2 -> resolve_String x0 /\ resolve_String x1 /\ resolve_String x2
+      | ExplainCompare x0 x1 x2 x3 -> resolve_String x0 /\ resolve_String x1 /\ resolve_String x2 /\ resolve_String x3
+      | HistoryView x0 -> resolve_Vec_C23HistoryEntry_Global'0 x0
+      | SavedView x0 -> resolve_Vec_C23SavedQuery_Global'0 x0
+      | ExportView x0 x1 x2 -> resolve_String x0 /\ resolve_String x1 /\ resolve_Option_String x2
+      | HelpView -> true
+      | MonitorView x0 x1 -> resolve_String x0
+      | AdminView x0 x1 -> resolve_String x0
+      | ErdView x0 x1 x2 x3 -> resolve_String x0 /\ resolve_String x1 /\ resolve_Option_String x2
+      | ConstraintView x0 x1 x2 x3 -> resolve_String x0 /\ resolve_String x1 /\ resolve_Vec_C23Constraint_Global'0 x2
+      | IndexView x0 x1 x2 x3 -> resolve_String x0 /\ resolve_String x1 /\ resolve_Vec_C23Index_Global'0 x2
+      | ConnectionEdit x0 -> resolve_Box_C23Profile_Global x0
+      | ErrorView x0 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 211 0 211 43] (s: t_C23State) =
+  [%#slevel23'9] match s with
+    | ColumnDetail -> true
+    | Loading schema label' -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String label') > 0
+    | DataGrid schema table entries grid_row _ -> Seq.length (view_String schema) > 0
+    /\ Seq.length (view_String table) > 0 /\ UInt64.t'int grid_row <= Seq.length (view_Vec_String_Global entries)
+    | SqlEditor _ result running _ -> running
+    -> match result with
+      | None'0 -> true
+      | Some'0 _ -> false
+      end
+    | DdlView schema table _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | ExplainView schema table _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | ExplainCompare schema table _ _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | HistoryView _ -> true
+    | SavedView _ -> true
+    | ExportView schema table _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | HelpView -> true
+    | MonitorView _ _ -> true
+    | AdminView _ _ -> true
+    | ErdView schema _ _ _ -> Seq.length (view_String schema) > 0
+    | ConstraintView schema table _ _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | IndexView schema table _ _ -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String table) > 0
+    | ConnectionEdit profile -> Seq.length (view_String profile.name) > 0 /\ Int32.to_int profile.port > 0
+    | ErrorView message -> Seq.length (view_String message) > 0
+    end
+
+predicate c23_is_data_grid [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 272 0 272 45] (s: t_C23State) =
+  [%#slevel23'10] match s with
+    | DataGrid _ _ _ _ _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c23_load_data_grid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 342 0 347 13] (_s: t_C23State)
+  (schema: t_String) (table: t_String) (entries: t_Vec_String_Global) (return (x: t_C23State)) =
+  {[@stop_split] [@expl:c23_load_data_grid requires] ([@stop_split] [@expl:c23_load_data_grid '_s' type invariant] [%#slevel23'0] inv_C23State _s)
+  /\ ([@stop_split] [@expl:c23_load_data_grid 'schema' type invariant] [%#slevel23'1] inv_String schema)
+  /\ ([@stop_split] [@expl:c23_load_data_grid 'table' type invariant] [%#slevel23'2] inv_String table)
+  /\ ([@stop_split] [@expl:c23_load_data_grid 'entries' type invariant] [%#slevel23'3] inv_Vec_String_Global entries)
+  /\ ([@stop_split] [@expl:c23_load_data_grid requires #0] [%#slevel23'4] Seq.length (view_String schema) > 0)
+  /\ ([@stop_split] [@expl:c23_load_data_grid requires #1] [%#slevel23'5] Seq.length (view_String table) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C23State _s} any) ]
+    | s1 = -{resolve_C23State _s}- s2
+    | s2 = [ &_14 <- None ] s3
+    | s3 = [ &_ret <- DataGrid schema table entries ([%#slevel23] (0: UInt64.t)) _14 ] s4
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C23State = Any.any_l ()
+  | & _s: t_C23State = _s
+  | & schema: t_String = schema
+  | & table: t_String = table
+  | & entries: t_Vec_String_Global = entries
+  | & _14: t_Option_C23EditState = Any.any_l () ])
+  [ return (result: t_C23State) ->
+  {[@stop_split] [@expl:c23_load_data_grid ensures] ([@stop_split] [@expl:c23_load_data_grid result type invariant] [%#slevel23'6] inv_C23State result)
+    /\ ([@stop_split] [@expl:c23_load_data_grid ensures #0] [%#slevel23'7] c23_consistent result)
+    /\ ([@stop_split] [@expl:c23_load_data_grid ensures #1] [%#slevel23'8] c23_is_data_grid result)}
+    (! return {result}) ]

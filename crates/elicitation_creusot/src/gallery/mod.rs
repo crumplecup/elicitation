@@ -33,6 +33,10 @@
 //! | [`level17`] | Nested enum field + backend routing  | Nested enum match in `#[logic]`; routing guard chains through lifecycle? |
 //! | [`level18`] | Full `ArchiveConnectionState` replica | All C15–C17 patterns combined; production-identical structure? |
 //! | [`level19`] | `ArchiveConnectionMachine` wrapper    | Counter + routing guards + struct propagation simultaneously?  |
+//! | [`level20`] | `Option<T>` fields + bool implication | `Option<String>`/`Option<Struct>` in `#[logic]`; `*running ==>` invariant? |
+//! | [`level21`] | `Vec<T>` sequence + `usize` cursor    | `forall` quantifier over Vec; cursor-in-bounds after saturating move?      |
+//! | [`level22`] | `Box<T>` field access in `#[logic]`   | Pearlite deref of boxed struct fields; invariant on boxed content?         |
+//! | [`level23`] | 18-variant scale test (panel machine) | Alt-Ergo closes 18-arm match? All patterns combined at production scale?   |
 //!
 //! ## Run all levels
 //!
@@ -68,3 +72,7 @@ pub mod level16;
 pub mod level17;
 pub mod level18;
 pub mod level19;
+pub mod level20;
+pub mod level21;
+pub mod level22;
+pub mod level23;

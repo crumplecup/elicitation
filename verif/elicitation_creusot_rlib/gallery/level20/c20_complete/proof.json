@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c20_complete": { "prover": "cvc5", "time": 0.019 },
+      "vc_elim_Editing": { "prover": "cvc5", "time": 0.01 }
+    }
+  }
+}

@@ -1,0 +1,209 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 0 135 47 *)
+
+let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 115 16 115 20
+let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 114 18 114 40
+let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
+let%span svec'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
+let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span slevel21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 138 22 138 35
+let%span slevel21'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 138 51 138 52
+let%span slevel21'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 138 22 138 53
+let%span slevel21'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 140 46 140 47
+let%span slevel21'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 140 24 140 48
+let%span slevel21'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 140 24 140 57
+let%span slevel21'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 23 135 24
+let%span slevel21'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 131 11 131 29
+let%span slevel21'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 132 11 132 28
+let%span slevel21'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 39 135 47
+let%span slevel21'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 133 10 133 33
+let%span slevel21'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 134 10 134 32
+let%span slevel21'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 87 8 93 9
+let%span slevel21'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 104 16 104 71
+let%span snum = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 325 20 326 51
+let%span snum'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 329 26 329 83
+let%span snum'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 330 26 330 83
+let%span snum'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 325 20 326 51
+let%span snum'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 329 26 329 83
+let%span snum'4 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 330 26 330 83
+let%span snum'5 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/num.rs" 25 28 25 33
+let%span scmp = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 87 26 87 66
+let%span scmp'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 88 26 88 63
+let%span scmp'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 89 26 89 55
+let%span scmp'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 90 26 90 79
+let%span scmp'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/cmp.rs" 91 26 91 77
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.prelude.Any
+use creusot.prelude.Char
+use int.Int
+
+type t_Vec_String_Global
+
+type t_C21State = Empty | Loaded t_Vec_String_Global UInt64.t
+
+let rec elim_Loaded (_x: t_C21State) (return (entries: t_Vec_String_Global) (cursor: UInt64.t)) = any
+  [ _k (entries: t_Vec_String_Global) (cursor: UInt64.t) -> {Loaded entries cursor = _x} (! return {entries} {cursor})
+  | _chk -> (! {[@expl:elim Loaded] match _x with
+      | Loaded _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+type t_String
+
+predicate inv_String (_1: t_String)
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec'1] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec'2] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate invariant_ref_Vec_String_Global [@inline:trivial] (self: t_Vec_String_Global) =
+  [%#sinvariant] inv_Vec_String_Global self
+
+meta "rewrite_def" predicate invariant_ref_Vec_String_Global
+
+predicate inv_ref_Vec_String_Global [@inline:trivial] (_1: t_Vec_String_Global) = invariant_ref_Vec_String_Global _1
+
+meta "rewrite_def" predicate inv_ref_Vec_String_Global
+
+let rec len_String (self_: t_Vec_String_Global) (return (x: UInt64.t)) =
+  {[@stop_split] [@expl:len 'self_' type invariant] [%#svec] inv_ref_Vec_String_Global self_}
+  any
+  [ return (result: UInt64.t) -> {[@stop_split] [@expl:len ensures] [%#svec'0] UInt64.t'int result
+    = Seq.length (view_Vec_String_Global self_)}
+    (! return {result}) ]
+
+constant const_MIN: UInt64.t = (0: UInt64.t)
+
+let rec saturating_sub (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:saturating_sub ensures] ([@stop_split] [@expl:saturating_sub ensures #0] [%#snum] UInt64.t'int self_
+            - UInt64.t'int rhs
+          >= UInt64.t'int const_MIN
+        /\ UInt64.t'int self_ - UInt64.t'int rhs <= UInt64.t'int const_MAX
+      -> UInt64.t'int result = UInt64.t'int self_ - UInt64.t'int rhs)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #1] [%#snum'0] UInt64.t'int self_ - UInt64.t'int rhs
+        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #2] [%#snum'1] UInt64.t'int self_ - UInt64.t'int rhs
+      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
+    (! return {result}) ]
+
+let rec saturating_add (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:saturating_add ensures] ([@stop_split] [@expl:saturating_add ensures #0] [%#snum'2] UInt64.t'int self_
+            + UInt64.t'int rhs
+          >= UInt64.t'int const_MIN
+        /\ UInt64.t'int self_ + UInt64.t'int rhs <= UInt64.t'int const_MAX
+      -> UInt64.t'int result = UInt64.t'int self_ + UInt64.t'int rhs)
+    /\ ([@stop_split] [@expl:saturating_add ensures #1] [%#snum'3] UInt64.t'int self_ + UInt64.t'int rhs
+        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
+    /\ ([@stop_split] [@expl:saturating_add ensures #2] [%#snum'4] UInt64.t'int self_ + UInt64.t'int rhs
+      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
+    (! return {result}) ]
+
+function deep_model_usize [@inline:trivial] (self: UInt64.t) : int = [%#snum'5] UInt64.t'int self
+
+meta "rewrite_def" function deep_model_usize
+
+let rec min_usize (self_: UInt64.t) (o: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:min_usize ensures] ([@stop_split] [@expl:min ensures #0] [%#scmp] deep_model_usize result
+      <= deep_model_usize self_)
+    /\ ([@stop_split] [@expl:min ensures #1] [%#scmp'0] deep_model_usize result <= deep_model_usize o)
+    /\ ([@stop_split] [@expl:min ensures #2] [%#scmp'1] result = self_ \/ result = o)
+    /\ ([@stop_split] [@expl:min ensures #3] [%#scmp'2] deep_model_usize self_ < deep_model_usize o -> result = self_)
+    /\ ([@stop_split] [@expl:min ensures #4] [%#scmp'3] deep_model_usize o <= deep_model_usize self_ -> result = o)}
+    (! return {result}) ]
+
+predicate inv_C21State (_1: t_C21State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C21State [inv_C21State x]. inv_C21State x
+    = match x with
+      | Empty -> true
+      | Loaded entries cursor -> inv_Vec_String_Global entries
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c21_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 85 0 85 43] (s: t_C21State) =
+  [%#slevel21'11] match s with
+    | Empty -> true
+    | Loaded entries cursor -> Seq.length (view_Vec_String_Global entries) > 0
+    /\ UInt64.t'int cursor < Seq.length (view_Vec_String_Global entries)
+    /\ (forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global entries)
+      -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)
+    end
+
+predicate c21_is_loaded [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 103 0 103 42] (s: t_C21State) =
+  [%#slevel21'12] match s with
+    | Loaded _ _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c21_cursor_down [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 0 135 47]
+  (s: t_C21State) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_cursor_down requires] ([@stop_split] [@expl:c21_cursor_down 's' type invariant] [%#slevel21'5] inv_C21State s)
+  /\ ([@stop_split] [@expl:c21_cursor_down requires #0] [%#slevel21'6] c21_consistent s)
+  /\ ([@stop_split] [@expl:c21_cursor_down requires #1] [%#slevel21'7] c21_is_loaded s)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {s = Empty} (! bb1) | br1 (x0: t_Vec_String_Global) (x1: UInt64.t) -> {s = Loaded x0 x1} (! bb3) ]
+  | bb1 = s0 [ s0 = [ &other <- s ] s1 | s1 = [ &_ret <- other ] s2 | s2 = return {_ret} ]
+  | bb3 = s0
+    [ s0 = elim_Loaded {s} (fun (rentries: t_Vec_String_Global) (rcursor: UInt64.t) -> [ &entries <- rentries ] s1)
+    | s1 = elim_Loaded {s} (fun (rentries: t_Vec_String_Global) (rcursor: UInt64.t) -> [ &cursor <- rcursor ] s2)
+    | s2 = len_String [%#slevel21] {entries} (fun (_x: UInt64.t) -> [ &_12 <- _x ] s3)
+    | s3 = saturating_sub [%#slevel21'1] {_12} {[%#slevel21'0] (1: UInt64.t)} (fun (_x: UInt64.t) -> [ &max <- _x ] s4)
+    | s4 = saturating_add [%#slevel21'3] {cursor} {[%#slevel21'2] (1: UInt64.t)}
+        (fun (_x: UInt64.t) -> [ &_15 <- _x ] s5)
+    | s5 = min_usize [%#slevel21'4] {_15} {max} (fun (_x: UInt64.t) -> [ &_14 <- _x ] s6)
+    | s6 = [ &_ret <- Loaded entries _14 ] s7
+    | s7 = return {_ret} ] ]
+  [ & _ret: t_C21State = Any.any_l ()
+  | & s: t_C21State = s
+  | & entries: t_Vec_String_Global = Any.any_l ()
+  | & cursor: UInt64.t = Any.any_l ()
+  | & max: UInt64.t = Any.any_l ()
+  | & _12: UInt64.t = Any.any_l ()
+  | & _14: UInt64.t = Any.any_l ()
+  | & _15: UInt64.t = Any.any_l ()
+  | & other: t_C21State = Any.any_l () ])
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_cursor_down ensures] ([@stop_split] [@expl:c21_cursor_down result type invariant] [%#slevel21'8] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_cursor_down ensures #0] [%#slevel21'9] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_cursor_down ensures #1] [%#slevel21'10] c21_is_loaded result)}
+    (! return {result}) ]

@@ -1,0 +1,67 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 98 0 98 28 *)
+
+let%span slevel22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 98 20 98 28
+let%span slevel22'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 96 10 96 33
+let%span slevel22'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 97 10 97 30
+let%span slevel22'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 61 8 65 9
+let%span slevel22'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 73 8 76 9
+let%span sboxed = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/boxed.rs" 48 8 48 18
+
+use creusot.int.Int32
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_C22Profile = { name: t_String; port: Int32.t }
+
+type t_C22State = Idle | Editing t_C22Profile
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C22Profile (_1: t_C22Profile)
+
+axiom inv_axiom [@rewrite]: forall x: t_C22Profile [inv_C22Profile x]. inv_C22Profile x = inv_String x.name
+
+predicate invariant_Box_C22Profile_Global (self: t_C22Profile) = [%#sboxed] inv_C22Profile self
+
+predicate inv_Box_C22Profile_Global [@inline:trivial] (_1: t_C22Profile) = invariant_Box_C22Profile_Global _1
+
+meta "rewrite_def" predicate inv_Box_C22Profile_Global
+
+predicate inv_C22State (_1: t_C22State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C22State [inv_C22State x]. inv_C22State x
+    = match x with
+      | Idle -> true
+      | Editing profile -> inv_Box_C22Profile_Global profile
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c22_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 59 0 59 43] (s: t_C22State) =
+  [%#slevel22'2] match s with
+    | Idle -> true
+    | Editing profile -> Seq.length (view_String profile.name) > 0 /\ Int32.to_int profile.port > 0
+    end
+
+predicate c22_is_idle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 71 0 71 40] (s: t_C22State) =
+  [%#slevel22'3] match s with
+    | Idle -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c22_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 98 0 98 28]
+  (return (x: t_C22State)) = (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- Idle ] s1 | s1 = return {_ret} ] ] [ & _ret: t_C22State = Any.any_l () ])
+  [ return (result: t_C22State) ->
+  {[@stop_split] [@expl:c22_new ensures] ([@stop_split] [@expl:c22_new result type invariant] [%#slevel22] inv_C22State result)
+    /\ ([@stop_split] [@expl:c22_new ensures #0] [%#slevel22'0] c22_consistent result)
+    /\ ([@stop_split] [@expl:c22_new ensures #1] [%#slevel22'1] c22_is_idle result)}
+    (! return {result}) ]

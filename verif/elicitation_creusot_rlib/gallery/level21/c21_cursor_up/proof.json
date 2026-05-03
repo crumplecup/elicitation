@@ -1,0 +1,10 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c21_cursor_up": { "prover": "cvc5", "time": 0.021 },
+      "vc_elim_Loaded": { "prover": "cvc5", "time": 0.011 },
+      "vc_saturating_sub": { "prover": "cvc5", "time": 0.017 }
+    }
+  }
+}

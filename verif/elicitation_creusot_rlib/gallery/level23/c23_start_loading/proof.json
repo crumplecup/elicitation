@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c23_start_loading": { "prover": "cvc5", "time": 0.03 } }
+  }
+}
