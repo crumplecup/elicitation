@@ -153,7 +153,7 @@ fn write_creusot_vsm_file(
          #[cfg(creusot)] use elicit_server::archive::types::*;\n\
          #[cfg(creusot)] use elicit_server::archive::display::*;\n\
          #[cfg(creusot)] use elicit_server::archive::nav_tree::*;\n\
-         #[cfg(all(feature = \"creusot\", creusot))] use crate::creusot::vsm_invariants::{inv_fn};\n\
+         #[cfg(creusot)] use crate::creusot::vsm_invariants::{inv_fn};\n\
          {body_str}"
     );
     let formatted = syn::parse_file(&raw)

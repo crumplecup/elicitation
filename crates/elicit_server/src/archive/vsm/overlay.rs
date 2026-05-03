@@ -84,6 +84,14 @@ pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
     true
 }
 
+/// Creusot logic predicate mirroring the Kani invariant.
+/// Placeholder — all states are well-formed by construction.
+#[cfg(creusot)]
+#[logic]
+pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
+    true
+}
+
 /// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
 /// `stub_verified` can generate bounded symbolic return values.
 #[cfg(kani)]

@@ -17,7 +17,6 @@
 //! cargo creusot -p elicitation_creusot
 //! ```
 
-
 use creusot_std::prelude::*;
 
 /// Zero-sized unit type — no heap, no fields.

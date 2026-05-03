@@ -38,8 +38,10 @@
 
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_panel_consistent;
-use elicit_server::archive::vsm::{column_detail, panel_loading, query_complete, ArchivePanelState};
-use elicitation::{contracts::Established, KaniCompose};
+use elicit_server::archive::vsm::{
+    ArchivePanelState, column_detail, panel_loading, query_complete,
+};
+use elicitation::{KaniCompose, contracts::Established};
 
 // ── Contracted functions ──────────────────────────────────────────────────────
 
@@ -263,7 +265,10 @@ fn gallery12d_two_step_composition() {
     kani::assume(archive_panel_consistent(&_state));
     let (_state2, proof2) = column_detail(_state, proof);
     let (_state3, _proof3) = column_detail(_state2, proof2);
-    kani::assert(archive_panel_consistent(&_state3), "consistent after two steps");
+    kani::assert(
+        archive_panel_consistent(&_state3),
+        "consistent after two steps",
+    );
 }
 
 // ── 12e: panel_loading — String heap in result ───────────────────────────────

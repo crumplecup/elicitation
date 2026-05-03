@@ -21,7 +21,6 @@
 //! cargo creusot -p elicitation_creusot
 //! ```
 
-
 use creusot_std::prelude::*;
 
 /// Simple two-state machine.

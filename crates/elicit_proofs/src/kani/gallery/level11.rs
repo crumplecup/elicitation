@@ -59,9 +59,9 @@
 //! cargo kani -p elicit_proofs --lib --features kani -Z function-contracts -Z stubbing --harness gallery11e_aps_stub_composition_fast
 //! ```
 
+use elicit_server::archive::vsm::ArchivePanelState;
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_panel_consistent;
-use elicit_server::archive::vsm::ArchivePanelState;
 use elicitation::KaniCompose;
 
 // ── Mini-VSM: 3 unit variants, no heap ───────────────────────────────────────
@@ -225,6 +225,9 @@ fn gallery11e_aps_stub_composition_fast() {
     std::mem::forget(s1);
     let s1 = ArchivePanelState::kani_depth0();
     let (s2, _) = gallery11d_aps_step(s1);
-    kani::assert(archive_panel_consistent(&s2), "consistent after two stubs (fast path)");
+    kani::assert(
+        archive_panel_consistent(&s2),
+        "consistent after two stubs (fast path)",
+    );
     std::mem::forget(s2);
 }

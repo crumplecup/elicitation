@@ -30,7 +30,7 @@
 #[cfg(feature = "kani")]
 pub mod kani;
 
-#[cfg(feature = "creusot")]
+#[cfg(any(feature = "creusot", creusot))]
 pub mod creusot;
 
 #[cfg(feature = "verus")]

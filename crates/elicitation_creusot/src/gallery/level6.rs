@@ -26,18 +26,15 @@
 //! cargo creusot -p elicitation_creusot
 //! ```
 
-
 use creusot_std::prelude::*;
 
 // ── Re-use level 5 types ──────────────────────────────────────────────────────
-
 
 pub enum C6State {
     Idle,
     Ready,
     Done,
 }
-
 
 #[logic]
 pub fn c6_invariant(s: &C6State) -> bool {
@@ -48,7 +45,6 @@ pub fn c6_invariant(s: &C6State) -> bool {
     }
 }
 
-
 #[logic]
 pub fn c6_is_ready(s: &C6State) -> bool {
     match s {
@@ -56,7 +52,6 @@ pub fn c6_is_ready(s: &C6State) -> bool {
         _ => false,
     }
 }
-
 
 #[logic]
 pub fn c6_is_done(s: &C6State) -> bool {
@@ -102,14 +97,12 @@ pub fn c6_start_then_finish(s: C6State) -> C6State {
 
 // ── Three-step chain (C6b) ────────────────────────────────────────────────────
 
-
 pub enum C6Chain {
     A,
     B,
     C,
     D,
 }
-
 
 #[logic]
 pub fn c6_chain_is_b(s: &C6Chain) -> bool {
@@ -119,7 +112,6 @@ pub fn c6_chain_is_b(s: &C6Chain) -> bool {
     }
 }
 
-
 #[logic]
 pub fn c6_chain_is_c(s: &C6Chain) -> bool {
     match s {
@@ -127,7 +119,6 @@ pub fn c6_chain_is_c(s: &C6Chain) -> bool {
         _ => false,
     }
 }
-
 
 #[logic]
 pub fn c6_chain_is_d(s: &C6Chain) -> bool {
@@ -137,13 +128,11 @@ pub fn c6_chain_is_d(s: &C6Chain) -> bool {
     }
 }
 
-
 #[requires(true)]
 #[ensures(c6_chain_is_b(&result))]
 pub fn c6_step_a_to_b(_: C6Chain) -> C6Chain {
     C6Chain::B
 }
-
 
 #[requires(c6_chain_is_b(&s))]
 #[ensures(c6_chain_is_c(&result))]
@@ -151,7 +140,6 @@ pub fn c6_step_b_to_c(s: C6Chain) -> C6Chain {
     let _ = s;
     C6Chain::C
 }
-
 
 #[requires(c6_chain_is_c(&s))]
 #[ensures(c6_chain_is_d(&result))]

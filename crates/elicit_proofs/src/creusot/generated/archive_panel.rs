@@ -5,17 +5,18 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(creusot)]
-use elicitation::Established;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
+use crate::creusot::vsm_invariants::archive_panel_consistent;
 #[cfg(creusot)]
 use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
-#[cfg(all(feature = "creusot", creusot))]
-use crate::creusot::vsm_invariants::archive_panel_consistent;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicitation::Established;
+#[cfg(creusot)]
 #[requires(true)]
 #[ensures(result = = true)]
 #[trusted]

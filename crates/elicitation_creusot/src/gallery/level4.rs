@@ -25,7 +25,6 @@
 //! cargo creusot -p elicitation_creusot
 //! ```
 
-
 use creusot_std::prelude::*;
 
 /// C4a: a string is "non-empty" if its logical sequence has at least one element.

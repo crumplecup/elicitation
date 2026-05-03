@@ -10,10 +10,10 @@
 //!
 //! Strengthen these predicates incrementally as the proof coverage grows.
 
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 use creusot_std::prelude::*;
 
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 use elicit_server::archive::vsm::{
     ArchiveConnectionState, ArchiveNavState, ArchiveOverlayState, ArchivePanelState,
 };
@@ -22,7 +22,7 @@ use elicit_server::archive::vsm::{
 ///
 /// Currently trivially true. Strengthen to express WCAG accessibility invariants
 /// once pearlite models for `String::is_empty()` are in place.
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 #[logic]
 pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
     true
@@ -32,7 +32,7 @@ pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
 ///
 /// Currently trivially true. Strengthen to express connection lifecycle invariants
 /// (e.g., ConnectionError variant always has a non-empty message).
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 #[logic]
 pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
     true
@@ -41,7 +41,7 @@ pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
 /// Invariant predicate for [`ArchiveNavMachine`] transitions.
 ///
 /// Currently trivially true. Strengthen to express nav tree structural invariants.
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 #[logic]
 pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
     true
@@ -50,7 +50,7 @@ pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
 /// Invariant predicate for [`ArchiveOverlayMachine`] transitions.
 ///
 /// Currently trivially true. Strengthen to express overlay exclusivity invariants.
-#[cfg(all(feature = "creusot", creusot))]
+#[cfg(creusot)]
 #[logic]
 pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
     true

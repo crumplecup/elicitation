@@ -1,0 +1,73 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 169 0 169 49 *)
+
+let%span slevel6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 170 12 170 29
+let%span slevel6'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 171 12 171 29
+let%span slevel6'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 172 4 172 21
+let%span slevel6'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 167 11 167 15
+let%span slevel6'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 168 10 168 32
+let%span slevel6'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 141 11 141 15
+let%span slevel6'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 142 10 142 32
+let%span slevel6'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 148 11 148 28
+let%span slevel6'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 149 10 149 32
+let%span slevel6'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 156 11 156 28
+let%span slevel6'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 157 10 157 32
+let%span slevel6'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 134 4 137 5
+let%span slevel6'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 116 4 119 5
+let%span slevel6'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 125 4 128 5
+
+use creusot.prelude.Any
+
+type t_C6Chain = A | B | C | D
+
+predicate c6_chain_is_b [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 115 0 115 41] (s: t_C6Chain) =
+  [%#slevel6'11] match s with
+    | B -> true
+    | _ -> false
+    end
+
+let rec c6_step_a_to_b (_1: t_C6Chain) (return (x: t_C6Chain)) = any
+  [ return (result: t_C6Chain) -> {[@stop_split] [@expl:c6_step_a_to_b ensures] [%#slevel6'5] c6_chain_is_b result}
+    (! return {result}) ]
+
+predicate c6_chain_is_c [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 124 0 124 41] (s: t_C6Chain) =
+  [%#slevel6'12] match s with
+    | C -> true
+    | _ -> false
+    end
+
+let rec c6_step_b_to_c (s: t_C6Chain) (return (x: t_C6Chain)) =
+  {[@stop_split] [@expl:c6_step_b_to_c requires] [%#slevel6'6] c6_chain_is_b s}
+  any
+  [ return (result: t_C6Chain) -> {[@stop_split] [@expl:c6_step_b_to_c ensures] [%#slevel6'7] c6_chain_is_c result}
+    (! return {result}) ]
+
+predicate c6_chain_is_d [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 133 0 133 41] (s: t_C6Chain) =
+  [%#slevel6'10] match s with
+    | D -> true
+    | _ -> false
+    end
+
+let rec c6_step_c_to_d (s: t_C6Chain) (return (x: t_C6Chain)) =
+  {[@stop_split] [@expl:c6_step_c_to_d requires] [%#slevel6'8] c6_chain_is_c s}
+  any
+  [ return (result: t_C6Chain) -> {[@stop_split] [@expl:c6_step_c_to_d ensures] [%#slevel6'9] c6_chain_is_d result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c6_three_step_chain
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 169 0 169 49] (s: t_C6Chain)
+  (return (x: t_C6Chain)) = (! bb0
+  [ bb0 = s0
+    [ s0 = c6_step_a_to_b [%#slevel6] {s} (fun (_x: t_C6Chain) -> [ &b <- _x ] s1)
+    | s1 = c6_step_b_to_c [%#slevel6'0] {b} (fun (_x: t_C6Chain) -> [ &c <- _x ] s2)
+    | s2 = c6_step_c_to_d [%#slevel6'1] {c} (fun (_x: t_C6Chain) -> [ &_ret <- _x ] s3)
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C6Chain = Any.any_l ()
+  | & s: t_C6Chain = s
+  | & b: t_C6Chain = Any.any_l ()
+  | & c: t_C6Chain = Any.any_l () ])
+  [ return (result: t_C6Chain) -> {[@stop_split] [@expl:c6_three_step_chain ensures] [%#slevel6'3] c6_chain_is_d result}
+    (! return {result}) ]

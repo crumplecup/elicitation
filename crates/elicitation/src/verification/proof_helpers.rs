@@ -1091,6 +1091,7 @@ pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
 pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
     let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_creusot"), Span::call_site());
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result == true)]
         #[trusted]
@@ -1687,6 +1688,7 @@ pub fn creusot_type_stub(type_name: &str) -> TokenStream {
         Span::call_site(),
     );
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result == true)]
         #[trusted]
@@ -1855,6 +1857,7 @@ pub fn creusot_newtype_wrapper_harness(wrapper_name: &str) -> TokenStream {
         Span::call_site(),
     );
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result == true)]
         pub fn #fn_ident() -> bool {
@@ -1945,6 +1948,7 @@ pub fn creusot_formal_method_spec(
         format!("Creusot spec stub for `{fn_name}`. contracts_in=[{pre}], contracts_out=[{post}].");
     quote! {
         #[doc = #doc]
+        #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result == true)]
         #[trusted]

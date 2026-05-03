@@ -19,7 +19,6 @@
 //! cargo creusot -p elicitation_creusot
 //! ```
 
-
 use creusot_std::prelude::*;
 
 /// A counter that must stay positive.

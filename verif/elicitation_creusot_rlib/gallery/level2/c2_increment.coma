@@ -1,0 +1,31 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 44 0 44 46 *)
+
+let%span slevel2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 45 15 45 16
+let%span slevel2'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 45 4 45 16
+let%span slevel2'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 42 11 42 26
+let%span slevel2'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 43 10 43 30
+let%span slevel2'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 35 16 35 28
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_Counter = { count: Int64.t }
+
+predicate c2_positive [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 34 0 34 39] (c: t_Counter) =
+  [%#slevel2'3] Int64.to_int c.count > 0
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c2_increment [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 44 0 44 46]
+  (c: t_Counter) (return (x: t_Counter)) = {[@stop_split] [@expl:c2_increment requires] [%#slevel2'1] c2_positive c}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = Int64.add [%#slevel2'0] {c.count} {[%#slevel2] (1: Int64.t)}
+        (fun (_x: Int64.t) -> [ &c <- { count = _x } ] s1)
+    | s1 = [ &_ret <- c ] s2
+    | s2 = return {_ret} ] ] [ & _ret: t_Counter = Any.any_l () | & c: t_Counter = c ])
+  [ return (result: t_Counter) -> {[@stop_split] [@expl:c2_increment ensures] [%#slevel2'2] c2_positive result}
+    (! return {result}) ]

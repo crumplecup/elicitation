@@ -280,6 +280,14 @@ pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
     true
 }
 
+/// Creusot logic predicate mirroring the Kani invariant.
+/// Placeholder — all states are well-formed by construction.
+#[cfg(creusot)]
+#[logic]
+pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
+    true
+}
+
 /// Bridge `kani::Arbitrary` to our `KaniCompose::kani_any()` so that
 /// `stub_verified` can generate symbolic return values for functions that
 /// return `ArchivePanelState`.

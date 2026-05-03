@@ -16,8 +16,9 @@
 //!    `kani_harness()` method returns the proof harness as a
 //!    `proc_macro2::TokenStream`, enabling `build.rs` composition via
 //!    [`VerifiedStateMachine::transition_harnesses`].
-//! 4. A `#[requires(true)] #[ensures(true)] #[trusted]` Creusot companion
-//!    under `#[cfg(creusot)]`.
+//! 4. `#[cfg_attr(creusot, ::creusot_std::macros::requires(...))]` /
+//!    `#[cfg_attr(creusot, ::creusot_std::macros::ensures(...))]` directly
+//!    on the original function, so `cargo creusot` verifies the body.
 //! 5. A `requires true, ensures true,` Verus companion inside `verus! { }`
 //!    under `#[cfg(verus)]`.
 //!
@@ -50,17 +51,15 @@
 //! }
 //! ```
 //!
-//! # Generated companion (Creusot)
+//! # Generated contracts (Creusot)
 //!
 //! ```rust,ignore
-//! #[cfg(creusot)]
-//! #[requires(true)]
-//! #[ensures(true)]
-//! #[trusted]
-//! fn advance__creusot(state: MyState, proof: Established<InvariantHolds>)
+//! #[cfg_attr(creusot, ::creusot_std::macros::requires(invariant_fn(&state)))]
+//! #[cfg_attr(creusot, ::creusot_std::macros::ensures(invariant_fn(&result.0)))]
+//! fn advance(state: MyState, proof: Established<InvariantHolds>)
 //!     -> (MyState, Established<InvariantHolds>)
 //! {
-//!     advance(state, proof)
+//!     (state.next(), proof)
 //! }
 //! ```
 //!
@@ -304,7 +303,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         && !has_receiver
     {
         let kani_fn = format_ident!("{fn_name}__kani");
-        let creusot_fn = format_ident!("{fn_name}__creusot");
         let verus_fn = format_ident!("{fn_name}__verus");
 
         let mut lets: Vec<TokenStream> = Vec::new();
@@ -434,38 +432,55 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // This allows proof_for_contract(fn_name) to target the original
         // function directly, and stub_verified(fn_name) to work in
         // composition proofs without contracted wrapper indirection.
-        if has_state_param && !parsed_args.contracts.is_empty() {
-            if let Some(first_contract) = parsed_args.contracts.first()
-                && let Some(last_seg) = first_contract.segments.last()
-            {
-                let inv_fn_name = {
-                    let s = last_seg.ident.to_string();
-                    // Manual PascalCase → snake_case: insert underscore before
-                    // each uppercase letter that follows a lowercase letter.
-                    let mut out = String::with_capacity(s.len() + 8);
-                    let mut prev_lower = false;
-                    for ch in s.chars() {
-                        if ch.is_uppercase() && prev_lower {
-                            out.push('_');
-                        }
-                        out.push(ch.to_ascii_lowercase());
-                        prev_lower = ch.is_lowercase();
+        if has_state_param
+            && !parsed_args.contracts.is_empty()
+            && let Some(first_contract) = parsed_args.contracts.first()
+            && let Some(last_seg) = first_contract.segments.last()
+        {
+            let inv_fn_name = {
+                let s = last_seg.ident.to_string();
+                // Manual PascalCase → snake_case: insert underscore before
+                // each uppercase letter that follows a lowercase letter.
+                let mut out = String::with_capacity(s.len() + 8);
+                let mut prev_lower = false;
+                for ch in s.chars() {
+                    if ch.is_uppercase() && prev_lower {
+                        out.push('_');
                     }
-                    out
-                };
-                let inv_fn_ident: syn::Ident =
-                    syn::parse_str(&inv_fn_name).expect("derived ident is valid");
-                let state_pat_tokens: TokenStream =
-                    state_pat_s.parse().expect("state_pat_s is valid tokens");
-                let requires_attr: syn::Attribute = syn::parse_quote! {
-                    #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
-                };
-                let ensures_attr: syn::Attribute = syn::parse_quote! {
-                    #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
-                };
-                func.attrs.push(requires_attr);
-                func.attrs.push(ensures_attr);
-            }
+                    out.push(ch.to_ascii_lowercase());
+                    prev_lower = ch.is_lowercase();
+                }
+                out
+            };
+            let inv_fn_ident: syn::Ident =
+                syn::parse_str(&inv_fn_name).expect("derived ident is valid");
+            let state_pat_tokens: TokenStream =
+                state_pat_s.parse().expect("state_pat_s is valid tokens");
+            let requires_attr: syn::Attribute = syn::parse_quote! {
+                #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
+            };
+            let ensures_attr: syn::Attribute = syn::parse_quote! {
+                #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
+            };
+            func.attrs.push(requires_attr);
+            func.attrs.push(ensures_attr);
+
+            // ── Creusot contracts on the original function ────────────
+            // Mirror the Kani cfg_attr approach: emit real
+            // #[requires]/#[ensures] directly on the original function
+            // so `cargo creusot -p elicit_server` verifies the bodies.
+            // Use bare requires/ensures (Creusot built-in attributes,
+            // recognized natively by cargo-creusot without an import).
+            // cfg_attr is dropped before attr resolution under regular
+            // cargo (cfg(creusot) = false), so no creusot-std dep needed.
+            let creusot_requires_attr: syn::Attribute = syn::parse_quote! {
+                #[cfg_attr(creusot, requires(#inv_fn_ident(&#state_pat_tokens)))]
+            };
+            let creusot_ensures_attr: syn::Attribute = syn::parse_quote! {
+                #[cfg_attr(creusot, ensures(#inv_fn_ident(&result.0)))]
+            };
+            func.attrs.push(creusot_requires_attr);
+            func.attrs.push(creusot_ensures_attr);
         }
 
         // ── Kani harness ─────────────────────────────────────────────────
@@ -745,22 +760,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         };
 
         // ── Creusot companion ────────────────────────────────────────────
-        let creusot_doc = if contracts_str.is_empty() {
-            "Creusot companion.".to_string()
-        } else {
-            format!("Creusot companion. Contracts: `{contracts_str}`.")
-        };
-        let creusot = quote! {
-            #[allow(unexpected_cfgs)]
-            #[cfg(creusot)]
-            #[doc = #creusot_doc]
-            #[requires(true)]
-            #[ensures(true)]
-            #[trusted]
-            fn #creusot_fn(#inputs) #output {
-                #fn_name(#(#call_args),*)
-            }
-        };
+        // The always-trusted inline Creusot companion has been removed.
+        // Real #[requires]/#[ensures] attrs are now emitted as cfg_attr
+        // on the original function (above). The companion struct's
+        // `creusot_contract()` method (used by elicit_proofs/build.rs)
+        // continues to generate the wrapper layer for elicit_proofs.
+        let creusot = quote! {};
 
         // ── Verus companion ──────────────────────────────────────────────
         let verus_doc = if contracts_str.is_empty() {
