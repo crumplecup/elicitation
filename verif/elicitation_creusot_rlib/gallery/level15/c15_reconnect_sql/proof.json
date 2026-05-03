@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c15_reconnect_sql": { "prover": "cvc5", "time": 0.014 },
+      "vc_elim_SqlConnected": { "prover": "cvc5", "time": 0.012 }
+    }
+  }
+}

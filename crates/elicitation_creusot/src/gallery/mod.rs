@@ -28,6 +28,8 @@
 //! | [`level12`] | Two-machine composition + gating     | Cross-machine invariant (panel gates on conn)?  |
 //! | [`level13`] | Machine wrapper + transition counter | Exact counter postconditions chain `below_max`? |
 //! | [`level14`] | Two counters + relational invariant  | Can `error_count ≤ transition_count` be proved? |
+//! | [`level15`] | Six-variant state, two-field variant | Two-field `Connecting`, tag propagation through `match`? |
+//! | [`level16`] | Nested struct field in enum variant  | Struct consistency predicate, field propagation across variants? |
 //!
 //! ## Run all levels
 //!
@@ -58,3 +60,5 @@ pub mod level11;
 pub mod level12;
 pub mod level13;
 pub mod level14;
+pub mod level15;
+pub mod level16;

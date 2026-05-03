@@ -1,0 +1,105 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 229 0 229 67 *)
+
+let%span slevel15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 229 21 229 22
+let%span slevel15'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 229 38 229 42
+let%span slevel15'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 224 11 224 29
+let%span slevel15'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 225 11 225 32
+let%span slevel15'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 226 11 226 26
+let%span slevel15'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 229 55 229 67
+let%span slevel15'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 227 10 227 33
+let%span slevel15'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 228 10 228 38
+let%span slevel15'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 114 8 122 9
+let%span slevel15'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 136 8 136 71
+let%span slevel15'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 150 8 150 72
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_C15ConnState =
+  | Disconnected
+  | Connecting t_String t_String
+  | SqlConnected t_String
+  | KvConnected t_String
+  | Reconnecting t_String
+  | ConnectionError t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C15ConnState (_1: t_C15ConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_C15ConnState [inv_C15ConnState x]. inv_C15ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend_tag -> inv_String profile_name /\ inv_String backend_tag
+      | SqlConnected tag -> inv_String tag
+      | KvConnected path -> inv_String path
+      | Reconnecting tag -> inv_String tag
+      | ConnectionError message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C15ConnState (_1: t_C15ConnState)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C15ConnState [resolve_C15ConnState x]. resolve_C15ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting x0 x1 -> resolve_String x0 /\ resolve_String x1
+      | SqlConnected x0 -> resolve_String x0
+      | KvConnected x0 -> resolve_String x0
+      | Reconnecting x0 -> resolve_String x0
+      | ConnectionError x0 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c15_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 112 0 112 47] (s: t_C15ConnState) =
+  [%#slevel15'7] match s with
+    | Disconnected -> true
+    | Connecting profile_name backend_tag -> Seq.length (view_String profile_name) > 0
+    /\ Seq.length (view_String backend_tag) > 0
+    | SqlConnected tag -> Seq.length (view_String tag) > 0
+    | KvConnected path -> Seq.length (view_String path) > 0
+    | Reconnecting tag -> Seq.length (view_String tag) > 0
+    | ConnectionError message -> Seq.length (view_String message) > 0
+    end
+
+predicate c15_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 134 0 134 50] (s: t_C15ConnState) =
+  [%#slevel15'8] match s with
+    | Connecting _ _ -> true
+    | _ -> false
+    end
+
+predicate c15_is_kv_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 148 0 148 52] (s: t_C15ConnState) =
+  [%#slevel15'9] match s with
+    | KvConnected _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c15_finish_kv [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 229 0 229 67]
+  (s: t_C15ConnState) (path: t_String) (return (x: t_C15ConnState)) =
+  {[@stop_split] [@expl:c15_finish_kv requires] ([@stop_split] [@expl:c15_finish_kv 's' type invariant] [%#slevel15] inv_C15ConnState s)
+  /\ ([@stop_split] [@expl:c15_finish_kv 'path' type invariant] [%#slevel15'0] inv_String path)
+  /\ ([@stop_split] [@expl:c15_finish_kv requires #0] [%#slevel15'1] c15_consistent s)
+  /\ ([@stop_split] [@expl:c15_finish_kv requires #1] [%#slevel15'2] c15_is_connecting s)
+  /\ ([@stop_split] [@expl:c15_finish_kv requires #2] [%#slevel15'3] Seq.length (view_String path) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C15ConnState s} any) ]
+    | s1 = -{resolve_C15ConnState s}- s2
+    | s2 = [ &_ret <- KvConnected path ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C15ConnState = Any.any_l () | & s: t_C15ConnState = s | & path: t_String = path ])
+  [ return (result: t_C15ConnState) ->
+  {[@stop_split] [@expl:c15_finish_kv ensures] ([@stop_split] [@expl:c15_finish_kv result type invariant] [%#slevel15'4] inv_C15ConnState result)
+    /\ ([@stop_split] [@expl:c15_finish_kv ensures #0] [%#slevel15'5] c15_consistent result)
+    /\ ([@stop_split] [@expl:c15_finish_kv ensures #1] [%#slevel15'6] c15_is_kv_connected result)}
+    (! return {result}) ]
