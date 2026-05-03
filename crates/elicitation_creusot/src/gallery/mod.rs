@@ -26,6 +26,7 @@
 //! | [`level10`] | Full mini connection machine         | Complete 4-state VSM lifecycle provable?        |
 //! | [`level11`] | Panel machine with nested enum       | Nested enum field access in pearlite?           |
 //! | [`level12`] | Two-machine composition + gating     | Cross-machine invariant (panel gates on conn)?  |
+//! | [`level13`] | Machine wrapper + transition counter | Exact counter postconditions chain `below_max`? |
 //!
 //! ## Run all levels
 //!
@@ -54,3 +55,4 @@ pub mod level9;
 pub mod level10;
 pub mod level11;
 pub mod level12;
+pub mod level13;
