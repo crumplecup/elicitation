@@ -1,0 +1,81 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 143 0 143 30 *)
+
+let%span slevel14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 146 26 146 27
+let%span slevel14'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 147 21 147 22
+let%span slevel14'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 143 20 143 30
+let%span slevel14'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 139 10 139 33
+let%span slevel14'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 140 10 140 38
+let%span slevel14'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 141 10 141 39
+let%span slevel14'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 142 10 142 34
+let%span slevel14'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 82 8 85 52
+let%span slevel14'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 107 8 110 9
+let%span slevel14'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 57 8 62 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+type t_C14Machine = { state: t_MiniConnState; transition_count: Int64.t; error_count: Int64.t }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate inv_C14Machine (_1: t_C14Machine)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C14Machine [inv_C14Machine x]. inv_C14Machine x = inv_MiniConnState x.state
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c14_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 55 0 55 46] (s: t_MiniConnState) =
+  [%#slevel14'8] match s with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c14_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 80 0 80 45] (m: t_C14Machine) =
+  [%#slevel14'6] c14_state_ok m.state
+  /\ Int64.to_int m.transition_count >= 0
+  /\ Int64.to_int m.error_count >= 0 /\ Int64.to_int m.error_count <= Int64.to_int m.transition_count
+
+predicate c14_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 105 0 105 50] (m: t_C14Machine) =
+  [%#slevel14'7] match m.state with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c14_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 143 0 143 30]
+  (return (x: t_C14Machine)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_5 <- Disconnected ] s1
+    | s1 = [ &_ret <- { state = _5;
+                        transition_count = ([%#slevel14] (0: Int64.t));
+                        error_count = ([%#slevel14'0] (0: Int64.t)) } ] s2
+    | s2 = return {_ret} ] ] [ & _ret: t_C14Machine = Any.any_l () | & _5: t_MiniConnState = Any.any_l () ])
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_new ensures] ([@stop_split] [@expl:c14_new result type invariant] [%#slevel14'1] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_new ensures #0] [%#slevel14'2] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_new ensures #1] [%#slevel14'3] c14_is_disconnected result)
+    /\ ([@stop_split] [@expl:c14_new ensures #2] [%#slevel14'4] Int64.to_int result.transition_count = 0)
+    /\ ([@stop_split] [@expl:c14_new ensures #3] [%#slevel14'5] Int64.to_int result.error_count = 0)}
+    (! return {result}) ]
