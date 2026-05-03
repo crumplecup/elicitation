@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c11_begin_edit": { "prover": "cvc5", "time": 0.01 },
+      "vc_c11_full_lifecycle": { "prover": "cvc5", "time": 0.018 },
+      "vc_c11_load": { "prover": "cvc5", "time": 0.01 },
+      "vc_c11_save": { "prover": "cvc5", "time": 0.011 },
+      "vc_c11_select_row": { "prover": "cvc5", "time": 0.012 }
+    }
+  }
+}

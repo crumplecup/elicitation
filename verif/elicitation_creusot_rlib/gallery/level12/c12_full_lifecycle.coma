@@ -1,0 +1,218 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 279 0 279 72 *)
+
+let%span slevel12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 280 13 280 22
+let%span slevel12'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 281 13 281 32
+let%span slevel12'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 282 13 282 28
+let%span slevel12'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 283 13 283 36
+let%span slevel12'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 284 4 284 22
+let%span slevel12'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 279 26 279 30
+let%span slevel12'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 276 11 276 26
+let%span slevel12'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 277 11 277 25
+let%span slevel12'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 279 59 279 72
+let%span slevel12'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 278 10 278 33
+let%span slevel12'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 172 20 172 33
+let%span slevel12'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 170 10 170 33
+let%span slevel12'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 171 10 171 38
+let%span slevel12'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 192 17 192 18
+let%span slevel12'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 192 35 192 39
+let%span slevel12'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 187 11 187 29
+let%span slevel12'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 188 11 188 34
+let%span slevel12'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 189 11 189 26
+let%span slevel12'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 192 52 192 65
+let%span slevel12'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 190 10 190 33
+let%span slevel12'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 191 10 191 36
+let%span slevel12'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 209 19 209 20
+let%span slevel12'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 205 11 205 29
+let%span slevel12'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 206 11 206 32
+let%span slevel12'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 209 40 209 53
+let%span slevel12'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 207 10 207 33
+let%span slevel12'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 208 10 208 35
+let%span slevel12'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 16 234 17
+let%span slevel12'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 230 11 230 29
+let%span slevel12'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 231 11 231 31
+let%span slevel12'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 232 11 232 25
+let%span slevel12'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 53 234 66
+let%span slevel12'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 233 10 233 33
+let%span slevel12'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 260 22 260 23
+let%span slevel12'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 258 11 258 29
+let%span slevel12'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 260 43 260 56
+let%span slevel12'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 259 10 259 33
+let%span slevel12'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 128 8 128 57
+let%span slevel12'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 138 8 141 9
+let%span slevel12'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 149 8 152 9
+let%span slevel12'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 160 8 163 9
+let%span slevel12'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 82 8 87 9
+let%span slevel12'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 97 8 102 9
+let%span slevel12'42 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 114 8 120 9
+
+use creusot.int.Int64
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_MiniPanelState = Empty'0 | Grid'0 t_MiniDisplayMode Int64.t | Detail'0 t_MiniDisplayMode | Error'0 t_String
+
+type t_MiniComposite = { conn: t_MiniConnState; panel: t_MiniPanelState }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty'0 -> true
+      | Grid'0 mode row_count -> true
+      | Detail'0 mode -> true
+      | Error'0 message -> inv_String message
+      end
+
+predicate inv_MiniComposite (_1: t_MiniComposite)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_MiniComposite [inv_MiniComposite x]. inv_MiniComposite x
+    = (inv_MiniConnState x.conn /\ inv_MiniPanelState x.panel)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c12_conn_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 80 0 80 45] (s: t_MiniComposite) =
+  [%#slevel12'40] match s.conn with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_panel_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 95 0 95 46] (s: t_MiniComposite) =
+  [%#slevel12'41] match s.panel with
+    | Empty'0 -> true
+    | Grid'0 _ row_count -> Int64.to_int row_count > 0
+    | Detail'0 _ -> true
+    | Error'0 message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_gated [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 112 0 112 43] (s: t_MiniComposite) =
+  [%#slevel12'42] match s.panel with
+    | Empty'0 -> true
+    | _ -> match s.conn with
+      | Connected _ -> true
+      | _ -> false
+      end
+    end
+
+predicate c12_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 126 0 126 48] (s: t_MiniComposite) =
+  [%#slevel12'36] c12_conn_ok s /\ c12_panel_ok s /\ c12_gated s
+
+predicate c12_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 136 0 136 53] (s: t_MiniComposite) =
+  [%#slevel12'37] match s.conn with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+let rec c12_new (return (x: t_MiniComposite)) = any
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_new ensures] ([@stop_split] [@expl:c12_new result type invariant] [%#slevel12'9] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_new ensures #0] [%#slevel12'10] c12_consistent result)
+    /\ ([@stop_split] [@expl:c12_new ensures #1] [%#slevel12'11] c12_is_disconnected result)}
+    (! return {result}) ]
+
+predicate c12_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 147 0 147 51] (s: t_MiniComposite) =
+  [%#slevel12'38] match s.conn with
+    | Connecting _ -> true
+    | _ -> false
+    end
+
+let rec c12_begin (s: t_MiniComposite) (name: t_String) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_begin requires] ([@stop_split] [@expl:c12_begin 's' type invariant] [%#slevel12'12] inv_MiniComposite s)
+  /\ ([@stop_split] [@expl:c12_begin 'name' type invariant] [%#slevel12'13] inv_String name)
+  /\ ([@stop_split] [@expl:c12_begin requires #0] [%#slevel12'14] c12_consistent s)
+  /\ ([@stop_split] [@expl:c12_begin requires #1] [%#slevel12'15] c12_is_disconnected s)
+  /\ ([@stop_split] [@expl:c12_begin requires #2] [%#slevel12'16] Seq.length (view_String name) > 0)}
+  any
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_begin ensures] ([@stop_split] [@expl:c12_begin result type invariant] [%#slevel12'17] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_begin ensures #0] [%#slevel12'18] c12_consistent result)
+    /\ ([@stop_split] [@expl:c12_begin ensures #1] [%#slevel12'19] c12_is_connecting result)}
+    (! return {result}) ]
+
+predicate c12_is_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 158 0 158 50] (s: t_MiniComposite) =
+  [%#slevel12'39] match s.conn with
+    | Connected _ -> true
+    | _ -> false
+    end
+
+let rec c12_succeed (s: t_MiniComposite) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_succeed requires] ([@stop_split] [@expl:c12_succeed 's' type invariant] [%#slevel12'20] inv_MiniComposite s)
+  /\ ([@stop_split] [@expl:c12_succeed requires #0] [%#slevel12'21] c12_consistent s)
+  /\ ([@stop_split] [@expl:c12_succeed requires #1] [%#slevel12'22] c12_is_connecting s)}
+  any
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_succeed ensures] ([@stop_split] [@expl:c12_succeed result type invariant] [%#slevel12'23] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_succeed ensures #0] [%#slevel12'24] c12_consistent result)
+    /\ ([@stop_split] [@expl:c12_succeed ensures #1] [%#slevel12'25] c12_is_connected result)}
+    (! return {result}) ]
+
+let rec c12_load (s: t_MiniComposite) (row_count: Int64.t) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_load requires] ([@stop_split] [@expl:c12_load 's' type invariant] [%#slevel12'26] inv_MiniComposite s)
+  /\ ([@stop_split] [@expl:c12_load requires #0] [%#slevel12'27] c12_consistent s)
+  /\ ([@stop_split] [@expl:c12_load requires #1] [%#slevel12'28] c12_is_connected s)
+  /\ ([@stop_split] [@expl:c12_load requires #2] [%#slevel12'29] Int64.to_int row_count > 0)}
+  any
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_load ensures] ([@stop_split] [@expl:c12_load result type invariant] [%#slevel12'30] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_load ensures] [%#slevel12'31] c12_consistent result)}
+    (! return {result}) ]
+
+let rec c12_disconnect (s: t_MiniComposite) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_disconnect requires] ([@stop_split] [@expl:c12_disconnect 's' type invariant] [%#slevel12'32] inv_MiniComposite s)
+  /\ ([@stop_split] [@expl:c12_disconnect requires] [%#slevel12'33] c12_consistent s)}
+  any
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_disconnect ensures] ([@stop_split] [@expl:c12_disconnect result type invariant] [%#slevel12'34] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_disconnect ensures] [%#slevel12'35] c12_consistent result)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c12_full_lifecycle
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 279 0 279 72] (name: t_String)
+  (row_count: Int64.t) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_full_lifecycle requires] ([@stop_split] [@expl:c12_full_lifecycle 'name' type invariant] [%#slevel12'4] inv_String name)
+  /\ ([@stop_split] [@expl:c12_full_lifecycle requires #0] [%#slevel12'5] Seq.length (view_String name) > 0)
+  /\ ([@stop_split] [@expl:c12_full_lifecycle requires #1] [%#slevel12'6] Int64.to_int row_count > 0)}
+  (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c12_new [%#slevel12] (fun (_x: t_MiniComposite) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c12_begin [%#slevel12'0] {s0} {name} (fun (_x: t_MiniComposite) -> [ &s1 <- _x ] s2'0)
+    | s2'0 = c12_succeed [%#slevel12'1] {s1} (fun (_x: t_MiniComposite) -> [ &s2 <- _x ] s3'0)
+    | s3'0 = c12_load [%#slevel12'2] {s2} {row_count} (fun (_x: t_MiniComposite) -> [ &s3 <- _x ] s4)
+    | s4 = c12_disconnect [%#slevel12'3] {s3} (fun (_x: t_MiniComposite) -> [ &_ret <- _x ] s5)
+    | s5 = return {_ret} ] ]
+  [ & _ret: t_MiniComposite = Any.any_l ()
+  | & name: t_String = name
+  | & row_count: Int64.t = row_count
+  | & s0: t_MiniComposite = Any.any_l ()
+  | & s1: t_MiniComposite = Any.any_l ()
+  | & s2: t_MiniComposite = Any.any_l ()
+  | & s3: t_MiniComposite = Any.any_l () ])
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_full_lifecycle ensures] ([@stop_split] [@expl:c12_full_lifecycle result type invariant] [%#slevel12'7] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_full_lifecycle ensures] [%#slevel12'8] c12_consistent result)}
+    (! return {result}) ]

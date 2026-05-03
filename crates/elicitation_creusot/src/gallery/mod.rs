@@ -24,6 +24,8 @@
 //! | [`level8`]  | Machine wrapper struct               | Invariant over state enum + numeric metadata?   |
 //! | [`level9`]  | Contract chains vs proof tokens      | Is `Established<P>` unnecessary in Creusot?     |
 //! | [`level10`] | Full mini connection machine         | Complete 4-state VSM lifecycle provable?        |
+//! | [`level11`] | Panel machine with nested enum       | Nested enum field access in pearlite?           |
+//! | [`level12`] | Two-machine composition + gating     | Cross-machine invariant (panel gates on conn)?  |
 //!
 //! ## Run all levels
 //!
@@ -50,3 +52,5 @@ pub mod level7;
 pub mod level8;
 pub mod level9;
 pub mod level10;
+pub mod level11;
+pub mod level12;

@@ -1,0 +1,109 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 172 0 172 33 *)
+
+let%span slevel12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 172 20 172 33
+let%span slevel12'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 170 10 170 33
+let%span slevel12'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 171 10 171 38
+let%span slevel12'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 128 8 128 57
+let%span slevel12'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 138 8 141 9
+let%span slevel12'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 82 8 87 9
+let%span slevel12'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 97 8 102 9
+let%span slevel12'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 114 8 120 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_MiniPanelState = Empty'0 | Grid'0 t_MiniDisplayMode Int64.t | Detail'0 t_MiniDisplayMode | Error'0 t_String
+
+type t_MiniComposite = { conn: t_MiniConnState; panel: t_MiniPanelState }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty'0 -> true
+      | Grid'0 mode row_count -> true
+      | Detail'0 mode -> true
+      | Error'0 message -> inv_String message
+      end
+
+predicate inv_MiniComposite (_1: t_MiniComposite)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_MiniComposite [inv_MiniComposite x]. inv_MiniComposite x
+    = (inv_MiniConnState x.conn /\ inv_MiniPanelState x.panel)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c12_conn_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 80 0 80 45] (s: t_MiniComposite) =
+  [%#slevel12'4] match s.conn with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_panel_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 95 0 95 46] (s: t_MiniComposite) =
+  [%#slevel12'5] match s.panel with
+    | Empty'0 -> true
+    | Grid'0 _ row_count -> Int64.to_int row_count > 0
+    | Detail'0 _ -> true
+    | Error'0 message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_gated [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 112 0 112 43] (s: t_MiniComposite) =
+  [%#slevel12'6] match s.panel with
+    | Empty'0 -> true
+    | _ -> match s.conn with
+      | Connected _ -> true
+      | _ -> false
+      end
+    end
+
+predicate c12_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 126 0 126 48] (s: t_MiniComposite) =
+  [%#slevel12'2] c12_conn_ok s /\ c12_panel_ok s /\ c12_gated s
+
+predicate c12_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 136 0 136 53] (s: t_MiniComposite) =
+  [%#slevel12'3] match s.conn with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c12_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 172 0 172 33]
+  (return (x: t_MiniComposite)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_3 <- Disconnected ] s1
+    | s1 = [ &_4 <- Empty'0 ] s2
+    | s2 = [ &_ret <- { conn = _3; panel = _4 } ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_MiniComposite = Any.any_l ()
+  | & _3: t_MiniConnState = Any.any_l ()
+  | & _4: t_MiniPanelState = Any.any_l () ])
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_new ensures] ([@stop_split] [@expl:c12_new result type invariant] [%#slevel12] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_new ensures #0] [%#slevel12'0] c12_consistent result)
+    /\ ([@stop_split] [@expl:c12_new ensures #1] [%#slevel12'1] c12_is_disconnected result)}
+    (! return {result}) ]

@@ -1,0 +1,93 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 201 0 201 69 *)
+
+let%span slevel11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 201 16 201 18
+let%span slevel11'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 198 11 198 25
+let%span slevel11'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 201 55 201 69
+let%span slevel11'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 199 10 199 33
+let%span slevel11'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 200 10 200 35
+let%span slevel11'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 146 8 151 9
+let%span slevel11'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 110 8 113 9
+let%span slevel11'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 83 8 86 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_String
+
+type t_MiniPanelState = Empty | Grid t_MiniDisplayMode Int64.t | Detail t_MiniDisplayMode | Error t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty -> true
+      | Grid mode row_count -> true
+      | Detail mode -> true
+      | Error message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_MiniPanelState (_1: t_MiniPanelState)
+
+axiom resolve_axiom [@rewrite]: forall x: t_MiniPanelState [resolve_MiniPanelState x]. resolve_MiniPanelState x
+    = match x with
+      | Empty -> true
+      | Grid x0 x1 -> true
+      | Detail x0 -> true
+      | Error x0 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c11_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 144 0 144 49] (s: t_MiniPanelState) =
+  [%#slevel11'4] match s with
+    | Empty -> true
+    | Grid _ row_count -> Int64.to_int row_count > 0
+    | Detail _ -> true
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c11_is_read [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 81 0 81 47] (m: t_MiniDisplayMode) =
+  [%#slevel11'6] match m with
+    | Read -> true
+    | Edit -> false
+    end
+
+predicate c11_grid_is_read [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 108 0 108 51] (s: t_MiniPanelState) =
+  [%#slevel11'5] match s with
+    | Grid mode _ -> c11_is_read mode
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c11_load [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 201 0 201 69]
+  (_s: t_MiniPanelState) (row_count: Int64.t) (return (x: t_MiniPanelState)) =
+  {[@stop_split] [@expl:c11_load requires] ([@stop_split] [@expl:c11_load '_s' type invariant] [%#slevel11] inv_MiniPanelState _s)
+  /\ ([@stop_split] [@expl:c11_load requires] [%#slevel11'0] Int64.to_int row_count > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_MiniPanelState _s} any) ]
+    | s1 = -{resolve_MiniPanelState _s}- s2
+    | s2 = [ &_7 <- Read ] s3
+    | s3 = [ &_ret <- Grid _7 row_count ] s4
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_MiniPanelState = Any.any_l ()
+  | & _s: t_MiniPanelState = _s
+  | & row_count: Int64.t = row_count
+  | & _7: t_MiniDisplayMode = Any.any_l () ])
+  [ return (result: t_MiniPanelState) ->
+  {[@stop_split] [@expl:c11_load ensures] ([@stop_split] [@expl:c11_load result type invariant] [%#slevel11'1] inv_MiniPanelState result)
+    /\ ([@stop_split] [@expl:c11_load ensures #0] [%#slevel11'2] c11_consistent result)
+    /\ ([@stop_split] [@expl:c11_load ensures #1] [%#slevel11'3] c11_grid_is_read result)}
+    (! return {result}) ]
