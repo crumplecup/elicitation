@@ -1,0 +1,26 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 82 0 82 43 *)
+
+let%span slevel27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 83 4 83 9
+let%span slevel27'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 80 11 80 31
+let%span slevel27'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 81 10 81 28
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+use int.Int
+
+constant const_MAX: UInt32.t = (4294967295: UInt32.t)
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c27b_add_sync [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 82 0 82 43]
+  (a: UInt32.t) (b: UInt32.t) (return (x: UInt32.t)) =
+  {[@stop_split] [@expl:c27b_add_sync requires] [%#slevel27'0] UInt32.t'int a + UInt32.t'int b
+  <= UInt32.t'int const_MAX}
+  (! bb0
+  [ bb0 = s0 [ s0 = UInt32.add [%#slevel27] {a} {b} (fun (_x: UInt32.t) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
+  [ & _ret: UInt32.t = Any.any_l () | & a: UInt32.t = a | & b: UInt32.t = b ])
+  [ return (result: UInt32.t) -> {[@stop_split] [@expl:c27b_add_sync ensures] [%#slevel27'1] UInt32.t'int result
+    = UInt32.t'int a + UInt32.t'int b}
+    (! return {result}) ]

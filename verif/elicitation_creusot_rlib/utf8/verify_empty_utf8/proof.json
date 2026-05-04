@@ -3,7 +3,7 @@
   "proofs": {
     "Coma": {
       "vc_new": { "prover": "cvc5", "time": 0.013 },
-      "vc_verify_empty_utf8": { "prover": "cvc5", "time": 0.026 }
+      "vc_verify_empty_utf8": { "prover": "cvc5", "time": 0.053 }
     }
   }
 }

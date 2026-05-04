@@ -1,0 +1,26 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 93 0 93 53 *)
+
+let%span slevel29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 91 11 91 23
+let%span slevel29'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 92 10 92 27
+let%span slevel29'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 87 4 87 8
+
+use creusot.int.UInt64
+use creusot.prelude.Any
+
+type t_C29State = Off | On UInt64.t
+
+predicate c29b_inv [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 86 0 86 38] (_s: t_C29State) =
+  [%#slevel29'1] true
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c29b_activate [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level29.rs" 93 0 93 53]
+  (s: t_C29State) (v: UInt64.t) (return (x: t_C29State)) =
+  {[@stop_split] [@expl:c29b_activate requires] [%#slevel29] c29b_inv s}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- On v ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_C29State = Any.any_l () | & v: UInt64.t = v ])
+  [ return (result: t_C29State) -> {[@stop_split] [@expl:c29b_activate ensures] [%#slevel29'0] c29b_inv result}
+    (! return {result}) ]

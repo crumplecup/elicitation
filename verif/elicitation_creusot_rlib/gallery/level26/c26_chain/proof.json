@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c26_chain": { "prover": "cvc5", "time": 0.017 },
+      "vc_c26_step": { "prover": "cvc5", "time": 0.017 }
+    }
+  }
+}

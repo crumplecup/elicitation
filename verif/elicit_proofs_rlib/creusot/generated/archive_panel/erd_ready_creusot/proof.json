@@ -1,1 +1,25 @@
-{ "profile": [], "proofs": { "Coma": {} } }
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_erd_ready__creusot": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.047 },
+                  { "prover": "cvc5", "time": 0.079 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.051 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

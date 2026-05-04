@@ -1,0 +1,25 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c24_step": { "prover": "cvc5", "time": 0.017 },
+      "vc_c24_two_steps": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.021 },
+              { "prover": "cvc5", "time": 0.02 },
+              null,
+              null,
+              { "prover": "cvc5", "time": 0.022 },
+              { "prover": "cvc5", "time": 0.021 }
+            ]
+          }
+        ]
+      },
+      "vc_elim_Ok": { "prover": "cvc5", "time": 0.015 }
+    }
+  }
+}

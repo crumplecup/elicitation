@@ -1,1 +1,55 @@
-{ "profile": [], "proofs": { "Coma": {} } }
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_deref_mut_Vec_SchemaWithExpand_Global": {
+        "prover": "cvc5",
+        "time": 0.026
+      },
+      "vc_elim_NavReady": { "prover": "cvc5", "time": 0.016 },
+      "vc_elim_Some": { "prover": "cvc5", "time": 0.029 },
+      "vc_expand_schema__creusot": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.034 },
+              { "prover": "cvc5", "time": 0.033 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.031 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.046 },
+                  { "prover": "cvc5", "time": 0.032 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.031 },
+              { "prover": "cvc5", "time": 0.033 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.051 },
+                  { "prover": "cvc5", "time": 0.032 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.034 },
+              { "prover": "cvc5", "time": 0.067 },
+              { "prover": "cvc5", "time": 0.034 },
+              { "prover": "cvc5", "time": 0.043 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.033 },
+              { "prover": "cvc5", "time": 0.032 },
+              { "prover": "cvc5", "time": 0.032 },
+              { "prover": "cvc5", "time": 0.031 },
+              { "prover": "cvc5", "time": 0.031 },
+              { "prover": "cvc5", "time": 0.033 }
+            ]
+          }
+        ]
+      },
+      "vc_get_mut_SchemaWithExpand": { "prover": "cvc5", "time": 0.029 }
+    }
+  }
+}

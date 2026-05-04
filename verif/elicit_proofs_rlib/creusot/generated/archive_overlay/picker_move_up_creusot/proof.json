@@ -1,1 +1,32 @@
-{ "profile": [], "proofs": { "Coma": {} } }
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_ExportPickerOpen": { "prover": "cvc5", "time": 0.017 },
+      "vc_picker_move_up__creusot": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.022 },
+              { "prover": "cvc5", "time": 0.019 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.021 },
+                  { "prover": "cvc5", "time": 0.028 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.021 },
+              { "prover": "cvc5", "time": 0.02 },
+              { "prover": "cvc5", "time": 0.019 },
+              { "prover": "cvc5", "time": 0.02 }
+            ]
+          }
+        ]
+      },
+      "vc_saturating_sub": { "prover": "cvc5", "time": 0.016 }
+    }
+  }
+}

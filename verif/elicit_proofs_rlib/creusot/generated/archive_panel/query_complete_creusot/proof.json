@@ -1,1 +1,30 @@
-{ "profile": [], "proofs": { "Coma": {} } }
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_elim_SqlEditor": { "prover": "cvc5", "time": 0.027 },
+      "vc_query_complete__creusot": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.071 },
+                  { "prover": "cvc5", "time": 0.059 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "cvc5", "time": 0.06 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.042 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

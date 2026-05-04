@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 189 0 192 65 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 196 0 199 65 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 113 16 113 20
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 112 18 112 40
@@ -18,17 +18,18 @@ let%span scmp'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.r
 let%span scmp'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 89 26 89 55
 let%span scmp'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 90 26 90 79
 let%span scmp'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 91 26 91 77
-let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 45 195 46
-let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 26 195 47
-let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 52 195 65
-let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 81 195 82
-let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 52 195 83
-let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 26 195 84
-let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 190 4 190 9
-let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 191 4 191 9
-let%span sarchive_overlay'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 187 11 187 45
-let%span sarchive_overlay'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 192 5 192 65
-let%span sarchive_overlay'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 188 10 188 47
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 45 202 46
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 26 202 47
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 52 202 65
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 81 202 82
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 52 202 83
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 202 26 202 84
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 197 4 197 9
+let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 198 4 198 9
+let%span sarchive_overlay'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 194 11 194 45
+let%span sarchive_overlay'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 199 5 199 65
+let%span sarchive_overlay'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 10 195 47
+let%span sarchive_overlay'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 25 8 27 40
 
 use creusot.int.UInt64
 use creusot.int.Int64
@@ -188,7 +189,20 @@ axiom inv_axiom'1 [@rewrite]: forall x: t_ArchiveOverlayState [inv_ArchiveOverla
 
 predicate inv_Established_ArchiveOverlayConsistent (_1: t_Established_ArchiveOverlayConsistent)
 
-predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 103 0 103 70] (state: t_ArchiveOverlayState)
+type t_ExportFormat = Csv | Json | Ndjson | Tsv
+
+function view_Vec_ExportFormat_Global (self: t_Vec_ExportFormat_Global) : Seq.seq t_ExportFormat
+
+axiom view_Vec_ExportFormat_Global_spec:
+  forall self: t_Vec_ExportFormat_Global. [%#svec'1] Seq.length (view_Vec_ExportFormat_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 23 0 23 70] (state: t_ArchiveOverlayState) =
+  [%#sarchive_overlay'10] match state with
+    | ExportPickerOpen idx formats -> UInt64.t'int idx <= Seq.length (view_Vec_ExportFormat_Global formats)
+    | SavedBrowserOpen entries idx -> UInt64.t'int idx <= Seq.length (view_Vec_SavedQuery_Global entries)
+    | _ -> true
+    end
 
 predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent [@inline:trivial] (_1: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) =
   inv_ArchiveOverlayState _1.f0 /\ inv_Established_ArchiveOverlayConsistent _1.f1
@@ -200,7 +214,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec saved_browser_down__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 189 0 192 65]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 196 0 199 65]
   (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent)
   (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
   {[@stop_split] [@expl:saved_browser_down__creusot requires] ([@stop_split] [@expl:saved_browser_down__creusot 'state' type invariant] [%#sarchive_overlay'5] inv_ArchiveOverlayState state)

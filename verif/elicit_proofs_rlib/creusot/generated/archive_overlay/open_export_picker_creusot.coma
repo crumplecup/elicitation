@@ -1,17 +1,18 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 51 0 55 65 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 58 0 62 65 *)
 
-let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
-let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
-let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
 let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 42 20 42 29
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 58 17 58 18
-let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 52 4 52 10
-let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 4 53 9
-let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 49 11 49 46
-let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 55 5 55 65
-let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 50 10 50 47
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 65 17 65 18
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 59 4 59 10
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 60 4 60 9
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 56 11 56 46
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 62 5 62 65
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 57 10 57 47
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 25 8 27 40
 
 use creusot.int.UInt64
 use creusot.int.Int64
@@ -72,11 +73,10 @@ constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
 function view_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) : Seq.seq t_SavedQuery
 
 axiom view_Vec_SavedQuery_Global_spec:
-  forall self: t_Vec_SavedQuery_Global. [%#svec'1] Seq.length (view_Vec_SavedQuery_Global self)
-    <= UInt64.t'int const_MAX
+  forall self: t_Vec_SavedQuery_Global. [%#svec] Seq.length (view_Vec_SavedQuery_Global self) <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) =
-  [%#svec] inv_Seq_SavedQuery (view_Vec_SavedQuery_Global self)
+  [%#svec'0] inv_Seq_SavedQuery (view_Vec_SavedQuery_Global self)
 
 predicate inv_Vec_SavedQuery_Global (_1: t_Vec_SavedQuery_Global)
 
@@ -110,7 +110,7 @@ function index_Vec_SavedQuery_Global [@inline:trivial] (self: t_Vec_SavedQuery_G
 meta "rewrite_def" function index_Vec_SavedQuery_Global
 
 predicate resolve_Vec_SavedQuery_Global [@inline:trivial] (self: t_Vec_SavedQuery_Global) =
-  [%#svec'0] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_SavedQuery_Global self)
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_SavedQuery_Global self)
     -> resolve_SavedQuery (index_Vec_SavedQuery_Global self i)
 
 meta "rewrite_def" predicate resolve_Vec_SavedQuery_Global
@@ -141,7 +141,20 @@ type tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = {
 
 predicate inv_Established_ArchiveOverlayConsistent (_1: t_Established_ArchiveOverlayConsistent)
 
-predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 103 0 103 70] (state: t_ArchiveOverlayState)
+type t_ExportFormat = Csv | Json | Ndjson | Tsv
+
+function view_Vec_ExportFormat_Global (self: t_Vec_ExportFormat_Global) : Seq.seq t_ExportFormat
+
+axiom view_Vec_ExportFormat_Global_spec:
+  forall self: t_Vec_ExportFormat_Global. [%#svec] Seq.length (view_Vec_ExportFormat_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 23 0 23 70] (state: t_ArchiveOverlayState) =
+  [%#sarchive_overlay'5] match state with
+    | ExportPickerOpen idx formats -> UInt64.t'int idx <= Seq.length (view_Vec_ExportFormat_Global formats)
+    | SavedBrowserOpen entries idx -> UInt64.t'int idx <= Seq.length (view_Vec_SavedQuery_Global entries)
+    | _ -> true
+    end
 
 predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent [@inline:trivial] (_1: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) =
   inv_ArchiveOverlayState _1.f0 /\ inv_Established_ArchiveOverlayConsistent _1.f1
@@ -153,7 +166,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec open_export_picker__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 51 0 55 65]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 58 0 62 65]
   (_state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent) (formats: t_Vec_ExportFormat_Global)
   (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
   {[@stop_split] [@expl:open_export_picker__creusot requires] ([@stop_split] [@expl:open_export_picker__creusot '_state' type invariant] [%#sarchive_overlay'0] inv_ArchiveOverlayState _state)

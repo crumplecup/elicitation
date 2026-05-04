@@ -1,1 +1,50 @@
-{ "profile": [], "proofs": { "Coma": {} } }
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_commit_edits__creusot": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.041 },
+              { "prover": "cvc5", "time": 0.045 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5", "time": 0.064 },
+                  { "prover": "cvc5", "time": 0.056 }
+                ]
+              },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.061 },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.043 },
+              { "prover": "cvc5", "time": 0.043 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.047 },
+              { "prover": "cvc5", "time": 0.047 },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.039 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.047 },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "cvc5", "time": 0.044 },
+              { "prover": "cvc5", "time": 0.043 },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "cvc5", "time": 0.045 },
+              { "prover": "cvc5", "time": 0.046 },
+              { "prover": "cvc5", "time": 0.044 }
+            ]
+          }
+        ]
+      },
+      "vc_elim_DataGrid": { "prover": "cvc5", "time": 0.023 }
+    }
+  }
+}

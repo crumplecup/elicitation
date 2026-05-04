@@ -19,7 +19,10 @@ use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
-use crate::creusot::vsm_invariants::archive_nav_consistent;
+#[logic]
+pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
+    true
+}
 #[cfg(creusot)]
 #[requires(true)]
 #[ensures(result)]

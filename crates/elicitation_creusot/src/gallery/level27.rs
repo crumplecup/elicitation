@@ -69,13 +69,12 @@ pub fn c27a_increment_pure(x: u32) -> u32 {
 // C27b — free async fn: generates opaque locally, handled by Creusot
 // ---------------------------------------------------------------------------
 
-/// Concrete async free function — Creusot handles the local opaque fine.
+/// Concrete async free function — Creusot cannot handle async fn bodies.
 ///
-/// The opaque type `{opaque#0}` is local to this function, not a trait item,
-/// so `gather_intrinsics` does not try to map its HIR ID.
-pub async fn c27b_add(a: u32, b: u32) -> u32 {
-    a + b
-}
+/// Commented out: `cargo creusot prove` fails with:
+/// "the rvalue Coroutine(...) is not currently supported"
+/// even for local async fns.  Only the synchronous wrapper is proved.
+// pub async fn c27b_add(a: u32, b: u32) -> u32 { a + b }
 
 /// Synchronous wrapper that Creusot can actually prove.
 #[requires(a@ + b@ <= u32::MAX@)]

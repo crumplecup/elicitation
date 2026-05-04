@@ -5,17 +5,25 @@ let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creu
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 473 18 473 103
 let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 474 18 474 99
 let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
-let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 16 82 25
-let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 17 82 20
-let%span sutf8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 83 26 83 27
-let%span sutf8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 83 4 83 28
-let%span sutf8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 81 30 81 68
-let%span sutf8'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 80 10 80 57
-let%span sutf8'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/utf8.rs" 49 4 49 81
+let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 17 82 20
+let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 22 82 25
+let%span sutf8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 27 82 30
+let%span sutf8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 32 82 35
+let%span sutf8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 37 82 40
+let%span sutf8'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 42 82 45
+let%span sutf8'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 47 82 50
+let%span sutf8'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 52 82 55
+let%span sutf8'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 57 82 60
+let%span sutf8'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 62 82 65
+let%span sutf8'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 83 26 83 27
+let%span sutf8'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 83 4 83 28
+let%span sutf8'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 81 30 81 68
+let%span sutf8'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 80 10 80 57
+let%span sutf8'13 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/utf8.rs" 49 4 49 81
 
+use creusot.slice.Slice64
 use creusot.int.UInt8
 use creusot.int.UInt64
-use creusot.slice.Slice64
 use creusot.int.Int128
 use creusot.float.Float64
 use creusot.prelude.Char
@@ -188,7 +196,7 @@ let rec new (bytes: Slice64.array UInt8.t) (len: UInt64.t) (return (x: t_Result_
   {[@stop_split] [@expl:new 'bytes' type invariant] [%#sextern_specs] inv_array_u8_10 bytes}
   any
   [ return (result: t_Result_Utf8Bytes_ValidationError) ->
-  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sutf8'5] inv_Result_Utf8Bytes_ValidationError result)
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sutf8'13] inv_Result_Utf8Bytes_ValidationError result)
     /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] UInt64.t'int len > UInt64.t'int (10: UInt64.t)
       -> match result with
         | Err _ -> true
@@ -214,15 +222,25 @@ meta "select_lsinst" "all"
 let rec verify_empty_utf8 [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 81 0 81 68]
   (return (x: t_Result_Utf8Bytes_ValidationError)) = (! bb0
   [ bb0 = s0
-    [ s0 = Slice64.create <UInt8.t> {[%#sutf8] (10: UInt64.t)} {fun (_: int) -> [%#sutf8'0] (0: UInt8.t)}
-        (fun (_res: Slice64.array UInt8.t) -> [ &bytes <- _res ] s1)
-    | s1 = new [%#sutf8'2] {bytes} {[%#sutf8'1] (0: UInt64.t)}
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0 = ([%#sutf8] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#sutf8'0] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#sutf8'1] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#sutf8'2] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 4 = ([%#sutf8'3] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 5 = ([%#sutf8'4] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 6 = ([%#sutf8'5] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 7 = ([%#sutf8'6] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 8 = ([%#sutf8'7] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 9 = ([%#sutf8'8] (0: UInt8.t)) /\ Seq.length __arr_temp.Slice64.elts = 10}-
+        [ &bytes <- __arr_temp ] s1) ]
+    | s1 = new [%#sutf8'10] {bytes} {[%#sutf8'9] (0: UInt64.t)}
         (fun (_x: t_Result_Utf8Bytes_ValidationError) -> [ &_ret <- _x ] s2)
     | s2 = return {_ret} ] ]
   [ & _ret: t_Result_Utf8Bytes_ValidationError = Any.any_l () | & bytes: Slice64.array UInt8.t = Any.any_l () ])
   [ return (result: t_Result_Utf8Bytes_ValidationError) ->
-  {[@stop_split] [@expl:verify_empty_utf8 ensures] ([@stop_split] [@expl:verify_empty_utf8 result type invariant] [%#sutf8'3] inv_Result_Utf8Bytes_ValidationError result)
-    /\ ([@stop_split] [@expl:verify_empty_utf8 ensures] [%#sutf8'4] match result with
+  {[@stop_split] [@expl:verify_empty_utf8 ensures] ([@stop_split] [@expl:verify_empty_utf8 result type invariant] [%#sutf8'11] inv_Result_Utf8Bytes_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_empty_utf8 ensures] [%#sutf8'12] match result with
       | Ok _ -> true
       | Err _ -> false
       end)}

@@ -108,33 +108,80 @@ fn write_vsm_file(gen_dir: &std::path::Path, filename: &str, machine: &str, body
 //  Creusot
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Inline #[logic] predicate definitions for each machine invariant.
+//
+// These are copied from `src/creusot/vsm_invariants.rs` and emitted directly
+// into the generated companion files so that why3find can see the predicate
+// bodies (cross-module #[logic] bodies are opaque in Why3/COMA, causing 2/3
+// proof goals to fail).  Update here whenever vsm_invariants.rs changes.
+
+const INV_CONNECTION: &str = concat!(
+    "#[cfg(creusot)] #[logic] pub fn archive_connection_consistent",
+    "(_state: &ArchiveConnectionState) -> bool { true }",
+);
+
+const INV_NAV: &str = concat!(
+    "#[cfg(creusot)] #[logic] pub fn archive_nav_consistent",
+    "(_state: &ArchiveNavState) -> bool { true }",
+);
+
+// Non-trivial: pearlite body — syn/prettyplease will fall back to raw if they
+// can't round-trip the macro invocation.
+const INV_OVERLAY: &str = "\
+#[cfg(creusot)]
+#[logic]
+pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
+    pearlite! {
+        match state {
+            ArchiveOverlayState::ExportPickerOpen { idx, formats } =>
+                idx@ <= formats@.len(),
+            ArchiveOverlayState::SavedBrowserOpen { entries, idx } =>
+                idx@ <= entries@.len(),
+            _ => true,
+        }
+    }
+}";
+
+const INV_PANEL: &str = "\
+#[cfg(creusot)]
+#[logic]
+pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
+    pearlite! {
+        match state {
+            ArchivePanelState::SqlEditor { running, result, .. } =>
+                *running ==> match result { None => true, Some(_) => false },
+            _ => true,
+        }
+    }
+}";
+
 fn generate_creusot_companions(gen_dir: &std::path::Path) {
     write_creusot_vsm_file(
         gen_dir,
         "archive_connection.rs",
         "ArchiveConnectionMachine",
-        "archive_connection_consistent",
+        INV_CONNECTION,
         &ArchiveConnectionMachine::vsm_creusot_proof(),
     );
     write_creusot_vsm_file(
         gen_dir,
         "archive_nav.rs",
         "ArchiveNavMachine",
-        "archive_nav_consistent",
+        INV_NAV,
         &ArchiveNavMachine::vsm_creusot_proof(),
     );
     write_creusot_vsm_file(
         gen_dir,
         "archive_overlay.rs",
         "ArchiveOverlayMachine",
-        "archive_overlay_consistent",
+        INV_OVERLAY,
         &ArchiveOverlayMachine::vsm_creusot_proof(),
     );
     write_creusot_vsm_file(
         gen_dir,
         "archive_panel.rs",
         "ArchivePanelMachine",
-        "archive_panel_consistent",
+        INV_PANEL,
         &ArchivePanelMachine::vsm_creusot_proof(),
     );
 }
@@ -143,7 +190,7 @@ fn write_creusot_vsm_file(
     gen_dir: &std::path::Path,
     filename: &str,
     machine: &str,
-    inv_fn: &str,
+    inv_logic: &str,
     body: &proc_macro2::TokenStream,
 ) {
     let body_str = body.to_string();
@@ -155,7 +202,7 @@ fn write_creusot_vsm_file(
          #[cfg(creusot)] use elicit_server::archive::types::*;\n\
          #[cfg(creusot)] use elicit_server::archive::display::*;\n\
          #[cfg(creusot)] use elicit_server::archive::nav_tree::*;\n\
-         #[cfg(creusot)] use crate::creusot::vsm_invariants::{inv_fn};\n\
+         {inv_logic}\n\
          {body_str}"
     );
     let formatted = syn::parse_file(&raw)

@@ -1,20 +1,30 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 179 0 183 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 182 0 186 57 *)
 
-let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 187 15 187 32
-let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 180 4 180 9
-let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 181 4 181 9
-let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 182 4 182 10
-let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 177 11 177 41
-let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 183 5 183 57
-let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 178 10 178 43
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 190 15 190 32
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 194 28 194 41
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 193 28 193 29
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 195 35 195 39
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 196 31 196 36
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 202 28 202 29
+let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 183 4 183 9
+let%span sarchive_nav'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 184 4 184 9
+let%span sarchive_nav'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 185 4 185 10
+let%span sarchive_nav'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 180 11 180 41
+let%span sarchive_nav'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 186 5 186 57
+let%span sarchive_nav'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 181 10 181 43
+let%span sarchive_nav'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 24 4 24 8
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/extern_specs.rs" 13 21 13 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/extern_specs.rs" 12 18 12 49
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/extern_specs.rs" 10 18 10 41
 
 use creusot.int.UInt64
-use creusot.prelude.Any
 use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
 use creusot.int.Int64
 use int.Int
 
@@ -31,12 +41,6 @@ type t_ArchiveNavState =
 predicate inv_String (_1: t_String)
 
 predicate resolve_String (_1: t_String)
-
-type t_Established_ArchiveNavConsistent
-
-type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
-  f0: t_ArchiveNavState;
-  f1: t_Established_ArchiveNavConsistent }
 
 let rec elim_NavFiltered (_x: t_ArchiveNavState)
   (return (schemas: t_Vec_SchemaWithExpand_Global) (filter: t_String) (cursor: UInt64.t)) = any
@@ -60,6 +64,35 @@ let rec elim_NavReady (_x: t_ArchiveNavState)
       | _ -> false
       end}
     any) ]
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec is_empty (self_: t_String) (return (x: bool)) =
+  {[@stop_split] [@expl:is_empty 'self_' type invariant] [%#sextern_specs] inv_ref_String self_}
+  any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_empty ensures] [%#sextern_specs'0] result
+    = (Seq.length (view_String self_) = 0)}
+    (! return {result}) ]
+
+let rec new (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_String result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs'1] view_String result = (Seq.empty: Seq.seq Char.t))}
+    (! return {result}) ]
+
+type t_Established_ArchiveNavConsistent
+
+type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
+  f0: t_ArchiveNavState;
+  f1: t_Established_ArchiveNavConsistent }
 
 type t_Vec_TableDescriptor_Global
 
@@ -312,14 +345,6 @@ axiom inv_axiom'7:
 type t_Vec_String_Global
 
 type t_EnumDescriptor = { schema'3: t_String; name'3: t_String; labels'3: t_Vec_String_Global }
-
-predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
-
-meta "rewrite_def" predicate invariant_ref_String
-
-predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
-
-meta "rewrite_def" predicate inv_ref_String
 
 predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
   [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
@@ -637,7 +662,8 @@ axiom inv_axiom'22 [@rewrite]: forall x: t_ArchiveNavState [inv_ArchiveNavState 
 
 predicate inv_Established_ArchiveNavConsistent (_1: t_Established_ArchiveNavConsistent)
 
-predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 80 0 80 63] (_state: t_ArchiveNavState)
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 63] (_state: t_ArchiveNavState) =
+  [%#sarchive_nav'11] true
 
 predicate inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent [@inline:trivial] (_1: tup2_ArchiveNavState_Established_ArchiveNavConsistent) =
   inv_ArchiveNavState _1.f0 /\ inv_Established_ArchiveNavConsistent _1.f1
@@ -649,13 +675,13 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec apply_filter__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 179 0 183 57]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 182 0 186 57]
   (state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (filter: t_String)
   (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
-  {[@stop_split] [@expl:apply_filter__creusot requires] ([@stop_split] [@expl:apply_filter__creusot 'state' type invariant] [%#sarchive_nav'0] inv_ArchiveNavState state)
-  /\ ([@stop_split] [@expl:apply_filter__creusot 'proof' type invariant] [%#sarchive_nav'1] inv_Established_ArchiveNavConsistent proof)
-  /\ ([@stop_split] [@expl:apply_filter__creusot 'filter' type invariant] [%#sarchive_nav'2] inv_String filter)
-  /\ ([@stop_split] [@expl:apply_filter__creusot requires] [%#sarchive_nav'3] archive_nav_consistent state)}
+  {[@stop_split] [@expl:apply_filter__creusot requires] ([@stop_split] [@expl:apply_filter__creusot 'state' type invariant] [%#sarchive_nav'5] inv_ArchiveNavState state)
+  /\ ([@stop_split] [@expl:apply_filter__creusot 'proof' type invariant] [%#sarchive_nav'6] inv_Established_ArchiveNavConsistent proof)
+  /\ ([@stop_split] [@expl:apply_filter__creusot 'filter' type invariant] [%#sarchive_nav'7] inv_String filter)
+  /\ ([@stop_split] [@expl:apply_filter__creusot requires] [%#sarchive_nav'8] archive_nav_consistent state)}
   (! bb0
   [ bb0 = any
     [ br0 -> {state = NavUnloaded} (! bb1)
@@ -669,8 +695,7 @@ let rec apply_filter__creusot
     | s1 = -{resolve_String filter}- s2
     | s2 = [ &other <- state ] s3
     | s3 = [ &next <- other ] s4
-    | s4 = [ &_ret <- { f0 = next; f1 = proof } ] s5
-    | s5 = return {_ret} ]
+    | s4 = bb18 ]
   | bb3 = s0
     [ s0 = s1
       [ _ck -> (! {[@expl:type invariant] match state with
@@ -686,7 +711,7 @@ let rec apply_filter__creusot
     | s2 = elim_NavFiltered {state}
         (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rfilter: t_String) (rcursor: UInt64.t) ->
           [ &schemas <- rschemas ] s3)
-    | s3 = {[%#sarchive_nav] false} any ]
+    | s3 = bb6 ]
   | bb2 = s0
     [ s0 = s1
       [ _ck -> (! {[@expl:type invariant] match state with
@@ -702,7 +727,20 @@ let rec apply_filter__creusot
     | s2 = elim_NavReady {state}
         (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
           [ &schemas <- rschemas ] s3)
-    | s3 = {[%#sarchive_nav] false} any ] ]
+    | s3 = bb6 ]
+  | bb6 = s0
+    [ s0 = is_empty [%#sarchive_nav] {filter} (fun (_x: bool) -> [ &_10 <- _x ] s1)
+    | s1 = any [ br0 -> {_10 = false} (! bb12) | br1 -> {_10} (! bb8) ] ]
+  | bb8 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_String filter} any) ]
+    | s1 = -{resolve_String filter}- s2
+    | s2 = new [%#sarchive_nav'0] (fun (_x: t_String) -> [ &_13 <- _x ] s3)
+    | s3 =
+      [ &next <- NavReady schemas ([%#sarchive_nav'1] (0: UInt64.t)) _13 ([%#sarchive_nav'2] true) ([%#sarchive_nav'3] false) ]
+      s4
+    | s4 = bb18 ]
+  | bb12 = s0 [ s0 = [ &next <- NavFiltered schemas filter ([%#sarchive_nav'4] (0: UInt64.t)) ] s1 | s1 = bb18 ]
+  | bb18 = s0 [ s0 = [ &_ret <- { f0 = next; f1 = proof } ] s1 | s1 = return {_ret} ] ]
   [ & _ret: tup2_ArchiveNavState_Established_ArchiveNavConsistent = Any.any_l ()
   | & state: t_ArchiveNavState = state
   | & proof: t_Established_ArchiveNavConsistent = proof
@@ -710,12 +748,9 @@ let rec apply_filter__creusot
   | & next: t_ArchiveNavState = Any.any_l ()
   | & schemas: t_Vec_SchemaWithExpand_Global = Any.any_l ()
   | & _10: bool = Any.any_l ()
-  | & _12: t_Vec_SchemaWithExpand_Global = Any.any_l ()
   | & _13: t_String = Any.any_l ()
-  | & _14: t_Vec_SchemaWithExpand_Global = Any.any_l ()
-  | & _15: t_String = Any.any_l ()
   | & other: t_ArchiveNavState = Any.any_l () ])
   [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
-  {[@stop_split] [@expl:apply_filter__creusot ensures] ([@stop_split] [@expl:apply_filter__creusot result type invariant] [%#sarchive_nav'4] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
-    /\ ([@stop_split] [@expl:apply_filter__creusot ensures] [%#sarchive_nav'5] archive_nav_consistent result.f0)}
+  {[@stop_split] [@expl:apply_filter__creusot ensures] ([@stop_split] [@expl:apply_filter__creusot result type invariant] [%#sarchive_nav'9] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
+    /\ ([@stop_split] [@expl:apply_filter__creusot ensures] [%#sarchive_nav'10] archive_nav_consistent result.f0)}
     (! return {result}) ]

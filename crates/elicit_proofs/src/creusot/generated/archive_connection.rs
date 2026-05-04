@@ -19,7 +19,10 @@ use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
-use crate::creusot::vsm_invariants::archive_connection_consistent;
+#[logic]
+pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
+    true
+}
 #[cfg(creusot)]
 #[requires(true)]
 #[ensures(result)]

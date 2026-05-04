@@ -1,22 +1,26 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 42 0 46 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 45 0 49 57 *)
 
-let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 47 18 49 20
-let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 47 18 57 10
-let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 47 18 58 18
-let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 63 20 63 33
-let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 43 4 43 10
-let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 44 4 44 9
-let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 45 4 45 7
-let%span sarchive_nav'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 40 11 40 42
-let%span sarchive_nav'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 46 5 46 57
-let%span sarchive_nav'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 41 10 41 43
-let%span sarchive_nav'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 52 22 52 27
-let%span sarchive_nav'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 53 32 53 37
-let%span sarchive_nav'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 54 32 54 37
-let%span sarchive_nav'12 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 28 55 33
-let%span sarchive_nav'13 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 56 31 56 36
-let%span sarchive_nav'14 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 14 50 15
-let%span sarchive_nav'15 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 13 50 16
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 18 52 20
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 18 60 10
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 18 61 18
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 66 20 66 33
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 65 20 65 21
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 67 27 67 32
+let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 68 23 68 28
+let%span sarchive_nav'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 46 4 46 10
+let%span sarchive_nav'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 47 4 47 9
+let%span sarchive_nav'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 48 4 48 7
+let%span sarchive_nav'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 43 11 43 42
+let%span sarchive_nav'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 49 5 49 57
+let%span sarchive_nav'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 44 10 44 43
+let%span sarchive_nav'12 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 22 55 27
+let%span sarchive_nav'13 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 56 32 56 37
+let%span sarchive_nav'14 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 57 32 57 37
+let%span sarchive_nav'15 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 58 28 58 33
+let%span sarchive_nav'16 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 59 31 59 36
+let%span sarchive_nav'17 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 53 14 53 15
+let%span sarchive_nav'18 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 53 13 53 16
+let%span sarchive_nav'19 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 24 4 24 8
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 210 21 210 25
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 209 18 209 34
 let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
@@ -42,6 +46,7 @@ let%span siter'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter
 let%span siter'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter.rs" 132 26 132 69
 let%span siter'4 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter.rs" 174 30 174 34
 let%span siter'5 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter.rs" 172 26 173 119
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/extern_specs.rs" 10 18 10 41
 let%span smap = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter/map.rs" 114 8 115 92
 let%span smap'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter/map.rs" 101 8 107 37
 let%span smap'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/iter/map.rs" 56 12 57 47
@@ -66,6 +71,7 @@ use seq.Seq
 use creusot.int.Int64
 use creusot.prelude.MutBorrow
 use creusot.prelude.Any
+use creusot.prelude.Char
 use int.Int
 
 type t_String
@@ -999,26 +1005,26 @@ predicate resolve_closure0 [@inline:trivial] (_1: ()) = true
 
 meta "rewrite_def" predicate resolve_closure0
 
-predicate hist_inv_closure0 [@inline:trivial] (self: ()) (result_state: ()) = [%#sarchive_nav'15] true
+predicate hist_inv_closure0 [@inline:trivial] (self: ()) (result_state: ()) = [%#sarchive_nav'18] true
 
 meta "rewrite_def" predicate hist_inv_closure0
 
-let rec closure0 [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 50 13 50 16]
+let rec closure0 [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 53 13 53 16]
   [@coma:extspec] (self: MutBorrow.t ()) (e: t_SchemaEntry) (return (x: t_SchemaWithExpand)) =
-  {[@stop_split] [@expl:closure 'e' type invariant] [%#sarchive_nav'14] inv_SchemaEntry e}
+  {[@stop_split] [@expl:closure 'e' type invariant] [%#sarchive_nav'17] inv_SchemaEntry e}
   bb0
   [ bb0 = s0
     [ s0 = -{resolve_refmut_closure0 self}- s1
     | s1 = [ &_ret <- { entry = e;
-                        expanded = ([%#sarchive_nav'9] false);
-                        functions_expanded = ([%#sarchive_nav'10] false);
-                        sequences_expanded = ([%#sarchive_nav'11] false);
-                        types_expanded = ([%#sarchive_nav'12] false);
-                        triggers_expanded = ([%#sarchive_nav'13] false) } ] s2
+                        expanded = ([%#sarchive_nav'12] false);
+                        functions_expanded = ([%#sarchive_nav'13] false);
+                        sequences_expanded = ([%#sarchive_nav'14] false);
+                        types_expanded = ([%#sarchive_nav'15] false);
+                        triggers_expanded = ([%#sarchive_nav'16] false) } ] s2
     | s2 = return {_ret} ] ]
   [ & _ret: t_SchemaWithExpand = Any.any_l () | & self: MutBorrow.t () = self | & e: t_SchemaEntry = e ]
   [ return (result: t_SchemaWithExpand) ->
-  {[@stop_split] [@expl:closure0 ensures] ([@stop_split] [@expl:closure result type invariant] [%#sarchive_nav'15] inv_SchemaWithExpand result)
+  {[@stop_split] [@expl:closure0 ensures] ([@stop_split] [@expl:closure result type invariant] [%#sarchive_nav'18] inv_SchemaWithExpand result)
     /\ ([@stop_split] [@expl:closure hist_inv post] hist_inv_closure0 self.current self.final)}
     return {result} ]
 
@@ -1027,13 +1033,13 @@ meta "rewrite_def" predicate closure0'pre
 meta "rewrite_def" predicate closure0'post'return
 
 predicate postcondition_once_closure0 [@inline:trivial] (self: ()) (args: t_SchemaEntry) (result: t_SchemaWithExpand) =
-  [%#sarchive_nav'15] let e = args in exists e'0: (). exists bor_self: MutBorrow.t (). bor_self.current = self
+  [%#sarchive_nav'18] let e = args in exists e'0: (). exists bor_self: MutBorrow.t (). bor_self.current = self
       /\ bor_self.final = e'0 /\ closure0'post'return bor_self e result /\ hist_inv_closure0 self e'0
 
 meta "rewrite_def" predicate postcondition_once_closure0
 
 predicate postcondition_mut_closure0 [@inline:trivial] (self: ()) (args: t_SchemaEntry) (result_state: ()) (result: t_SchemaWithExpand) =
-  [%#sarchive_nav'15] let e = args in exists bor_self: MutBorrow.t (). bor_self.current = self
+  [%#sarchive_nav'18] let e = args in exists bor_self: MutBorrow.t (). bor_self.current = self
     /\ bor_self.final = result_state /\ closure0'post'return bor_self e result /\ hist_inv_closure0 self result_state
 
 meta "rewrite_def" predicate postcondition_mut_closure0
@@ -1078,7 +1084,7 @@ axiom produces_refl_IntoIter_SchemaEntry_Global_spec:
   forall self: t_IntoIter_SchemaEntry_Global. [%#svec'4] produces_IntoIter_SchemaEntry_Global self (Seq.empty: Seq.seq t_SchemaEntry) self
 
 predicate precondition_closure0 [@inline:trivial] (self: ()) (args: t_SchemaEntry) =
-  [%#sarchive_nav'15] let e = args in forall bor_self: MutBorrow.t (). bor_self.current = self
+  [%#sarchive_nav'18] let e = args in forall bor_self: MutBorrow.t (). bor_self.current = self
     -> closure0'pre bor_self e
 
 meta "rewrite_def" predicate precondition_closure0
@@ -1230,6 +1236,14 @@ let rec collect_Map_IntoIter_SchemaEntry_Global_closure0 (self_: t_Map_IntoIter_
       /\ from_iter_post_Vec_SchemaWithExpand_Global prod result)}
     (! return {result}) ]
 
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec new (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_String result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs] view_String result = (Seq.empty: Seq.seq Char.t))}
+    (! return {result}) ]
+
 type t_Established_ArchiveNavConsistent
 
 type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
@@ -1243,7 +1257,8 @@ predicate inv_NavTree (_1: t_NavTree)
 axiom inv_axiom'25 [@rewrite]: forall x: t_NavTree [inv_NavTree x]. inv_NavTree x
     = (inv_String x.db_name /\ inv_Option_String x.version /\ inv_Vec_SchemaEntry_Global x.schemas)
 
-predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/vsm_invariants.rs" 80 0 80 63] (_state: t_ArchiveNavState)
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 63] (_state: t_ArchiveNavState) =
+  [%#sarchive_nav'19] true
 
 predicate inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent [@inline:trivial] (_1: tup2_ArchiveNavState_Established_ArchiveNavConsistent) =
   inv_ArchiveNavState _1.f0 /\ inv_Established_ArchiveNavConsistent _1.f1
@@ -1255,13 +1270,13 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec nav_loaded__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 42 0 46 57]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 45 0 49 57]
   (_state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (nav: t_NavTree)
   (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
-  {[@stop_split] [@expl:nav_loaded__creusot requires] ([@stop_split] [@expl:nav_loaded__creusot '_state' type invariant] [%#sarchive_nav'3] inv_ArchiveNavState _state)
-  /\ ([@stop_split] [@expl:nav_loaded__creusot 'proof' type invariant] [%#sarchive_nav'4] inv_Established_ArchiveNavConsistent proof)
-  /\ ([@stop_split] [@expl:nav_loaded__creusot 'nav' type invariant] [%#sarchive_nav'5] inv_NavTree nav)
-  /\ ([@stop_split] [@expl:nav_loaded__creusot requires] [%#sarchive_nav'6] archive_nav_consistent _state)}
+  {[@stop_split] [@expl:nav_loaded__creusot requires] ([@stop_split] [@expl:nav_loaded__creusot '_state' type invariant] [%#sarchive_nav'6] inv_ArchiveNavState _state)
+  /\ ([@stop_split] [@expl:nav_loaded__creusot 'proof' type invariant] [%#sarchive_nav'7] inv_Established_ArchiveNavConsistent proof)
+  /\ ([@stop_split] [@expl:nav_loaded__creusot 'nav' type invariant] [%#sarchive_nav'8] inv_NavTree nav)
+  /\ ([@stop_split] [@expl:nav_loaded__creusot requires] [%#sarchive_nav'9] archive_nav_consistent _state)}
   (! bb0
   [ bb0 = s0
     [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_Option_String nav.version} any) ]
@@ -1277,8 +1292,12 @@ let rec nav_loaded__creusot
         (fun (_x: t_Map_IntoIter_SchemaEntry_Global_closure0) -> [ &_8 <- _x ] s9)
     | s9 = collect_Map_IntoIter_SchemaEntry_Global_closure0 [%#sarchive_nav'1] {_8}
         (fun (_x: t_Vec_SchemaWithExpand_Global) -> [ &schemas'0 <- _x ] s10)
-    | s10 = [ &_13 <- schemas'0 ] s11
-    | s11 = {[%#sarchive_nav'2] false} any ] ]
+    | s10 = new [%#sarchive_nav'2] (fun (_x: t_String) -> [ &_14 <- _x ] s11)
+    | s11 =
+      [ &_12 <- NavReady schemas'0 ([%#sarchive_nav'3] (0: UInt64.t)) _14 ([%#sarchive_nav'4] false) ([%#sarchive_nav'5] false) ]
+      s12
+    | s12 = [ &_ret <- { f0 = _12; f1 = proof } ] s13
+    | s13 = return {_ret} ] ]
   [ & _ret: tup2_ArchiveNavState_Established_ArchiveNavConsistent = Any.any_l ()
   | & _state: t_ArchiveNavState = _state
   | & proof: t_Established_ArchiveNavConsistent = proof
@@ -1288,10 +1307,8 @@ let rec nav_loaded__creusot
   | & _9: t_IntoIter_SchemaEntry_Global = Any.any_l ()
   | & _11: () = Any.any_l ()
   | & _12: t_ArchiveNavState = Any.any_l ()
-  | & _13: t_Vec_SchemaWithExpand_Global = Any.any_l ()
-  | & _14: t_String = Any.any_l ()
-  | & _15: t_Established_ArchiveNavConsistent = Any.any_l () ])
+  | & _14: t_String = Any.any_l () ])
   [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
-  {[@stop_split] [@expl:nav_loaded__creusot ensures] ([@stop_split] [@expl:nav_loaded__creusot result type invariant] [%#sarchive_nav'7] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
-    /\ ([@stop_split] [@expl:nav_loaded__creusot ensures] [%#sarchive_nav'8] archive_nav_consistent result.f0)}
+  {[@stop_split] [@expl:nav_loaded__creusot ensures] ([@stop_split] [@expl:nav_loaded__creusot result type invariant] [%#sarchive_nav'10] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
+    /\ ([@stop_split] [@expl:nav_loaded__creusot ensures] [%#sarchive_nav'11] archive_nav_consistent result.f0)}
     (! return {result}) ]

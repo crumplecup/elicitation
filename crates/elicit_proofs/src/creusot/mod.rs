@@ -4,4 +4,5 @@
 //! `VerifiedStateMachine::vsm_creusot_proof()` is implemented.
 
 pub mod generated;
+pub mod extern_specs;
 pub mod vsm_invariants;

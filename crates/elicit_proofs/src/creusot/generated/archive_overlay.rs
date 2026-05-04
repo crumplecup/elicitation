@@ -19,7 +19,14 @@ use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
-use crate::creusot::vsm_invariants::archive_overlay_consistent;
+#[logic]
+pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
+    pearlite! {
+        match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx @ <=
+        formats @.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx @
+        <= entries @.len(), _ => true, }
+    }
+}
 #[cfg(creusot)]
 #[requires(true)]
 #[ensures(result)]

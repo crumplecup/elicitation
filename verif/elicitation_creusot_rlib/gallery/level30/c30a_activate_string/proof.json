@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c30a_activate_string": { "prover": "cvc5", "time": 0.014 },
+      "vc_new": { "prover": "cvc5", "time": 0.014 }
+    }
+  }
+}

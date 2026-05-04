@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c27a_increment_pure": { "prover": "cvc5", "time": 0.029 } }
+  }
+}

@@ -14,14 +14,16 @@
 use creusot_std::prelude::*;
 
 /// Test: annotate with `elicitation::trusted` path.
-/// If `trusted` is exported from `elicitation`, this compiles.
-/// If not, we'll see E0433 "cannot find `trusted` in `elicitation`".
-#[elicitation::trusted]
-pub fn c28_via_elicitation_path(x: u32) -> u32 {
-    x + 1
-}
+///
+/// **Finding**: `trusted` is NOT re-exported from `elicitation` — `E0433`.
+/// Use `#[trusted]` directly from the `creusot_std::prelude` import instead.
+/// The `#[elicitation::trusted]` path is not available; see C28 finding below.
+///
+/// Comment this out to avoid compile error — the test is documented here.
+// #[elicitation::trusted]
+// pub fn c28_via_elicitation_path(x: u32) -> u32 { x + 1 }
 
-/// Test: annotate with bare `#[trusted]` from local prelude (should always work).
+/// Test: annotate with bare `#[trusted]` from local prelude (always works).
 #[trusted]
 pub fn c28_via_local_prelude(x: u32) -> u32 {
     x + 2

@@ -19,7 +19,13 @@ use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
-use crate::creusot::vsm_invariants::archive_panel_consistent;
+#[logic]
+pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
+    pearlite! {
+        match state { ArchivePanelState::SqlEditor { running, result, .. } => * running
+        ==> match result { None => true, Some(_) => false }, _ => true, }
+    }
+}
 #[cfg(creusot)]
 #[requires(true)]
 #[ensures(result)]
