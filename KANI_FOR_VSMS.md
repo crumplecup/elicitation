@@ -7,7 +7,7 @@
 >
 > For the architecture of VSMs themselves (layers, traits, type theory), see
 > [`VERIFIED_STATE_MACHINES.md`](VERIFIED_STATE_MACHINES.md).
-> For the CREUSOT backend, see [`CREUSOT_GUIDE.md`](CREUSOT_GUIDE.md).
+> For the Creusot deductive backend, see [`CREUSOT_FOR_VSMS.md`](CREUSOT_FOR_VSMS.md).
 
 ---
 

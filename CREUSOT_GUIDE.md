@@ -9,6 +9,9 @@ strengthened so that Alt-Ergo/cvc5 discharge real proof obligations for the
 majority of contract types. See [Current Status](#current-status) for the
 complete picture.
 
+> For Creusot applied specifically to `VerifiedStateMachine` types, see
+> [`CREUSOT_FOR_VSMS.md`](CREUSOT_FOR_VSMS.md).
+
 ---
 
 ## What Is Creusot?
@@ -68,7 +71,132 @@ If you clone creusot to a different location, update this path.
 
 ## Running the Proof Suite
 
-### Full Tracked Run
+### Quick orientation: two steps
+
+`cargo creusot prove` bundles two distinct operations:
+
+1. **Translation** — `cargo creusot` invokes `creusot-rustc` to translate
+   Rust → Why3/COMA. Output goes to `verif/{crate}_rlib/`.
+2. **Proving** — `why3find prove` discharges the COMA goals via SMT solvers
+   (Alt-Ergo, CVC5, Z3). Proof caches are stored as `verif/**/{fn}/proof.json`.
+
+You can run them together (`cargo creusot prove`) or separately.
+
+### Required environment variables
+
+Why3 and why3find are installed under the Creusot prefix, not in your system
+PATH by default. Three variables are required:
+
+```bash
+export PATH="${HOME}/.local/share/creusot/bin:${PATH}"
+export DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find"
+export WHY3CONFIG="${HOME}/.config/creusot/why3.conf"
+```
+
+Add these to your shell profile or prefix every Creusot command with them.
+The `just` recipes already set them.
+
+### Toolchain and binary locations
+
+| Binary | Location |
+|---|---|
+| `cargo creusot` | via rustup cargo extension |
+| `creusot-rustc` | `~/.local/share/creusot/bin/creusot-rustc` |
+| `why3find` | `~/.local/share/creusot/bin/why3find` |
+| `why3` | `~/.local/share/creusot/bin/why3` |
+| Solver config | `~/.config/creusot/why3.conf` |
+| Why3find libs | `~/.local/share/creusot/share/why3find/` |
+| `creusot-std` source | `~/repos/creusot/creusot-std/` |
+
+### Generating COMA files only (translation without proving)
+
+```bash
+cargo creusot -- -p elicitation_creusot
+```
+
+This runs the Rust → COMA translation for `elicitation_creusot` and writes
+output to `verif/elicitation_creusot_rlib/`. No SMT solving happens. Use this
+to check that contracts parse and the crate translates cleanly before running
+a slow prove step.
+
+For VSM companions:
+
+```bash
+cargo creusot -- -p elicit_proofs
+```
+
+### Proving COMA files (SMT solving only)
+
+```bash
+PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+why3find prove -p creusot verif/elicitation_creusot_rlib/gallery/level29/*.coma
+```
+
+This is the fastest iteration loop when debugging a specific function —
+no full cargo build.
+
+### Combined translation + prove (full run)
+
+```bash
+PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+cargo creusot prove -- -p elicit_proofs
+```
+
+`cargo creusot prove -- -p PKG` regenerates `verif/PKG_rlib/` then proves
+**everything in `verif/`** (both `elicitation_creusot_rlib/` and
+`elicit_proofs_rlib/`). The `-p` flag controls which crate is re-translated,
+not which COMA files are proved.
+
+### Checking compilation without proving
+
+```bash
+just check elicit_proofs
+just check elicitation_creusot
+```
+
+This compiles with the regular Rust toolchain (no Creusot, no Why3). Use
+this to verify contracts parse, imports resolve, and Rust types are correct
+before spending time on a full prove run.
+
+### Inspecting a failure
+
+When `why3find` reports a goal unproved, find the COMA file:
+
+```bash
+ls verif/elicit_proofs_rlib/creusot/generated/archive_nav/
+# nav_loaded_creusot.coma   nav_loaded_creusot/proof.json  ...
+
+cat verif/elicit_proofs_rlib/creusot/generated/archive_nav/nav_loaded_creusot.coma
+```
+
+Look for `{false}` in a value binding — the signature of an unmodeled call:
+
+```
+s6 = {false} any    (* String::new() has no model *)
+```
+
+Cross-reference the binding number (`s6`) with the surrounding let-chain to
+find which source expression produced it.
+
+### Stale COMA cache
+
+Creusot uses `target/creusot/` separately from `target/`. Stale fingerprints
+can cause COMA files not to regenerate after source changes:
+
+```bash
+rm -rf target/creusot/debug/.fingerprint/elicit_proofs-*
+rm -rf target/creusot/debug/deps/libelicit_proofs*
+```
+
+`cargo clean -p elicit_proofs` only cleans the regular target, not the
+Creusot target. Always delete fingerprints manually when debugging missing
+or stale `.coma` files.
+
+### Full Tracked Run (elicitation_creusot modules)
 
 ```bash
 just verify-creusot-tracked
