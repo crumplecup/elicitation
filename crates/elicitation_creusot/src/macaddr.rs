@@ -72,7 +72,7 @@ pub fn verify_mac_multicast_local() -> MacAddr {
 #[ensures(mac_is_multicast(result))]
 #[trusted]
 pub fn verify_mac_broadcast() -> MacAddr {
-    MacAddr::new([0xFF; 6])
+    MacAddr::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
 }
 
 /// Verify: Null address (00:00:00:00:00:00)
@@ -82,7 +82,7 @@ pub fn verify_mac_broadcast() -> MacAddr {
 #[ensures(mac_is_universal(result))]
 #[trusted]
 pub fn verify_mac_null() -> MacAddr {
-    MacAddr::new([0x00; 6])
+    MacAddr::new([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
 
 /// Verify: Common vendor MAC (Intel OUI 00:1B:21)
@@ -138,7 +138,7 @@ pub fn verify_is_multicast_03() -> bool {
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_is_multicast_broadcast() -> bool {
-    is_multicast(&[0xFF; 6])
+    is_multicast(&[0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
 }
 
 /// Verify: is_universal correctly identifies universal (bit 1 = 0)
@@ -218,7 +218,7 @@ pub fn verify_mac_03_multicast_local() -> MacAddr {
 #[ensures(mac_is_null(result))]
 #[trusted]
 pub fn verify_mac_all_zeros() -> MacAddr {
-    MacAddr::new([0x00; 6])
+    MacAddr::new([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
 
 /// Verify: All ones (broadcast)
@@ -226,7 +226,7 @@ pub fn verify_mac_all_zeros() -> MacAddr {
 #[ensures(mac_is_broadcast(result))]
 #[trusted]
 pub fn verify_mac_all_ones() -> MacAddr {
-    MacAddr::new([0xFF; 6])
+    MacAddr::new([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
 }
 
 /// Verify: Alternating pattern

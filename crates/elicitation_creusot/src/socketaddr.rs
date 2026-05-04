@@ -254,14 +254,14 @@ pub fn verify_socket_v4_max_max() -> SocketAddrV4Bytes {
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 0u16)]
 pub fn verify_socket_v6_zero_zero() -> SocketAddrV6Bytes {
-    SocketAddrV6Bytes::from_octets([0; 16], 0)
+    SocketAddrV6Bytes::from_octets([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0)
 }
 
 /// Verify: IPv6 max IP with max port
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 65535u16)]
 pub fn verify_socket_v6_max_max() -> SocketAddrV6Bytes {
-    SocketAddrV6Bytes::from_octets([0xff; 16], 65535)
+    SocketAddrV6Bytes::from_octets([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff], 65535)
 }
 
 // ============================================================================
