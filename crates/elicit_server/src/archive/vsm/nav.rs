@@ -82,14 +82,6 @@ pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
     true
 }
 
-/// Creusot logic predicate mirroring the Kani invariant.
-/// Placeholder — all states are well-formed by construction.
-#[cfg(all(creusot, feature = "creusot"))]
-#[::creusot_std::macros::logic]
-pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
-    true
-}
-
 /// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
 /// `stub_verified` can generate bounded symbolic return values.
 #[cfg(kani)]

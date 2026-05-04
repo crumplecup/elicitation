@@ -280,14 +280,6 @@ pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
     true
 }
 
-/// Creusot logic predicate mirroring the Kani invariant.
-/// Placeholder — all states are well-formed by construction.
-#[cfg(all(creusot, feature = "creusot"))]
-#[::creusot_std::macros::logic]
-pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
-    true
-}
-
 /// Bridge `kani::Arbitrary` to our `KaniCompose::kani_any()` so that
 /// `stub_verified` can generate symbolic return values for functions that
 /// return `ArchivePanelState`.
@@ -366,14 +358,14 @@ pub fn data_grid_ready(
     proof: Established<ArchivePanelConsistent>,
     schema: String,
     table: String,
-    result: QueryResult,
+    query_result: QueryResult,
     display_mode: QueryResultMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     (
         ArchivePanelState::DataGrid {
             schema,
             table,
-            result,
+            result: query_result,
             page: 0,
             grid_row: 0,
             grid_col: 0,
@@ -390,12 +382,12 @@ pub fn data_grid_ready(
 pub fn query_complete(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
-    result: QueryResult,
+    query_result: QueryResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
         ArchivePanelState::SqlEditor { text, error, .. } => ArchivePanelState::SqlEditor {
             text,
-            result: Some(result),
+            result: Some(query_result),
             running: false,
             error,
         },
@@ -632,13 +624,13 @@ pub fn explain_ready(
 pub fn export_ready(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
-    result: ExportResult,
+    export_result: ExportResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
         ArchivePanelState::ExportView { schema, table, .. } => ArchivePanelState::ExportView {
             schema,
             table,
-            result: Some(result),
+            result: Some(export_result),
         },
         other => other,
     };

@@ -55,7 +55,7 @@ impl<T: Elicitation + Send> Prompt for VecNonEmpty<T> {
 impl<T: Elicitation + Send> Elicitation for VecNonEmpty<T> {
     type Style = <Vec<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecNonEmpty");
         loop {
@@ -122,7 +122,7 @@ impl<C: Elicitation + Send> Prompt for VecAllSatisfy<C> {
 impl<C: Elicitation + Send> Elicitation for VecAllSatisfy<C> {
     type Style = <Vec<C> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecAllSatisfy");
         // Each element is C (contract type), so all guaranteed valid!
@@ -184,7 +184,7 @@ impl<T: Elicitation + Send> Prompt for OptionSome<T> {
 impl<T: Elicitation + Send> Elicitation for OptionSome<T> {
     type Style = <Option<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OptionSome");
         loop {
@@ -224,9 +224,9 @@ pub struct ResultOk<T>(T);
 
 impl<T> ResultOk<T> {
     /// Create a new ResultOk from a Result, validating it's Ok.
-    #[spec(requires: [result.is_ok()])]
-    pub fn new<E>(result: Result<T, E>) -> Result<Self, ValidationError> {
-        match result {
+    #[spec(requires: [input.is_ok()])]
+    pub fn new<E>(input: Result<T, E>) -> Result<Self, ValidationError> {
+        match input {
             Ok(value) => Ok(Self(value)),
             Err(_) => Err(ValidationError::ResultIsErr),
         }
@@ -257,7 +257,7 @@ impl<T: Elicitation + Send> Prompt for ResultOk<T> {
 impl<T: Elicitation + Send> Elicitation for ResultOk<T> {
     type Style = <T as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ResultOk");
         // Just elicit T directly since we want guaranteed success
@@ -313,7 +313,7 @@ impl<C: Elicitation + Send> Prompt for BoxSatisfies<C> {
 impl<C: Elicitation + Send> Elicitation for BoxSatisfies<C> {
     type Style = C::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoxSatisfies");
         let value = C::elicit(communicator).await?; // Guaranteed valid by contract!
@@ -368,7 +368,7 @@ impl<C: Elicitation + Send> Prompt for ArcSatisfies<C> {
 impl<C: Elicitation + Send> Elicitation for ArcSatisfies<C> {
     type Style = C::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ArcSatisfies");
         let value = C::elicit(communicator).await?; // Guaranteed valid by contract!
@@ -423,7 +423,7 @@ impl<C: Elicitation + Send> Prompt for RcSatisfies<C> {
 impl<C: Elicitation + Send> Elicitation for RcSatisfies<C> {
     type Style = C::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RcSatisfies");
         let value = C::elicit(communicator).await?; // Guaranteed valid by contract!
@@ -643,7 +643,7 @@ where
 {
     type Style = <HashMap<K, V> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting HashMapNonEmpty");
         loop {
@@ -776,7 +776,7 @@ where
 {
     type Style = <BTreeMap<K, V> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BTreeMapNonEmpty");
         loop {
@@ -906,7 +906,7 @@ where
 {
     type Style = <HashSet<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting HashSetNonEmpty");
         loop {
@@ -1031,7 +1031,7 @@ where
 {
     type Style = <BTreeSet<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BTreeSetNonEmpty");
         loop {
@@ -1160,7 +1160,7 @@ where
 {
     type Style = <VecDeque<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecDequeNonEmpty");
         loop {
@@ -1285,7 +1285,7 @@ where
 {
     type Style = <LinkedList<T> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LinkedListNonEmpty");
         loop {
@@ -1362,7 +1362,7 @@ where
 {
     type Style = <[C; N] as Elicitation>::Style;
 
-    #[tracing::instrument(skip(communicator), fields(array_size = N))]
+    #[cfg_attr(not(creusot), tracing::instrument(skip(communicator), fields(array_size = N)))]
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ArrayAllSatisfy");
         // Each element is C (contract type), so all guaranteed valid!

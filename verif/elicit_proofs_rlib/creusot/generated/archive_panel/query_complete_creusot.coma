@@ -1,19 +1,19 @@
 (* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 99 0 103 61 *)
 
-let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
-let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 74 20 74 76
-let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
-let%span svec'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 44 20 44 29
-let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
-let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
+let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 42 20 42 29
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 25 109 30
 let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 100 4 100 9
 let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 101 4 101 9
-let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 102 4 102 10
+let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 102 4 102 16
 let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 97 11 97 43
 let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 103 5 103 61
 let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 98 10 98 45
-let%span sboxed = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/boxed.rs" 48 8 48 18
+let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
 
 use creusot.int.UInt64
 use creusot.int.UInt32
@@ -1443,11 +1443,11 @@ meta "select_lsinst" "all"
 
 let rec query_complete__creusot
   [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 99 0 103 61]
-  (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent) (result: t_QueryResult)
+  (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent) (query_result: t_QueryResult)
   (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
   {[@stop_split] [@expl:query_complete__creusot requires] ([@stop_split] [@expl:query_complete__creusot 'state' type invariant] [%#sarchive_panel'0] inv_ArchivePanelState state'0)
   /\ ([@stop_split] [@expl:query_complete__creusot 'proof' type invariant] [%#sarchive_panel'1] inv_Established_ArchivePanelConsistent proof)
-  /\ ([@stop_split] [@expl:query_complete__creusot 'result' type invariant] [%#sarchive_panel'2] inv_QueryResult result)
+  /\ ([@stop_split] [@expl:query_complete__creusot 'query_result' type invariant] [%#sarchive_panel'2] inv_QueryResult query_result)
   /\ ([@stop_split] [@expl:query_complete__creusot requires] [%#sarchive_panel'3] archive_panel_consistent state'0)}
   (! bb0
   [ bb0 = any
@@ -1482,8 +1482,8 @@ let rec query_complete__creusot
     | br16 (x0: t_ConnectionProfile) (x1: t_ConnectionProfileMode) -> {state'0 = ConnectionEdit'0 x0 x1} (! bb1)
     | br17 (x0: t_String) -> {state'0 = ErrorView'0 x0} (! bb1) ]
   | bb1 = s0
-    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_QueryResult result} any) ]
-    | s1 = -{resolve_QueryResult result}- s2
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_QueryResult query_result} any) ]
+    | s1 = -{resolve_QueryResult query_result}- s2
     | s2 = [ &other <- state'0 ] s3
     | s3 = [ &next <- other ] s4
     | s4 = bb11 ]
@@ -1505,20 +1505,20 @@ let rec query_complete__creusot
     | s3 = elim_SqlEditor {state'0}
         (fun (rtext: t_String) (rresult: t_Option_QueryResult) (rrunning: bool) (rerror: t_Option_String) ->
           [ &error <- rerror ] s4)
-    | s4 = [ &_12 <- Some'2 result ] s5
+    | s4 = [ &_12 <- Some'2 query_result ] s5
     | s5 = [ &next <- SqlEditor'0 text _12 ([%#sarchive_panel] false) error ] s6
     | s6 = bb11 ]
   | bb11 = s0 [ s0 = [ &_ret <- { f0'2 = next; f1'2 = proof } ] s1 | s1 = return {_ret} ] ]
   [ & _ret: tup2_ArchivePanelState_Established_ArchivePanelConsistent = Any.any_l ()
   | & state'0: t_ArchivePanelState = state'0
   | & proof: t_Established_ArchivePanelConsistent = proof
-  | & result: t_QueryResult = result
+  | & query_result: t_QueryResult = query_result
   | & next: t_ArchivePanelState = Any.any_l ()
   | & text: t_String = Any.any_l ()
   | & error: t_Option_String = Any.any_l ()
   | & _12: t_Option_QueryResult = Any.any_l ()
   | & other: t_ArchivePanelState = Any.any_l () ])
-  [ return (result'0: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
-  {[@stop_split] [@expl:query_complete__creusot ensures] ([@stop_split] [@expl:query_complete__creusot result type invariant] [%#sarchive_panel'4] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result'0)
-    /\ ([@stop_split] [@expl:query_complete__creusot ensures] [%#sarchive_panel'5] archive_panel_consistent result'0.f0'2)}
-    (! return {result'0}) ]
+  [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
+  {[@stop_split] [@expl:query_complete__creusot ensures] ([@stop_split] [@expl:query_complete__creusot result type invariant] [%#sarchive_panel'4] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
+    /\ ([@stop_split] [@expl:query_complete__creusot ensures] [%#sarchive_panel'5] archive_panel_consistent result.f0'2)}
+    (! return {result}) ]

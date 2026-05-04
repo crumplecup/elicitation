@@ -82,9 +82,16 @@ fn data_grid_ready__kani_closure() {
     };
     let schema: String = ::std::string::String::new();
     let table: String = ::std::string::String::new();
-    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let query_result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: QueryResultMode = <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
+    let _result = data_grid_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        query_result,
+        display_mode,
+    );
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -99,8 +106,8 @@ fn query_complete__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = query_complete(state, proof, result);
+    let query_result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = query_complete(state, proof, query_result);
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]
@@ -280,8 +287,8 @@ fn export_ready__kani_closure() {
         let __cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
     };
-    let result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = export_ready(state, proof, result);
+    let export_result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
+    let _result = export_ready(state, proof, export_result);
     ::std::mem::forget(_result);
 }
 #[allow(unexpected_cfgs)]

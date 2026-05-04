@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 120 0 120 59 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 163 0 163 59 *)
 
-let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 121 4 121 25
-let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 118 11 118 33
-let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 119 10 119 33
-let%span slevel25'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 107 11 107 33
-let%span slevel25'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 108 10 108 33
-let%span slevel25'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 94 8 97 9
+let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 164 4 164 25
+let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 161 11 161 33
+let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 162 10 162 33
+let%span slevel25'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 150 11 150 33
+let%span slevel25'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 151 10 151 33
+let%span slevel25'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 137 8 140 9
 
 use creusot.int.Int64
 use creusot.prelude.Any
@@ -13,7 +13,7 @@ use int.Int
 
 type t_C25State = Idle | Active Int64.t
 
-predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 92 0 92 43] (s: t_C25State) =
+predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 135 0 135 43] (s: t_C25State) =
   [%#slevel25'4] match s with
     | Idle -> true
     | Active value -> Int64.to_int value > 0
@@ -30,7 +30,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c25_deactivate__harness
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 120 0 120 59] (state: t_C25State)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 163 0 163 59] (state: t_C25State)
   (return (x: t_C25State)) =
   {[@stop_split] [@expl:c25_deactivate__harness requires] [%#slevel25'0] c25_consistent state}
   (! bb0

@@ -21,8 +21,8 @@ use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
 use crate::creusot::vsm_invariants::archive_nav_consistent;
 #[cfg(creusot)]
-#[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result)]
+#[requires(true)]
+#[ensures(result)]
 #[trusted]
 pub fn verify_archive_nav_consistent_prop_creusot() -> bool {
     true

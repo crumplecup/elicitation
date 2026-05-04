@@ -701,6 +701,7 @@ where
     ///
     /// - Contract violation: Precondition or postcondition failed
     /// - Elicitation error: Standard elicitation failures
+    #[cfg(not(creusot))]
     pub async fn elicit(
         self,
         peer: std::sync::Arc<crate::rmcp::Peer<crate::rmcp::RoleClient>>,

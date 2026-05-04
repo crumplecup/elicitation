@@ -19,12 +19,12 @@ let%span scollections'10 = "/home/erik/repos/elicitation/crates/elicitation_creu
 let%span scollections'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 250 10 250 14
 let%span scollections'12 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 1335 4 1335 40
 let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 1909 12 1909 69
-let%span sresult = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/result.rs" 52 18 52 22
-let%span sresult'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/result.rs" 50 19 50 45
-let%span sresult'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/result.rs" 51 18 51 36
-let%span sarray = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/array.rs" 9 20 9 51
-let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
-let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span sresult = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/result.rs" 52 18 52 22
+let%span sresult'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/result.rs" 50 19 50 45
+let%span sresult'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/result.rs" 51 18 51 36
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 
 use creusot.int.Int32
 use creusot.int.Int128

@@ -1,11 +1,11 @@
 (* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 74 0 81 61 *)
 
-let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 89 20 89 30
-let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 74 20 74 76
-let%span svec'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
-let%span svec'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 44 20 44 29
-let%span sseq = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/seq.rs" 921 20 921 91
-let%span sinvariant = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/invariant.rs" 85 8 85 18
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
+let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 42 20 42 29
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 87 18 87 19
 let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 88 22 88 23
 let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 89 22 89 23
@@ -13,11 +13,11 @@ let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/s
 let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 76 4 76 9
 let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 77 4 77 10
 let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 78 4 78 9
-let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 79 4 79 10
+let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 79 4 79 16
 let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 72 11 72 44
 let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 81 5 81 61
 let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 73 10 73 45
-let%span sboxed = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/boxed.rs" 48 8 48 18
+let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
 
 use creusot.int.UInt64
 use creusot.int.UInt32
@@ -1899,13 +1899,13 @@ meta "select_lsinst" "all"
 let rec data_grid_ready__creusot
   [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 74 0 81 61]
   (_state: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent) (schema'4: t_String) (table: t_String)
-  (result: t_QueryResult) (display_mode: t_QueryResultMode)
+  (query_result: t_QueryResult) (display_mode: t_QueryResultMode)
   (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
   {[@stop_split] [@expl:data_grid_ready__creusot requires] ([@stop_split] [@expl:data_grid_ready__creusot '_state' type invariant] [%#sarchive_panel'2] inv_ArchivePanelState _state)
   /\ ([@stop_split] [@expl:data_grid_ready__creusot 'proof' type invariant] [%#sarchive_panel'3] inv_Established_ArchivePanelConsistent proof)
   /\ ([@stop_split] [@expl:data_grid_ready__creusot 'schema' type invariant] [%#sarchive_panel'4] inv_String schema'4)
   /\ ([@stop_split] [@expl:data_grid_ready__creusot 'table' type invariant] [%#sarchive_panel'5] inv_String table)
-  /\ ([@stop_split] [@expl:data_grid_ready__creusot 'result' type invariant] [%#sarchive_panel'6] inv_QueryResult result)
+  /\ ([@stop_split] [@expl:data_grid_ready__creusot 'query_result' type invariant] [%#sarchive_panel'6] inv_QueryResult query_result)
   /\ ([@stop_split] [@expl:data_grid_ready__creusot requires] [%#sarchive_panel'7] archive_panel_consistent _state)}
   (! bb0
   [ bb0 = s0
@@ -1913,7 +1913,7 @@ let rec data_grid_ready__creusot
     | s1 = -{resolve_ArchivePanelState _state}- s2
     | s2 = [ &_14 <- None'1 ] s3
     | s3 =
-      [ &_10 <- DataGrid'0 schema'4 table result ([%#sarchive_panel] (0: UInt32.t)) ([%#sarchive_panel'0] (0: UInt64.t)) ([%#sarchive_panel'1] (0: UInt64.t)) _14 display_mode ]
+      [ &_10 <- DataGrid'0 schema'4 table query_result ([%#sarchive_panel] (0: UInt32.t)) ([%#sarchive_panel'0] (0: UInt64.t)) ([%#sarchive_panel'1] (0: UInt64.t)) _14 display_mode ]
       s4
     | s4 = [ &_ret <- { f0'5 = _10; f1'5 = proof } ] s5
     | s5 = return {_ret} ] ]
@@ -1922,11 +1922,11 @@ let rec data_grid_ready__creusot
   | & proof: t_Established_ArchivePanelConsistent = proof
   | & schema'4: t_String = schema'4
   | & table: t_String = table
-  | & result: t_QueryResult = result
+  | & query_result: t_QueryResult = query_result
   | & display_mode: t_QueryResultMode = display_mode
   | & _10: t_ArchivePanelState = Any.any_l ()
   | & _14: t_Option_RowEditState = Any.any_l () ])
-  [ return (result'0: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
-  {[@stop_split] [@expl:data_grid_ready__creusot ensures] ([@stop_split] [@expl:data_grid_ready__creusot result type invariant] [%#sarchive_panel'8] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result'0)
-    /\ ([@stop_split] [@expl:data_grid_ready__creusot ensures] [%#sarchive_panel'9] archive_panel_consistent result'0.f0'5)}
-    (! return {result'0}) ]
+  [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
+  {[@stop_split] [@expl:data_grid_ready__creusot ensures] ([@stop_split] [@expl:data_grid_ready__creusot result type invariant] [%#sarchive_panel'8] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
+    /\ ([@stop_split] [@expl:data_grid_ready__creusot ensures] [%#sarchive_panel'9] archive_panel_consistent result.f0'5)}
+    (! return {result}) ]

@@ -8,8 +8,8 @@ let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creus
 let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 41 35 95
 let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 34 10 34 57
 let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 19 4 19 40
-let%span svec = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 104 18 104 36
-let%span svec'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/vec.rs" 18 14 18 41
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 102 18 102 36
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 
 use seq.Seq
 use creusot.int.Int32

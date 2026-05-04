@@ -435,6 +435,24 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             }
         }
 
+        // Guard: `result` is a Creusot-reserved identifier (the return-value name
+        // in `#[ensures]` clauses). Reject it as a parameter name here so the
+        // generated Creusot companion never produces invalid COMA output.
+        for arg in &func.sig.inputs {
+            if let FnArg::Typed(pat_type) = arg {
+                if let syn::Pat::Ident(pi) = &*pat_type.pat {
+                    if pi.ident == "result" {
+                        return Err(syn::Error::new_spanned(
+                            &pi.ident,
+                            "#[formal_method]: parameter name `result` is reserved by Creusot \
+                             (it names the return value in #[ensures] clauses). \
+                             Rename the parameter (e.g. `query_result`, `fn_result`).",
+                        ));
+                    }
+                }
+            }
+        }
+
         let has_state_param = state_pat_str.is_some();
         let state_pat_s = state_pat_str.unwrap_or_default();
         let state_ty_s = state_ty_str.unwrap_or_default();
@@ -500,26 +518,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             func.attrs.push(requires_attr);
             func.attrs.push(ensures_attr);
 
-            // ── Creusot contracts on the original function ────────────
-            // Gate on BOTH `creusot` cfg (set by cargo creusot globally)
-            // AND `feature = "creusot"` (only enabled when the crate itself
-            // is being verified with --features creusot).
-            //
-            // Without the feature guard, `cargo creusot -p elicit_proofs`
-            // would set the `creusot` cfg for ALL transitive deps including
-            // `elicit_server`, activating these attributes in a crate that
-            // doesn't have `creusot-std` as a dependency — causing E0433.
-            //
-            // With both guards: the annotations activate only when running
-            // `cargo creusot -p elicit_server --features creusot` directly.
-            let creusot_requires_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(all(creusot, feature = "creusot"), ::creusot_std::macros::requires(#inv_fn_ident(&#state_pat_tokens)))]
-            };
-            let creusot_ensures_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(all(creusot, feature = "creusot"), ::creusot_std::macros::ensures(#inv_fn_ident(&result.0)))]
-            };
-            func.attrs.push(creusot_requires_attr);
-            func.attrs.push(creusot_ensures_attr);
+            // Creusot contracts are expressed as extern_spec! blocks in
+            // elicitation_creusot/src/vsm.rs rather than inline annotations
+            // here.  Inline creusot attrs would require creusot_std in scope
+            // inside elicit_server, which violates the architecture principle
+            // that production crates have zero creusot knowledge.
         }
 
         // ── Kani harness ─────────────────────────────────────────────────

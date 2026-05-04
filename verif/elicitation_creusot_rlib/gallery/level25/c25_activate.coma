@@ -1,8 +1,8 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 127 0 127 43 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 170 0 170 43 *)
 
-let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 125 11 125 21
-let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 126 10 126 33
-let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 94 8 97 9
+let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 168 11 168 21
+let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 169 10 169 33
+let%span slevel25'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 137 8 140 9
 
 use creusot.int.Int64
 use creusot.prelude.Any
@@ -10,7 +10,7 @@ use int.Int
 
 type t_C25State = Idle | Active Int64.t
 
-predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 92 0 92 43] (s: t_C25State) =
+predicate c25_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 135 0 135 43] (s: t_C25State) =
   [%#slevel25'1] match s with
     | Idle -> true
     | Active value -> Int64.to_int value > 0
@@ -20,7 +20,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c25_activate [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 127 0 127 43]
+let rec c25_activate [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 170 0 170 43]
   (value: Int64.t) (return (x: t_C25State)) =
   {[@stop_split] [@expl:c25_activate requires] [%#slevel25] Int64.to_int value > 0}
   (! bb0

@@ -1,7 +1,11 @@
 //! Core traits for elicitation.
 
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult};
+use crate::{ElicitCommunicator, ElicitResult};
+#[cfg(not(creusot))]
+use crate::ElicitClient;
+#[cfg(not(creusot))]
 use rmcp::service::{Peer, RoleClient};
+#[cfg(not(creusot))]
 use std::sync::Arc;
 
 /// Builder for one-off style overrides.
@@ -11,6 +15,7 @@ pub struct ElicitBuilder<T: Elicitation> {
     style: T::Style,
 }
 
+#[cfg(not(creusot))]
 impl<T: Elicitation + 'static> ElicitBuilder<T> {
     /// Create a new builder with the given style.
     fn new(style: T::Style) -> Self {
@@ -140,6 +145,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// #[tool_router]
     /// impl MyServer { }
     /// ```
+    #[cfg(not(creusot))]
     fn elicit_checked(
         peer: crate::rmcp::service::Peer<crate::rmcp::service::RoleServer>,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {
@@ -174,6 +180,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     ///     .await?;
     /// # }
     /// ```
+    #[cfg(not(creusot))]
     fn with_style(style: Self::Style) -> ElicitBuilder<Self> {
         ElicitBuilder::new(style)
     }
@@ -202,6 +209,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Ok(())
     /// # }
     /// ```
+    #[cfg(not(creusot))]
     fn elicit_proven<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<

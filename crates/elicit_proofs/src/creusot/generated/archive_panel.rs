@@ -21,8 +21,8 @@ use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
 use crate::creusot::vsm_invariants::archive_panel_consistent;
 #[cfg(creusot)]
-#[::creusot_std::macros::requires(true)]
-#[::creusot_std::macros::ensures(result)]
+#[requires(true)]
+#[ensures(result)]
 #[trusted]
 pub fn verify_archive_panel_consistent_prop_creusot() -> bool {
     true
@@ -76,14 +76,14 @@ pub(crate) fn data_grid_ready__creusot(
     proof: Established<ArchivePanelConsistent>,
     schema: String,
     table: String,
-    result: QueryResult,
+    query_result: QueryResult,
     display_mode: QueryResultMode,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     (
         ArchivePanelState::DataGrid {
             schema,
             table,
-            result,
+            result: query_result,
             page: 0,
             grid_row: 0,
             grid_col: 0,
@@ -99,13 +99,13 @@ pub(crate) fn data_grid_ready__creusot(
 pub(crate) fn query_complete__creusot(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
-    result: QueryResult,
+    query_result: QueryResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
         ArchivePanelState::SqlEditor { text, error, .. } => {
             ArchivePanelState::SqlEditor {
                 text,
-                result: Some(result),
+                result: Some(query_result),
                 running: false,
                 error,
             }
@@ -335,14 +335,14 @@ pub(crate) fn explain_ready__creusot(
 pub(crate) fn export_ready__creusot(
     state: ArchivePanelState,
     proof: Established<ArchivePanelConsistent>,
-    result: ExportResult,
+    export_result: ExportResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
         ArchivePanelState::ExportView { schema, table, .. } => {
             ArchivePanelState::ExportView {
                 schema,
                 table,
-                result: Some(result),
+                result: Some(export_result),
             }
         }
         other => other,

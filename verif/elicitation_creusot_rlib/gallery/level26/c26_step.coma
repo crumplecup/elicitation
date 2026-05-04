@@ -1,0 +1,89 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 0 196 44 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 857 18 857 41
+let%span slevel26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 200 19 200 32
+let%span slevel26'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 16 196 21
+let%span slevel26'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 194 11 194 33
+let%span slevel26'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 36 196 44
+let%span slevel26'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 195 10 195 33
+let%span slevel26'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 167 8 170 9
+
+use creusot.int.UInt32
+use creusot.prelude.Char
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C26State = Idle | Active UInt32.t t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C26State (_1: t_C26State)
+
+axiom inv_axiom [@rewrite]: forall x: t_C26State [inv_C26State x]. inv_C26State x
+    = match x with
+      | Idle -> true
+      | Active count label' -> inv_String label'
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C26State (_1: t_C26State)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C26State [resolve_C26State x]. resolve_C26State x
+    = match x with
+      | Idle -> true
+      | Active x0 x1 -> resolve_String x1
+      end
+
+let rec elim_Active (_x: t_C26State) (return (count: UInt32.t) (label': t_String)) = any
+  [ _k (count: UInt32.t) (label': t_String) -> {Active count label' = _x} (! return {count} {label'})
+  | _chk -> (! {[@expl:elim Active] match _x with
+      | Active _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec new (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_String result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs] view_String result = (Seq.empty: Seq.seq Char.t))}
+    (! return {result}) ]
+
+predicate c26_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 165 0 165 43] (s: t_C26State) =
+  [%#slevel26'4] match s with
+    | Idle -> true
+    | Active count _ -> UInt32.t'int count > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c26_step [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 0 196 44]
+  (state: t_C26State) (return (x: t_C26State)) =
+  {[@stop_split] [@expl:c26_step requires] ([@stop_split] [@expl:c26_step 'state' type invariant] [%#slevel26'0] inv_C26State state)
+  /\ ([@stop_split] [@expl:c26_step requires] [%#slevel26'1] c26_consistent state)}
+  (! bb0
+  [ bb0 = any [ br0 -> {state = Idle} (! bb1) | br1 (x0: UInt32.t) (x1: t_String) -> {state = Active x0 x1} (! bb3) ]
+  | bb1 = s0 [ s0 = [ &other <- state ] s1 | s1 = [ &_ret <- other ] s2 | s2 = return {_ret} ]
+  | bb3 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C26State state} any) ]
+    | s1 = -{resolve_C26State state}- s2
+    | s2 = elim_Active {state} (fun (rcount: UInt32.t) (rlabel: t_String) -> [ &count <- rcount ] s3)
+    | s3 = new [%#slevel26] (fun (_x: t_String) -> [ &_8 <- _x ] s4)
+    | s4 = [ &_ret <- Active count _8 ] s5
+    | s5 = return {_ret} ] ]
+  [ & _ret: t_C26State = Any.any_l ()
+  | & state: t_C26State = state
+  | & count: UInt32.t = Any.any_l ()
+  | & _8: t_String = Any.any_l ()
+  | & other: t_C26State = Any.any_l () ])
+  [ return (result: t_C26State) ->
+  {[@stop_split] [@expl:c26_step ensures] ([@stop_split] [@expl:c26_step result type invariant] [%#slevel26'2] inv_C26State result)
+    /\ ([@stop_split] [@expl:c26_step ensures] [%#slevel26'3] c26_consistent result)}
+    (! return {result}) ]

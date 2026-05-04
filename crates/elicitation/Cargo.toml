@@ -119,8 +119,6 @@ egui = { workspace = true, optional = true }
 egui-winit = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
 strum = { workspace = true, optional = true }
-# Formal verification
-creusot-std = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -180,8 +178,6 @@ prompt-tree-accesskit = ["dep:accesskit"]
 # verify-kani lives in elicitation_kani crate (dedicated)
 verify-verus = []
 verify-all = ["verify-verus"]
-## Enable Creusot deductive verification support.
-creusot = ["dep:creusot-std"]
 
 # Enable clap type elicitation (ColorChoice, ArgAction, ValueHint, etc.)
 clap-types = ["dep:clap"]

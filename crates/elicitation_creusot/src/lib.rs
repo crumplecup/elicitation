@@ -52,6 +52,10 @@ mod pathbytes;
 // Proof gallery: tests expressibility of Pearlite predicates for VSM invariants
 pub mod gallery;
 
+// Real VSM logic predicates and extern_spec contracts for elicit_server machines.
+#[cfg(feature = "vsm-proofs")]
+pub mod vsm;
+
 // Feature-gated module declarations
 #[cfg(feature = "uuid")]
 mod uuids;

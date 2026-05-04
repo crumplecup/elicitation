@@ -73,7 +73,7 @@ where
 /// The `target` parameter must be the JSON representation of the `T` value.
 /// The output `Vec<serde_json::Value>` can be passed directly as `args` to
 /// any driver plugin execute or fetch tool.
-#[reflect_trait(crate::ToSqlxArgs)]
+#[cfg_attr(not(creusot), reflect_trait(crate::ToSqlxArgs))]
 pub trait ToSqlxArgsTools {
     /// Serialize this value to a list of positional SQL argument values.
     fn to_sqlx_args(&self) -> Vec<serde_json::Value>;

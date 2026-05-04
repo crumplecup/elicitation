@@ -21,6 +21,9 @@ creusot-std = { workspace = true }
 # Import the contract types from main crate
 elicitation = { workspace = true }
 
+# Real VSM proof targets — logic predicates + extern_spec contracts live in vsm.rs
+elicit_server = { workspace = true, optional = true }
+
 # External dependencies needed by proofs (feature-gated)
 uuid = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
@@ -74,3 +77,4 @@ winit-types = ["elicitation/winit-types"]
 wgpu-types = ["elicitation/wgpu-types"]
 palette = ["dep:palette", "elicitation/palette"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]
+vsm-proofs = ["dep:elicit_server"]

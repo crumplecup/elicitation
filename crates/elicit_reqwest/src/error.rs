@@ -6,6 +6,12 @@ use elicitation::elicit_newtype;
 
 elicit_newtype!(reqwest::Error, as Error);
 
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
 /// Serialize as `{"message": "..."}` using the `Display` representation.
 impl serde::Serialize for Error {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {

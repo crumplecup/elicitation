@@ -20,7 +20,9 @@ mod row;
 mod type_info;
 pub mod workflow;
 
-pub use args::{ToSqlxArgs, ToSqlxArgsFactory};
+pub use args::ToSqlxArgs;
+#[cfg(not(creusot))]
+pub use args::ToSqlxArgsFactory;
 pub use backend::SqlxDbBackend;
 pub use column::AnyColumn;
 pub use context::{SqlxContext, connect};

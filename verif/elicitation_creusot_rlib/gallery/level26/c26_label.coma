@@ -1,0 +1,87 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 234 0 234 61 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 857 18 857 41
+let%span slevel26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 235 19 235 20
+let%span slevel26'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 238 19 238 32
+let%span slevel26'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 234 17 234 22
+let%span slevel26'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 232 11 232 33
+let%span slevel26'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 234 53 234 61
+let%span slevel26'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 233 10 233 33
+let%span slevel26'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 167 8 170 9
+
+use creusot.int.UInt32
+use creusot.prelude.Char
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C26State = Idle | Active UInt32.t t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C26State (_1: t_C26State)
+
+axiom inv_axiom [@rewrite]: forall x: t_C26State [inv_C26State x]. inv_C26State x
+    = match x with
+      | Idle -> true
+      | Active count label' -> inv_String label'
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C26State (_1: t_C26State)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C26State [resolve_C26State x]. resolve_C26State x
+    = match x with
+      | Idle -> true
+      | Active x0 x1 -> resolve_String x1
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec new (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_String result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs] view_String result = (Seq.empty: Seq.seq Char.t))}
+    (! return {result}) ]
+
+predicate c26_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 165 0 165 43] (s: t_C26State) =
+  [%#slevel26'5] match s with
+    | Idle -> true
+    | Active count _ -> UInt32.t'int count > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c26_label [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 234 0 234 61]
+  (state: t_C26State) (new_count: UInt32.t) (return (x: t_C26State)) =
+  {[@stop_split] [@expl:c26_label requires] ([@stop_split] [@expl:c26_label 'state' type invariant] [%#slevel26'1] inv_C26State state)
+  /\ ([@stop_split] [@expl:c26_label requires] [%#slevel26'2] c26_consistent state)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_6 <- UInt32.gt new_count ([%#slevel26] (0: UInt32.t)) ] s1
+    | s1 = any [ br0 -> {_6 = false} (! bb4) | br1 -> {_6} (! bb1) ] ]
+  | bb1 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C26State state} any) ]
+    | s1 = -{resolve_C26State state}- s2
+    | s2 = new [%#slevel26'0] (fun (_x: t_String) -> [ &_9 <- _x ] s3)
+    | s3 = [ &_ret <- Active new_count _9 ] s4
+    | s4 = return {_ret} ]
+  | bb4 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C26State state} any) ]
+    | s1 = -{resolve_C26State state}- s2
+    | s2 = [ &_ret <- Idle ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C26State = Any.any_l ()
+  | & state: t_C26State = state
+  | & new_count: UInt32.t = new_count
+  | & _6: bool = Any.any_l ()
+  | & _9: t_String = Any.any_l () ])
+  [ return (result: t_C26State) ->
+  {[@stop_split] [@expl:c26_label ensures] ([@stop_split] [@expl:c26_label result type invariant] [%#slevel26'3] inv_C26State result)
+    /\ ([@stop_split] [@expl:c26_label ensures] [%#slevel26'4] c26_consistent result)}
+    (! return {result}) ]
