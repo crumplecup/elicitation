@@ -776,6 +776,18 @@ verify-creusot-gallery:
     WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
     "${HOME}/.local/share/creusot/bin/why3find" prove verif/elicitation_creusot_rlib/gallery/
 
+# Prove VSM Creusot companions in elicit_proofs via why3find
+verify-vsm-creusot-prove:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+    WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+    "${HOME}/.local/share/creusot/bin/why3find" prove verif/elicit_proofs_rlib/creusot/generated/
+
+# Regenerate VSM Creusot COMA files from elicit_proofs (run before verify-vsm-creusot-prove)
+verify-vsm-creusot-compile:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    cargo creusot prove -- -p elicit_proofs --features creusot
+
 # Show goal-level summary
 verify-creusot-goal-summary goals="creusot_goal_results.csv":
     #!/usr/bin/env python3

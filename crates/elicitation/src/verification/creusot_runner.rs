@@ -664,18 +664,19 @@ pub fn run_creusot_module_prove(
         ));
     }
 
-    // `cargo creusot prove` — put -p before the subcommand so clap routes it
-    // through args.package (limits compilation to elicitation_creusot + deps only).
-    // Putting -p after 'prove' causes "unexpected argument" because the prove
-    // subcommand's parser does not accept -p.
+    // `cargo creusot prove <pattern> -- <cargo-flags>`
+    // The prove subcommand takes patterns positionally and cargo flags after `--`.
+    // `-p` must go after `--`; placing it before `prove` now errors.
     let mut cmd = Command::new("cargo");
     cmd.arg("creusot")
+        .arg("prove")
+        .arg(module.name())
+        .arg("--")
         .arg("-p")
-        .arg("elicitation_creusot")
-        .arg("prove");
+        .arg("elicitation_creusot");
 
     if let Some(feature) = module.feature() {
-        cmd.arg("--").arg("--features").arg(feature);
+        cmd.arg("--features").arg(feature);
     }
 
     // Inject nightly toolchain lib dir so creusot-rustc can load its shared libraries.
