@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 0 258 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 0 265 57 *)
 
-let%span slevel15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 25 258 26
-let%span slevel15'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 254 11 254 29
-let%span slevel15'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 255 11 255 35
-let%span slevel15'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 45 258 57
-let%span slevel15'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 256 10 256 33
-let%span slevel15'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 257 10 257 38
+let%span slevel15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 25 265 26
+let%span slevel15'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 261 11 261 29
+let%span slevel15'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 262 11 262 35
+let%span slevel15'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 45 265 57
+let%span slevel15'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 263 10 263 33
+let%span slevel15'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 264 10 264 38
 let%span slevel15'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 114 8 122 9
 let%span slevel15'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 143 8 143 73
 let%span slevel15'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 157 8 157 73
@@ -91,7 +91,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c15_reconnect_sql
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 0 258 57] (s: t_C15ConnState)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 0 265 57] (s: t_C15ConnState)
   (return (x: t_C15ConnState)) =
   {[@stop_split] [@expl:c15_reconnect_sql requires] ([@stop_split] [@expl:c15_reconnect_sql 's' type invariant] [%#slevel15] inv_C15ConnState s)
   /\ ([@stop_split] [@expl:c15_reconnect_sql requires #0] [%#slevel15'0] c15_consistent s)

@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 0 330 81 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 0 313 81 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
@@ -7,16 +7,16 @@ let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.r
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
-let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 25 330 27
-let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 39 330 45
-let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 55 330 60
-let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 326 11 326 28
-let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 327 11 327 27
-let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 73 330 81
-let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 328 10 328 33
-let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 329 10 329 33
-let%span slevel23'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 213 8 244 9
-let%span slevel23'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 263 8 266 9
+let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 25 313 27
+let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 39 313 45
+let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 55 313 60
+let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 309 11 309 28
+let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 310 11 310 27
+let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 73 313 81
+let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 311 10 311 33
+let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 312 10 312 33
+let%span slevel23'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 196 8 227 9
+let%span slevel23'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 246 8 249 9
 
 use creusot.int.UInt64
 use creusot.int.Int32
@@ -472,7 +472,7 @@ axiom resolve_axiom'12 [@rewrite]: forall x: t_C23State [resolve_C23State x]. re
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 211 0 211 43] (s: t_C23State) =
+predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 194 0 194 43] (s: t_C23State) =
   [%#slevel23'7] match s with
     | ColumnDetail -> true
     | Loading schema label' -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String label') > 0
@@ -499,7 +499,7 @@ predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creu
     | ErrorView message -> Seq.length (view_String message) > 0
     end
 
-predicate c23_is_loading [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 261 0 261 43] (s: t_C23State) =
+predicate c23_is_loading [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 244 0 244 43] (s: t_C23State) =
   [%#slevel23'8] match s with
     | Loading _ _ -> true
     | _ -> false
@@ -510,7 +510,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c23_start_loading
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 0 330 81] (_s: t_C23State)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 0 313 81] (_s: t_C23State)
   (schema: t_String) (label': t_String) (return (x: t_C23State)) =
   {[@stop_split] [@expl:c23_start_loading requires] ([@stop_split] [@expl:c23_start_loading '_s' type invariant] [%#slevel23] inv_C23State _s)
   /\ ([@stop_split] [@expl:c23_start_loading 'schema' type invariant] [%#slevel23'0] inv_String schema)

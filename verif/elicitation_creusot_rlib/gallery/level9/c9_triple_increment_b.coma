@@ -1,7 +1,7 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 150 0 150 53 *)
 
-let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 152 17 152 18
-let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 152 11 152 18
+let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 151 24 151 25
+let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 151 18 151 25
 let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 147 11 147 30
 let%span slevel9'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 148 11 148 36
 let%span slevel9'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 149 10 149 34

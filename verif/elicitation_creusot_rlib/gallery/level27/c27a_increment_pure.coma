@@ -1,9 +1,9 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 64 0 64 41 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 67 0 67 41 *)
 
-let%span slevel27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 65 8 65 9
-let%span slevel27'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 65 4 65 9
-let%span slevel27'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 62 11 62 22
-let%span slevel27'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 63 10 63 28
+let%span slevel27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 68 8 68 9
+let%span slevel27'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 68 4 68 9
+let%span slevel27'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 65 11 65 22
+let%span slevel27'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 66 10 66 28
 let%span sord = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 162 41 162 91
 let%span sord'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 168 41 168 88
 let%span sord'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 174 41 174 88
@@ -74,7 +74,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c27a_increment_pure
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 64 0 64 41] (x: UInt32.t)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 67 0 67 41] (x: UInt32.t)
   (return (x'0: UInt32.t)) =
   {[@stop_split] [@expl:c27a_increment_pure requires] [%#slevel27'1] UInt32.lt x (1000: UInt32.t)}
   (! bb0

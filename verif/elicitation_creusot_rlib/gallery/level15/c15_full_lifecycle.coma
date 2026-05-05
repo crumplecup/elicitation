@@ -1,63 +1,63 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 311 0 316 17 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 318 0 323 17 *)
 
-let%span slevel15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 317 13 317 22
-let%span slevel15'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 318 13 318 61
-let%span slevel15'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 319 13 319 37
-let%span slevel15'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 320 13 320 34
-let%span slevel15'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 321 13 321 47
-let%span slevel15'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 322 4 322 22
-let%span slevel15'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 312 4 312 16
-let%span slevel15'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 313 4 313 15
-let%span slevel15'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 314 4 314 8
-let%span slevel15'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 315 4 315 8
-let%span slevel15'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 305 11 305 34
-let%span slevel15'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 306 11 306 33
-let%span slevel15'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 307 11 307 26
-let%span slevel15'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 308 11 308 26
-let%span slevel15'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 316 5 316 17
-let%span slevel15'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 309 10 309 33
-let%span slevel15'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 310 10 310 38
+let%span slevel15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 324 13 324 22
+let%span slevel15'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 325 13 325 61
+let%span slevel15'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 326 13 326 37
+let%span slevel15'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 327 13 327 34
+let%span slevel15'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 328 13 328 47
+let%span slevel15'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 329 4 329 22
+let%span slevel15'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 319 4 319 16
+let%span slevel15'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 320 4 320 15
+let%span slevel15'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 321 4 321 8
+let%span slevel15'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 322 4 322 8
+let%span slevel15'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 312 11 312 34
+let%span slevel15'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 313 11 313 33
+let%span slevel15'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 314 11 314 26
+let%span slevel15'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 315 11 315 26
+let%span slevel15'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 323 5 323 17
+let%span slevel15'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 316 10 316 33
+let%span slevel15'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 317 10 317 38
 let%span slevel15'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 188 20 188 32
 let%span slevel15'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 186 10 186 33
 let%span slevel15'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 187 10 187 38
-let%span slevel15'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 203 25 203 26
-let%span slevel15'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 203 42 203 54
-let%span slevel15'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 203 64 203 75
+let%span slevel15'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 204 4 204 5
+let%span slevel15'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 205 4 205 16
+let%span slevel15'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 206 4 206 15
 let%span slevel15'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 197 11 197 29
 let%span slevel15'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 198 11 198 34
 let%span slevel15'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 199 11 199 34
 let%span slevel15'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 200 11 200 33
-let%span slevel15'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 203 88 203 100
+let%span slevel15'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 207 5 207 17
 let%span slevel15'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 201 10 201 33
 let%span slevel15'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 202 10 202 36
-let%span slevel15'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 216 22 216 23
-let%span slevel15'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 216 39 216 42
-let%span slevel15'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 211 11 211 29
-let%span slevel15'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 212 11 212 32
-let%span slevel15'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 213 11 213 25
-let%span slevel15'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 216 55 216 67
-let%span slevel15'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 214 10 214 33
-let%span slevel15'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 215 10 215 39
-let%span slevel15'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 25 258 26
-let%span slevel15'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 254 11 254 29
-let%span slevel15'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 255 11 255 35
-let%span slevel15'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 258 45 258 57
-let%span slevel15'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 256 10 256 33
-let%span slevel15'42 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 257 10 257 38
-let%span slevel15'43 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 273 32 273 33
-let%span slevel15'44 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 273 49 273 52
-let%span slevel15'45 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 268 11 268 29
-let%span slevel15'46 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 269 11 269 34
-let%span slevel15'47 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 270 11 270 25
-let%span slevel15'48 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 273 65 273 77
-let%span slevel15'49 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 271 10 271 33
-let%span slevel15'50 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 272 10 272 39
-let%span slevel15'51 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 288 22 288 23
-let%span slevel15'52 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 284 11 284 29
-let%span slevel15'53 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 285 11 285 36
-let%span slevel15'54 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 288 42 288 54
-let%span slevel15'55 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 286 10 286 33
-let%span slevel15'56 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 287 10 287 38
+let%span slevel15'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 223 22 223 23
+let%span slevel15'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 223 39 223 42
+let%span slevel15'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 218 11 218 29
+let%span slevel15'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 219 11 219 32
+let%span slevel15'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 220 11 220 25
+let%span slevel15'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 223 55 223 67
+let%span slevel15'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 221 10 221 33
+let%span slevel15'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 222 10 222 39
+let%span slevel15'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 25 265 26
+let%span slevel15'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 261 11 261 29
+let%span slevel15'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 262 11 262 35
+let%span slevel15'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 265 45 265 57
+let%span slevel15'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 263 10 263 33
+let%span slevel15'42 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 264 10 264 38
+let%span slevel15'43 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 280 32 280 33
+let%span slevel15'44 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 280 49 280 52
+let%span slevel15'45 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 275 11 275 29
+let%span slevel15'46 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 276 11 276 34
+let%span slevel15'47 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 277 11 277 25
+let%span slevel15'48 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 280 65 280 77
+let%span slevel15'49 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 278 10 278 33
+let%span slevel15'50 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 279 10 279 39
+let%span slevel15'51 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 295 22 295 23
+let%span slevel15'52 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 291 11 291 29
+let%span slevel15'53 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 292 11 292 36
+let%span slevel15'54 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 295 42 295 54
+let%span slevel15'55 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 293 10 293 33
+let%span slevel15'56 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 294 10 294 38
 let%span slevel15'57 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 114 8 122 9
 let%span slevel15'58 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 129 8 129 66
 let%span slevel15'59 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 136 8 136 71
@@ -216,7 +216,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c15_full_lifecycle
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 311 0 316 17]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level15.rs" 318 0 323 17]
   (profile_name: t_String) (backend_tag: t_String) (tag1: t_String) (tag2: t_String) (return (x: t_C15ConnState)) =
   {[@stop_split] [@expl:c15_full_lifecycle requires] ([@stop_split] [@expl:c15_full_lifecycle 'profile_name' type invariant] [%#slevel15'5] inv_String profile_name)
   /\ ([@stop_split] [@expl:c15_full_lifecycle 'backend_tag' type invariant] [%#slevel15'6] inv_String backend_tag)

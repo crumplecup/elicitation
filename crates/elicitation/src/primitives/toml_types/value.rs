@@ -158,12 +158,13 @@ const TOML_VALUE_MAX_DEPTH: usize = 32;
 /// `TomlValue::elicit()` again.  Because every step is an opaque `impl Trait` type
 /// that the compiler must peel open, the check never terminates.
 ///
-/// ## Solution: concrete `Pin<Box<dyn Future + Send>>`
+/// ## Solution: `BoxFuture<'static, _>`
 ///
-/// `Pin<Box<dyn Future<Output = _> + Send>>` is a *concrete* type.  Its `Send`
-/// bound is structural — `Box<dyn … + Send>` is `Send` by definition, no body
-/// analysis required.  Using it as the return type of the recursive helper stops
-/// the inference cycle at the boundary of each recursive call site.
+/// `BoxFuture<'static, T>` (= `Pin<Box<dyn Future<Output = T> + Send + 'static>>`)
+/// is a *concrete* type.  Its `Send` bound is structural — `Box<dyn … + Send>` is
+/// `Send` by definition, no body analysis required.  Using it as the return type
+/// of the recursive helper stops the inference cycle at the boundary of each
+/// recursive call site.
 ///
 /// The depth parameter makes the recursion well-founded: if a user somehow builds
 /// a TOML structure deeper than `TOML_VALUE_MAX_DEPTH`, elicitation returns an
@@ -179,7 +180,7 @@ const TOML_VALUE_MAX_DEPTH: usize = 32;
 fn elicit_toml_value_inner<C: ElicitCommunicator>(
     comm: C,
     depth: usize,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<TomlValue>> + Send>> {
+) -> impl std::future::Future<Output = ElicitResult<TomlValue>> + Send {
     Box::pin(async move {
         let communicator = &comm;
         if depth == 0 {
@@ -206,7 +207,9 @@ fn elicit_toml_value_inner<C: ElicitCommunicator>(
             "Integer" => Ok(TomlValue::Integer(i64::elicit(communicator).await?)),
             "Float" => Ok(TomlValue::Float(f64::elicit(communicator).await?)),
             "Boolean" => Ok(TomlValue::Boolean(bool::elicit(communicator).await?)),
-            "Datetime" => Ok(TomlValue::Datetime(TomlDatetime::elicit(communicator).await?)),
+            "Datetime" => Ok(TomlValue::Datetime(
+                TomlDatetime::elicit(communicator).await?,
+            )),
             "Array" => {
                 let items = elicit_toml_value_vec(comm.clone(), depth - 1).await?;
                 Ok(TomlValue::Array(items))
@@ -230,7 +233,7 @@ fn elicit_toml_value_inner<C: ElicitCommunicator>(
 fn elicit_toml_value_vec<C: ElicitCommunicator>(
     comm: C,
     depth: usize,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Vec<TomlValue>>> + Send>> {
+) -> impl std::future::Future<Output = ElicitResult<Vec<TomlValue>>> + Send {
     Box::pin(async move {
         let mut items = Vec::new();
         loop {
@@ -247,9 +250,7 @@ fn elicit_toml_value_vec<C: ElicitCommunicator>(
 fn elicit_toml_value_table<C: ElicitCommunicator>(
     comm: C,
     depth: usize,
-) -> std::pin::Pin<
-    Box<dyn std::future::Future<Output = ElicitResult<Vec<(String, TomlValue)>>> + Send>,
-> {
+) -> impl std::future::Future<Output = ElicitResult<Vec<(String, TomlValue)>>> + Send {
     Box::pin(async move {
         let mut entries = Vec::new();
         loop {

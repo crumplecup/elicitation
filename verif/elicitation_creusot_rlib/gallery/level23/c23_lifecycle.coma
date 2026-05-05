@@ -1,53 +1,53 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 418 0 418 63 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 401 0 401 63 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
-let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 419 13 419 22
-let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 420 13 420 49
-let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 421 18 421 37
-let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 422 13 422 36
-let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 423 18 423 40
-let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 424 13 424 30
-let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 425 18 425 40
-let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 426 4 426 17
-let%span slevel23'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 418 21 418 27
-let%span slevel23'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 418 37 418 42
-let%span slevel23'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 414 11 414 28
-let%span slevel23'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 415 11 415 27
-let%span slevel23'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 418 55 418 63
-let%span slevel23'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 416 10 416 33
-let%span slevel23'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 417 10 417 39
-let%span slevel23'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 321 20 321 28
-let%span slevel23'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 319 10 319 33
-let%span slevel23'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 320 10 320 39
-let%span slevel23'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 25 330 27
-let%span slevel23'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 39 330 45
-let%span slevel23'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 55 330 60
-let%span slevel23'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 326 11 326 28
-let%span slevel23'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 327 11 327 27
-let%span slevel23'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 330 73 330 81
-let%span slevel23'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 328 10 328 33
-let%span slevel23'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 329 10 329 33
-let%span slevel23'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 263 8 266 9
-let%span slevel23'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 360 27 360 29
-let%span slevel23'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 360 44 360 52
-let%span slevel23'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 358 10 358 33
-let%span slevel23'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 359 10 359 36
-let%span slevel23'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 285 8 288 9
-let%span slevel23'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 21 373 22
-let%span slevel23'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 370 11 370 32
-let%span slevel23'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 37 373 45
-let%span slevel23'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 371 10 371 33
-let%span slevel23'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 372 10 372 36
-let%span slevel23'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 407 17 407 19
-let%span slevel23'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 407 34 407 42
-let%span slevel23'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 405 10 405 33
-let%span slevel23'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 406 10 406 39
-let%span slevel23'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 213 8 244 9
-let%span slevel23'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 252 8 255 9
+let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 402 13 402 22
+let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 403 13 403 49
+let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 404 18 404 37
+let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 405 13 405 36
+let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 406 18 406 40
+let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 407 13 407 30
+let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 408 18 408 40
+let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 409 4 409 17
+let%span slevel23'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 401 21 401 27
+let%span slevel23'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 401 37 401 42
+let%span slevel23'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 397 11 397 28
+let%span slevel23'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 398 11 398 27
+let%span slevel23'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 401 55 401 63
+let%span slevel23'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 399 10 399 33
+let%span slevel23'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 400 10 400 39
+let%span slevel23'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 304 20 304 28
+let%span slevel23'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 302 10 302 33
+let%span slevel23'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 303 10 303 39
+let%span slevel23'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 25 313 27
+let%span slevel23'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 39 313 45
+let%span slevel23'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 55 313 60
+let%span slevel23'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 309 11 309 28
+let%span slevel23'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 310 11 310 27
+let%span slevel23'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 313 73 313 81
+let%span slevel23'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 311 10 311 33
+let%span slevel23'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 312 10 312 33
+let%span slevel23'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 246 8 249 9
+let%span slevel23'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 343 27 343 29
+let%span slevel23'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 343 44 343 52
+let%span slevel23'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 341 10 341 33
+let%span slevel23'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 342 10 342 36
+let%span slevel23'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 268 8 271 9
+let%span slevel23'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 21 356 22
+let%span slevel23'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 353 11 353 32
+let%span slevel23'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 37 356 45
+let%span slevel23'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 354 10 354 33
+let%span slevel23'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 355 10 355 36
+let%span slevel23'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 390 17 390 19
+let%span slevel23'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 390 34 390 42
+let%span slevel23'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 388 10 388 33
+let%span slevel23'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 389 10 389 39
+let%span slevel23'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 196 8 227 9
+let%span slevel23'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 235 8 238 9
 
 use creusot.int.UInt64
 use creusot.int.Int32
@@ -341,7 +341,7 @@ axiom inv_axiom'12 [@rewrite]: forall x: t_C23State [inv_C23State x]. inv_C23Sta
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 211 0 211 43] (s: t_C23State) =
+predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 194 0 194 43] (s: t_C23State) =
   [%#slevel23'40] match s with
     | ColumnDetail -> true
     | Loading schema label' -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String label') > 0
@@ -368,7 +368,7 @@ predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creu
     | ErrorView message -> Seq.length (view_String message) > 0
     end
 
-predicate c23_is_column_detail [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 250 0 250 49] (s: t_C23State) =
+predicate c23_is_column_detail [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 233 0 233 49] (s: t_C23State) =
   [%#slevel23'41] match s with
     | ColumnDetail -> true
     | _ -> false
@@ -381,7 +381,7 @@ let rec c23_new (return (x: t_C23State)) = any
     /\ ([@stop_split] [@expl:c23_new ensures #1] [%#slevel23'16] c23_is_column_detail result)}
     (! return {result}) ]
 
-predicate c23_is_loading [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 261 0 261 43] (s: t_C23State) =
+predicate c23_is_loading [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 244 0 244 43] (s: t_C23State) =
   [%#slevel23'25] match s with
     | Loading _ _ -> true
     | _ -> false
@@ -400,7 +400,7 @@ let rec c23_start_loading (_s: t_C23State) (schema: t_String) (label': t_String)
     /\ ([@stop_split] [@expl:c23_start_loading ensures #1] [%#slevel23'24] c23_is_loading result)}
     (! return {result}) ]
 
-predicate c23_is_sql_editor [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 283 0 283 46] (s: t_C23State) =
+predicate c23_is_sql_editor [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 266 0 266 46] (s: t_C23State) =
   [%#slevel23'30] match s with
     | SqlEditor _ _ _ _ -> true
     | _ -> false
@@ -438,7 +438,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c23_lifecycle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 418 0 418 63]
+let rec c23_lifecycle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 401 0 401 63]
   (schema: t_String) (label': t_String) (return (x: t_C23State)) =
   {[@stop_split] [@expl:c23_lifecycle requires] ([@stop_split] [@expl:c23_lifecycle 'schema' type invariant] [%#slevel23'7] inv_String schema)
   /\ ([@stop_split] [@expl:c23_lifecycle 'label' type invariant] [%#slevel23'8] inv_String label')

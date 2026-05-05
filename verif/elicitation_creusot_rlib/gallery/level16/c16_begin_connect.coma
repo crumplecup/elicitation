@@ -1,13 +1,13 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 0 211 100 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 0 215 17 *)
 
-let%span slevel16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 25 211 26
-let%span slevel16'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 42 211 54
-let%span slevel16'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 64 211 75
+let%span slevel16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 212 4 212 5
+let%span slevel16'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 213 4 213 16
+let%span slevel16'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 214 4 214 15
 let%span slevel16'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 205 11 205 29
 let%span slevel16'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 206 11 206 34
 let%span slevel16'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 207 11 207 34
 let%span slevel16'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 208 11 208 33
-let%span slevel16'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 88 211 100
+let%span slevel16'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 215 5 215 17
 let%span slevel16'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 209 10 209 33
 let%span slevel16'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 210 10 210 36
 let%span slevel16'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 147 8 155 9
@@ -103,7 +103,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c16_begin_connect
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 0 211 100] (s: t_C16ConnState)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 211 0 215 17] (s: t_C16ConnState)
   (profile_name: t_String) (backend_tag: t_String) (return (x: t_C16ConnState)) =
   {[@stop_split] [@expl:c16_begin_connect requires] ([@stop_split] [@expl:c16_begin_connect 's' type invariant] [%#slevel16] inv_C16ConnState s)
   /\ ([@stop_split] [@expl:c16_begin_connect 'profile_name' type invariant] [%#slevel16'0] inv_String profile_name)

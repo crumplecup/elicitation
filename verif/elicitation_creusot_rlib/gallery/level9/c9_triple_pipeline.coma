@@ -1,9 +1,9 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 161 0 161 39 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 158 0 158 39 *)
 
-let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 162 12 162 31
-let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 163 4 163 28
-let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 159 11 159 15
-let%span slevel9'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 160 10 160 34
+let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 159 12 159 31
+let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 160 4 160 28
+let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 156 11 156 15
+let%span slevel9'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 157 10 157 34
 let%span slevel9'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 138 11 138 15
 let%span slevel9'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 139 10 139 34
 let%span slevel9'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 140 10 140 40
@@ -44,7 +44,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c9_triple_pipeline
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 161 0 161 39]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 158 0 158 39]
   (return (x: t_C9Triple)) = (! bb0
   [ bb0 = s0
     [ s0 = c9_triple_produce [%#slevel9] (fun (_x: t_C9Triple) -> [ &t <- _x ] s1)

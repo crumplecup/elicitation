@@ -7,17 +7,17 @@
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
-use elicitation::Established;
-#[cfg(creusot)]
-use elicitation::kani_label;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
-#[cfg(creusot)]
 use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicitation::Established;
+#[cfg(creusot)]
+use elicitation::kani_label;
 #[cfg(creusot)]
 #[logic]
 pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
@@ -61,10 +61,7 @@ pub(crate) fn open_export_picker__creusot(
     formats: Vec<ExportFormat>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
     (
-        ArchiveOverlayState::ExportPickerOpen {
-            idx: 0,
-            formats,
-        },
+        ArchiveOverlayState::ExportPickerOpen { idx: 0, formats },
         proof,
     )
 }
@@ -130,9 +127,7 @@ pub(crate) fn prompt_push__creusot(
     let next = match state {
         ArchiveOverlayState::SavePromptOpen { mut text } => {
             text.push(ch);
-            ArchiveOverlayState::SavePromptOpen {
-                text,
-            }
+            ArchiveOverlayState::SavePromptOpen { text }
         }
         other => other,
     };
@@ -148,9 +143,7 @@ pub(crate) fn prompt_backspace__creusot(
     let next = match state {
         ArchiveOverlayState::SavePromptOpen { mut text } => {
             text.pop();
-            ArchiveOverlayState::SavePromptOpen {
-                text,
-            }
+            ArchiveOverlayState::SavePromptOpen { text }
         }
         other => other,
     };
@@ -165,10 +158,7 @@ pub(crate) fn open_saved_browser__creusot(
     entries: Vec<SavedQuery>,
 ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>) {
     (
-        ArchiveOverlayState::SavedBrowserOpen {
-            entries,
-            idx: 0,
-        },
+        ArchiveOverlayState::SavedBrowserOpen { entries, idx: 0 },
         proof,
     )
 }

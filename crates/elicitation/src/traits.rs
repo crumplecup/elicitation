@@ -1,8 +1,8 @@
 //! Core traits for elicitation.
 
-use crate::{ElicitCommunicator, ElicitResult};
 #[cfg(not(creusot))]
 use crate::ElicitClient;
+use crate::{ElicitCommunicator, ElicitResult};
 #[cfg(not(creusot))]
 use rmcp::service::{Peer, RoleClient};
 #[cfg(not(creusot))]

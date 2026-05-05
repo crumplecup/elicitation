@@ -1,13 +1,13 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 294 0 294 85 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 0 300 85 *)
 
-let%span slevel18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 294 32 294 33
-let%span slevel18'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 294 49 294 53
-let%span slevel18'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 289 11 289 29
-let%span slevel18'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 290 11 290 34
-let%span slevel18'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 291 11 291 37
-let%span slevel18'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 294 73 294 85
-let%span slevel18'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 292 10 292 33
-let%span slevel18'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 293 10 293 39
+let%span slevel18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 32 300 33
+let%span slevel18'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 49 300 53
+let%span slevel18'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 295 11 295 29
+let%span slevel18'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 296 11 296 34
+let%span slevel18'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 297 11 297 37
+let%span slevel18'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 73 300 85
+let%span slevel18'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 298 10 298 33
+let%span slevel18'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 299 10 299 39
 let%span slevel18'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 145 8 152 9
 let%span slevel18'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 173 16 173 81
 let%span slevel18'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 100 16 100 48
@@ -102,7 +102,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c18_finish_reconnect_sql
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 294 0 294 85] (s: t_C18ConnState)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level18.rs" 300 0 300 85] (s: t_C18ConnState)
   (desc: t_C18Descriptor) (return (x: t_C18ConnState)) =
   {[@stop_split] [@expl:c18_finish_reconnect_sql requires] ([@stop_split] [@expl:c18_finish_reconnect_sql 's' type invariant] [%#slevel18] inv_C18ConnState s)
   /\ ([@stop_split] [@expl:c18_finish_reconnect_sql 'desc' type invariant] [%#slevel18'0] inv_C18Descriptor desc)

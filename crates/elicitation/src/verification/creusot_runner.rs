@@ -145,6 +145,8 @@ pub enum CompilationStatus {
     Failed,
     /// Module skipped (platform or feature unavailable)
     Skipped,
+    /// Module contains only `#[trusted]` items — no VCs generated, nothing to prove
+    Trusted,
 }
 
 /// Result of running a Creusot module compilation check.
@@ -181,7 +183,10 @@ impl CreusotModuleResult {
 
     /// Check if compilation succeeded.
     pub fn is_success(&self) -> bool {
-        self.status == CompilationStatus::Success
+        matches!(
+            self.status,
+            CompilationStatus::Success | CompilationStatus::Trusted
+        )
     }
 }
 
@@ -370,6 +375,13 @@ pub fn run_all_modules(output_csv: &Path, resume: bool) -> Result<CreusotSummary
                         println!("⏭️  SKIPPED");
                         skipped += 1;
                     }
+                    CompilationStatus::Trusted => {
+                        println!(
+                            "🔒 TRUSTED ({}s) — all #[trusted], no VCs",
+                            result.time_seconds()
+                        );
+                        skipped += 1;
+                    }
                 }
 
                 writer
@@ -442,7 +454,7 @@ pub fn show_summary(csv_path: &Path) -> Result<()> {
         match result.status() {
             CompilationStatus::Success => passed += 1,
             CompilationStatus::Failed => failed += 1,
-            CompilationStatus::Skipped => skipped += 1,
+            CompilationStatus::Skipped | CompilationStatus::Trusted => skipped += 1,
         }
     }
 
@@ -676,7 +688,8 @@ pub fn run_creusot_module_prove(
         .arg("elicitation_creusot");
 
     if let Some(feature) = module.feature() {
-        cmd.arg("--features").arg(feature);
+        cmd.arg("--features")
+            .arg(format!("elicitation_creusot/{feature}"));
     }
 
     // Inject nightly toolchain lib dir so creusot-rustc can load its shared libraries.
@@ -708,10 +721,7 @@ pub fn run_creusot_module_prove(
         "DUNE_DIR_LOCATIONS",
         format!("why3find:lib:{home}/.local/share/creusot/share/why3find"),
     );
-    cmd.env(
-        "WHY3CONFIG",
-        format!("{home}/.config/creusot/why3.conf"),
-    );
+    cmd.env("WHY3CONFIG", format!("{home}/.config/creusot/why3.conf"));
 
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
@@ -727,6 +737,9 @@ pub fn run_creusot_module_prove(
 
     let (status, error_message) = if output.status.success() {
         (CompilationStatus::Success, String::new())
+    } else if stderr.contains("No files to prove") {
+        // All functions in this module are `#[trusted]` — Creusot generates no VCs.
+        (CompilationStatus::Trusted, String::new())
     } else {
         (
             CompilationStatus::Failed,
@@ -830,6 +843,13 @@ pub fn run_all_modules_prove(
                     }
                     CompilationStatus::Skipped => {
                         println!("⏭️  SKIPPED");
+                        skipped += 1;
+                    }
+                    CompilationStatus::Trusted => {
+                        println!(
+                            "🔒 TRUSTED ({}s) — all #[trusted], no VCs",
+                            result.time_seconds()
+                        );
                         skipped += 1;
                     }
                 }

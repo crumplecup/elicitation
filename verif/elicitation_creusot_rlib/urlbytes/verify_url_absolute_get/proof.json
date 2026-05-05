@@ -15,7 +15,7 @@
       },
       "vc_from_slice": { "prover": "cvc5", "time": 0.014 },
       "vc_url": { "prover": "cvc5", "time": 0.014 },
-      "vc_verify_url_absolute_get": { "prover": "cvc5", "time": 0.025 }
+      "vc_verify_url_absolute_get": { "prover": "cvc5", "time": 0.024 }
     }
   }
 }

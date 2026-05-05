@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 0 373 45 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 0 356 45 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
@@ -7,14 +7,14 @@ let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.r
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
-let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 378 21 378 25
-let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 21 373 22
-let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 370 11 370 32
-let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 37 373 45
-let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 371 10 371 33
-let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 372 10 372 36
-let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 285 8 288 9
-let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 213 8 244 9
+let%span slevel23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 361 21 361 25
+let%span slevel23'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 21 356 22
+let%span slevel23'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 353 11 353 32
+let%span slevel23'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 37 356 45
+let%span slevel23'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 354 10 354 33
+let%span slevel23'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 355 10 355 36
+let%span slevel23'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 268 8 271 9
+let%span slevel23'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 196 8 227 9
 
 use creusot.int.UInt64
 use creusot.int.Int32
@@ -479,7 +479,7 @@ let rec elim_SqlEditor (_x: t_C23State)
       end}
     any) ]
 
-predicate c23_is_sql_editor [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 283 0 283 46] (s: t_C23State) =
+predicate c23_is_sql_editor [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 266 0 266 46] (s: t_C23State) =
   [%#slevel23'5] match s with
     | SqlEditor _ _ _ _ -> true
     | _ -> false
@@ -487,7 +487,7 @@ predicate c23_is_sql_editor [#"/home/erik/repos/elicitation/crates/elicitation_c
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 211 0 211 43] (s: t_C23State) =
+predicate c23_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 194 0 194 43] (s: t_C23State) =
   [%#slevel23'6] match s with
     | ColumnDetail -> true
     | Loading schema label' -> Seq.length (view_String schema) > 0 /\ Seq.length (view_String label') > 0
@@ -518,7 +518,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c23_run_query [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 373 0 373 45]
+let rec c23_run_query [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level23.rs" 356 0 356 45]
   (s: t_C23State) (return (x: t_C23State)) =
   {[@stop_split] [@expl:c23_run_query requires] ([@stop_split] [@expl:c23_run_query 's' type invariant] [%#slevel23'0] inv_C23State s)
   /\ ([@stop_split] [@expl:c23_run_query requires] [%#slevel23'1] c23_is_sql_editor s)}
