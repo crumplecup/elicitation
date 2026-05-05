@@ -2,7 +2,7 @@
 
 use accesskit::NodeId;
 use elicit_ui::{BoundingBox, LayoutContext, Viewport};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[test]
 fn bounding_box_right_and_bottom() {
@@ -53,7 +53,7 @@ fn bounding_box_to_size() {
 fn layout_context_get_bounds() {
     let id = NodeId::from(1u64);
     let bb = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
-    let mut bounds = HashMap::new();
+    let mut bounds = BTreeMap::new();
     bounds.insert(id, bb);
     let ctx = LayoutContext::new(Viewport::new(1920, 1080), bounds);
 
@@ -65,7 +65,7 @@ fn layout_context_get_bounds() {
 fn layout_context_is_within_viewport() {
     let id = NodeId::from(1u64);
     let bb = BoundingBox::new(0.0, 0.0, 100.0, 50.0);
-    let mut bounds = HashMap::new();
+    let mut bounds = BTreeMap::new();
     bounds.insert(id, bb);
     let ctx = LayoutContext::new(Viewport::new(1920, 1080), bounds);
 

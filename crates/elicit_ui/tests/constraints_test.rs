@@ -6,7 +6,7 @@ use elicit_ui::{
     HasLabelConstraint, Layout, MinSpacing, MinTouchTargetConstraint, NoOverflowConstraint,
     Reflow320, ResizeText200, TextSpacing, ValidRoleConstraint, Viewport,
 };
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ fn make_node(role: Role, label: &str, bounds: Option<(f64, f64, f64, f64)>) -> N
     node
 }
 
-fn make_ctx(nodes: &HashMap<NodeId, Node>, viewport: Viewport) -> ConstraintContext<'_> {
+fn make_ctx(nodes: &BTreeMap<NodeId, Node>, viewport: Viewport) -> ConstraintContext<'_> {
     ConstraintContext { nodes, viewport }
 }
 
@@ -31,7 +31,7 @@ fn make_ctx(nodes: &HashMap<NodeId, Node>, viewport: Viewport) -> ConstraintCont
 fn has_label_passes_for_labeled_button() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "Submit", None);
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(HasLabelConstraint.check(id, &ctx).is_ok());
@@ -41,7 +41,7 @@ fn has_label_passes_for_labeled_button() {
 fn has_label_fails_for_unlabeled_button() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "", None);
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(HasLabelConstraint.check(id, &ctx).is_err());
@@ -51,7 +51,7 @@ fn has_label_fails_for_unlabeled_button() {
 fn valid_role_passes_for_known_role() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", None);
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(ValidRoleConstraint.check(id, &ctx).is_ok());
@@ -61,7 +61,7 @@ fn valid_role_passes_for_known_role() {
 fn no_overflow_passes_when_within_viewport() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 100.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(NoOverflowConstraint.check(id, &ctx).is_ok());
@@ -71,7 +71,7 @@ fn no_overflow_passes_when_within_viewport() {
 fn no_overflow_fails_when_beyond_viewport() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 2000.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(NoOverflowConstraint.check(id, &ctx).is_err());
@@ -81,7 +81,7 @@ fn no_overflow_fails_when_beyond_viewport() {
 fn min_touch_target_passes_for_large_button() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 100.0, 100.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(MinTouchTargetConstraint.check(id, &ctx).is_ok());
@@ -91,7 +91,7 @@ fn min_touch_target_passes_for_large_button() {
 fn min_touch_target_fails_for_tiny_button() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 20.0, 20.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(MinTouchTargetConstraint.check(id, &ctx).is_err());
@@ -103,7 +103,7 @@ fn min_touch_target_fails_for_tiny_button() {
 fn reflow320_passes_for_narrow_element() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 300.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(320, 480));
 
     assert!(Reflow320.check(id, &ctx).is_ok());
@@ -113,7 +113,7 @@ fn reflow320_passes_for_narrow_element() {
 fn reflow320_fails_for_wide_element() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 500.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(320, 480));
 
     assert!(Reflow320.check(id, &ctx).is_err());
@@ -131,7 +131,7 @@ fn text_spacing_passes_for_non_overlapping_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
+    let nodes = BTreeMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(TextSpacing.check(root_id, &ctx).is_ok());
@@ -149,7 +149,7 @@ fn text_spacing_fails_for_overlapping_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
+    let nodes = BTreeMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(TextSpacing.check(root_id, &ctx).is_err());
@@ -159,7 +159,7 @@ fn text_spacing_fails_for_overlapping_siblings() {
 fn resize_text_200_passes_for_small_element() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 100.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     // Element doubled: 200x100, fits in 1920x1080
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
@@ -171,7 +171,7 @@ fn resize_text_200_fails_for_large_element() {
     let id = NodeId::from(1u64);
     // Element is 1000x600 — doubled to 2000x1200, exceeds 1920x1080
     let node = make_node(Role::Button, "OK", Some((0.0, 0.0, 1000.0, 600.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(ResizeText200.check(id, &ctx).is_err());
@@ -181,7 +181,7 @@ fn resize_text_200_fails_for_large_element() {
 fn grid_alignment_passes_for_aligned_element() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((8.0, 16.0, 100.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!((GridAlignment { step: 8.0 }).check(id, &ctx).is_ok());
@@ -191,7 +191,7 @@ fn grid_alignment_passes_for_aligned_element() {
 fn grid_alignment_fails_for_misaligned_element() {
     let id = NodeId::from(1u64);
     let node = make_node(Role::Button, "OK", Some((5.0, 10.0, 100.0, 50.0)));
-    let nodes = HashMap::from([(id, node)]);
+    let nodes = BTreeMap::from([(id, node)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!((GridAlignment { step: 8.0 }).check(id, &ctx).is_err());
@@ -209,7 +209,7 @@ fn min_spacing_passes_for_well_spaced_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
+    let nodes = BTreeMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     // 20px gap, min 8px → pass
@@ -228,7 +228,7 @@ fn constraint_set_collects_violations() {
     let mut root = Node::new(Role::Window);
     root.set_children(vec![child_id]);
 
-    let nodes = HashMap::from([(root_id, root), (child_id, child)]);
+    let nodes = BTreeMap::from([(root_id, root), (child_id, child)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     let constraint_set = ConstraintSetBuilder::default()
@@ -253,7 +253,7 @@ fn constraint_set_advisory_does_not_fail() {
     let mut root = Node::new(Role::Window);
     root.set_children(vec![child_id]);
 
-    let nodes = HashMap::from([(root_id, root), (child_id, child)]);
+    let nodes = BTreeMap::from([(root_id, root), (child_id, child)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     let constraint_set = ConstraintSetBuilder::default()
