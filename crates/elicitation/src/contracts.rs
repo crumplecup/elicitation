@@ -1085,7 +1085,7 @@ where
 ///
 /// // --- State ---
 /// #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
-///          schemars::JsonSchema, elicitation::Elicitation, elicitation::ElicitIntrospect)]
+///          schemars::JsonSchema, elicitation::Elicit)]
 /// enum OrderState { Draft, Submitted, Shipped }
 ///
 /// // --- Invariant proposition ---

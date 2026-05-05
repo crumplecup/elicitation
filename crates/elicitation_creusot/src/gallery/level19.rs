@@ -285,10 +285,10 @@ pub fn c19_full_lifecycle(
     desc1: C18Descriptor,
     desc2: C18Descriptor,
 ) -> C19Machine {
-    let m0 = c19_new();                                  // count = 0, Disconnected
-    let m1 = c19_begin_sql(m0, profile_name);            // count = 1, Connecting { Sql }
-    let m2 = c19_finish_sql(m1, desc1);                  // count = 2, SqlConnected
-    let m3 = c19_reconnect_sql(m2);                      // count = 3, Reconnecting
-    let m4 = c19_finish_reconnect_sql(m3, desc2);        // count = 4, SqlConnected
-    c19_disconnect(m4)                                    // count = 5, Disconnected
+    let m0 = c19_new(); // count = 0, Disconnected
+    let m1 = c19_begin_sql(m0, profile_name); // count = 1, Connecting { Sql }
+    let m2 = c19_finish_sql(m1, desc1); // count = 2, SqlConnected
+    let m3 = c19_reconnect_sql(m2); // count = 3, Reconnecting
+    let m4 = c19_finish_reconnect_sql(m3, desc2); // count = 4, SqlConnected
+    c19_disconnect(m4) // count = 5, Disconnected
 }

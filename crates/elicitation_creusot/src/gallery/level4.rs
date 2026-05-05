@@ -66,7 +66,6 @@ pub fn c4_pass_nonempty(s: String) -> String {
 }
 
 /// A struct with a String field — does the `@` model reach through the field?
-
 pub struct ErrorState {
     pub message: String,
 }

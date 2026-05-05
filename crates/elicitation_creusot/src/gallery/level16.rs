@@ -208,9 +208,16 @@ pub fn c16_new() -> C16ConnState {
 #[requires(backend_tag@.len() > 0)]
 #[ensures(c16_consistent(&result))]
 #[ensures(c16_is_connecting(&result))]
-pub fn c16_begin_connect(s: C16ConnState, profile_name: String, backend_tag: String) -> C16ConnState {
+pub fn c16_begin_connect(
+    s: C16ConnState,
+    profile_name: String,
+    backend_tag: String,
+) -> C16ConnState {
     let _ = s;
-    C16ConnState::Connecting { profile_name, backend_tag }
+    C16ConnState::Connecting {
+        profile_name,
+        backend_tag,
+    }
 }
 
 /// C16d: directly construct a `SqlConnected` state from a descriptor.
@@ -305,10 +312,10 @@ pub fn c16_full_lifecycle(
     desc1: C16Descriptor,
     desc2: C16Descriptor,
 ) -> C16ConnState {
-    let s0 = c16_new();                                       // Disconnected
+    let s0 = c16_new(); // Disconnected
     let s1 = c16_begin_connect(s0, profile_name, backend_tag); // Connecting
-    let s2 = c16_finish_sql(s1, desc1);                        // SqlConnected
-    let s3 = c16_reconnect_sql(s2);                            // Reconnecting
-    let s4 = c16_finish_reconnect_sql(s3, desc2);              // SqlConnected
-    c16_disconnect(s4)                                          // Disconnected
+    let s2 = c16_finish_sql(s1, desc1); // SqlConnected
+    let s3 = c16_reconnect_sql(s2); // Reconnecting
+    let s4 = c16_finish_reconnect_sql(s3, desc2); // SqlConnected
+    c16_disconnect(s4) // Disconnected
 }

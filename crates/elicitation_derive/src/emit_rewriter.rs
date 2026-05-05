@@ -451,9 +451,6 @@ fn find_workspace_root(manifest_dir: &str) -> Option<std::path::PathBuf> {
         {
             return Some(dir);
         }
-        match dir.parent() {
-            Some(parent) => dir = parent.to_path_buf(),
-            None => return None,
-        }
+        dir = dir.parent()?.to_path_buf();
     }
 }

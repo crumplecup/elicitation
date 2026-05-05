@@ -20,7 +20,6 @@
 use creusot_std::prelude::*;
 
 /// Zero-sized unit type — no heap, no fields.
-
 pub struct GUnit;
 
 /// Trivially-true invariant. Costs nothing to evaluate; never fails.

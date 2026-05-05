@@ -121,15 +121,15 @@ impl ArchiveEguiApp {
         visuals.code_bg_color = surface;
         visuals.override_text_color = Some(text);
         visuals.selection.bg_fill = accent_alpha;
-        visuals.selection.stroke = egui::Stroke::new(1.0, accent);
+        visuals.selection.stroke = egui::Stroke::new(1.0_f32, accent);
         visuals.widgets.noninteractive.bg_fill = bg;
-        visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, dim);
+        visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0_f32, dim);
         visuals.widgets.inactive.bg_fill = surface;
-        visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, text);
+        visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0_f32, text);
         visuals.widgets.hovered.bg_fill = surface;
-        visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, text);
+        visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0_f32, text);
         visuals.widgets.active.bg_fill = surface;
-        visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0, accent);
+        visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0_f32, accent);
         ctx.set_visuals(visuals);
     }
 

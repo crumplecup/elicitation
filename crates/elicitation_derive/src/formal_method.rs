@@ -439,17 +439,16 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // in `#[ensures]` clauses). Reject it as a parameter name here so the
         // generated Creusot companion never produces invalid COMA output.
         for arg in &func.sig.inputs {
-            if let FnArg::Typed(pat_type) = arg {
-                if let syn::Pat::Ident(pi) = &*pat_type.pat {
-                    if pi.ident == "result" {
-                        return Err(syn::Error::new_spanned(
-                            &pi.ident,
-                            "#[formal_method]: parameter name `result` is reserved by Creusot \
-                             (it names the return value in #[ensures] clauses). \
-                             Rename the parameter (e.g. `query_result`, `fn_result`).",
-                        ));
-                    }
-                }
+            if let FnArg::Typed(pat_type) = arg
+                && let syn::Pat::Ident(pi) = &*pat_type.pat
+                && pi.ident == "result"
+            {
+                return Err(syn::Error::new_spanned(
+                    &pi.ident,
+                    "#[formal_method]: parameter name `result` is reserved by Creusot \
+                     (it names the return value in #[ensures] clauses). \
+                     Rename the parameter (e.g. `query_result`, `fn_result`).",
+                ));
             }
         }
 
@@ -466,12 +465,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let inputs_src = quote!(#inputs).to_string();
         let output_src = quote!(#output).to_string();
         let creusot_fn_src = format!("{fn_name}__creusot");
-        let body_src = { let b = &func.block; quote!(#b).to_string() };
+        let body_src = {
+            let b = &func.block;
+            quote!(#b).to_string()
+        };
         // For Creusot: if the body is a simple delegation `{ f(args) }`, rewrite
         // to `{ f__creusot(args) }` so Creusot uses the clean companion rather than
         // the original (which may have #[instrument]-generated string literals).
-        let creusot_body_src = creusot_delegation_rewrite(&func.block)
-            .unwrap_or_else(|| body_src.clone());
+        let creusot_body_src =
+            creusot_delegation_rewrite(&func.block).unwrap_or_else(|| body_src.clone());
 
         // ── Kani contracts on the original function ───────────────────────
         // When contracts = [SomeType] is provided and there is a state

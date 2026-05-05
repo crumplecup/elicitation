@@ -22,7 +22,6 @@
 use creusot_std::prelude::*;
 
 /// A counter that must stay positive.
-
 pub struct Counter {
     count: i64,
 }
@@ -72,10 +71,6 @@ pub fn c2_in_byte_range(c: &Counter) -> bool {
 #[requires(true)]
 #[ensures(c2_in_byte_range(&result))]
 pub fn c2_clamp_to_byte(mut c: Counter) -> Counter {
-    if c.count < 0 {
-        c.count = 0;
-    } else if c.count > 255 {
-        c.count = 255;
-    }
+    c.count = c.count.clamp(0, 255);
     c
 }

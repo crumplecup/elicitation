@@ -270,7 +270,7 @@ pub fn c11_save(s: MiniPanelState) -> MiniPanelState {
 pub fn c11_full_lifecycle(row_count: i64) -> MiniPanelState {
     let s0 = MiniPanelState::Empty;
     let s1 = c11_load(s0, row_count); // ensures: c11_consistent, c11_grid_is_read
-    let s2 = c11_select_row(s1);      // ensures: c11_consistent, c11_detail_is_read
-    let s3 = c11_begin_edit(s2);      // ensures: c11_consistent, c11_detail_is_edit
-    c11_save(s3)                       // ensures: c11_consistent, c11_detail_is_read
+    let s2 = c11_select_row(s1); // ensures: c11_consistent, c11_detail_is_read
+    let s3 = c11_begin_edit(s2); // ensures: c11_consistent, c11_detail_is_edit
+    c11_save(s3) // ensures: c11_consistent, c11_detail_is_read
 }

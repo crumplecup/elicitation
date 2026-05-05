@@ -160,7 +160,7 @@ pub fn c25_deactivate(state: C25State) -> C25State {
 /// discharge the harness's own ensures.  This should produce a provable VC.
 #[requires(c25_consistent(&state))]
 #[ensures(c25_consistent(&result))]
-pub fn c25_deactivate__harness(state: C25State) -> C25State {
+pub fn c25_deactivate_harness(state: C25State) -> C25State {
     c25_deactivate(state)
 }
 
@@ -177,7 +177,7 @@ pub fn c25_activate(value: i64) -> C25State {
 /// precondition (`value > 0`) forwarded to the callee.
 #[requires(value@ > 0)]
 #[ensures(c25_consistent(&result))]
-pub fn c25_activate__harness(value: i64) -> C25State {
+pub fn c25_activate_harness(value: i64) -> C25State {
     c25_activate(value)
 }
 
@@ -224,7 +224,7 @@ pub fn c25_trusted_harness(state: C25State) -> C25State {
 /// not active during `cargo creusot -p elicit_proofs`).
 #[requires(c25_consistent(&state))]
 #[ensures(c25_consistent(&result))]
-pub fn c25_deactivate__inlined(state: C25State) -> C25State {
+pub fn c25_deactivate_inlined(state: C25State) -> C25State {
     let _ = state;
     C25State::Idle
 }
@@ -232,6 +232,6 @@ pub fn c25_deactivate__inlined(state: C25State) -> C25State {
 /// Inlined activate harness — non-trivial: must build Active { value }.
 #[requires(value@ > 0)]
 #[ensures(c25_consistent(&result))]
-pub fn c25_activate__inlined(value: i64) -> C25State {
+pub fn c25_activate_inlined(value: i64) -> C25State {
     C25State::Active { value }
 }

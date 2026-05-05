@@ -56,14 +56,6 @@
 //! ```
 
 pub mod level1;
-pub mod level2;
-pub mod level3;
-pub mod level4;
-pub mod level5;
-pub mod level6;
-pub mod level7;
-pub mod level8;
-pub mod level9;
 pub mod level10;
 pub mod level11;
 pub mod level12;
@@ -74,6 +66,7 @@ pub mod level16;
 pub mod level17;
 pub mod level18;
 pub mod level19;
+pub mod level2;
 pub mod level20;
 pub mod level21;
 pub mod level22;
@@ -84,4 +77,11 @@ pub mod level26;
 pub mod level27;
 pub mod level28;
 pub mod level29;
+pub mod level3;
 pub mod level30;
+pub mod level4;
+pub mod level5;
+pub mod level6;
+pub mod level7;
+pub mod level8;
+pub mod level9;

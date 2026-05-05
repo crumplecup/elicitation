@@ -234,8 +234,8 @@ pub fn c13_disconnect(m: C13Machine) -> C13Machine {
 #[ensures(c13_is_disconnected(&result))]
 #[ensures(result.transition_count@ == 3)]
 pub fn c13_full_lifecycle(name: String) -> C13Machine {
-    let m0 = c13_new();               // count = 0
-    let m1 = c13_begin(m0, name);     // count = 1
-    let m2 = c13_succeed(m1);         // count = 2
-    c13_disconnect(m2)                 // count = 3
+    let m0 = c13_new(); // count = 0
+    let m1 = c13_begin(m0, name); // count = 1
+    let m2 = c13_succeed(m1); // count = 2
+    c13_disconnect(m2) // count = 3
 }

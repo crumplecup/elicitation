@@ -202,7 +202,10 @@ pub fn c17_new() -> C17ConnState {
 #[ensures(c17_backend_is_sql(&result))]
 pub fn c17_begin_sql(s: C17ConnState, profile_name: String) -> C17ConnState {
     let _ = s;
-    C17ConnState::Connecting { profile_name, backend: C17BackendKind::Sql }
+    C17ConnState::Connecting {
+        profile_name,
+        backend: C17BackendKind::Sql,
+    }
 }
 
 /// C17d: begin a KV connection attempt.
@@ -215,7 +218,10 @@ pub fn c17_begin_sql(s: C17ConnState, profile_name: String) -> C17ConnState {
 #[ensures(c17_backend_is_kv(&result))]
 pub fn c17_begin_kv(s: C17ConnState, profile_name: String) -> C17ConnState {
     let _ = s;
-    C17ConnState::Connecting { profile_name, backend: C17BackendKind::Kv }
+    C17ConnState::Connecting {
+        profile_name,
+        backend: C17BackendKind::Kv,
+    }
 }
 
 /// C17e: finish connecting to a SQL backend.
@@ -270,8 +276,8 @@ pub fn c17_disconnect(s: C17ConnState) -> C17ConnState {
 pub fn c17_full_lifecycle_sql(profile_name: String, tag: String) -> C17ConnState {
     let s0 = c17_new();
     let s1 = c17_begin_sql(s0, profile_name); // Connecting { backend: Sql }
-    let s2 = c17_finish_sql(s1, tag);          // SqlConnected
-    c17_disconnect(s2)                          // Disconnected
+    let s2 = c17_finish_sql(s1, tag); // SqlConnected
+    c17_disconnect(s2) // Disconnected
 }
 
 /// C17i: KV lifecycle — backend routing via `c17_backend_is_kv`.
@@ -284,6 +290,6 @@ pub fn c17_full_lifecycle_sql(profile_name: String, tag: String) -> C17ConnState
 pub fn c17_full_lifecycle_kv(profile_name: String, path: String) -> C17ConnState {
     let s0 = c17_new();
     let s1 = c17_begin_kv(s0, profile_name); // Connecting { backend: Kv }
-    let s2 = c17_finish_kv(s1, path);          // KvConnected
-    c17_disconnect(s2)                          // Disconnected
+    let s2 = c17_finish_kv(s1, path); // KvConnected
+    c17_disconnect(s2) // Disconnected
 }

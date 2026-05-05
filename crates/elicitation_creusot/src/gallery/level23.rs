@@ -91,10 +91,7 @@ pub enum C23State {
     ColumnDetail,
 
     /// 2 — data fetch in progress.
-    Loading {
-        schema: String,
-        label: String,
-    },
+    Loading { schema: String, label: String },
 
     /// 3 — data grid with optional edit state and cursor.
     DataGrid {
@@ -136,14 +133,10 @@ pub enum C23State {
     },
 
     /// 8 — query history browser.
-    HistoryView {
-        entries: Vec<C23HistoryEntry>,
-    },
+    HistoryView { entries: Vec<C23HistoryEntry> },
 
     /// 9 — saved queries browser.
-    SavedView {
-        entries: Vec<C23SavedQuery>,
-    },
+    SavedView { entries: Vec<C23SavedQuery> },
 
     /// 10 — export format picker / result viewer.
     ExportView {
@@ -156,16 +149,10 @@ pub enum C23State {
     HelpView,
 
     /// 12 — live database monitoring panel.
-    MonitorView {
-        snapshot: String,
-        loading: bool,
-    },
+    MonitorView { snapshot: String, loading: bool },
 
     /// 13 — database administration panel.
-    AdminView {
-        snapshot: String,
-        loading: bool,
-    },
+    AdminView { snapshot: String, loading: bool },
 
     /// 14 — entity-relationship diagram.
     ErdView {
@@ -192,14 +179,10 @@ pub enum C23State {
     },
 
     /// 17 — connection profile editor.
-    ConnectionEdit {
-        profile: Box<C23Profile>,
-    },
+    ConnectionEdit { profile: Box<C23Profile> },
 
     /// 18 — error message panel.
-    ErrorView {
-        message: String,
-    },
+    ErrorView { message: String },
 }
 
 // ---------------------------------------------------------------------------

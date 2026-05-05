@@ -226,7 +226,10 @@ pub fn c18_new() -> C18ConnState {
 #[ensures(c18_backend_is_sql(&result))]
 pub fn c18_begin_sql(s: C18ConnState, profile_name: String) -> C18ConnState {
     let _ = s;
-    C18ConnState::Connecting { profile_name, backend: C18BackendKind::Sql }
+    C18ConnState::Connecting {
+        profile_name,
+        backend: C18BackendKind::Sql,
+    }
 }
 
 /// C18c: begin a KV connection attempt.
@@ -237,7 +240,10 @@ pub fn c18_begin_sql(s: C18ConnState, profile_name: String) -> C18ConnState {
 #[ensures(c18_backend_is_kv(&result))]
 pub fn c18_begin_kv(s: C18ConnState, profile_name: String) -> C18ConnState {
     let _ = s;
-    C18ConnState::Connecting { profile_name, backend: C18BackendKind::Kv }
+    C18ConnState::Connecting {
+        profile_name,
+        backend: C18BackendKind::Kv,
+    }
 }
 
 /// C18d: finish connecting to a SQL backend.
@@ -352,10 +358,10 @@ pub fn c18_full_lifecycle(
     desc1: C18Descriptor,
     desc2: C18Descriptor,
 ) -> C18ConnState {
-    let s0 = c18_new();                              // Disconnected
-    let s1 = c18_begin_sql(s0, profile_name);        // Connecting { Sql }
-    let s2 = c18_finish_sql(s1, desc1);              // SqlConnected
-    let s3 = c18_reconnect_sql(s2);                  // Reconnecting
-    let s4 = c18_finish_reconnect_sql(s3, desc2);    // SqlConnected
-    c18_disconnect(s4)                                // Disconnected
+    let s0 = c18_new(); // Disconnected
+    let s1 = c18_begin_sql(s0, profile_name); // Connecting { Sql }
+    let s2 = c18_finish_sql(s1, desc1); // SqlConnected
+    let s3 = c18_reconnect_sql(s2); // Reconnecting
+    let s4 = c18_finish_reconnect_sql(s3, desc2); // SqlConnected
+    c18_disconnect(s4) // Disconnected
 }

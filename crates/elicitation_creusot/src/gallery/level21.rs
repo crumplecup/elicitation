@@ -183,8 +183,8 @@ pub fn c21_clear(s: C21State) -> C21State {
 #[ensures(c21_is_empty(&result))]
 pub fn c21_lifecycle(entries: Vec<String>) -> C21State {
     let s0 = c21_new();
-    let s1 = c21_load(s0, entries);   // cursor = 0, all-non-empty entries
-    let s2 = c21_cursor_down(s1);     // cursor = min(1, len-1)
-    let s3 = c21_cursor_up(s2);       // cursor = max(0, cursor-1)
+    let s1 = c21_load(s0, entries); // cursor = 0, all-non-empty entries
+    let s2 = c21_cursor_down(s1); // cursor = min(1, len-1)
+    let s3 = c21_cursor_up(s2); // cursor = max(0, cursor-1)
     c21_clear(s3)
 }

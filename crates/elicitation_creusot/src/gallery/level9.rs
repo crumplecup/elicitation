@@ -40,7 +40,6 @@ use creusot_std::prelude::*;
 // ── Data types ────────────────────────────────────────────────────────────────
 
 /// A minimal state value — a non-negative counter.
-
 pub struct C9State {
     value: i64,
 }
@@ -112,11 +111,10 @@ pub fn c9_pipeline() -> i64 {
 // ── C9d: multi-invariant chain ────────────────────────────────────────────────
 
 /// A state that must satisfy three simultaneous predicates.
-
 pub struct C9Triple {
-    a: i64,
-    b: i64,
-    c: i64,
+    pub a: i64,
+    pub b: i64,
+    pub c: i64,
 }
 
 /// All three fields non-negative — three independent invariants.
@@ -148,10 +146,7 @@ pub fn c9_triple_produce() -> C9Triple {
 #[requires(c9_triple_b_below_max(&t))]
 #[ensures(c9_triple_holds(&result))]
 pub fn c9_triple_increment_b(t: C9Triple) -> C9Triple {
-    C9Triple {
-        b: t.b + 1,
-        ..t
-    }
+    C9Triple { b: t.b + 1, ..t }
 }
 
 /// C9d: three-invariant pipeline — all three simultaneously maintained.

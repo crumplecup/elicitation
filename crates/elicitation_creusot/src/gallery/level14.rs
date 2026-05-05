@@ -252,11 +252,11 @@ pub fn c14_disconnect(m: C14Machine) -> C14Machine {
 #[ensures(result.transition_count@ == 6)]
 #[ensures(result.error_count@ == 1)]
 pub fn c14_full_lifecycle(name: String, name2: String, message: String) -> C14Machine {
-    let m0 = c14_new();                  // (0, 0)
-    let m1 = c14_begin(m0, name);        // (1, 0)  Connecting
-    let m2 = c14_fail(m1, message);      // (2, 1)  Error
-    let m3 = c14_disconnect(m2);         // (3, 1)  Disconnected
-    let m4 = c14_begin(m3, name2);       // (4, 1)  Connecting  ← retry
-    let m5 = c14_succeed(m4);            // (5, 1)  Connected
-    c14_disconnect(m5)                    // (6, 1)  Disconnected
+    let m0 = c14_new(); // (0, 0)
+    let m1 = c14_begin(m0, name); // (1, 0)  Connecting
+    let m2 = c14_fail(m1, message); // (2, 1)  Error
+    let m3 = c14_disconnect(m2); // (3, 1)  Disconnected
+    let m4 = c14_begin(m3, name2); // (4, 1)  Connecting  ← retry
+    let m5 = c14_succeed(m4); // (5, 1)  Connected
+    c14_disconnect(m5) // (6, 1)  Disconnected
 }

@@ -307,8 +307,8 @@ pub fn c20_reset(s: C20State) -> C20State {
 #[ensures(c20_is_idle(&result))]
 pub fn c20_lifecycle_success(query: String, result_str: String) -> C20State {
     let s0 = c20_new();
-    let s1 = c20_start_query(s0, query);    // running=true, both Options None
-    let s2 = c20_complete(s1, result_str);  // running=false, result=Some
+    let s1 = c20_start_query(s0, query); // running=true, both Options None
+    let s2 = c20_complete(s1, result_str); // running=false, result=Some
     c20_reset(s2)
 }
 
@@ -321,8 +321,8 @@ pub fn c20_lifecycle_success(query: String, result_str: String) -> C20State {
 #[ensures(c20_is_idle(&result))]
 pub fn c20_lifecycle_failure(query: String, error_msg: String) -> C20State {
     let s0 = c20_new();
-    let s1 = c20_start_query(s0, query);   // running=true, both Options None
-    let s2 = c20_fail(s1, error_msg);      // running=false, error=Some
+    let s1 = c20_start_query(s0, query); // running=true, both Options None
+    let s2 = c20_fail(s1, error_msg); // running=false, error=Some
     c20_reset(s2)
 }
 
@@ -335,7 +335,7 @@ pub fn c20_lifecycle_failure(query: String, error_msg: String) -> C20State {
 #[ensures(c20_is_browsing(&result))]
 pub fn c20_lifecycle_edit(data: String, tag: String) -> C20State {
     let s0 = c20_new();
-    let s1 = c20_open_browse(s0, data);   // edit_state = None
-    let s2 = c20_begin_edit(s1, tag);     // edit_state = Some(C20EditState { tag })
-    c20_abort_edit(s2)                     // edit_state = None
+    let s1 = c20_open_browse(s0, data); // edit_state = None
+    let s2 = c20_begin_edit(s1, tag); // edit_state = Some(C20EditState { tag })
+    c20_abort_edit(s2) // edit_state = None
 }

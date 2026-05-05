@@ -24,7 +24,6 @@
 use creusot_std::prelude::*;
 
 /// Simple two-state machine.
-
 pub enum GState {
     Active,
     Inactive,

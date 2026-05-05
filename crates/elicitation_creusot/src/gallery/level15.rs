@@ -200,9 +200,16 @@ pub fn c15_new() -> C15ConnState {
 #[requires(backend_tag@.len() > 0)]
 #[ensures(c15_consistent(&result))]
 #[ensures(c15_is_connecting(&result))]
-pub fn c15_begin_connect(s: C15ConnState, profile_name: String, backend_tag: String) -> C15ConnState {
+pub fn c15_begin_connect(
+    s: C15ConnState,
+    profile_name: String,
+    backend_tag: String,
+) -> C15ConnState {
     let _ = s;
-    C15ConnState::Connecting { profile_name, backend_tag }
+    C15ConnState::Connecting {
+        profile_name,
+        backend_tag,
+    }
 }
 
 /// C15c: finish connecting to a SQL backend.
@@ -314,10 +321,10 @@ pub fn c15_full_lifecycle(
     tag1: String,
     tag2: String,
 ) -> C15ConnState {
-    let s0 = c15_new();                               // Disconnected
+    let s0 = c15_new(); // Disconnected
     let s1 = c15_begin_connect(s0, profile_name, backend_tag); // Connecting
-    let s2 = c15_finish_sql(s1, tag1);                // SqlConnected
-    let s3 = c15_reconnect_sql(s2);                   // Reconnecting
-    let s4 = c15_finish_reconnect_sql(s3, tag2);      // SqlConnected
-    c15_disconnect(s4)                                 // Disconnected
+    let s2 = c15_finish_sql(s1, tag1); // SqlConnected
+    let s3 = c15_reconnect_sql(s2); // Reconnecting
+    let s4 = c15_finish_reconnect_sql(s3, tag2); // SqlConnected
+    c15_disconnect(s4) // Disconnected
 }

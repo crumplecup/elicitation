@@ -5,7 +5,7 @@
 use accesskit::{Node, NodeId, Rect, Role, Toggled, Tree, TreeId, TreeUpdate};
 use elicit_egui::{EguiBackend, bounds_to_size, render_tree};
 use elicit_ui::{Layout, LayoutBuilder, RenderStats, Viewport};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ fn render_single_button() {
     let root_id = node_id(0);
     let btn_id = node_id(1);
 
-    let mut nodes = HashMap::new();
+    let mut nodes = BTreeMap::new();
     nodes.insert(root_id, window_root(vec![btn_id]));
     nodes.insert(btn_id, make_button("Click me"));
 
@@ -112,7 +112,7 @@ fn render_single_label() {
     let root_id = node_id(0);
     let lbl_id = node_id(1);
 
-    let mut nodes = HashMap::new();
+    let mut nodes = BTreeMap::new();
     nodes.insert(root_id, window_root(vec![lbl_id]));
     nodes.insert(lbl_id, make_label("Hello, world"));
 

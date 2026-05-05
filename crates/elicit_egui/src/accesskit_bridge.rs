@@ -2000,7 +2000,7 @@ fn render_node_recursive(
                 for e in &edges {
                     let p1 = origin + egui::Vec2::new(e.x1 * scale, e.y1 * scale);
                     let p2 = origin + egui::Vec2::new(e.x2 * scale, e.y2 * scale);
-                    painter.line_segment([p1, p2], egui::Stroke::new(1.5, edge_col));
+                    painter.line_segment([p1, p2], egui::Stroke::new(1.5_f32, edge_col));
                     let _ = &e.label; // used for accessibility / future tooltips
                 }
 
@@ -2017,7 +2017,7 @@ fn render_node_recursive(
                     painter.rect_stroke(
                         rect,
                         3.0,
-                        egui::Stroke::new(1.0, border),
+                        egui::Stroke::new(1.0_f32, border),
                         egui::StrokeKind::Outside,
                     );
 
@@ -2028,7 +2028,7 @@ fn render_node_recursive(
                     painter.rect_stroke(
                         header_rect,
                         3.0,
-                        egui::Stroke::new(1.0, border),
+                        egui::Stroke::new(1.0_f32, border),
                         egui::StrokeKind::Outside,
                     );
 

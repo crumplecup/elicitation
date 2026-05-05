@@ -25,7 +25,6 @@ use creusot_std::prelude::*;
 // ── State enum ────────────────────────────────────────────────────────────────
 
 /// Minimal two-variant connection state (unit variants only for C8 focus).
-
 pub enum C8ConnState {
     Disconnected,
     Connected,
@@ -46,10 +45,9 @@ pub fn c8_state_ok(s: &C8ConnState) -> bool {
 /// A machine struct: state + a non-negative transition counter.
 ///
 /// Mirrors the shape of `ArchiveConnectionMachine { state, .. }`.
-
 pub struct C8Machine {
     /// Current connection state.
-    state: C8ConnState,
+    pub state: C8ConnState,
     /// Number of transitions performed (monotonically non-decreasing).
     transition_count: i64,
 }

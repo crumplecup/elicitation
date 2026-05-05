@@ -26,7 +26,6 @@ use creusot_std::prelude::*;
 /// A mini connection state machine: Connected or Error(message).
 ///
 /// Mirrors the shape of `ArchiveConnectionState::ConnectionError(String)`.
-
 pub enum ConnState {
     /// No active error — trivially consistent.
     Connected,

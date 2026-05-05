@@ -25,7 +25,6 @@ use creusot_std::prelude::*;
 /// A mini state with a unit variant and a struct variant carrying named fields.
 ///
 /// Mirrors `ArchiveConnectionState::Connecting { profile_name, backend }`.
-
 pub enum TaggedState {
     /// No active connection — trivially consistent.
     Idle,
@@ -107,7 +106,10 @@ pub fn c7_start(_s: TaggedState, profile_name: String) -> TaggedState {
 pub fn c7_retry(s: TaggedState) -> TaggedState {
     match s {
         TaggedState::Idle => TaggedState::Idle,
-        TaggedState::Connecting { profile_name, attempts } => TaggedState::Connecting {
+        TaggedState::Connecting {
+            profile_name,
+            attempts,
+        } => TaggedState::Connecting {
             profile_name,
             attempts: attempts + 1,
         },

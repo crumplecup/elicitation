@@ -526,7 +526,7 @@ fn renderer_html_mode_stores_last_output() {
     let mut root = Node::new(Role::Main);
     root.set_label("Test App");
 
-    let mut nodes = std::collections::HashMap::new();
+    let mut nodes = std::collections::BTreeMap::new();
     nodes.insert(root_id, root);
 
     let viewport = Viewport::new(800u32, 600u32);
@@ -549,7 +549,7 @@ fn renderer_view_macro_mode_uses_quoted_text() {
     let mut root = Node::new(Role::Paragraph);
     root.set_value("hello");
 
-    let mut nodes = std::collections::HashMap::new();
+    let mut nodes = std::collections::BTreeMap::new();
     nodes.insert(root_id, root);
 
     let viewport = Viewport::new(800u32, 600u32);

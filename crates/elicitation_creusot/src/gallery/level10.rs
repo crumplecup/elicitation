@@ -51,7 +51,6 @@ use creusot_std::prelude::*;
 
 /// Mini connection state — four-variant simplification of
 /// `ArchiveConnectionState`.
-
 pub enum MiniConnState {
     /// No active connection.
     Disconnected,

@@ -277,9 +277,9 @@ pub fn c12_disconnect(s: MiniComposite) -> MiniComposite {
 #[requires(row_count@ > 0)]
 #[ensures(c12_consistent(&result))]
 pub fn c12_full_lifecycle(name: String, row_count: i64) -> MiniComposite {
-    let s0 = c12_new();                    // ensures: c12_consistent
-    let s1 = c12_begin(s0, name);          // ensures: c12_consistent, c12_is_connecting
-    let s2 = c12_succeed(s1);              // ensures: c12_consistent, c12_is_connected
-    let s3 = c12_load(s2, row_count);      // ensures: c12_consistent
-    c12_disconnect(s3)                      // ensures: c12_consistent
+    let s0 = c12_new(); // ensures: c12_consistent
+    let s1 = c12_begin(s0, name); // ensures: c12_consistent, c12_is_connecting
+    let s2 = c12_succeed(s1); // ensures: c12_consistent, c12_is_connected
+    let s3 = c12_load(s2, row_count); // ensures: c12_consistent
+    c12_disconnect(s3) // ensures: c12_consistent
 }

@@ -52,7 +52,10 @@ use creusot_std::prelude::*;
 /// A trait with boxed future return — Creusot-compatible async trait.
 pub trait AsyncComputer: Clone + Send + Sync + 'static {
     /// Compute a value, returning a boxed future.
-    fn compute(&self, input: u32) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32> + Send + '_>>;
+    fn compute(
+        &self,
+        input: u32,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = u32> + Send + '_>>;
 }
 
 /// A simple synchronous harness that does not actually drive the future.
@@ -69,11 +72,11 @@ pub fn c27a_increment_pure(x: u32) -> u32 {
 // C27b — free async fn: generates opaque locally, handled by Creusot
 // ---------------------------------------------------------------------------
 
-/// Concrete async free function — Creusot cannot handle async fn bodies.
-///
-/// Commented out: `cargo creusot prove` fails with:
-/// "the rvalue Coroutine(...) is not currently supported"
-/// even for local async fns.  Only the synchronous wrapper is proved.
+// Concrete async free function — Creusot cannot handle async fn bodies.
+//
+// Commented out: `cargo creusot prove` fails with:
+// "the rvalue Coroutine(...) is not currently supported"
+// even for local async fns.  Only the synchronous wrapper is proved.
 // pub async fn c27b_add(a: u32, b: u32) -> u32 { a + b }
 
 /// Synchronous wrapper that Creusot can actually prove.
