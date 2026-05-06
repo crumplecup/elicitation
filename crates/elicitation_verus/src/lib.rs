@@ -66,3 +66,6 @@ pub mod palette_types;
 pub mod ui_types;
 pub mod winit_types;
 pub mod wgpu_types;
+
+// Proof gallery — learning curriculum for the VSM companion pattern
+pub mod gallery;
