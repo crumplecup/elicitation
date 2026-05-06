@@ -7,17 +7,17 @@
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
-use elicitation::Established;
-#[cfg(creusot)]
-use elicitation::kani_label;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
-#[cfg(creusot)]
 use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicitation::Established;
+#[cfg(creusot)]
+use elicitation::kani_label;
 #[cfg(creusot)]
 #[logic]
 pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
@@ -38,7 +38,10 @@ pub(crate) fn begin_connect_sql__creusot(
     proof: Established<ArchiveConnectionConsistent>,
     profile_name: String,
     backend: BackendKind,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     (
         ArchiveConnectionState::Connecting {
             profile_name,
@@ -54,7 +57,10 @@ pub(crate) fn begin_connect_kv__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     profile_name: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     (
         ArchiveConnectionState::Connecting {
             profile_name,
@@ -70,13 +76,11 @@ pub(crate) fn finish_connect_sql__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     db: DatabaseDescriptor,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    (
-        ArchiveConnectionState::SqlConnected {
-            db,
-        },
-        proof,
-    )
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
+    (ArchiveConnectionState::SqlConnected { db }, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -85,13 +89,11 @@ pub(crate) fn finish_connect_kv__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     path: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    (
-        ArchiveConnectionState::KvConnected {
-            path,
-        },
-        proof,
-    )
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
+    (ArchiveConnectionState::KvConnected { path }, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -99,7 +101,10 @@ pub(crate) fn finish_connect_kv__creusot(
 pub(crate) fn disconnect__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     (ArchiveConnectionState::Disconnected, proof)
 }
 #[cfg(creusot)]
@@ -108,18 +113,16 @@ pub(crate) fn disconnect__creusot(
 pub(crate) fn reconnect__creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
     let db = match state {
         ArchiveConnectionState::SqlConnected { db }
         | ArchiveConnectionState::Reconnecting { db } => db,
         other => return (other, proof),
     };
-    (
-        ArchiveConnectionState::Reconnecting {
-            db,
-        },
-        proof,
-    )
+    (ArchiveConnectionState::Reconnecting { db }, proof)
 }
 #[cfg(creusot)]
 #[requires(archive_connection_consistent(&_state))]
@@ -128,11 +131,9 @@ pub(crate) fn connection_error__creusot(
     _state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
     message: String,
-) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
-    (
-        ArchiveConnectionState::ConnectionError {
-            message,
-        },
-        proof,
-    )
+) -> (
+    ArchiveConnectionState,
+    Established<ArchiveConnectionConsistent>,
+) {
+    (ArchiveConnectionState::ConnectionError { message }, proof)
 }

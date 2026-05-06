@@ -7,21 +7,24 @@
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
-use elicitation::Established;
-#[cfg(creusot)]
-use elicitation::kani_label;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
-#[cfg(creusot)]
 use elicit_server::archive::display::*;
 #[cfg(creusot)]
 use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
+use elicit_server::archive::types::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicitation::Established;
+#[cfg(creusot)]
+use elicitation::kani_label;
+#[cfg(creusot)]
 #[logic]
-pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
-    true
+pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool {
+    pearlite! {
+        match state { ArchiveNavState::NavFiltered { filter, .. } => filter @.len() > 0,
+        _ => true, }
+    }
 }
 #[cfg(creusot)]
 #[requires(true)]
@@ -135,15 +138,13 @@ pub(crate) fn move_cursor_up__creusot(
             filter,
             filter_active,
             show_help,
-        } => {
-            ArchiveNavState::NavReady {
-                schemas,
-                cursor: cursor.saturating_sub(1),
-                filter,
-                filter_active,
-                show_help,
-            }
-        }
+        } => ArchiveNavState::NavReady {
+            schemas,
+            cursor: cursor.saturating_sub(1),
+            filter,
+            filter_active,
+            show_help,
+        },
         other => other,
     };
     (next, proof)
@@ -163,15 +164,13 @@ pub(crate) fn move_cursor_down__creusot(
             filter,
             filter_active,
             show_help,
-        } => {
-            ArchiveNavState::NavReady {
-                schemas,
-                cursor: cursor.saturating_add(1).min(max.saturating_sub(1)),
-                filter,
-                filter_active,
-                show_help,
-            }
-        }
+        } => ArchiveNavState::NavReady {
+            schemas,
+            cursor: cursor.saturating_add(1).min(max.saturating_sub(1)),
+            filter,
+            filter_active,
+            show_help,
+        },
         other => other,
     };
     (next, proof)

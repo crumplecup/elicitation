@@ -5,15 +5,15 @@
 // Source: elicit_server::archive::vsm
 
 #[cfg(kani)]
-use elicitation::Established;
-#[cfg(kani)]
-use elicit_server::archive::vsm::*;
-#[cfg(kani)]
-use elicit_server::archive::types::*;
-#[cfg(kani)]
 use elicit_server::archive::display::*;
 #[cfg(kani)]
 use elicit_server::archive::nav_tree::*;
+#[cfg(kani)]
+use elicit_server::archive::types::*;
+#[cfg(kani)]
+use elicit_server::archive::vsm::*;
+#[cfg(kani)]
+use elicitation::Established;
 #[cfg(kani)]
 #[kani::proof]
 fn verify_archive_overlay_consistent_prop_marker() {
@@ -24,10 +24,12 @@ fn verify_archive_overlay_consistent_prop_marker() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(close_overlay)]
 fn close_overlay__kani_closure() {
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&_state));
     ::std::mem::forget(_state);
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -39,10 +41,12 @@ fn close_overlay__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_help)]
 fn open_help__kani_closure() {
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&_state));
     ::std::mem::forget(_state);
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -54,10 +58,12 @@ fn open_help__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_export_picker)]
 fn open_export_picker__kani_closure() {
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&_state));
     ::std::mem::forget(_state);
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -70,10 +76,12 @@ fn open_export_picker__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(picker_move_up)]
 fn picker_move_up__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -85,10 +93,12 @@ fn picker_move_up__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(picker_move_down)]
 fn picker_move_down__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -100,10 +110,12 @@ fn picker_move_down__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_save_prompt)]
 fn open_save_prompt__kani_closure() {
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&_state));
     ::std::mem::forget(_state);
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -115,10 +127,12 @@ fn open_save_prompt__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(prompt_push)]
 fn prompt_push__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -131,10 +145,12 @@ fn prompt_push__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(prompt_backspace)]
 fn prompt_backspace__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -146,10 +162,12 @@ fn prompt_backspace__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_saved_browser)]
 fn open_saved_browser__kani_closure() {
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&_state));
     ::std::mem::forget(_state);
-    let _state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let _state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -162,10 +180,12 @@ fn open_saved_browser__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(saved_browser_up)]
 fn saved_browser_up__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)
@@ -177,10 +197,12 @@ fn saved_browser_up__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(saved_browser_down)]
 fn saved_browser_down__kani_closure() {
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_any();
     ::kani::assume(archive_overlay_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchiveOverlayState = <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
+    let state: ArchiveOverlayState =
+        <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveOverlayConsistent> = {
         let __cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&__cred)

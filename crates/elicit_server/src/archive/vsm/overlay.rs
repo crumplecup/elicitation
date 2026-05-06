@@ -78,10 +78,15 @@ impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
 ///
 /// Runtime-evaluable form of [`ArchiveOverlayConsistent`] used by Kani
 /// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
-/// Placeholder — all states are well-formed by construction.
+///
+/// Invariant: picker and browser cursor indices are within their list bounds.
 #[cfg(kani)]
-pub fn archive_overlay_consistent(_state: &ArchiveOverlayState) -> bool {
-    true
+pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
+    match state {
+        ArchiveOverlayState::ExportPickerOpen { idx, formats } => *idx <= formats.len(),
+        ArchiveOverlayState::SavedBrowserOpen { entries, idx } => *idx <= entries.len(),
+        _ => true,
+    }
 }
 
 /// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that

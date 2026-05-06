@@ -96,7 +96,11 @@ impl ProvableFrom<ConnectionEstablished> for ArchiveConnectionConsistent {}
 ///
 /// Runtime-evaluable form of [`ArchiveConnectionConsistent`] used by Kani
 /// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
-/// Placeholder — all states are well-formed by construction.
+///
+/// All `ArchiveConnectionState` variants are well-formed by construction —
+/// there are no cross-field constraints to enforce.  Strings (profile names,
+/// paths, error messages) are accepted as given by callers; the VSM does not
+/// validate them.  This invariant is intentionally `true`.
 #[cfg(kani)]
 pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
     true

@@ -273,11 +273,15 @@ impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}
 /// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions,
 /// enabling `#[kani::proof_for_contract]` closure proofs.
 ///
-/// This is a placeholder returning `true` — all states are well-formed by
-/// construction. Strengthen with field invariants as proofs mature.
+/// Invariant: `SqlEditor` cannot hold a result while a query is running.
 #[cfg(kani)]
-pub fn archive_panel_consistent(_state: &ArchivePanelState) -> bool {
-    true
+pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
+    match state {
+        ArchivePanelState::SqlEditor {
+            running, result, ..
+        } => !running || result.is_none(),
+        _ => true,
+    }
 }
 
 /// Bridge `kani::Arbitrary` to our `KaniCompose::kani_any()` so that

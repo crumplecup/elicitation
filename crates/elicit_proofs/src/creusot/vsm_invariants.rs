@@ -11,7 +11,7 @@
 //! | Panel | `SqlEditor.running ==> result.is_none()` | Non-trivial — constrains state shape |
 //! | Overlay | `Picker/Browser idx <= collection.len()` | Non-trivial — cursor-in-bounds |
 //! | Connection | `true` | Trivial — states are well-formed by construction |
-//! | Nav | `true` | Trivial — cursor bounds need per-transition preconditions |
+//! | Nav | `NavFiltered.filter.len() > 0` | Non-trivial — filter must be non-empty |
 //!
 //! ## Proof obligations
 //!
@@ -72,13 +72,18 @@ pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
 
 /// Invariant predicate for [`ArchiveNavMachine`] transitions.
 ///
-/// All nav tree states are well-formed by construction.  Cursor-in-bounds
-/// invariants require per-transition `#[requires(cursor@ <= schemas@.len())]`
-/// preconditions in the generated companions; those are deferred.
+/// When the nav tree is in the filtered view, the active filter is non-empty.
+/// An empty filter would be equivalent to the unfiltered state and is never
+/// produced by any transition.
 #[cfg(creusot)]
 #[logic]
-pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
-    true
+pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool {
+    pearlite! {
+        match state {
+            ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0,
+            _ => true,
+        }
+    }
 }
 
 /// Invariant predicate for [`ArchiveOverlayMachine`] transitions.

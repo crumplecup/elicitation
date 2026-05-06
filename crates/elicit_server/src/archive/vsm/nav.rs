@@ -76,10 +76,15 @@ impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}
 ///
 /// Runtime-evaluable form of [`ArchiveNavConsistent`] used by Kani
 /// `#[kani::requires]` / `#[kani::ensures]` in contracted wrapper functions.
-/// Placeholder — all states are well-formed by construction.
+///
+/// Invariant: `NavFiltered` always holds a non-empty filter string.
+/// `apply_filter` only creates `NavFiltered` when `!filter.is_empty()`.
 #[cfg(kani)]
-pub fn archive_nav_consistent(_state: &ArchiveNavState) -> bool {
-    true
+pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool {
+    match state {
+        ArchiveNavState::NavFiltered { filter, .. } => !filter.is_empty(),
+        _ => true,
+    }
 }
 
 /// Bridge `kani::Arbitrary` to `KaniCompose::kani_depth0()` so that
