@@ -374,6 +374,18 @@ pub trait Prop: 'static {
     fn kani_invariant_fn_name() -> &'static str {
         ""
     }
+
+    /// The name of a Verus `pub open spec fn` that expresses this proposition
+    /// as a Verus-verifiable predicate over the machine state.
+    ///
+    /// When non-empty, [`formal_method`][crate::formal_method]-generated companion
+    /// structs emit `assume_specification` blocks with real `requires`/`ensures`
+    /// clauses using this function, enabling Verus to check invariant preservation.
+    ///
+    /// Set via `#[prop(verus_invariant_fn = "my_fn")]` on the prop struct.
+    fn verus_invariant_fn_name() -> &'static str {
+        ""
+    }
 }
 
 /// Witness that proposition P has been established.
@@ -1189,6 +1201,18 @@ pub trait VerifiedStateMachine {
         vec![]
     }
 
+    /// Return one Verus `assume_specification` block per transition in this machine.
+    ///
+    /// When `inv_fn` is non-empty, each entry constrains the transition with
+    /// `requires inv_fn(&state)` / `ensures inv_fn(&r.0)`.  When `inv_fn` is
+    /// empty, trivially-true `requires true, ensures true` stubs are emitted.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_verus_contracts(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
+    }
+
     /// Compose the full VSM Creusot proof: the invariant proposition proof
     /// followed by one contract per registered transition.
     ///
@@ -1201,6 +1225,22 @@ pub trait VerifiedStateMachine {
         let mut ts = Self::Invariant::creusot_proof();
         let inv_fn = Self::Invariant::creusot_invariant_fn_name();
         for contract in Self::transition_creusot_contracts(inv_fn) {
+            ts.extend(contract);
+        }
+        ts
+    }
+
+    /// Compose the full VSM Verus proof: the invariant proposition proof
+    /// followed by one `assume_specification` block per registered transition.
+    ///
+    /// When `Self::Invariant::verus_invariant_fn_name()` is non-empty, the
+    /// generated companions emit real `requires`/`ensures` Verus contracts.
+    /// Otherwise trivially-true stubs are emitted.
+    #[cfg(not(kani))]
+    fn vsm_verus_proof() -> proc_macro2::TokenStream {
+        let mut ts = Self::Invariant::verus_proof();
+        let inv_fn = Self::Invariant::verus_invariant_fn_name();
+        for contract in Self::transition_verus_contracts(inv_fn) {
             ts.extend(contract);
         }
         ts

@@ -464,6 +464,14 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let output = &func.sig.output;
         let inputs_src = quote!(#inputs).to_string();
         let output_src = quote!(#output).to_string();
+        // Verus `assume_specification` uses `-> (r: Type)` binder syntax.
+        // Strip the leading `->` from output_src and wrap as `-> (r : Type)`.
+        let verus_output_src = if output_src.trim_start().starts_with("->") {
+            let ty = output_src.trim_start()[2..].trim().to_string();
+            format!("-> (r : {ty})")
+        } else {
+            "-> (r : ())".to_string()
+        };
         let creusot_fn_src = format!("{fn_name}__creusot");
         let body_src = {
             let b = &func.block;
@@ -720,6 +728,51 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     };
                     src.parse()
                         .expect("creusot_contract: invalid TokenStream")
+                }
+
+                /// Return a Verus `assume_specification` block for this transition.
+                ///
+                /// When `inv_fn` is non-empty and this transition has a state parameter,
+                /// emits:
+                /// ```text
+                /// #[cfg(verus)] verus! {
+                ///     pub assume_specification[ fn_name ](params) -> (r: RetType)
+                ///         requires inv_fn(&state),
+                ///         ensures inv_fn(&r.0),
+                ///     ;
+                /// }
+                /// ```
+                ///
+                /// When `inv_fn` is empty or this transition has no state parameter,
+                /// a stub with `requires true, ensures true` is emitted instead.
+                pub fn verus_contract(inv_fn: &str) -> ::proc_macro2::TokenStream {
+                    let src = if !inv_fn.is_empty() && #has_state_param {
+                        String::new()
+                            + "# [cfg (verus)] verus ! { pub assume_specification [ "
+                            + #fn_name_src
+                            + " ] ("
+                            + #inputs_src
+                            + ") "
+                            + #verus_output_src
+                            + " requires "
+                            + inv_fn
+                            + " (& "
+                            + #state_pat_s
+                            + ") , ensures "
+                            + inv_fn
+                            + " (& r . 0) , ; }"
+                    } else {
+                        String::new()
+                            + "# [cfg (verus)] verus ! { pub assume_specification [ "
+                            + #fn_name_src
+                            + " ] ("
+                            + #inputs_src
+                            + ") "
+                            + #verus_output_src
+                            + " requires true , ensures true , ; }"
+                    };
+                    src.parse()
+                        .expect("verus_contract: invalid TokenStream")
                 }
 
                 /// Return a Kani `proof_for_contract` harness `TokenStream` for this transition.

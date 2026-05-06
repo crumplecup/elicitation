@@ -232,6 +232,21 @@ pub fn expand(input: TokenStream) -> TokenStream {
         })
         .collect();
 
+    // Build `transition_verus_contracts(inv_fn)` — one assume_specification per transition.
+    let verus_pushes: Vec<_> = vsm_args
+        .transitions
+        .iter()
+        .map(|t| {
+            let companion = Ident::new(
+                &format!("{}Transition", to_pascal_case(&t.to_string())),
+                t.span(),
+            );
+            quote! {
+                __contracts.push(#companion::verus_contract(__inv_fn));
+            }
+        })
+        .collect();
+
     // Build `transition_kani_closure_proofs(inv_fn)` — one closure proof per transition.
     let kani_closure_pushes: Vec<_> = vsm_args
         .transitions
@@ -274,6 +289,16 @@ pub fn expand(input: TokenStream) -> TokenStream {
             ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __contracts = ::std::vec::Vec::new();
                 #( #creusot_pushes )*
+                __contracts
+            }
+
+            #[allow(unexpected_cfgs)]
+            #[cfg(not(kani))]
+            fn transition_verus_contracts(
+                __inv_fn: &str,
+            ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {
+                let mut __contracts = ::std::vec::Vec::new();
+                #( #verus_pushes )*
                 __contracts
             }
 

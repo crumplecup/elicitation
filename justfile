@@ -727,7 +727,7 @@ verify-verus:
     fi
     
     echo "🔬 Running Verus verification..."
-    "$VERUS_BIN" --crate-type=lib crates/elicitation/src/lib.rs
+    "$VERUS_BIN" --crate-type=lib crates/elicitation_verus/src/lib.rs
 
 # Run Verus verification with CSV tracking (recommended)
 verify-verus-tracked csv="verus_verification_results.csv" timeout="600":

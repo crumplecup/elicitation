@@ -7,17 +7,17 @@
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
-use elicit_server::archive::display::*;
-#[cfg(creusot)]
-use elicit_server::archive::nav_tree::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
 use elicitation::kani_label;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
+#[cfg(creusot)]
+use elicit_server::archive::display::*;
+#[cfg(creusot)]
+use elicit_server::archive::nav_tree::*;
 #[cfg(creusot)]
 #[logic]
 pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
@@ -51,7 +51,13 @@ pub(crate) fn panel_loading__creusot(
     schema: String,
     label: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    (ArchivePanelState::Loading { schema, label }, proof)
+    (
+        ArchivePanelState::Loading {
+            schema,
+            label,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -61,7 +67,12 @@ pub(crate) fn panel_error__creusot(
     proof: Established<ArchivePanelConsistent>,
     message: String,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    (ArchivePanelState::ErrorView { message }, proof)
+    (
+        ArchivePanelState::ErrorView {
+            message,
+        },
+        proof,
+    )
 }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&_state))]
@@ -97,12 +108,14 @@ pub(crate) fn query_complete__creusot(
     query_result: QueryResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
-        ArchivePanelState::SqlEditor { text, error, .. } => ArchivePanelState::SqlEditor {
-            text,
-            result: Some(query_result),
-            running: false,
-            error,
-        },
+        ArchivePanelState::SqlEditor { text, error, .. } => {
+            ArchivePanelState::SqlEditor {
+                text,
+                result: Some(query_result),
+                running: false,
+                error,
+            }
+        }
         other => other,
     };
     (next, proof)
@@ -124,16 +137,18 @@ pub(crate) fn begin_edit__creusot(
             grid_col,
             display_mode,
             ..
-        } => ArchivePanelState::DataGrid {
-            schema,
-            table,
-            result,
-            page,
-            grid_row,
-            grid_col,
-            edit_state: Some(RowEditState::default()),
-            display_mode,
-        },
+        } => {
+            ArchivePanelState::DataGrid {
+                schema,
+                table,
+                result,
+                page,
+                grid_row,
+                grid_col,
+                edit_state: Some(RowEditState::default()),
+                display_mode,
+            }
+        }
         other => other,
     };
     (next, proof)
@@ -155,16 +170,18 @@ pub(crate) fn commit_edits__creusot(
             grid_col,
             display_mode,
             ..
-        } => ArchivePanelState::DataGrid {
-            schema,
-            table,
-            result,
-            page,
-            grid_row,
-            grid_col,
-            edit_state: None,
-            display_mode,
-        },
+        } => {
+            ArchivePanelState::DataGrid {
+                schema,
+                table,
+                result,
+                page,
+                grid_row,
+                grid_col,
+                edit_state: None,
+                display_mode,
+            }
+        }
         other => other,
     };
     (next, proof)
@@ -295,22 +312,26 @@ pub(crate) fn explain_ready__creusot(
             table: old_table,
             root: old_root,
             ..
-        } => ArchivePanelState::ExplainCompare {
-            schema: schema.clone(),
-            table: table.clone(),
-            comparison: ExplainComparison {
-                left: old_root,
-                right: root,
-                label_left: kani_label!("{old_schema}.{old_table}"),
-                label_right: kani_label!("{schema}.{table}"),
-            },
-        },
-        _ => ArchivePanelState::ExplainView {
-            schema,
-            table,
-            root,
-            display_mode,
-        },
+        } => {
+            ArchivePanelState::ExplainCompare {
+                schema: schema.clone(),
+                table: table.clone(),
+                comparison: ExplainComparison {
+                    left: old_root,
+                    right: root,
+                    label_left: kani_label!("{old_schema}.{old_table}"),
+                    label_right: kani_label!("{schema}.{table}"),
+                },
+            }
+        }
+        _ => {
+            ArchivePanelState::ExplainView {
+                schema,
+                table,
+                root,
+                display_mode,
+            }
+        }
     };
     (next, proof)
 }
@@ -323,11 +344,13 @@ pub(crate) fn export_ready__creusot(
     export_result: ExportResult,
 ) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
     let next = match state {
-        ArchivePanelState::ExportView { schema, table, .. } => ArchivePanelState::ExportView {
-            schema,
-            table,
-            result: Some(export_result),
-        },
+        ArchivePanelState::ExportView { schema, table, .. } => {
+            ArchivePanelState::ExportView {
+                schema,
+                table,
+                result: Some(export_result),
+            }
+        }
         other => other,
     };
     (next, proof)
