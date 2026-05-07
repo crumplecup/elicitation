@@ -347,7 +347,7 @@ Key rules:
 | Phase 2 | ✅ Done | Gallery V7–V10 (full VSM, type_invariant, compose) |
 | Phase 3 | ✅ Done | `vsm_verus_proof()` infra + auto-generated companion files |
 | Phase 4 | 🔲 Planned | Real invariant bodies in `VERUS_INV_*` constants |
-| Phase 5 | 🔲 Planned | `vargo` integration for standalone Verus verification |
+| Phase 5 | ✅ Done | Standalone Verus VSM contracts via `strictly_verus` crate |
 
 ### Phase 4 notes
 
@@ -362,3 +362,23 @@ in `build.rs`:
 Once real invariants are in place, `assume_specification` blocks stop being
 trivially dischargeable and Verus must actually prove each transition preserves
 the invariant.
+
+### Phase 5 notes
+
+Phase 5 is implemented in `strictly_games` via the `strictly_verus` crate, not
+`vargo`.  The key insight is that the `VerifiedStateMachine` trait's new
+`vsm_verus_transitions()` method generates **fully self-contained** Verus source
+files — each file defines inline stub types and `#[verifier::external]` stubs
+alongside `assume_specification` contracts.
+
+The `vsm_verus_transitions()` implementation is in three parts:
+
+1. **`formal_method.rs`** — `verus_external_stub()` generates the
+   `#[verifier::external] pub fn fn_name(inputs) output { todo!() }` stub
+2. **`derive_vsm.rs`** — `transition_verus_stubs()` collects all stubs from
+   the machine's `#[formal_method]` transitions
+3. **`contracts.rs`** — `vsm_verus_transitions()` composes stubs + contracts
+   into a single `TokenStream` that `strictly_verus/build.rs` materialises
+
+Results: `blackjack` 11 verified, `craps` 8 verified, `tictactoe` 9 verified
+— all with 0 errors.  Run via `just verify-verus-vsm` in `strictly_games`.

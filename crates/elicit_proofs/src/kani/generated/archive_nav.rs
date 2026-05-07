@@ -24,7 +24,7 @@ fn verify_archive_nav_consistent_prop_marker() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(load_nav)]
 fn load_nav__kani_closure() {
-    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -39,7 +39,7 @@ fn load_nav__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(nav_loaded)]
 fn nav_loaded__kani_closure() {
-    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -55,7 +55,7 @@ fn nav_loaded__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(nav_refresh)]
 fn nav_refresh__kani_closure() {
-    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -70,7 +70,7 @@ fn nav_refresh__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(expand_schema)]
 fn expand_schema__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -87,7 +87,7 @@ fn expand_schema__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(collapse_schema)]
 fn collapse_schema__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -103,7 +103,7 @@ fn collapse_schema__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(move_cursor_up)]
 fn move_cursor_up__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -118,7 +118,7 @@ fn move_cursor_up__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(move_cursor_down)]
 fn move_cursor_down__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -134,7 +134,7 @@ fn move_cursor_down__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(apply_filter)]
 fn apply_filter__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();
@@ -150,7 +150,7 @@ fn apply_filter__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(clear_filter)]
 fn clear_filter__kani_closure() {
-    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth0();

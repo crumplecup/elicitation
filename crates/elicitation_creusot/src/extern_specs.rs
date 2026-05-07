@@ -13,15 +13,15 @@ use elicitation::verification::types::{
 };
 use elicitation::{
     ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BoolFalse, BoolTrue, BoxNonNull, BoxSatisfies,
-    CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive, HashMapNonEmpty,
+    CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive, Established, HashMapNonEmpty,
     HashSetNonEmpty, I8NonNegative, I8NonZero, I8Positive, I8Range, I16NonNegative, I16NonZero,
     I16Positive, I32NonNegative, I32NonZero, I32Positive, I64NonNegative, I64NonZero, I64Positive,
     I128NonNegative, I128NonZero, I128Positive, IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback,
-    Ipv6Loopback, IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull,
-    RcSatisfies, ResultOk, StringNonEmpty, Tuple2, Tuple3, Tuple4, U8NonZero, U8Positive, U8Range,
-    U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive, U32Range, U64NonZero, U64Positive,
-    U64Range, U128NonZero, U128Positive, UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
-    VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
+    Ipv6Loopback, IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome,
+    Prop, ProvableFrom, RcNonNull, RcSatisfies, ResultOk, StringNonEmpty, Tuple2, Tuple3, Tuple4,
+    U8NonZero, U8Positive, U8Range, U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive,
+    U32Range, U64NonZero, U64Positive, U64Range, U128NonZero, U128Positive, UsizeNonZero,
+    UsizePositive, UsizeRange, ValidationError, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
     verification::types::{
         AuthorityBytes, BalancedDelimiters, Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes,
         Ipv6Private, Ipv6Public, MacAddr, PathAbsolute, PathBytes, PathNonEmpty, PathRelative,
@@ -34,6 +34,30 @@ use elicitation::{
 };
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+
+// ============================================================================
+// Established proof token constructors
+// ============================================================================
+
+// `Established::prove` is always infallible (it is pure ZST construction
+// guarded by the type system via `ProvableFrom`). Registering this extern_spec
+// prevents Creusot from generating an `{false} any` precondition check at call
+// sites, which would make the enclosing function's VC unprovable.
+extern_spec! {
+    impl<P: Prop> Established<P> {
+        #[requires(true)]
+        fn prove<C>(_credential: &C) -> Established<P>
+        where P: ProvableFrom<C>;
+    }
+}
+
+// `Established::assert` is the unchecked escape hatch — always infallible.
+extern_spec! {
+    impl<P: Prop> Established<P> {
+        #[requires(true)]
+        fn assert() -> Established<P>;
+    }
+}
 
 // ============================================================================
 // Bool constructors

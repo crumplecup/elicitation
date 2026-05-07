@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 76 0 79 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 79 0 82 57 *)
 
-let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 77 4 77 10
-let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 78 4 78 9
-let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 74 11 74 42
-let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 79 5 79 57
-let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 75 10 75 43
-let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 24 4 24 8
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 80 4 80 10
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 81 4 81 9
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 77 11 77 42
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 82 5 82 57
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 78 10 78 43
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 25 8 26 20
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
 let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
@@ -17,6 +17,7 @@ use creusot.int.UInt64
 use seq.Seq
 use creusot.int.Int64
 use creusot.prelude.Any
+use creusot.prelude.Char
 use int.Int
 
 type t_Vec_SchemaWithExpand_Global
@@ -894,8 +895,13 @@ type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
 
 predicate inv_Established_ArchiveNavConsistent (_1: t_Established_ArchiveNavConsistent)
 
-predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 63] (_state: t_ArchiveNavState) =
-  [%#sarchive_nav'4] true
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 62] (state: t_ArchiveNavState) =
+  [%#sarchive_nav'4] match state with
+    | NavFiltered _ filter _ -> Seq.length (view_String filter) > 0
+    | _ -> true
+    end
 
 predicate inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent [@inline:trivial] (_1: tup2_ArchiveNavState_Established_ArchiveNavConsistent) =
   inv_ArchiveNavState _1.f0 /\ inv_Established_ArchiveNavConsistent _1.f1
@@ -907,7 +913,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec nav_refresh__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 76 0 79 57]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 79 0 82 57]
   (_state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent)
   (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
   {[@stop_split] [@expl:nav_refresh__creusot requires] ([@stop_split] [@expl:nav_refresh__creusot '_state' type invariant] [%#sarchive_nav] inv_ArchiveNavState _state)

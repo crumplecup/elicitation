@@ -247,6 +247,21 @@ pub fn expand(input: TokenStream) -> TokenStream {
         })
         .collect();
 
+    // Build `transition_verus_stubs()` — one external stub per transition.
+    let verus_stub_pushes: Vec<_> = vsm_args
+        .transitions
+        .iter()
+        .map(|t| {
+            let companion = Ident::new(
+                &format!("{}Transition", to_pascal_case(&t.to_string())),
+                t.span(),
+            );
+            quote! {
+                __stubs.push(#companion::verus_external_stub());
+            }
+        })
+        .collect();
+
     // Build `transition_kani_closure_proofs(inv_fn)` — one closure proof per transition.
     let kani_closure_pushes: Vec<_> = vsm_args
         .transitions
@@ -300,6 +315,14 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 let mut __contracts = ::std::vec::Vec::new();
                 #( #verus_pushes )*
                 __contracts
+            }
+
+            #[allow(unexpected_cfgs)]
+            #[cfg(not(kani))]
+            fn transition_verus_stubs() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
+                let mut __stubs = ::std::vec::Vec::new();
+                #( #verus_stub_pushes )*
+                __stubs
             }
 
             #[allow(unexpected_cfgs)]

@@ -1075,7 +1075,6 @@ pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
         Span::call_site(),
     );
     quote! {
-        #[cfg(verus)]
         verus! {
         pub fn #fn_ident() -> (result: bool)
             ensures result == true,

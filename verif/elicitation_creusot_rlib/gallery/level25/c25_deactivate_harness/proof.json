@@ -3,7 +3,7 @@
   "proofs": {
     "Coma": {
       "vc_c25_deactivate": { "prover": "cvc5", "time": 0.008 },
-      "vc_c25_deactivate__harness": { "prover": "cvc5", "time": 0.011 }
+      "vc_c25_deactivate_harness": { "prover": "cvc5", "time": 0.011 }
     }
   }
 }

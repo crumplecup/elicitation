@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 73 0 73 45 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 72 0 72 45 *)
 
-let%span slevel5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 73 19 73 20
-let%span slevel5'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 71 11 71 28
-let%span slevel5'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 73 36 73 45
-let%span slevel5'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 72 10 72 32
-let%span slevel5'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 44 8 47 9
+let%span slevel5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 72 19 72 20
+let%span slevel5'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 70 11 70 28
+let%span slevel5'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 72 36 72 45
+let%span slevel5'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 71 10 71 32
+let%span slevel5'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 43 8 46 9
 
 use creusot.prelude.Any
 use seq.Seq
@@ -27,7 +27,7 @@ axiom inv_axiom [@rewrite]: forall x: t_ConnState [inv_ConnState x]. inv_ConnSta
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c5_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 42 0 42 43] (s: t_ConnState) =
+predicate c5_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 41 0 41 43] (s: t_ConnState) =
   [%#slevel5'3] match s with
     | Connected -> true
     | Error msg -> Seq.length (view_String msg) > 0
@@ -37,7 +37,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c5_identity [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 73 0 73 45]
+let rec c5_identity [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 72 0 72 45]
   (s: t_ConnState) (return (x: t_ConnState)) =
   {[@stop_split] [@expl:c5_identity requires] ([@stop_split] [@expl:c5_identity 's' type invariant] [%#slevel5] inv_ConnState s)
   /\ ([@stop_split] [@expl:c5_identity requires] [%#slevel5'0] c5_consistent s)}

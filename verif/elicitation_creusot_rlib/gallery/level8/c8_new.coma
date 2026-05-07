@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 83 0 83 28 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 81 0 81 28 *)
 
-let%span slevel8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 86 26 86 27
-let%span slevel8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 81 11 81 15
-let%span slevel8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 82 10 82 32
-let%span slevel8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 64 8 64 57
-let%span slevel8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 38 4 41 5
+let%span slevel8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 84 26 84 27
+let%span slevel8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 79 11 79 15
+let%span slevel8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 80 10 80 32
+let%span slevel8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 62 8 62 57
+let%span slevel8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 37 4 40 5
 
 use creusot.int.Int64
 use creusot.prelude.Any
@@ -14,20 +14,20 @@ type t_C8ConnState = Disconnected | Connected
 
 type t_C8Machine = { state: t_C8ConnState; transition_count: Int64.t }
 
-predicate c8_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 37 0 37 43] (s: t_C8ConnState) =
+predicate c8_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 36 0 36 43] (s: t_C8ConnState) =
   [%#slevel8'3] match s with
     | Disconnected -> true
     | Connected -> true
     end
 
-predicate c8_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 62 0 62 43] (m: t_C8Machine) =
+predicate c8_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 60 0 60 43] (m: t_C8Machine) =
   [%#slevel8'2] c8_state_ok m.state /\ Int64.to_int m.transition_count >= 0
 
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c8_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 83 0 83 28]
+let rec c8_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 81 0 81 28]
   (return (x: t_C8Machine)) = (! bb0
   [ bb0 = s0
     [ s0 = [ &_3 <- Disconnected ] s1

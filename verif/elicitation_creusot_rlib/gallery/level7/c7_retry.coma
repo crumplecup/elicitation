@@ -1,13 +1,13 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 107 0 107 46 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 106 0 106 46 *)
 
-let%span slevel7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 115 33 115 34
-let%span slevel7'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 115 22 115 34
-let%span slevel7'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 107 16 107 17
-let%span slevel7'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 101 11 101 28
-let%span slevel7'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 102 11 105 1
-let%span slevel7'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 107 35 107 46
-let%span slevel7'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 106 10 106 32
-let%span slevel7'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 47 8 51 9
+let%span slevel7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 114 33 114 34
+let%span slevel7'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 114 22 114 34
+let%span slevel7'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 106 16 106 17
+let%span slevel7'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 100 11 100 28
+let%span slevel7'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 101 11 104 1
+let%span slevel7'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 106 35 106 46
+let%span slevel7'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 105 10 105 32
+let%span slevel7'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 46 8 50 9
 
 use creusot.int.Int64
 use creusot.prelude.Any
@@ -40,7 +40,7 @@ axiom inv_axiom [@rewrite]: forall x: t_TaggedState [inv_TaggedState x]. inv_Tag
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c7_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 45 0 45 45] (s: t_TaggedState) =
+predicate c7_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 44 0 44 45] (s: t_TaggedState) =
   [%#slevel7'6] match s with
     | Idle -> true
     | Connecting profile_name attempts -> Seq.length (view_String profile_name) > 0 /\ Int64.to_int attempts >= 0
@@ -50,7 +50,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c7_retry [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 107 0 107 46]
+let rec c7_retry [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 106 0 106 46]
   (s: t_TaggedState) (return (x: t_TaggedState)) =
   {[@stop_split] [@expl:c7_retry requires] ([@stop_split] [@expl:c7_retry 's' type invariant] [%#slevel7'1] inv_TaggedState s)
   /\ ([@stop_split] [@expl:c7_retry requires #0] [%#slevel7'2] c7_consistent s)

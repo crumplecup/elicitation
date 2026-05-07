@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 185 0 185 54 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 184 0 184 54 *)
 
-let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 185 20 185 21
-let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 183 11 183 29
-let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 185 41 185 54
-let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 184 10 184 33
-let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 86 8 91 9
+let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 184 20 184 21
+let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 182 11 182 29
+let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 184 41 184 54
+let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 183 10 183 33
+let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 85 8 90 9
 
 use creusot.prelude.Any
 use seq.Seq
@@ -29,7 +29,7 @@ axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 84 0 84 48] (s: t_MiniConnState) =
+predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 83 0 83 48] (s: t_MiniConnState) =
   [%#slevel10'3] match s with
     | Disconnected -> true
     | Connecting name -> Seq.length (view_String name) > 0
@@ -41,7 +41,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c10_identity [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 185 0 185 54]
+let rec c10_identity [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 184 0 184 54]
   (s: t_MiniConnState) (return (x: t_MiniConnState)) =
   {[@stop_split] [@expl:c10_identity requires] ([@stop_split] [@expl:c10_identity 's' type invariant] [%#slevel10] inv_MiniConnState s)
   /\ ([@stop_split] [@expl:c10_identity requires] [%#slevel10'0] c10_consistent s)}

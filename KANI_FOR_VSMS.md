@@ -658,6 +658,44 @@ This applies to **any tracing integration** that captures function arguments,
 not just `#[instrument]`. Any closure over a symbolic large enum will cause the
 same explosion.
 
+#### 6.3.1 Inline `tracing::debug!()` / `tracing::info!()` — same failure
+
+Inline tracing event macros in callee **function bodies** trigger the same
+goto-instrument hang even without `#[instrument]`.
+
+```rust
+// ❌ BAD — hangs goto-instrument:
+fn settle(self, outcome: Outcome, ...) -> (...) {
+    let final_balance = self.post_bet_balance + returned;
+    tracing::debug!(outcome = ?outcome, "Payout settled");  // ← hang
+    (final_balance, Established::assert())
+}
+
+// ✅ GOOD — compiled out under kani:
+fn settle(self, outcome: Outcome, ...) -> (...) {
+    let final_balance = self.post_bet_balance + returned;
+    #[cfg(not(kani))]
+    tracing::debug!(outcome = ?outcome, "Payout settled");
+    (final_balance, Established::assert())
+}
+```
+
+The `?field` sigil (Debug format) is the worst offender: it calls
+`format!("{:?}", value)` which can heap-allocate a `String`, giving CBMC an
+unbounded symbolic allocation.  Even simple `tracing::debug!(count = n)` calls
+access the global dispatcher through a thread-local `AtomicUsize`, which CBMC
+models symbolically.
+
+**Rule:** Gate **every** inline tracing event (`debug!`, `info!`, `warn!`,
+`error!`) in any function reachable from a VSM transition with
+`#[cfg(not(kani))]`.  Gate `#[instrument]` attributes with
+`#[cfg_attr(not(kani), tracing::instrument(…))]`.
+
+**Gallery evidence:** Level 14 isolates this case (`gallery14a_ungated_debug`
+hangs; `gallery14b_gated_debug` completes in ~8 s).  The fix resolved
+`bj_place_bet` and `bj_dealer_turn` timeouts in `strictly_blackjack`, bringing
+BJ to 5/5 ✅.
+
 ### 6.4 `Established<P>: kani::Arbitrary` for Composition
 
 `Established<P>` appears in the return type of every VSM transition. For

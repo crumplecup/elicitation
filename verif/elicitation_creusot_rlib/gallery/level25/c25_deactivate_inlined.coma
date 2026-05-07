@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 227 0 227 59 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 227 0 227 58 *)
 
 let%span slevel25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 225 11 225 33
 let%span slevel25'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 226 10 226 33
@@ -20,11 +20,11 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c25_deactivate__inlined
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 227 0 227 59] (state: t_C25State)
-  (return (x: t_C25State)) = {[@stop_split] [@expl:c25_deactivate__inlined requires] [%#slevel25] c25_consistent state}
+let rec c25_deactivate_inlined
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level25.rs" 227 0 227 58] (state: t_C25State)
+  (return (x: t_C25State)) = {[@stop_split] [@expl:c25_deactivate_inlined requires] [%#slevel25] c25_consistent state}
   (! bb0
   [ bb0 = s0 [ s0 = [ &_ret <- Idle ] s1 | s1 = return {_ret} ] ] [ & _ret: t_C25State = Any.any_l () ])
   [ return (result: t_C25State) ->
-  {[@stop_split] [@expl:c25_deactivate__inlined ensures] [%#slevel25'0] c25_consistent result}
+  {[@stop_split] [@expl:c25_deactivate_inlined ensures] [%#slevel25'0] c25_consistent result}
     (! return {result}) ]

@@ -134,9 +134,21 @@ fn to_pascal_case(s: &str) -> String {
 
 // ── Attribute argument parsing ─────────────────────────────────────────────────
 
-/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...])]`.
+/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...], creusot_requires = ["expr"], kani_requires = ["expr"])]`.
 struct FormalMethodArgs {
     contracts: Vec<syn::Path>,
+    /// Extra Pearlite expressions added as `#[requires(expr)]` to the Creusot companion only.
+    ///
+    /// Use this to express logical content that proof tokens carry but Creusot cannot derive
+    /// from the opaque `Established<P>` type — e.g. `"initial_bankroll@ > 0"` when the
+    /// function accepts `bankroll_proof: Established<BankrollPositive>`.
+    creusot_requires: Vec<syn::LitStr>,
+    /// Extra Rust expressions added as `#[kani::requires(expr)]` to the original function.
+    ///
+    /// Use this to express preconditions that proof tokens carry conceptually but that
+    /// CBMC cannot infer from the opaque `Established<P>` ZST — e.g. `"initial_bankroll > 0"`
+    /// when the function accepts `bankroll_proof: Established<BankrollPositive>`.
+    kani_requires: Vec<syn::LitStr>,
 }
 
 impl Parse for FormalMethodArgs {
@@ -144,21 +156,58 @@ impl Parse for FormalMethodArgs {
         if input.is_empty() {
             return Ok(FormalMethodArgs {
                 contracts: Vec::new(),
+                creusot_requires: Vec::new(),
+                kani_requires: Vec::new(),
             });
         }
-        let ident: syn::Ident = input.parse()?;
-        if ident != "contracts" {
-            return Err(syn::Error::new(
-                ident.span(),
-                "expected `contracts = [ContractType, ...]`",
-            ));
+        let mut contracts = Vec::new();
+        let mut creusot_requires = Vec::new();
+        let mut kani_requires = Vec::new();
+        loop {
+            let ident: syn::Ident = input.parse()?;
+            let _: Token![=] = input.parse()?;
+            match ident.to_string().as_str() {
+                "contracts" => {
+                    let content;
+                    syn::bracketed!(content in input);
+                    let paths =
+                        Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
+                    contracts = paths.into_iter().collect();
+                }
+                "creusot_requires" => {
+                    let content;
+                    syn::bracketed!(content in input);
+                    let lits =
+                        Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
+                    creusot_requires = lits.into_iter().collect();
+                }
+                "kani_requires" => {
+                    let content;
+                    syn::bracketed!(content in input);
+                    let lits =
+                        Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
+                    kani_requires = lits.into_iter().collect();
+                }
+                other => {
+                    return Err(syn::Error::new(
+                        ident.span(),
+                        format!(
+                            "unknown key `{other}`; expected `contracts`, `creusot_requires`, or `kani_requires`"
+                        ),
+                    ));
+                }
+            }
+            if input.peek(Token![,]) {
+                let _: Token![,] = input.parse()?;
+            }
+            if input.is_empty() {
+                break;
+            }
         }
-        let _: Token![=] = input.parse()?;
-        let content;
-        syn::bracketed!(content in input);
-        let contracts = Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
         Ok(FormalMethodArgs {
-            contracts: contracts.into_iter().collect(),
+            contracts,
+            creusot_requires,
+            kani_requires,
         })
     }
 }
@@ -528,6 +577,20 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             func.attrs.push(requires_attr);
             func.attrs.push(ensures_attr);
 
+            // Emit any extra kani_requires expressions as additional
+            // #[cfg_attr(kani, ::kani::requires(expr))] attributes.
+            // These constrain symbolic parameters whose bounds are carried by
+            // proof tokens (ZSTs) and are therefore invisible to CBMC without
+            // an explicit assume.
+            for lit in &parsed_args.kani_requires {
+                let expr: syn::Expr =
+                    syn::parse_str(&lit.value()).expect("kani_requires expr is valid Rust");
+                let extra_req: syn::Attribute = syn::parse_quote! {
+                    #[cfg_attr(kani, ::kani::requires(#expr))]
+                };
+                func.attrs.push(extra_req);
+            }
+
             // Creusot contracts are expressed as extern_spec! blocks in
             // elicitation_creusot/src/vsm.rs rather than inline annotations
             // here.  Inline creusot attrs would require creusot_std in scope
@@ -655,6 +718,14 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             }
         };
 
+        // Build extra Creusot requires string for embedding in the companion.
+        // Each LitStr value becomes `# [requires (expr)] ` in the generated source.
+        let creusot_extra_requires_src: String = parsed_args
+            .creusot_requires
+            .iter()
+            .map(|lit| format!("# [requires ({})] ", lit.value()))
+            .collect::<String>();
+
         let companion = quote! {
             // The companion struct is used only from build.rs / codegen paths.
             // Under Kani it must be absent: its methods return
@@ -702,7 +773,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + inv_fn
                             + " (& "
                             + #state_pat_s
-                            + "))] # [ensures ("
+                            + "))] "
+                            + #creusot_extra_requires_src
+                            + "# [ensures ("
                             + inv_fn
                             + " (& result . 0))] pub (crate) fn "
                             + #creusot_fn_src
@@ -748,7 +821,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 pub fn verus_contract(inv_fn: &str) -> ::proc_macro2::TokenStream {
                     let src = if !inv_fn.is_empty() && #has_state_param {
                         String::new()
-                            + "# [cfg (verus)] verus ! { pub assume_specification [ "
+                            + "verus ! { pub assume_specification [ "
                             + #fn_name_src
                             + " ] ("
                             + #inputs_src
@@ -763,7 +836,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + " (& r . 0) , ; }"
                     } else {
                         String::new()
-                            + "# [cfg (verus)] verus ! { pub assume_specification [ "
+                            + "verus ! { pub assume_specification [ "
                             + #fn_name_src
                             + " ] ("
                             + #inputs_src
@@ -773,6 +846,27 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     };
                     src.parse()
                         .expect("verus_contract: invalid TokenStream")
+                }
+
+                /// Return a `#[verifier::external]` stub function for this transition.
+                ///
+                /// Used in self-contained Verus proof crates (like `strictly_verus`) where
+                /// external crate rlibs cannot be linked via the Verus toolchain.  The stub
+                /// declares the function so that `assume_specification` has a target to axiomatise.
+                ///
+                /// The body is `todo!()` — Verus never inspects it because the function is
+                /// marked `#[verifier::external]`.
+                pub fn verus_external_stub() -> ::proc_macro2::TokenStream {
+                    let src = String::new()
+                        + "verus ! { # [verifier :: external] pub fn "
+                        + #fn_name_src
+                        + " ("
+                        + #inputs_src
+                        + ") "
+                        + #output_src
+                        + " { todo ! () } }";
+                    src.parse()
+                        .expect("verus_external_stub: invalid TokenStream")
                 }
 
                 /// Return a Kani `proof_for_contract` harness `TokenStream` for this transition.
@@ -828,7 +922,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         + #state_ty_s
                         + " = < "
                         + #state_ty_s
-                        + " as :: elicitation :: KaniCompose > :: kani_any () ; "
+                        + " as :: elicitation :: KaniCompose > :: kani_depth2 () ; "
                         + ":: kani :: assume ("
                         + inv_fn
                         + " (& "

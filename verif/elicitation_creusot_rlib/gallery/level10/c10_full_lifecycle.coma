@@ -1,26 +1,26 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 198 0 198 56 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 197 0 197 56 *)
 
-let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 200 13 200 32
-let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 201 13 201 28
-let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 202 4 202 22
-let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 198 26 198 30
-let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 196 11 196 26
-let%span slevel10'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 198 43 198 56
-let%span slevel10'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 197 10 197 33
-let%span slevel10'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 130 17 130 19
-let%span slevel10'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 130 36 130 40
-let%span slevel10'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 128 11 128 26
-let%span slevel10'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 130 53 130 66
-let%span slevel10'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 129 10 129 33
-let%span slevel10'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 19 143 20
-let%span slevel10'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 141 11 141 29
-let%span slevel10'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 143 40 143 53
-let%span slevel10'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 142 10 142 33
-let%span slevel10'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 170 22 170 23
-let%span slevel10'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 168 11 168 29
-let%span slevel10'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 170 43 170 56
-let%span slevel10'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 169 10 169 33
-let%span slevel10'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 86 8 91 9
+let%span slevel10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 199 13 199 32
+let%span slevel10'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 200 13 200 28
+let%span slevel10'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 201 4 201 22
+let%span slevel10'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 197 26 197 30
+let%span slevel10'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 195 11 195 26
+let%span slevel10'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 197 43 197 56
+let%span slevel10'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 196 10 196 33
+let%span slevel10'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 129 17 129 19
+let%span slevel10'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 129 36 129 40
+let%span slevel10'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 127 11 127 26
+let%span slevel10'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 129 53 129 66
+let%span slevel10'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 128 10 128 33
+let%span slevel10'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 142 19 142 20
+let%span slevel10'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 140 11 140 29
+let%span slevel10'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 142 40 142 53
+let%span slevel10'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 141 10 141 33
+let%span slevel10'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 169 22 169 23
+let%span slevel10'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 167 11 167 29
+let%span slevel10'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 169 43 169 56
+let%span slevel10'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 168 10 168 33
+let%span slevel10'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 85 8 90 9
 
 use seq.Seq
 use creusot.prelude.Char
@@ -45,7 +45,7 @@ axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 84 0 84 48] (s: t_MiniConnState) =
+predicate c10_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 83 0 83 48] (s: t_MiniConnState) =
   [%#slevel10'19] match s with
     | Disconnected -> true
     | Connecting name -> Seq.length (view_String name) > 0
@@ -86,7 +86,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec c10_full_lifecycle
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 198 0 198 56] (name: t_String)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level10.rs" 197 0 197 56] (name: t_String)
   (return (x: t_MiniConnState)) =
   {[@stop_split] [@expl:c10_full_lifecycle requires] ([@stop_split] [@expl:c10_full_lifecycle 'name' type invariant] [%#slevel10'2] inv_String name)
   /\ ([@stop_split] [@expl:c10_full_lifecycle requires] [%#slevel10'3] Seq.length (view_String name) > 0)}

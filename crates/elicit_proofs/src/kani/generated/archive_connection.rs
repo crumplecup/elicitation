@@ -25,7 +25,7 @@ fn verify_archive_connection_consistent_prop_marker() {
 #[::kani::proof_for_contract(begin_connect_sql)]
 fn begin_connect_sql__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
@@ -44,7 +44,7 @@ fn begin_connect_sql__kani_closure() {
 #[::kani::proof_for_contract(begin_connect_kv)]
 fn begin_connect_kv__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
@@ -62,7 +62,7 @@ fn begin_connect_kv__kani_closure() {
 #[::kani::proof_for_contract(finish_connect_sql)]
 fn finish_connect_sql__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
@@ -80,7 +80,7 @@ fn finish_connect_sql__kani_closure() {
 #[::kani::proof_for_contract(finish_connect_kv)]
 fn finish_connect_kv__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
@@ -98,7 +98,7 @@ fn finish_connect_kv__kani_closure() {
 #[::kani::proof_for_contract(disconnect)]
 fn disconnect__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
@@ -115,7 +115,7 @@ fn disconnect__kani_closure() {
 #[::kani::proof_for_contract(reconnect)]
 fn reconnect__kani_closure() {
     let state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveConnectionState =
@@ -132,7 +132,7 @@ fn reconnect__kani_closure() {
 #[::kani::proof_for_contract(connection_error)]
 fn connection_error__kani_closure() {
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_any();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =

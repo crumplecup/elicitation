@@ -1213,6 +1213,19 @@ pub trait VerifiedStateMachine {
         vec![]
     }
 
+    /// Return one `#[verifier::external]` stub function per transition.
+    ///
+    /// Used by `vsm_verus_standalone_proof()` to generate self-contained Verus
+    /// source files where no external crate rlibs are available.  Each stub
+    /// declares the function with a `todo!()` body so that `assume_specification`
+    /// has a concrete symbol to axiomatise.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_verus_stubs() -> Vec<proc_macro2::TokenStream> {
+        vec![]
+    }
+
     /// Compose the full VSM Creusot proof: the invariant proposition proof
     /// followed by one contract per registered transition.
     ///
@@ -1239,6 +1252,27 @@ pub trait VerifiedStateMachine {
     #[cfg(not(kani))]
     fn vsm_verus_proof() -> proc_macro2::TokenStream {
         let mut ts = Self::Invariant::verus_proof();
+        let inv_fn = Self::Invariant::verus_invariant_fn_name();
+        for contract in Self::transition_verus_contracts(inv_fn) {
+            ts.extend(contract);
+        }
+        ts
+    }
+
+    /// Compose the transition portion of a self-contained Verus proof file:
+    /// all `#[verifier::external]` stubs followed by all `assume_specification`
+    /// contracts.
+    ///
+    /// Used by `strictly_verus/build.rs` to build files that do **not** import
+    /// external crate rlibs (which the Verus toolchain cannot link).  The
+    /// caller is responsible for prepending the inline type definitions and
+    /// the invariant spec function before this output.
+    #[cfg(not(kani))]
+    fn vsm_verus_transitions() -> proc_macro2::TokenStream {
+        let mut ts = proc_macro2::TokenStream::new();
+        for stub in Self::transition_verus_stubs() {
+            ts.extend(stub);
+        }
         let inv_fn = Self::Invariant::verus_invariant_fn_name();
         for contract in Self::transition_verus_contracts(inv_fn) {
             ts.extend(contract);

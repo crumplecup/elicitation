@@ -24,7 +24,8 @@ fn verify_archive_panel_consistent_prop_marker() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(column_detail)]
 fn column_detail__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -40,7 +41,8 @@ fn column_detail__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(panel_loading)]
 fn panel_loading__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -58,7 +60,8 @@ fn panel_loading__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(panel_error)]
 fn panel_error__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -75,7 +78,8 @@ fn panel_error__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(data_grid_ready)]
 fn data_grid_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -96,7 +100,7 @@ fn data_grid_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(query_complete)]
 fn query_complete__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -112,7 +116,7 @@ fn query_complete__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(begin_edit)]
 fn begin_edit__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -127,7 +131,7 @@ fn begin_edit__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(commit_edits)]
 fn commit_edits__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -142,7 +146,7 @@ fn commit_edits__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(abort_edits)]
 fn abort_edits__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -157,7 +161,8 @@ fn abort_edits__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_sql_editor)]
 fn open_sql_editor__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -174,7 +179,8 @@ fn open_sql_editor__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_export_panel)]
 fn open_export_panel__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -192,7 +198,8 @@ fn open_export_panel__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_help_panel)]
 fn open_help_panel__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -208,7 +215,8 @@ fn open_help_panel__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_saved_panel)]
 fn open_saved_panel__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -227,7 +235,8 @@ fn open_saved_panel__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(open_connection_editor)]
 fn open_connection_editor__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -247,7 +256,8 @@ fn open_connection_editor__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(ddl_ready)]
 fn ddl_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -268,7 +278,7 @@ fn ddl_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(explain_ready)]
 fn explain_ready__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -288,7 +298,7 @@ fn explain_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(export_ready)]
 fn export_ready__kani_closure() {
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
@@ -304,7 +314,8 @@ fn export_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(history_ready)]
 fn history_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -323,7 +334,8 @@ fn history_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(saved_ready)]
 fn saved_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -342,7 +354,8 @@ fn saved_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(monitor_ready)]
 fn monitor_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -361,7 +374,8 @@ fn monitor_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(admin_ready)]
 fn admin_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -380,7 +394,8 @@ fn admin_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(erd_ready)]
 fn erd_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -401,7 +416,8 @@ fn erd_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(constraints_ready)]
 fn constraints_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
@@ -422,7 +438,8 @@ fn constraints_ready__kani_closure() {
 #[cfg(kani)]
 #[::kani::proof_for_contract(indexes_ready)]
 fn indexes_ready__kani_closure() {
-    let _state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_any();
+    let _state: ArchivePanelState =
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =

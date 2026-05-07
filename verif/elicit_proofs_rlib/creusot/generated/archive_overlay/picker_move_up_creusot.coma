@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 74 0 77 65 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 71 0 74 65 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
@@ -7,13 +7,13 @@ let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invar
 let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
 let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
 let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
-let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 81 40 81 41
-let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 81 21 81 42
-let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 75 4 75 9
-let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 76 4 76 9
-let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 72 11 72 45
-let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 77 5 77 65
-let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 73 10 73 47
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 78 40 78 41
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 78 21 78 42
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 72 4 72 9
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 73 4 73 9
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 69 11 69 45
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 74 5 74 65
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 70 10 70 47
 let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 25 8 27 40
 
 use creusot.int.UInt64
@@ -154,7 +154,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec picker_move_up__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 74 0 77 65]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 71 0 74 65]
   (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent)
   (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
   {[@stop_split] [@expl:picker_move_up__creusot requires] ([@stop_split] [@expl:picker_move_up__creusot 'state' type invariant] [%#sarchive_overlay'1] inv_ArchiveOverlayState state)

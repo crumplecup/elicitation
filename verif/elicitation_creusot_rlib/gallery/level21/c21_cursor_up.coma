@@ -4,6 +4,9 @@ let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs"
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
+let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
+let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
 let%span slevel21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 158 42 158 43
 let%span slevel21'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 158 20 158 44
 let%span slevel21'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 21 155 22
@@ -14,9 +17,6 @@ let%span slevel21'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/s
 let%span slevel21'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 154 10 154 32
 let%span slevel21'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 87 8 93 9
 let%span slevel21'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 104 16 104 71
-let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
-let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
-let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
 
 use creusot.int.UInt64
 use creusot.prelude.Any
