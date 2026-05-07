@@ -675,3 +675,24 @@ SurrealTransactionPlugin). Phase 2 adds nine trenchcoat newtypes for value types
 - **Phase 3F** — `SurrealTransactionPlugin`: 9 stateful transaction block tools
 - **Phase 3G** — `trait_factories.rs`: SurrealValue factory
 - **Phase 4** — Kani proofs: 6 roundtrip harnesses for Phase 2 types
+
+### `elicitation generate` CLI Feature
+
+**File:** `ELICITATION_GENERATE_PLAN.md`
+
+Replaces the manual `build.rs` approach for generating formal verification proof
+files. The `elicitation generate` CLI subcommand uses **syn source scanning** to
+discover VSMs (`#[derive(VerifiedStateMachine)]`, `#[vsm(transitions = [...])]`) and
+their invariants (`#[derive(Prop)] #[prop(...)]`) without compiling the scanned crate.
+This eliminates the toolchain segregation problem: Verus cannot compile
+`elicit_server` (tokio/sqlx/axum), but the CLI reads source files and generates
+inline-stub Verus mirrors that only depend on `vstd`.
+
+**Phases:**
+
+- **Phase 1** — Scanner: syn-based `VsmDescriptor` extraction from any crate path
+- **Phase 2** — Kani generator: replaces `elicit_proofs/build.rs` Kani generation
+- **Phase 3** — Verus generator: `verus_inv_body` on `#[prop]`, inline type stubs,
+  `elicitation_verus/src/vsm/` output, no `elicit_server` dep in `elicitation_verus`
+- **Phase 4** — Creusot generator
+- **Phase 5** — Remove `elicit_proofs/build.rs` entirely
