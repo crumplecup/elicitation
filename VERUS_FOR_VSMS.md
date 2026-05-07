@@ -346,22 +346,26 @@ Key rules:
 | Phase 1 | ✅ Done | Gallery V1–V6 (toolchain, patterns, ghost tokens) |
 | Phase 2 | ✅ Done | Gallery V7–V10 (full VSM, type_invariant, compose) |
 | Phase 3 | ✅ Done | `vsm_verus_proof()` infra + auto-generated companion files |
-| Phase 4 | 🔲 Planned | Real invariant bodies in `VERUS_INV_*` constants |
+| Phase 4 | ✅ Done | Real invariant bodies in `VERUS_INV_*` constants |
 | Phase 5 | ✅ Done | Standalone Verus VSM contracts via `strictly_verus` crate |
+| Phase 6 | 🔲 Planned | Standalone `elicit_verus` crate — archive machines verified like `strictly_verus` |
 
 ### Phase 4 notes
 
-Phase 4 replaces the `{ true }` bodies in `VERUS_INV_*` with real pattern
-matches. The invariant logic mirrors the Creusot `#[logic]` predicates already
-in `build.rs`:
+Real invariant bodies are in place in `elicit_proofs/build.rs`:
 
-- `archive_panel_consistent`: `SqlEditor { running, result }` → `*running ==> result.is_none()`
-- `archive_nav_consistent`: `NavReady { filter }` → `filter@.len() <= 256` (or similar)
-- `archive_connection_consistent` / `archive_overlay_consistent`: trivially `true`
+- `archive_panel_consistent`: `SqlEditor { running, result, .. }` → `running ==> result.is_None()`
+- `archive_nav_consistent`: `NavFiltered { filter, .. }` → `filter@.len() > 0`
+- `archive_overlay_consistent`: `ExportPickerOpen` → `idx <= formats@.len()`, `SavedBrowserOpen` → `idx <= entries@.len()`
+- `archive_connection_consistent`: trivially `true` (no cross-field constraints by design)
 
-Once real invariants are in place, `assume_specification` blocks stop being
-trivially dischargeable and Verus must actually prove each transition preserves
-the invariant.
+These are generated into `crates/elicit_proofs/src/verus/generated/*.rs` at `cargo build -p elicit_proofs`.
+The generated files use `#[cfg(verus)]` and are invisible to normal Rust builds.
+
+**Verification status**: The companion files compile as Rust (under `#[cfg(verus)]` gates) but have not
+yet been run through the Verus toolchain. This is blocked by the same rlib incompatibility that Phase 5
+solved for game crates — `elicit_server` types are compiled by rustc, not vargo. Phase 6 addresses this
+by creating a standalone `elicit_verus` crate analogous to `strictly_verus`.
 
 ### Phase 5 notes
 
