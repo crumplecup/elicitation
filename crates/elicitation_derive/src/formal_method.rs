@@ -170,22 +170,19 @@ impl Parse for FormalMethodArgs {
                 "contracts" => {
                     let content;
                     syn::bracketed!(content in input);
-                    let paths =
-                        Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
+                    let paths = Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
                     contracts = paths.into_iter().collect();
                 }
                 "creusot_requires" => {
                     let content;
                     syn::bracketed!(content in input);
-                    let lits =
-                        Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
+                    let lits = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
                     creusot_requires = lits.into_iter().collect();
                 }
                 "kani_requires" => {
                     let content;
                     syn::bracketed!(content in input);
-                    let lits =
-                        Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
+                    let lits = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
                     kani_requires = lits.into_iter().collect();
                 }
                 other => {

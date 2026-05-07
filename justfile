@@ -261,7 +261,8 @@ check-features:
     echo ""
 
     # Excluded features: bundle aliases, test markers, tool-specific flags
-    EXCLUDE_FEATURES="full,dev,api,kani,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs"
+    # kani and creusot require special toolchains and cannot be tested with regular cargo check
+    EXCLUDE_FEATURES="full,dev,api,kani,creusot,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs"
 
     # Excluded packages: require special toolchains (kani, creusot) or are workspace-excluded (verus)
     if ! cargo hack check \
