@@ -72,12 +72,7 @@ pub fn generate_kani_file(
     // ── Marker proof ────────────────────────────────────────────────────────
     if has_invariant {
         out.push_str(&format!(
-            "#[cfg(kani)]\n\
-             #[kani::proof]\n\
-             fn verify_{consistent_lower}_prop_marker() {{\n\
-                 let established: bool = true;\n\
-                 assert!(established);\n\
-             }}\n",
+            "#[cfg(kani)]\n#[kani::proof]\nfn verify_{consistent_lower}_prop_marker() {{\n    let established: bool = true;\n    assert!(established);\n}}\n",
             consistent_lower = to_snake(consistent_ty)
         ));
     }

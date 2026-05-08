@@ -85,7 +85,7 @@ pub fn generate_creusot_file(
         lines.push("#[cfg(creusot)]".to_string());
         lines.push("#[logic]".to_string());
         lines.push(format!(
-            "pub fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }}"
+            "pub fn {inv_fn}(state: &{state_ty}) -> bool {{\n    pearlite! {{ {inv_body} }}\n}}"
         ));
         lines.push(String::new());
 
@@ -147,7 +147,9 @@ fn emit_params(tf: &TransitionFn, state_ty: &str) -> String {
     for arg in &tf.args {
         let (name, ty) = match &arg.kind {
             ArgKind::State => ("state".to_string(), state_ty.to_string()),
-            ArgKind::Proof { inner } => ("proof".to_string(), format!("Established<{inner}>")),
+            // Use the actual parameter name from the source (e.g. `proof`,
+            // `square_proof`, `turn_proof`) so there are no duplicate bindings.
+            ArgKind::Proof { inner } => (arg.name.clone(), format!("Established<{inner}>")),
             _ => (arg.name.trim_start_matches('_').to_string(), arg.ty.clone()),
         };
         parts.push(format!("{name}: {ty}"));
@@ -161,7 +163,8 @@ fn emit_call_args(tf: &TransitionFn) -> String {
         .iter()
         .map(|arg| match arg.kind {
             ArgKind::State => "state".to_string(),
-            ArgKind::Proof { .. } => "proof".to_string(),
+            // Use the actual binding name so extra proofs forward correctly.
+            ArgKind::Proof { .. } => arg.name.clone(),
             _ => arg.name.trim_start_matches('_').to_string(),
         })
         .collect::<Vec<_>>()

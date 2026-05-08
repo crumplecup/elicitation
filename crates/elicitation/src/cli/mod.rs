@@ -256,6 +256,17 @@ pub enum GenerateTarget {
         #[arg(short = 'p', long, default_value = ".")]
         crate_path: PathBuf,
     },
+
+    /// Generate Kani constructibility harnesses for all `#[derive(Elicit)]` types.
+    Foundation {
+        /// Root directory to scan for `#[derive(Elicit)]` source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory for `foundation.rs` (defaults to stdout preview).
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
 }
 
 /// Execute the CLI command.
@@ -506,7 +517,7 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 /// Handle `elicitation generate` subcommands.
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
-    use crate::cli::generate::{creusot_gen, kani_gen, scan_vsms, verus_gen};
+    use crate::cli::generate::{creusot_gen, foundation_gen, kani_gen, scan_elicit_types, scan_vsms, verus_gen};
     use std::io::Write;
 
     let (crate_path, label) = match target {
@@ -562,6 +573,16 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
         GenerateTarget::Verus { crate_path, .. } => (crate_path, "verus"),
         GenerateTarget::Creusot { crate_path, .. } => (crate_path, "creusot"),
         GenerateTarget::All { crate_path, .. } => (crate_path, "all"),
+        GenerateTarget::Foundation { crate_path, out } => {
+            let types = scan_elicit_types(crate_path);
+            if types.is_empty() {
+                println!("No #[derive(Elicit)] types found in {}", crate_path.display());
+                return Ok(());
+            }
+            let content = foundation_gen::generate_foundation_file(&types, crate_path);
+            emit_content(&content, "foundation.rs", out.as_deref())?;
+            return Ok(());
+        }
     };
 
     let vsms = scan_vsms(crate_path);
@@ -610,7 +631,8 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             _ => None,
         };
         for vsm in &vsms {
-            let content = kani_gen::generate_kani_file(vsm, crate_path);
+            let content = kani_gen::generate_kani_file(vsm, crate_path)
+                .map_err(|e| std::io::Error::other(e))?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }
@@ -622,7 +644,8 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             _ => None,
         };
         for vsm in &vsms {
-            let content = verus_gen::generate_verus_file(vsm, crate_path);
+            let content = verus_gen::generate_verus_file(vsm, crate_path)
+                .map_err(|e| std::io::Error::other(e))?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }
@@ -634,7 +657,8 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             _ => None,
         };
         for vsm in &vsms {
-            let content = creusot_gen::generate_creusot_file(vsm, crate_path);
+            let content = creusot_gen::generate_creusot_file(vsm, crate_path)
+                .map_err(|e| std::io::Error::other(e))?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }

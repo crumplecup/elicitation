@@ -4212,6 +4212,7 @@ dependencies = [
  "strum 0.28.0",
  "surrealdb-types",
  "syn 2.0.117",
+ "tempfile",
  "tiff 0.9.1",
  "time",
  "tokio",

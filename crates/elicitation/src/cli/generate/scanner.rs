@@ -676,10 +676,15 @@ pub fn has_derive(s: &syn::ItemStruct, name: &str) -> bool {
             return false;
         }
         // Parse the derive list and check for the target ident.
+        // Token streams may include spaces around `::`, so collapse whitespace
+        // before comparing (e.g. `elicitation :: Prop` → `elicitation::Prop`).
         matches!(
             attr.meta.clone(),
             Meta::List(list) if list.tokens.to_string().split(',')
-                .any(|token| token.trim() == name)
+                .any(|token| {
+                    let t: String = token.split_whitespace().collect();
+                    t == name || t.ends_with(&format!("::{name}"))
+                })
         )
     })
 }
