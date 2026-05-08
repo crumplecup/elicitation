@@ -3677,11 +3677,8 @@ dependencies = [
  "elicit_db",
  "elicit_server",
  "elicitation",
- "prettyplease",
- "proc-macro2",
  "serde",
  "serde_json",
- "syn 2.0.117",
  "tracing",
 ]
 

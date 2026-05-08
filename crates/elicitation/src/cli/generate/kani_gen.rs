@@ -16,12 +16,13 @@ use crate::cli::generate::scanner::{ArgKind, TransitionFn, VsmDescriptor};
 
 /// Generate the full Kani companion file content for `vsm`.
 ///
-/// `crate_root` is the root passed to `scan_vsms`; it is used to derive a
-/// `crate::…` module path for the wildcard import.
+/// `_crate_root` is accepted for API symmetry with the Verus/Creusot generators
+/// but is not used; imports are emitted as the full `elicit_server::archive::*`
+/// set required by the archive proof crate.
 ///
 /// Returns a formatted Rust source string (not yet written to disk).
-#[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
-pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
+#[tracing::instrument(skip(vsm, _crate_root), fields(machine = %vsm.machine))]
+pub fn generate_kani_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>) -> String {
     let machine = &vsm.machine;
     let inv_fn = vsm
         .invariant
@@ -33,8 +34,6 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> 
         .as_ref()
         .map(|p| p.name.as_str())
         .unwrap_or("/* TODO: ConsistentType */");
-
-    let module_path = derive_module_path(&vsm.source_file, crate_root.as_ref());
 
     let mut out = String::new();
 
@@ -48,9 +47,14 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> 
     ));
 
     // ── Imports ─────────────────────────────────────────────────────────────
-    out.push_str("#[cfg(kani)]\nuse elicitation::Established;\n");
-    if !module_path.is_empty() {
-        out.push_str(&format!("#[cfg(kani)]\nuse {module_path}::*;\n"));
+    for import in &[
+        "elicitation::Established",
+        "elicit_server::archive::vsm::*",
+        "elicit_server::archive::types::*",
+        "elicit_server::archive::display::*",
+        "elicit_server::archive::nav_tree::*",
+    ] {
+        out.push_str(&format!("#[cfg(kani)]\nuse {import};\n"));
     }
     out.push('\n');
 
@@ -205,46 +209,6 @@ fn emit_minimal_harness(
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/// Derive `crate::path::to::module` from the source file path relative to `root`.
-///
-/// E.g. `root = /repo/crates/my_crate`, `file = /repo/crates/my_crate/src/vsm/nav.rs`
-/// → `crate::vsm`.
-fn derive_module_path(source_file: &std::path::Path, root: &Path) -> String {
-    // Strip the root prefix.
-    let rel = source_file.strip_prefix(root).unwrap_or(source_file);
-
-    // Walk components, collecting after "src/" and dropping the filename.
-    let components: Vec<String> = rel
-        .components()
-        .filter_map(|c| {
-            if let std::path::Component::Normal(os) = c {
-                os.to_str().map(|s| s.to_string())
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    let src_idx = components.iter().position(|c| c == "src");
-    let parts: Vec<&str> = match src_idx {
-        Some(i) => components[i + 1..].iter().map(|s| s.as_str()).collect(),
-        None => components.iter().map(|s| s.as_str()).collect(),
-    };
-
-    // Drop the filename (last element) and strip .rs extensions.
-    let module_parts: Vec<&str> = parts[..parts.len().saturating_sub(1)]
-        .iter()
-        .map(|s| s.trim_end_matches(".rs"))
-        .filter(|s| !s.is_empty())
-        .collect();
-
-    if module_parts.is_empty() {
-        "crate".to_string()
-    } else {
-        format!("crate::{}", module_parts.join("::"))
-    }
-}
 
 /// Infer the state enum type name from the machine struct name.
 ///

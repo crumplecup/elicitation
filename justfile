@@ -662,6 +662,31 @@ verify-kani-list:
     @cargo run --bin elicitation --quiet --features cli --release -- verify list
 
 # ─────────────────────────────────────────────────────────────────────────────
+# VSM proof generation (elicitation generate CLI — replaces build.rs)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Regenerate all proof files for archive VSMs (Kani + Creusot + Verus)
+generate-vsm-proofs: (generate-vsm-kani) (generate-vsm-creusot) (generate-vsm-verus)
+
+# Regenerate Kani harnesses for archive VSMs
+generate-vsm-kani:
+    cargo run -p elicitation --features cli -- generate kani \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/kani/generated
+
+# Regenerate Creusot companions for archive VSMs
+generate-vsm-creusot:
+    cargo run -p elicitation --features cli -- generate creusot \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/creusot/generated
+
+# Regenerate Verus companions for archive VSMs
+generate-vsm-verus:
+    cargo run -p elicitation --features cli -- generate verus \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/verus/generated
+
+# ─────────────────────────────────────────────────────────────────────────────
 # VSM Kani proof tracking (elicit_proofs runner — auto-generated harnesses)
 # ─────────────────────────────────────────────────────────────────────────────
 
