@@ -3,7 +3,7 @@
 #![cfg(feature = "cli")]
 
 use elicitation::cli::generate::scanner::{
-    extract_prop_descriptor, extract_vsms_from_file,
+    ArgKind, extract_prop_descriptor, extract_vsms_from_file,
 };
 use std::path::Path;
 use syn::{File, Item};
@@ -145,4 +145,87 @@ fn scan_archive_vsms() {
             "VSM '{name}' not found; got {names:?}"
         );
     }
+
+    // Check that transition_fns are populated (signatures found in source).
+    for vsm in &vsms {
+        assert!(
+            !vsm.transition_fns.is_empty(),
+            "{} has no transition_fns — signatures not found",
+            vsm.machine
+        );
+        // Every name in transitions should have a matching TransitionFn.
+        for t_name in &vsm.transitions {
+            assert!(
+                vsm.transition_fns.iter().any(|tf| &tf.name == t_name),
+                "transition '{t_name}' missing from transition_fns in {}",
+                vsm.machine
+            );
+        }
+    }
+}
+
+// ─── TransitionFn tests ───────────────────────────────────────────────────────
+
+#[test]
+fn transition_fn_arg_classification() {
+    let src = r#"
+        pub fn nav_loaded(
+            _state: NavState,
+            proof: Established<NavConsistent>,
+            nav: NavTree,
+        ) -> (NavState, Established<NavConsistent>) {
+            (_state, proof)
+        }
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [nav_loaded])]
+        pub struct NavMachine;
+    "#;
+    let file: File = syn::parse_str(src).unwrap();
+    let descs = extract_vsms_from_file(&file, Path::new("nav.rs"));
+    assert_eq!(descs.len(), 1);
+
+    let tfns = &descs[0].transition_fns;
+    assert_eq!(tfns.len(), 1);
+
+    let tf = &tfns[0];
+    assert_eq!(tf.name, "nav_loaded");
+
+    let state = tf.state_arg().expect("state arg");
+    assert_eq!(state.kind, ArgKind::State);
+    assert_eq!(state.ty, "NavState");
+
+    let proof = tf.proof_arg().expect("proof arg");
+    assert!(matches!(&proof.kind, ArgKind::Proof { inner } if inner == "NavConsistent"));
+
+    let extra: Vec<_> = tf.extra_args().collect();
+    assert_eq!(extra.len(), 1);
+    assert_eq!(extra[0].name, "nav");
+    assert_eq!(extra[0].kind, ArgKind::Other);
+}
+
+#[test]
+fn transition_fn_string_and_option_args() {
+    let src = r#"
+        pub fn connect(
+            _state: ConnState,
+            proof: Established<ConnConsistent>,
+            name: String,
+            tag: Option<String>,
+        ) -> (ConnState, Established<ConnConsistent>) {
+            (_state, proof)
+        }
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [connect])]
+        pub struct ConnMachine;
+    "#;
+    let file: File = syn::parse_str(src).unwrap();
+    let descs = extract_vsms_from_file(&file, Path::new("conn.rs"));
+    let tf = &descs[0].transition_fns[0];
+
+    let extra: Vec<_> = tf.extra_args().collect();
+    assert_eq!(extra.len(), 2);
+    assert_eq!(extra[0].kind, ArgKind::StringArg);
+    assert_eq!(extra[1].kind, ArgKind::OptionArg);
 }

@@ -11,9 +11,10 @@
 //! - `creusot` — Creusot `#[cfg(creusot)]` companions
 //! - `all`     — all three targets
 
+pub mod kani_gen;
 pub mod scanner;
 
 pub use scanner::{
-    PropDescriptor, VsmDescriptor, extract_prop_descriptor, extract_vsms_from_file, has_derive,
-    scan_vsms,
+    ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor, extract_prop_descriptor,
+    extract_vsms_from_file, has_derive, scan_vsms,
 };
