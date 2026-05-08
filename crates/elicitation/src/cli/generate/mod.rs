@@ -13,6 +13,7 @@
 
 pub mod kani_gen;
 pub mod scanner;
+pub mod verus_gen;
 
 pub use scanner::{
     ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor, extract_prop_descriptor,

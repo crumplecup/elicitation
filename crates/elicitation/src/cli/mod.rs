@@ -506,7 +506,7 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 /// Handle `elicitation generate` subcommands.
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
-    use crate::cli::generate::{kani_gen, scan_vsms};
+    use crate::cli::generate::{kani_gen, scan_vsms, verus_gen};
     use std::io::Write;
 
     let (crate_path, label) = match target {
@@ -543,10 +543,15 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
                     }
                     if let Some(inv) = &vsm.invariant {
                         println!(
-                            "  invariant: {} (kani={}, verus={})",
+                            "  invariant: {} (kani={}, verus={}, body={})",
                             inv.name,
                             inv.kani_fn.as_deref().unwrap_or("?"),
                             inv.verus_fn.as_deref().unwrap_or("?"),
+                            if inv.verus_inv_body.is_some() {
+                                "✓"
+                            } else {
+                                "missing"
+                            },
                         );
                     }
                 }
@@ -562,45 +567,69 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
     let vsms = scan_vsms(crate_path);
     tracing::info!(target = label, vsms = vsms.len(), "generating proofs");
 
-    let out_dir = match target {
-        GenerateTarget::Kani { out, .. } | GenerateTarget::All { out, .. } => out.as_deref(),
-        _ => None,
-    };
+    /// Derive a snake_case filename stem from a machine name, e.g.
+    /// `ArchiveNavMachine` → `archive_nav`.
+    fn machine_to_filename(machine: &str) -> String {
+        machine
+            .trim_end_matches("Machine")
+            .chars()
+            .fold(String::new(), |mut acc, c| {
+                if c.is_uppercase() && !acc.is_empty() {
+                    acc.push('_');
+                }
+                acc.push(c.to_ascii_lowercase());
+                acc
+            })
+    }
+
+    /// Write content to `<dir>/<filename>` or print to stdout if dir is None.
+    fn emit_content(
+        content: &str,
+        filename: &str,
+        out_dir: Option<&std::path::Path>,
+    ) -> anyhow::Result<()> {
+        match out_dir {
+            Some(dir) => {
+                std::fs::create_dir_all(dir)?;
+                let path = dir.join(filename);
+                std::fs::write(&path, content)?;
+                println!("Written: {}", path.display());
+            }
+            None => {
+                println!("// ── {filename} ──");
+                std::io::stdout().write_all(content.as_bytes())?;
+                println!();
+            }
+        }
+        Ok(())
+    }
 
     if matches!(label, "kani" | "all") {
+        let out_dir = match target {
+            GenerateTarget::Kani { out, .. } | GenerateTarget::All { out, .. } => out.as_deref(),
+            _ => None,
+        };
         for vsm in &vsms {
             let content = kani_gen::generate_kani_file(vsm, crate_path);
-            let filename = format!(
-                "{}.rs",
-                vsm.machine.trim_end_matches("Machine").chars().fold(
-                    String::new(),
-                    |mut acc, c| {
-                        if c.is_uppercase() && !acc.is_empty() {
-                            acc.push('_');
-                        }
-                        acc.push(c.to_ascii_lowercase());
-                        acc
-                    }
-                )
-            );
-            match out_dir {
-                Some(dir) => {
-                    std::fs::create_dir_all(dir)?;
-                    let path = dir.join(&filename);
-                    std::fs::write(&path, &content)?;
-                    println!("Written: {}", path.display());
-                }
-                None => {
-                    println!("// ── {} ──", filename);
-                    std::io::stdout().write_all(content.as_bytes())?;
-                    println!();
-                }
-            }
+            let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
+            emit_content(&content, &filename, out_dir)?;
         }
     }
 
-    if matches!(label, "verus" | "creusot") {
-        println!("Generator for '{}' not yet implemented (Phase 3).", label);
+    if matches!(label, "verus" | "all") {
+        let out_dir = match target {
+            GenerateTarget::Verus { out, .. } | GenerateTarget::All { out, .. } => out.as_deref(),
+            _ => None,
+        };
+        for vsm in &vsms {
+            let content = verus_gen::generate_verus_file(vsm, crate_path);
+            let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
+            emit_content(&content, &filename, out_dir)?;
+        }
+    }
+
+    if matches!(label, "creusot") {
+        println!("Generator for 'creusot' not yet implemented (Phase 4).");
     }
 
     Ok(())

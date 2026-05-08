@@ -34,7 +34,10 @@ use heck::ToSnakeCase;
 
 // ── Attribute parsing ──────────────────────────────────────────────────────────
 
-/// Parsed content of `#[prop(credential = SomeType, creusot_invariant_fn = "fn_name", kani_invariant_fn = "fn_name", verus_invariant_fn = "fn_name")]`.
+/// Parsed content of `#[prop(credential = SomeType, creusot_invariant_fn = "fn_name", kani_invariant_fn = "fn_name", verus_invariant_fn = "fn_name", verus_inv_body = "...")]`.
+///
+/// `verus_inv_body` is accepted for attribute validation but is not used by the derive macro —
+/// the CLI scanner reads it directly from source with `syn`.
 struct PropArgs {
     credential: Option<Path>,
     creusot_invariant_fn: Option<String>,
@@ -76,11 +79,15 @@ impl Parse for PropArgs {
                     let lit: syn::LitStr = input.parse()?;
                     verus_invariant_fn = Some(lit.value());
                 }
+                "verus_inv_body" => {
+                    // Parsed for attribute validation only; consumed by the CLI scanner, not by this macro.
+                    let _: syn::LitStr = input.parse()?;
+                }
                 other => {
                     return Err(syn::Error::new(
                         ident.span(),
                         format!(
-                            "unknown prop key `{other}`; expected `credential`, `creusot_invariant_fn`, `kani_invariant_fn`, or `verus_invariant_fn`"
+                            "unknown prop key `{other}`; expected `credential`, `creusot_invariant_fn`, `kani_invariant_fn`, `verus_invariant_fn`, or `verus_inv_body`"
                         ),
                     ));
                 }
