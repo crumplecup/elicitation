@@ -90,7 +90,7 @@ fn to_snake(s: &str) -> String {
 #[test]
 fn generated_file_has_header_comment() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("AUTO-GENERATED"), "expected AUTO-GENERATED header");
     assert!(out.contains("NavMachine"), "expected machine name in header");
 }
@@ -98,7 +98,7 @@ fn generated_file_has_header_comment() {
 #[test]
 fn generated_file_has_cfg_creusot_imports() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("#[cfg(creusot)]"), "expected #[cfg(creusot)]");
     assert!(out.contains("::creusot_std::prelude::*"), "expected creusot_std import");
     assert!(out.contains("elicitation::Established"), "expected Established import");
@@ -107,7 +107,7 @@ fn generated_file_has_cfg_creusot_imports() {
 #[test]
 fn logic_fn_emitted_with_body() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("#[logic]"), "expected #[logic]");
     assert!(
         out.contains("pub fn nav_consistent"),
@@ -117,19 +117,24 @@ fn logic_fn_emitted_with_body() {
 }
 
 #[test]
-fn logic_fn_uses_todo_when_body_missing() {
+fn logic_fn_errors_when_body_missing() {
     let vsm = vsm_with_body("NavMachine", None, vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let result = generate_creusot_file(&vsm, Path::new("/repo"));
     assert!(
-        out.contains("TODO: creusot_inv_body"),
-        "expected TODO placeholder; got:\n{out}"
+        result.is_err(),
+        "expected Err when creusot_inv_body missing; got Ok"
+    );
+    let msg = result.unwrap_err();
+    assert!(
+        msg.contains("NavMachine"),
+        "error message should name the machine; got:\n{msg}"
     );
 }
 
 #[test]
 fn marker_proof_fn_emitted() {
     let vsm = vsm_with_body("ConnMachine", Some("true"), vec!["begin"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("verify_conn_consistent_prop_creusot"),
         "expected marker fn; got:\n{out}"
@@ -142,7 +147,7 @@ fn marker_proof_fn_emitted() {
 #[test]
 fn wrapper_emitted_per_transition() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go", "back"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("fn go__creusot"), "expected go wrapper; got:\n{out}");
     assert!(out.contains("fn back__creusot"), "expected back wrapper; got:\n{out}");
 }
@@ -150,7 +155,7 @@ fn wrapper_emitted_per_transition() {
 #[test]
 fn wrapper_has_requires_and_ensures() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("#[requires(nav_consistent(&state))]"), "expected requires; got:\n{out}");
     assert!(out.contains("#[ensures(nav_consistent(&result.0))]"), "expected ensures; got:\n{out}");
 }
@@ -158,7 +163,7 @@ fn wrapper_has_requires_and_ensures() {
 #[test]
 fn wrapper_body_calls_through() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("{ go("), "expected call-through body; got:\n{out}");
 }
 
@@ -174,7 +179,7 @@ fn wrapper_with_extra_string_arg() {
             kind: ArgKind::StringArg,
         }],
     );
-    let out = generate_creusot_file(&vsm, Path::new("/repo"));
+    let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("profile_name: String"), "expected String param; got:\n{out}");
     assert!(out.contains("begin(state, proof, profile_name)"), "expected call with extra arg; got:\n{out}");
 }
@@ -207,7 +212,7 @@ fn scan_and_generate_archive_connection_creusot() {
         "connection body should be 'true'"
     );
 
-    let out = generate_creusot_file(conn, &vsm_dir);
+    let out = generate_creusot_file(conn, &vsm_dir).unwrap();
     assert!(out.contains("AUTO-GENERATED"), "missing header");
     assert!(out.contains("#[logic]"), "missing #[logic]");
     assert!(out.contains("pub fn archive_connection_consistent"), "missing logic fn");
@@ -251,7 +256,7 @@ fn scan_and_generate_archive_nav_creusot() {
         "nav body should use pearlite!"
     );
 
-    let out = generate_creusot_file(nav, &vsm_dir);
+    let out = generate_creusot_file(nav, &vsm_dir).unwrap();
     assert!(out.contains("pub fn archive_nav_consistent"), "missing logic fn");
     assert!(out.contains("pearlite!"), "expected pearlite body");
     assert!(out.contains("requires(archive_nav_consistent"), "missing requires");

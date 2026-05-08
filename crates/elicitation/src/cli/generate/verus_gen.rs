@@ -20,27 +20,39 @@ use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, Vsm
 ///
 /// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
 /// `use {crate_name}::*` alongside the Verus stdlib imports.
+///
+/// Returns `Err` with an actionable message when a named invariant is present
+/// but `verus_inv_body` could not be resolved.
 #[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
-pub fn generate_verus_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
+pub fn generate_verus_file(
+    vsm: &VsmDescriptor,
+    crate_root: impl AsRef<Path>,
+) -> Result<String, String> {
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
     let crate_name = find_crate_name(crate_root.as_ref());
 
-    let (inv_fn, consistent_ty, inv_body) = match &vsm.invariant {
-        Some(p) => (
-            p.verus_fn
+    // Resolve invariant — error only when an invariant exists without a body.
+    let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
+        Some(p) => {
+            let fn_name = p
+                .verus_fn
                 .as_deref()
-                .unwrap_or("/* TODO: verus_invariant_fn */"),
-            p.name.as_str(),
-            p.verus_inv_body
-                .as_deref()
-                .unwrap_or("true /* TODO: verus_inv_body */"),
-        ),
-        None => (
-            "/* TODO: verus_invariant_fn */",
-            "/* TODO: ConsistentType */",
-            "true",
-        ),
+                .unwrap_or_else(|| p.name.as_str());
+            let body = p.verus_inv_body.as_deref().ok_or_else(|| {
+                let hint_fn = p.verus_fn.as_deref().unwrap_or("verus_invariant_fn");
+                format!(
+                    "cannot generate Verus companion for {machine}: \
+                     invariant body for `{hint_fn}` not found\n  \
+                     hint: add `verus_inv_body = \"...\"` to #[prop(...)] on `{name}`,\n  \
+                        or define `pub fn {hint_fn}(state: &{state_ty}) -> bool {{ ... }}`\n  \
+                           in a file under the scan root (without #[cfg(verus)] gate)",
+                    name = p.name,
+                )
+            })?;
+            Some((fn_name, p.name.as_str(), body))
+        }
+        None => None,
     };
 
     let mut lines: Vec<String> = Vec::new();
@@ -69,31 +81,33 @@ pub fn generate_verus_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) ->
     lines.push(String::new());
 
     // ── Invariant spec fn ────────────────────────────────────────────────────
-    lines.push("#[cfg(verus)]".to_string());
-    lines.push(format!(
-        "verus! {{ pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }} }}"
-    ));
-
-    // ── Marker proof ─────────────────────────────────────────────────────────
-    lines.push(format!(
-        "verus! {{ pub fn verify_{consistent_lower}_prop_contract() \
-         -> (result: bool) ensures result == true, {{ true }} }}",
-        consistent_lower = to_snake(consistent_ty),
-    ));
-
-    // ── Per-transition assume_specifications ─────────────────────────────────
-    for name in &vsm.transitions {
-        let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
-        lines.push(emit_assume_specification(
-            name,
-            &state_ty,
-            consistent_ty,
-            inv_fn,
-            tf,
+    if let Some((inv_fn, consistent_ty, inv_body)) = inv_parts {
+        lines.push("#[cfg(verus)]".to_string());
+        lines.push(format!(
+            "verus! {{ pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }} }}"
         ));
+
+        // ── Marker proof ─────────────────────────────────────────────────────
+        lines.push(format!(
+            "verus! {{ pub fn verify_{consistent_lower}_prop_contract() \
+             -> (result: bool) ensures result == true, {{ true }} }}",
+            consistent_lower = to_snake(consistent_ty),
+        ));
+
+        // ── Per-transition assume_specifications ─────────────────────────────
+        for name in &vsm.transitions {
+            let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
+            lines.push(emit_assume_specification(
+                name,
+                &state_ty,
+                consistent_ty,
+                inv_fn,
+                tf,
+            ));
+        }
     }
 
-    lines.join("\n") + "\n"
+    Ok(lines.join("\n") + "\n")
 }
 
 // ─── Emitters ────────────────────────────────────────────────────────────────

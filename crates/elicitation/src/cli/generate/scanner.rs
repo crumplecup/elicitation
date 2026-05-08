@@ -6,9 +6,24 @@
 //! every state machine found.
 //!
 //! No crate compilation is required — the scanner reads source text only.
+//!
+//! ## Multi-file scanning
+//!
+//! `scan_vsms` uses a **two-pass** approach so that props and transition
+//! functions may live in any file under the scan root (e.g. `contracts.rs`
+//! + `vsm.rs` side-by-side):
+//!
+//! - **Pass 1**: parse every `.rs` file; build a global `PropDescriptor` map
+//!   and a global free-function map.
+//! - **Pass 2**: match each `#[derive(VerifiedStateMachine)]` struct against
+//!   the global pools using same-file > same-directory > anywhere priority.
+//!
+//! `extract_vsms_from_file` retains its original single-file contract for
+//! unit tests and targeted analysis.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use syn::{Attribute, Expr, ExprLit, File, FnArg, Item, Lit, Meta, MetaList, MetaNameValue};
+use syn::{Attribute, Block, Expr, ExprLit, File, FnArg, Item, Lit, Meta, MetaList, MetaNameValue};
 use walkdir::WalkDir;
 
 // ─── Public types ────────────────────────────────────────────────────────────
@@ -36,7 +51,10 @@ pub enum ArgKind {
     /// The VSM state enum — first non-special parameter.
     State,
     /// `Established<T>` — proof credential; `inner` is the type name of `T`.
-    Proof { inner: String },
+    Proof {
+        /// The inner type `T` from `Established<T>`.
+        inner: String,
+    },
     /// `String` — initialized to `String::new()` in harnesses.
     StringArg,
     /// `Vec<_>` — initialized to `Vec::new()` in harnesses.
@@ -108,46 +126,243 @@ pub struct VsmDescriptor {
 
 /// Scan `root` recursively for Rust source files containing VSMs.
 ///
-/// Returns one `VsmDescriptor` per `#[derive(VerifiedStateMachine)]` struct
-/// found.  Files that cannot be parsed are silently skipped.
+/// Uses a **two-pass** approach: pass 1 builds a global map of all
+/// `PropDescriptor`s and free function bodies; pass 2 matches each
+/// `#[derive(VerifiedStateMachine)]` struct against those maps.
+///
+/// Prop/transition lookup priority: same file → same directory → anywhere
+/// in the tree.  Files that cannot be parsed are silently skipped.
 #[tracing::instrument(skip(root), fields(root = %root.as_ref().display()))]
 pub fn scan_vsms(root: impl AsRef<Path>) -> Vec<VsmDescriptor> {
-    let mut results = Vec::new();
-
-    for entry in WalkDir::new(root)
+    // ── Pass 1: parse every .rs file ────────────────────────────────────────
+    let parsed: Vec<ParsedFile> = WalkDir::new(root.as_ref())
         .follow_links(false)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| {
             e.file_type().is_file() && e.path().extension().map_or(false, |ext| ext == "rs")
         })
-    {
-        let path = entry.path();
-        tracing::debug!(file = %path.display(), "scanning");
-
-        let src = match std::fs::read_to_string(path) {
-            Ok(s) => s,
-            Err(err) => {
-                tracing::warn!(file = %path.display(), error = %err, "read failed");
-                continue;
+        .filter_map(|entry| {
+            let path = entry.into_path();
+            tracing::debug!(file = %path.display(), "scanning");
+            let src = match std::fs::read_to_string(&path) {
+                Ok(s) => s,
+                Err(err) => {
+                    tracing::warn!(file = %path.display(), error = %err, "read failed");
+                    return None;
+                }
+            };
+            match syn::parse_str::<File>(&src) {
+                Ok(syntax) => Some(ParsedFile { path, syntax }),
+                Err(err) => {
+                    tracing::debug!(file = %path.display(), error = %err, "parse failed, skipping");
+                    None
+                }
             }
-        };
+        })
+        .collect();
 
-        let syntax: File = match syn::parse_str(&src) {
-            Ok(f) => f,
-            Err(err) => {
-                tracing::debug!(file = %path.display(), error = %err, "parse failed, skipping");
-                continue;
+    // ── Build global pools ───────────────────────────────────────────────────
+    // props: name → PropDescriptor
+    let mut global_props: HashMap<String, PropDescriptor> = HashMap::new();
+    // fns:   name → (source path, plain bool body string)
+    let mut global_fns: HashMap<String, (PathBuf, String)> = HashMap::new();
+
+    for pf in &parsed {
+        for item in &pf.syntax.items {
+            match item {
+                Item::Struct(s) => {
+                    if let Some(prop) = extract_prop_descriptor(s) {
+                        global_props.entry(prop.name.clone()).or_insert(prop);
+                    }
+                }
+                Item::Fn(f) => {
+                    // Record non-cfg-gated free functions for body extraction.
+                    // A fn is cfg-gated if it has `#[cfg(...)]` on the item.
+                    let cfg_gated = f
+                        .attrs
+                        .iter()
+                        .any(|a| a.path().is_ident("cfg") || a.path().is_ident("cfg_attr"));
+                    if !cfg_gated {
+                        let name = f.sig.ident.to_string();
+                        let body = block_body_string(&f.block);
+                        global_fns
+                            .entry(name)
+                            .or_insert_with(|| (pf.path.clone(), body));
+                    }
+                }
+                _ => {}
             }
-        };
+        }
+    }
 
-        let descs = extract_vsms_from_file(&syntax, path);
-        tracing::debug!(file = %path.display(), found = descs.len(), "machines found");
-        results.extend(descs);
+    // ── Resolve inv bodies in props ─────────────────────────────────────────
+    // Mutate the global_props map: fill in resolved bodies via tiers 2–3.
+    let props_with_resolved: HashMap<String, PropDescriptor> = global_props
+        .into_iter()
+        .map(|(name, mut prop)| {
+            if prop.verus_inv_body.is_none() {
+                if let Some(fn_name) = &prop.verus_fn {
+                    prop.verus_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
+                }
+            }
+            if prop.creusot_inv_body.is_none() {
+                if let Some(fn_name) = &prop.creusot_fn {
+                    prop.creusot_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
+                }
+            }
+            (name, prop)
+        })
+        .collect();
+
+    // ── Pass 2: extract VSMs, look up from global pools ─────────────────────
+    let mut results: Vec<VsmDescriptor> = Vec::new();
+
+    for pf in &parsed {
+        for item in &pf.syntax.items {
+            if let Item::Struct(s) = item {
+                if !has_derive(s, "VerifiedStateMachine") {
+                    continue;
+                }
+                let machine = s.ident.to_string();
+                let transitions = match extract_vsm_transitions(s) {
+                    Some(t) => t,
+                    None => continue,
+                };
+
+                let consistent_name = machine.replace("Machine", "Consistent");
+                let invariant = props_with_resolved.get(&consistent_name).cloned();
+
+                // Transition fn lookup: same-file > same-dir > global tree.
+                let transition_fns = resolve_transition_fns(&transitions, &pf.path, &parsed);
+
+                tracing::debug!(
+                    machine = %machine,
+                    transitions = transitions.len(),
+                    transition_fns = transition_fns.len(),
+                    has_invariant = invariant.is_some(),
+                    "VSM found (multi-file)"
+                );
+
+                results.push(VsmDescriptor {
+                    machine,
+                    transitions,
+                    transition_fns,
+                    invariant,
+                    source_file: pf.path.clone(),
+                });
+            }
+        }
     }
 
     tracing::info!(total = results.len(), "scan complete");
     results
+}
+
+// ─── Multi-file resolution helpers ──────────────────────────────────────────
+
+struct ParsedFile {
+    path: PathBuf,
+    syntax: File,
+}
+
+/// Resolve transition functions using same-file > same-directory > global priority.
+fn resolve_transition_fns(
+    transitions: &[String],
+    vsm_path: &Path,
+    all_files: &[ParsedFile],
+) -> Vec<TransitionFn> {
+    let vsm_dir = vsm_path.parent();
+
+    // Collect candidates from each scope tier.
+    let scope_files: Vec<&ParsedFile> = all_files
+        .iter()
+        .filter(|pf| pf.path == vsm_path)
+        .chain(all_files.iter().filter(|pf| {
+            pf.path != vsm_path && pf.path.parent() == vsm_dir
+        }))
+        .chain(all_files.iter().filter(|pf| {
+            pf.path != vsm_path && pf.path.parent() != vsm_dir
+        }))
+        .collect();
+
+    let mut found: HashMap<String, TransitionFn> = HashMap::new();
+    for pf in scope_files {
+        for item in &pf.syntax.items {
+            if let Item::Fn(f) = item {
+                let name = f.sig.ident.to_string();
+                if transitions.contains(&name) && !found.contains_key(&name) {
+                    let args = classify_fn_args(&f.sig.inputs);
+                    found.insert(name.clone(), TransitionFn { name, args });
+                }
+            }
+        }
+        if found.len() == transitions.len() {
+            break;
+        }
+    }
+
+    // Return in declaration order from transitions list.
+    let mut result: Vec<TransitionFn> = found.into_values().collect();
+    result.sort_by_key(|tf| {
+        transitions
+            .iter()
+            .position(|n| n == &tf.name)
+            .unwrap_or(usize::MAX)
+    });
+    result
+}
+
+/// Resolve an invariant body using the tiered strategy:
+///
+/// 1. Look up `fn_name` in the global non-cfg-gated fn map → extract body.
+/// 2. If not found, look for a cfg-gated fn with that name → emit callthrough.
+/// 3. Return `None` (caller will hard-error).
+fn resolve_inv_body(
+    fn_name: &str,
+    global_fns: &HashMap<String, (PathBuf, String)>,
+    all_files: &[ParsedFile],
+) -> Option<String> {
+    // Tier 2: non-gated fn with extracted body.
+    if let Some((_path, body)) = global_fns.get(fn_name) {
+        tracing::debug!(fn_name, "extracted inv body from source fn");
+        return Some(body.clone());
+    }
+
+    // Tier 3: cfg-gated fn exists → emit callthrough `{fn_name}(state)`.
+    let gated_exists = all_files.iter().any(|pf| {
+        pf.syntax.items.iter().any(|item| {
+            if let Item::Fn(f) = item {
+                if f.sig.ident == fn_name {
+                    return f
+                        .attrs
+                        .iter()
+                        .any(|a| a.path().is_ident("cfg") || a.path().is_ident("cfg_attr"));
+                }
+            }
+            false
+        })
+    });
+
+    if gated_exists {
+        tracing::debug!(fn_name, "inv fn is cfg-gated, emitting callthrough");
+        return Some(format!("{fn_name}(state)"));
+    }
+
+    None
+}
+
+/// Extract the body of a `syn::Block` as a trimmed string (without braces).
+fn block_body_string(block: &Block) -> String {
+    use quote::ToTokens;
+    let ts = block.stmts.iter().map(|s| s.to_token_stream()).fold(
+        proc_macro2::TokenStream::new(),
+        |mut acc, t| {
+            acc.extend(t);
+            acc
+        },
+    );
+    ts.to_string()
 }
 
 // ─── Internal helpers ────────────────────────────────────────────────────────

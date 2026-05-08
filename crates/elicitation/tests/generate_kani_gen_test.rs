@@ -91,7 +91,7 @@ fn to_snake(s: &str) -> String {
 #[test]
 fn generated_file_has_header_comment() {
     let vsm = minimal_vsm("NavMachine");
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("AUTO-GENERATED"),
         "expected AUTO-GENERATED header, got:\n{out}"
@@ -105,7 +105,7 @@ fn generated_file_has_header_comment() {
 #[test]
 fn generated_file_has_marker_proof() {
     let vsm = minimal_vsm("NavMachine");
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("verify_nav_consistent_prop_marker"),
         "expected marker fn, got:\n{out}"
@@ -116,7 +116,7 @@ fn generated_file_has_marker_proof() {
 #[test]
 fn generated_file_has_cfg_kani_guard() {
     let vsm = minimal_vsm("NavMachine");
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("#[cfg(kani)]"),
         "expected #[cfg(kani)] guard, got:\n{out}"
@@ -127,7 +127,7 @@ fn generated_file_has_cfg_kani_guard() {
 fn minimal_fallback_harness_emitted_without_transition_fns() {
     let vsm = minimal_vsm("NavMachine");
     // transition_fns is empty → should emit minimal harness
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("do_thing__kani_closure"),
         "expected closure fn, got:\n{out}"
@@ -147,7 +147,7 @@ fn minimal_fallback_harness_emitted_without_transition_fns() {
 #[test]
 fn full_harness_emitted_with_known_transition_fn() {
     let vsm = vsm_with_transition("ConnMachine", "begin_connect", vec![]);
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("begin_connect__kani_closure"),
         "expected closure fn"
@@ -177,7 +177,7 @@ fn extra_string_arg_emitted_correctly() {
             kind: ArgKind::StringArg,
         }],
     );
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("::std::string::String::new()"),
         "expected String::new() for StringArg, got:\n{out}"
@@ -195,7 +195,7 @@ fn extra_option_arg_emitted_correctly() {
             kind: ArgKind::OptionArg,
         }],
     );
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("::core::option::Option::None"),
         "expected None for OptionArg, got:\n{out}"
@@ -213,7 +213,7 @@ fn extra_other_arg_emitted_with_kani_depth0() {
             kind: ArgKind::Other,
         }],
     );
-    let out = generate_kani_file(&vsm, Path::new("/repo"));
+    let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("<NavTree as ::elicitation::KaniCompose>::kani_depth0()"),
         "expected kani_depth0 for Other arg, got:\n{out}"
@@ -241,7 +241,7 @@ fn scan_and_generate_archive_nav() {
         .find(|v| v.machine == "ArchiveNavMachine")
         .expect("ArchiveNavMachine should be found");
 
-    let out = generate_kani_file(nav, &vsm_dir);
+    let out = generate_kani_file(nav, &vsm_dir).unwrap();
 
     // High-level structural checks — not a byte-for-byte diff.
     assert!(out.contains("AUTO-GENERATED"), "missing header");

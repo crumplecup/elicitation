@@ -16,23 +16,36 @@ use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, Vsm
 
 /// Generate the full Kani companion file content for `vsm`.
 ///
+/// Generate the full Kani companion file content for `vsm`.
+///
 /// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
 /// a `use {crate_name}::*` wildcard import alongside `elicitation::Established`.
 ///
-/// Returns a formatted Rust source string (not yet written to disk).
+/// Returns `Err` with an actionable message when a named invariant is present
+/// but its `kani_invariant_fn` attribute is missing.
 #[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
-pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
+pub fn generate_kani_file(
+    vsm: &VsmDescriptor,
+    crate_root: impl AsRef<Path>,
+) -> Result<String, String> {
     let machine = &vsm.machine;
-    let inv_fn = vsm
-        .invariant
-        .as_ref()
-        .and_then(|p| p.kani_fn.as_deref())
-        .unwrap_or("/* TODO: kani_invariant_fn */");
-    let consistent_ty = vsm
-        .invariant
-        .as_ref()
-        .map(|p| p.name.as_str())
-        .unwrap_or("/* TODO: ConsistentType */");
+
+    // Resolve invariant — error only when an invariant exists without kani_fn.
+    let (inv_fn, consistent_ty) = match &vsm.invariant {
+        Some(p) => {
+            let fn_name = p.kani_fn.as_deref().ok_or_else(|| {
+                format!(
+                    "cannot generate Kani companion for {machine}: \
+                     invariant prop `{name}` has no `kani_invariant_fn` attribute\n  \
+                     hint: add `kani_invariant_fn = \"<fn_name>\"` to #[prop(...)] on `{name}`",
+                    name = p.name,
+                )
+            })?;
+            (fn_name, p.name.as_str())
+        }
+        None => ("", ""),
+    };
+    let has_invariant = !consistent_ty.is_empty();
 
     let crate_name = find_crate_name(crate_root.as_ref());
 
@@ -57,15 +70,17 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> 
     out.push('\n');
 
     // ── Marker proof ────────────────────────────────────────────────────────
-    out.push_str(&format!(
-        "#[cfg(kani)]\n\
-         #[kani::proof]\n\
-         fn verify_{consistent_lower}_prop_marker() {{\n\
-             let established: bool = true;\n\
-             assert!(established);\n\
-         }}\n",
-        consistent_lower = to_snake(consistent_ty)
-    ));
+    if has_invariant {
+        out.push_str(&format!(
+            "#[cfg(kani)]\n\
+             #[kani::proof]\n\
+             fn verify_{consistent_lower}_prop_marker() {{\n\
+                 let established: bool = true;\n\
+                 assert!(established);\n\
+             }}\n",
+            consistent_lower = to_snake(consistent_ty)
+        ));
+    }
 
     // ── per-transition harnesses ─────────────────────────────────────────────
     if vsm.transition_fns.is_empty() {
@@ -78,22 +93,23 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> 
                 &state_ty,
                 consistent_ty,
                 inv_fn,
+                has_invariant,
             ));
         }
     } else {
         for tfn in &vsm.transition_fns {
             out.push('\n');
-            out.push_str(&emit_harness(tfn, consistent_ty, inv_fn));
+            out.push_str(&emit_harness(tfn, inv_fn, has_invariant));
         }
     }
 
-    out
+    Ok(out)
 }
 
 // ─── Harness emitters ─────────────────────────────────────────────────────────
 
 /// Emit a full `proof_for_contract` harness for a `TransitionFn` with known args.
-fn emit_harness(tfn: &TransitionFn, consistent_ty: &str, inv_fn: &str) -> String {
+fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String {
     let fn_name = &tfn.name;
     let closure_name = format!("{fn_name}__kani_closure");
 
@@ -111,7 +127,9 @@ fn emit_harness(tfn: &TransitionFn, consistent_ty: &str, inv_fn: &str) -> String
     lines.push(format!(
         "    let {state_pat}: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth2();"
     ));
-    lines.push(format!("    ::kani::assume({inv_fn}(&{state_pat}));"));
+    if has_invariant {
+        lines.push(format!("    ::kani::assume({inv_fn}(&{state_pat}));"));
+    }
     lines.push(format!("    ::std::mem::forget({state_pat});"));
 
     // Shadow 2: depth-0 state.
@@ -179,9 +197,28 @@ fn emit_minimal_harness(
     state_ty: &str,
     consistent_ty: &str,
     inv_fn: &str,
+    has_invariant: bool,
 ) -> String {
     let closure_name = format!("{fn_name}__kani_closure");
-    let lines = [
+    let assume_line = if has_invariant {
+        format!("    ::kani::assume({inv_fn}(&_state));")
+    } else {
+        String::new()
+    };
+    let (proof_lines, call_arg) = if has_invariant {
+        (
+            vec![
+                format!("    let proof: Established<{consistent_ty}> = {{"),
+                format!("        let __cred = {consistent_ty}::kani_proof_credential();"),
+                "        ::elicitation::Established::prove(&__cred)".to_string(),
+                "    };".to_string(),
+            ],
+            ", proof".to_string(),
+        )
+    } else {
+        (vec![], String::new())
+    };
+    let mut lines = vec![
         format!("// TODO: verify argument types for {fn_name} and regenerate"),
         "#[allow(unexpected_cfgs)]".to_string(),
         "#[cfg(kani)]".to_string(),
@@ -190,19 +227,16 @@ fn emit_minimal_harness(
         format!(
             "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth2();"
         ),
-        format!("    ::kani::assume({inv_fn}(&_state));"),
+        assume_line,
         "    ::std::mem::forget(_state);".to_string(),
         format!(
             "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth0();"
         ),
-        format!("    let proof: Established<{consistent_ty}> = {{"),
-        format!("        let __cred = {consistent_ty}::kani_proof_credential();"),
-        "        ::elicitation::Established::prove(&__cred)".to_string(),
-        "    };".to_string(),
-        format!("    let _result = {fn_name}(_state, proof);"),
-        "    ::std::mem::forget(_result);".to_string(),
-        "}".to_string(),
     ];
+    lines.extend(proof_lines);
+    lines.push(format!("    let _result = {fn_name}(_state{call_arg});"));
+    lines.push("    ::std::mem::forget(_result);".to_string());
+    lines.push("}".to_string());
     lines.join("\n") + "\n"
 }
 

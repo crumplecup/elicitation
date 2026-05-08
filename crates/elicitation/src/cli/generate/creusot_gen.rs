@@ -20,27 +20,39 @@ use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, Vsm
 ///
 /// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
 /// `use {crate_name}::*` alongside the Creusot stdlib imports.
+///
+/// Returns `Err` with an actionable message when a named invariant is present
+/// but `creusot_inv_body` could not be resolved.
 #[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
-pub fn generate_creusot_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
+pub fn generate_creusot_file(
+    vsm: &VsmDescriptor,
+    crate_root: impl AsRef<Path>,
+) -> Result<String, String> {
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
     let crate_name = find_crate_name(crate_root.as_ref());
 
-    let (inv_fn, consistent_ty, inv_body) = match &vsm.invariant {
-        Some(p) => (
-            p.creusot_fn
+    // Resolve invariant — error only when an invariant exists without a body.
+    let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
+        Some(p) => {
+            let fn_name = p
+                .creusot_fn
                 .as_deref()
-                .unwrap_or("/* TODO: creusot_invariant_fn */"),
-            p.name.as_str(),
-            p.creusot_inv_body
-                .as_deref()
-                .unwrap_or("true /* TODO: creusot_inv_body */"),
-        ),
-        None => (
-            "/* TODO: creusot_invariant_fn */",
-            "/* TODO: ConsistentType */",
-            "true",
-        ),
+                .unwrap_or_else(|| p.name.as_str());
+            let body = p.creusot_inv_body.as_deref().ok_or_else(|| {
+                let hint_fn = p.creusot_fn.as_deref().unwrap_or("creusot_invariant_fn");
+                format!(
+                    "cannot generate Creusot companion for {machine}: \
+                     invariant body for `{hint_fn}` not found\n  \
+                     hint: add `creusot_inv_body = \"...\"` to #[prop(...)] on `{name}`,\n  \
+                        or define `pub fn {hint_fn}(state: &{state_ty}) -> bool {{ ... }}`\n  \
+                           in a file under the scan root (without #[cfg(creusot)] gate)",
+                    name = p.name,
+                )
+            })?;
+            Some((fn_name, p.name.as_str(), body))
+        }
+        None => None,
     };
 
     let mut lines: Vec<String> = Vec::new();
@@ -68,32 +80,34 @@ pub fn generate_creusot_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) 
     }
     lines.push(String::new());
 
-    // ── Logic invariant fn ──────────────────────────────────────────────────
-    lines.push("#[cfg(creusot)]".to_string());
-    lines.push("#[logic]".to_string());
-    lines.push(format!(
-        "pub fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }}"
-    ));
-    lines.push(String::new());
+    // ── Logic invariant fn + wrappers ────────────────────────────────────────
+    if let Some((inv_fn, consistent_ty, inv_body)) = inv_parts {
+        lines.push("#[cfg(creusot)]".to_string());
+        lines.push("#[logic]".to_string());
+        lines.push(format!(
+            "pub fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }}"
+        ));
+        lines.push(String::new());
 
-    // ── Marker proof fn ─────────────────────────────────────────────────────
-    let snake = to_snake(consistent_ty);
-    lines.push("#[cfg(creusot)]".to_string());
-    lines.push("#[requires(true)]".to_string());
-    lines.push("#[ensures(result)]".to_string());
-    lines.push("#[trusted]".to_string());
-    lines.push(format!(
-        "pub fn verify_{snake}_prop_creusot() -> bool {{ true }}"
-    ));
-    lines.push(String::new());
+        // ── Marker proof fn ──────────────────────────────────────────────────
+        let snake = to_snake(consistent_ty);
+        lines.push("#[cfg(creusot)]".to_string());
+        lines.push("#[requires(true)]".to_string());
+        lines.push("#[ensures(result)]".to_string());
+        lines.push("#[trusted]".to_string());
+        lines.push(format!(
+            "pub fn verify_{snake}_prop_creusot() -> bool {{ true }}"
+        ));
+        lines.push(String::new());
 
-    // ── Per-transition call-through wrappers ─────────────────────────────────
-    for name in &vsm.transitions {
-        let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
-        lines.push(emit_creusot_wrapper(name, &state_ty, consistent_ty, inv_fn, tf));
+        // ── Per-transition call-through wrappers ─────────────────────────────
+        for name in &vsm.transitions {
+            let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
+            lines.push(emit_creusot_wrapper(name, &state_ty, consistent_ty, inv_fn, tf));
+        }
     }
 
-    lines.join("\n") + "\n"
+    Ok(lines.join("\n") + "\n")
 }
 
 // ─── Emitters ────────────────────────────────────────────────────────────────
@@ -107,7 +121,7 @@ fn emit_creusot_wrapper(
     tf: Option<&TransitionFn>,
 ) -> String {
     let (params, call_args) = match tf {
-        Some(tf) => (emit_params(tf, state_ty, consistent_ty), emit_call_args(tf)),
+        Some(tf) => (emit_params(tf, state_ty), emit_call_args(tf)),
         None => (
             format!("state: {state_ty}, proof: Established<{consistent_ty}>"),
             "state, proof".to_string(),
@@ -128,7 +142,7 @@ fn emit_creusot_wrapper(
 }
 
 /// Emit function parameter list: `state: State, proof: Established<T>, extra: Type, ...`
-fn emit_params(tf: &TransitionFn, state_ty: &str, consistent_ty: &str) -> String {
+fn emit_params(tf: &TransitionFn, state_ty: &str) -> String {
     let mut parts: Vec<String> = Vec::new();
     for arg in &tf.args {
         let (name, ty) = match &arg.kind {
