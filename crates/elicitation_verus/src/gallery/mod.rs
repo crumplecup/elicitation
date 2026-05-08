@@ -15,6 +15,9 @@
 //! | [`level8`] | `#[verifier::type_invariant]` on private-field struct |
 //! | [`level9`] | `assume_specification` for external functions |
 //! | [`level10`] | Proof composition — chaining two ghost-token transitions |
+//! | [`level11`] | Leaf `proof fn` lemmas — per-transition invariant atoms |
+//! | [`level12`] | Composition dispatch — O(n) leaves + O(1) composition |
+//! | [`level13`] | `assume_specification` in the multi-tool trust model |
 
 pub mod level1;
 pub mod level2;
@@ -26,3 +29,6 @@ pub mod level7;
 pub mod level8;
 pub mod level9;
 pub mod level10;
+pub mod level11;
+pub mod level12;
+pub mod level13;
