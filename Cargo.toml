@@ -168,6 +168,7 @@ prettyplease = "0.2"
 toml = "1"
 toml_edit = { version = "0.25", features = ["default"] }
 toml_datetime = { version = "1.1", features = ["serde"] }
+walkdir = "2"
 
 # ── Tracing ───────────────────────────────────────────────────────────────────
 tracing = "0.1"

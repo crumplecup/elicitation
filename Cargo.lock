@@ -4227,6 +4227,7 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "uuid",
+ "walkdir",
  "wgpu 29.0.3",
  "winit",
  "wkb",

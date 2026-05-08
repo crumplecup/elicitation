@@ -2,6 +2,8 @@
 //!
 //! Provides verification orchestration, analysis, and utilities.
 
+pub mod generate;
+
 use clap::{Parser, Subcommand};
 use derive_getters::Getters;
 use std::path::PathBuf;
@@ -45,6 +47,13 @@ pub enum Commands {
         /// Action to perform
         #[command(subcommand)]
         action: GraphAction,
+    },
+
+    /// Scan source files and generate proof companion files
+    Generate {
+        /// Target verifier(s) to generate for
+        #[command(subcommand)]
+        target: GenerateTarget,
     },
 }
 
@@ -194,6 +203,61 @@ pub enum GraphAction {
     },
 }
 
+/// Proof generation targets.
+#[derive(Debug, Clone, Subcommand)]
+pub enum GenerateTarget {
+    /// Generate Kani proof harnesses for all VSMs found in `crate_path`.
+    Kani {
+        /// Root directory to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory for generated files (defaults to stdout preview).
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Generate Verus companion proofs for all VSMs found in `crate_path`.
+    Verus {
+        /// Root directory to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory for generated files (defaults to stdout preview).
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Generate Creusot companions for all VSMs found in `crate_path`.
+    Creusot {
+        /// Root directory to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory for generated files (defaults to stdout preview).
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Generate all verifier companions for all VSMs found in `crate_path`.
+    All {
+        /// Root directory to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory for generated files (defaults to stdout preview).
+        #[arg(short, long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Scan `crate_path` and list discovered VSMs without generating files.
+    Scan {
+        /// Root directory to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+    },
+}
+
 /// Execute the CLI command.
 #[tracing::instrument(skip(cli))]
 pub fn execute(cli: Cli) -> anyhow::Result<()> {
@@ -204,6 +268,7 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
         Commands::Verus { action } => handle_verus(action),
         Commands::Creusot { action } => handle_creusot(action),
         Commands::Graph { action } => handle_graph(action),
+        Commands::Generate { target } => handle_generate(target),
     }
 }
 
@@ -436,4 +501,57 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
             Ok(())
         }
     }
+}
+
+/// Handle `elicitation generate` subcommands.
+#[tracing::instrument(skip(target))]
+fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
+    use crate::cli::generate::scan_vsms;
+
+    let (crate_path, label) = match target {
+        GenerateTarget::Scan { crate_path } => {
+            let vsms = scan_vsms(crate_path);
+            if vsms.is_empty() {
+                println!("No VerifiedStateMachine structs found in {}", crate_path.display());
+            } else {
+                println!("Found {} VSM(s):", vsms.len());
+                for vsm in &vsms {
+                    println!("  {} ({} transitions)", vsm.machine, vsm.transitions.len());
+                    for t in &vsm.transitions {
+                        println!("    - {t}");
+                    }
+                    if let Some(inv) = &vsm.invariant {
+                        println!(
+                            "  invariant: {} (kani={}, verus={})",
+                            inv.name,
+                            inv.kani_fn.as_deref().unwrap_or("?"),
+                            inv.verus_fn.as_deref().unwrap_or("?"),
+                        );
+                    }
+                }
+            }
+            return Ok(());
+        }
+        GenerateTarget::Kani { crate_path, .. } => (crate_path, "kani"),
+        GenerateTarget::Verus { crate_path, .. } => (crate_path, "verus"),
+        GenerateTarget::Creusot { crate_path, .. } => (crate_path, "creusot"),
+        GenerateTarget::All { crate_path, .. } => (crate_path, "all"),
+    };
+
+    let vsms = scan_vsms(crate_path);
+    tracing::info!(target = label, vsms = vsms.len(), "generating proofs");
+
+    // Phase 2+: generators will be called here.
+    // For now, print a summary so the scan result is visible.
+    println!(
+        "Scanned {}: found {} VSM(s). Generator for '{}' not yet implemented.",
+        crate_path.display(),
+        vsms.len(),
+        label,
+    );
+    for vsm in &vsms {
+        println!("  {}", vsm.machine);
+    }
+
+    Ok(())
 }

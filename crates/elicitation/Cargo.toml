@@ -76,6 +76,7 @@ proc-macro2 = { workspace = true }
 quote = { workspace = true }
 prettyplease = { workspace = true }
 syn = { workspace = true }
+walkdir = { workspace = true, optional = true }
 
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
@@ -186,7 +187,7 @@ clap-types = ["dep:clap"]
 sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
-cli = ["dep:clap", "clap-types", "csv-types", "chrono", "shellexpand", "dirs"]
+cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
