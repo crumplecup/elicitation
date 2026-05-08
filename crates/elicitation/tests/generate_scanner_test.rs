@@ -229,3 +229,165 @@ fn transition_fn_string_and_option_args() {
     assert_eq!(extra[0].kind, ArgKind::StringArg);
     assert_eq!(extra[1].kind, ArgKind::OptionArg);
 }
+
+// ─── Multi-file scan_vsms tests ──────────────────────────────────────────────
+
+#[test]
+fn scan_vsms_finds_prop_in_separate_file() {
+    use elicitation::cli::generate::scan_vsms;
+    use std::fs;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+
+    // contracts.rs: the Prop lives here, NOT in vsm.rs
+    fs::write(
+        dir.path().join("contracts.rs"),
+        r#"
+        #[derive(Prop)]
+        #[prop(
+            kani_invariant_fn    = "nav_consistent",
+            verus_invariant_fn   = "nav_consistent",
+        )]
+        pub struct NavConsistent;
+        "#,
+    )
+    .unwrap();
+
+    // vsm.rs: the machine + transitions live here
+    fs::write(
+        dir.path().join("vsm.rs"),
+        r#"
+        pub fn begin(_state: NavState, proof: Established<NavConsistent>)
+            -> (NavState, Established<NavConsistent>) { (_state, proof) }
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [begin])]
+        pub struct NavMachine;
+        "#,
+    )
+    .unwrap();
+
+    let vsms = scan_vsms(dir.path());
+    assert_eq!(vsms.len(), 1, "expected 1 VSM; got {}", vsms.len());
+    let vsm = &vsms[0];
+    assert_eq!(vsm.machine, "NavMachine");
+
+    let inv = vsm.invariant.as_ref().expect("invariant should be found");
+    assert_eq!(inv.name, "NavConsistent");
+    assert_eq!(inv.kani_fn.as_deref(), Some("nav_consistent"));
+
+    assert_eq!(vsm.transition_fns.len(), 1);
+    assert_eq!(vsm.transition_fns[0].name, "begin");
+}
+
+#[test]
+fn scan_vsms_extracts_inv_body_from_plain_fn() {
+    use elicitation::cli::generate::scan_vsms;
+    use std::fs;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+
+    fs::write(
+        dir.path().join("contracts.rs"),
+        r#"
+        #[derive(Prop)]
+        #[prop(verus_invariant_fn = "nav_consistent")]
+        pub struct NavConsistent;
+
+        pub fn nav_consistent(state: &NavState) -> bool {
+            state.valid()
+        }
+        "#,
+    )
+    .unwrap();
+
+    fs::write(
+        dir.path().join("vsm.rs"),
+        r#"
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [go])]
+        pub struct NavMachine;
+        "#,
+    )
+    .unwrap();
+
+    let vsms = scan_vsms(dir.path());
+    assert_eq!(vsms.len(), 1);
+    let inv = vsms[0].invariant.as_ref().unwrap();
+    let body = inv.verus_inv_body.as_deref().expect("body should be resolved");
+    assert!(
+        body.contains("valid"),
+        "body should contain extracted source; got: {body}"
+    );
+}
+
+#[test]
+fn scan_vsms_emits_callthrough_for_cfg_gated_fn() {
+    use elicitation::cli::generate::scan_vsms;
+    use std::fs;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+
+    fs::write(
+        dir.path().join("vsm.rs"),
+        r#"
+        #[derive(Prop)]
+        #[prop(verus_invariant_fn = "check_consistent")]
+        pub struct CheckConsistent;
+
+        #[cfg(kani)]
+        pub fn check_consistent(state: &CheckState) -> bool {
+            state.ok()
+        }
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [run])]
+        pub struct CheckMachine;
+        "#,
+    )
+    .unwrap();
+
+    let vsms = scan_vsms(dir.path());
+    assert_eq!(vsms.len(), 1);
+    let inv = vsms[0].invariant.as_ref().unwrap();
+    let body = inv.verus_inv_body.as_deref().expect("callthrough should be set");
+    assert_eq!(
+        body, "check_consistent(state)",
+        "expected callthrough; got: {body}"
+    );
+}
+
+#[test]
+fn scan_vsms_returns_none_body_when_fn_not_found() {
+    use elicitation::cli::generate::scan_vsms;
+    use std::fs;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+
+    fs::write(
+        dir.path().join("vsm.rs"),
+        r#"
+        #[derive(Prop)]
+        #[prop(verus_invariant_fn = "ghost_fn")]
+        pub struct GhostConsistent;
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [act])]
+        pub struct GhostMachine;
+        "#,
+    )
+    .unwrap();
+
+    let vsms = scan_vsms(dir.path());
+    assert_eq!(vsms.len(), 1);
+    let inv = vsms[0].invariant.as_ref().unwrap();
+    assert!(
+        inv.verus_inv_body.is_none(),
+        "body should be None when fn not found; got {:?}",
+        inv.verus_inv_body
+    );
+}
