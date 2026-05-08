@@ -12,18 +12,19 @@
 
 use std::path::Path;
 
-use crate::cli::generate::scanner::{ArgKind, TransitionFn, VsmDescriptor};
+use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, VsmDescriptor}};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /// Generate the full Creusot companion file content for `vsm`.
 ///
-/// `crate_root` is used only for the module path comment; the generated
-/// file uses `use elicit_server::...::*` wildcard imports.
-#[tracing::instrument(skip(vsm, _crate_root), fields(machine = %vsm.machine))]
-pub fn generate_creusot_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>) -> String {
+/// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
+/// `use {crate_name}::*` alongside the Creusot stdlib imports.
+#[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
+pub fn generate_creusot_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
+    let crate_name = find_crate_name(crate_root.as_ref());
 
     let (inv_fn, consistent_ty, inv_body) = match &vsm.invariant {
         Some(p) => (
@@ -57,13 +58,10 @@ pub fn generate_creusot_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>)
 
     // ── Imports ─────────────────────────────────────────────────────────────
     for import in &[
-        "::creusot_std::prelude::*",
-        "elicitation::Established",
-        "elicitation::kani_label",
-        "elicit_server::archive::vsm::*",
-        "elicit_server::archive::types::*",
-        "elicit_server::archive::display::*",
-        "elicit_server::archive::nav_tree::*",
+        "::creusot_std::prelude::*".to_string(),
+        "elicitation::Established".to_string(),
+        "elicitation::kani_label".to_string(),
+        format!("{crate_name}::*"),
     ] {
         lines.push("#[cfg(creusot)]".to_string());
         lines.push(format!("use {import};"));

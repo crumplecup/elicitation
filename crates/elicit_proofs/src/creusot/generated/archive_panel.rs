@@ -12,13 +12,7 @@ use elicitation::Established;
 #[cfg(creusot)]
 use elicitation::kani_label;
 #[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
-#[cfg(creusot)]
-use elicit_server::archive::display::*;
-#[cfg(creusot)]
-use elicit_server::archive::nav_tree::*;
+use elicit_server::*;
 
 #[cfg(creusot)]
 #[logic]

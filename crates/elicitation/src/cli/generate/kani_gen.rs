@@ -10,19 +10,18 @@
 
 use std::path::Path;
 
-use crate::cli::generate::scanner::{ArgKind, TransitionFn, VsmDescriptor};
+use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, VsmDescriptor}};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /// Generate the full Kani companion file content for `vsm`.
 ///
-/// `_crate_root` is accepted for API symmetry with the Verus/Creusot generators
-/// but is not used; imports are emitted as the full `elicit_server::archive::*`
-/// set required by the archive proof crate.
+/// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
+/// a `use {crate_name}::*` wildcard import alongside `elicitation::Established`.
 ///
 /// Returns a formatted Rust source string (not yet written to disk).
-#[tracing::instrument(skip(vsm, _crate_root), fields(machine = %vsm.machine))]
-pub fn generate_kani_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>) -> String {
+#[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
+pub fn generate_kani_file(vsm: &VsmDescriptor, crate_root: impl AsRef<Path>) -> String {
     let machine = &vsm.machine;
     let inv_fn = vsm
         .invariant
@@ -34,6 +33,8 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>) ->
         .as_ref()
         .map(|p| p.name.as_str())
         .unwrap_or("/* TODO: ConsistentType */");
+
+    let crate_name = find_crate_name(crate_root.as_ref());
 
     let mut out = String::new();
 
@@ -48,11 +49,8 @@ pub fn generate_kani_file(vsm: &VsmDescriptor, _crate_root: impl AsRef<Path>) ->
 
     // ── Imports ─────────────────────────────────────────────────────────────
     for import in &[
-        "elicitation::Established",
-        "elicit_server::archive::vsm::*",
-        "elicit_server::archive::types::*",
-        "elicit_server::archive::display::*",
-        "elicit_server::archive::nav_tree::*",
+        "elicitation::Established".to_string(),
+        format!("{crate_name}::*"),
     ] {
         out.push_str(&format!("#[cfg(kani)]\nuse {import};\n"));
     }

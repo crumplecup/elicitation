@@ -12,13 +12,7 @@ use ::verus_builtin_macros::verus;
 #[cfg(verus)]
 use elicitation::Established;
 #[cfg(verus)]
-use elicit_server::archive::vsm::*;
-#[cfg(verus)]
-use elicit_server::archive::types::*;
-#[cfg(verus)]
-use elicit_server::archive::display::*;
-#[cfg(verus)]
-use elicit_server::archive::nav_tree::*;
+use elicit_server::*;
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_panel_consistent(state: &ArchivePanelState) -> bool { match *state { ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(), _ => true, } } }

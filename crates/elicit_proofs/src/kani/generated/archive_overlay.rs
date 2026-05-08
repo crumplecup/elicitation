@@ -6,13 +6,7 @@
 #[cfg(kani)]
 use elicitation::Established;
 #[cfg(kani)]
-use elicit_server::archive::vsm::*;
-#[cfg(kani)]
-use elicit_server::archive::types::*;
-#[cfg(kani)]
-use elicit_server::archive::display::*;
-#[cfg(kani)]
-use elicit_server::archive::nav_tree::*;
+use elicit_server::*;
 
 #[cfg(kani)]
 #[kani::proof]
