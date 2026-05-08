@@ -24,6 +24,7 @@ fn vsm_with_body(machine: &str, body: Option<&str>, transitions: Vec<&str>) -> V
             verus_fn: Some(inv_fn.clone()),
             creusot_fn: None,
             verus_inv_body: body.map(|s| s.to_string()),
+            creusot_inv_body: None,
         }),
         transition_fns: vec![],
         source_file: PathBuf::from("src/vsm/thing.rs"),
@@ -66,6 +67,7 @@ fn vsm_with_transition_and_body(
             verus_fn: Some(inv_fn.clone()),
             creusot_fn: None,
             verus_inv_body: body.map(|s| s.to_string()),
+            creusot_inv_body: None,
         }),
         transition_fns: vec![TransitionFn {
             name: transition.to_string(),

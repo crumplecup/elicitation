@@ -506,7 +506,7 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 /// Handle `elicitation generate` subcommands.
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
-    use crate::cli::generate::{kani_gen, scan_vsms, verus_gen};
+    use crate::cli::generate::{creusot_gen, kani_gen, scan_vsms, verus_gen};
     use std::io::Write;
 
     let (crate_path, label) = match target {
@@ -628,8 +628,16 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
         }
     }
 
-    if matches!(label, "creusot") {
-        println!("Generator for 'creusot' not yet implemented (Phase 4).");
+    if matches!(label, "creusot" | "all") {
+        let out_dir = match target {
+            GenerateTarget::Creusot { out, .. } | GenerateTarget::All { out, .. } => out.as_deref(),
+            _ => None,
+        };
+        for vsm in &vsms {
+            let content = creusot_gen::generate_creusot_file(vsm, crate_path);
+            let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
+            emit_content(&content, &filename, out_dir)?;
+        }
     }
 
     Ok(())

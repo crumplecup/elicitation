@@ -11,6 +11,7 @@
 //! - `creusot` — Creusot `#[cfg(creusot)]` companions
 //! - `all`     — all three targets
 
+pub mod creusot_gen;
 pub mod kani_gen;
 pub mod scanner;
 pub mod verus_gen;

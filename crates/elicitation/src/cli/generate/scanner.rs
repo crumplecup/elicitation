@@ -26,6 +26,8 @@ pub struct PropDescriptor {
     pub creusot_fn: Option<String>,
     /// `verus_inv_body = "..."` value — verbatim body for the Verus `open spec fn`.
     pub verus_inv_body: Option<String>,
+    /// `creusot_inv_body = "..."` value — verbatim body for the Creusot `#[logic]` fn.
+    pub creusot_inv_body: Option<String>,
 }
 
 /// Classification of a single transition function parameter for harness generation.
@@ -228,6 +230,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
     let mut verus_fn = None;
     let mut creusot_fn = None;
     let mut verus_inv_body = None;
+    let mut creusot_inv_body = None;
 
     for attr in &s.attrs {
         if attr.path().is_ident("prop") {
@@ -237,6 +240,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
                 &mut verus_fn,
                 &mut creusot_fn,
                 &mut verus_inv_body,
+                &mut creusot_inv_body,
             );
         }
     }
@@ -247,6 +251,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
         verus_fn,
         creusot_fn,
         verus_inv_body,
+        creusot_inv_body,
     })
 }
 
@@ -356,13 +361,14 @@ fn extract_single_generic_arg(ty: &syn::Type) -> Option<String> {
     None
 }
 
-/// Parse `#[prop(kani_invariant_fn = "...", verus_invariant_fn = "...", verus_inv_body = "...", ...)]`.
+/// Parse `#[prop(kani_invariant_fn = "...", verus_invariant_fn = "...", verus_inv_body = "...", creusot_inv_body = "...", ...)]`.
 fn parse_prop_attr(
     attr: &Attribute,
     kani_fn: &mut Option<String>,
     verus_fn: &mut Option<String>,
     creusot_fn: &mut Option<String>,
     verus_inv_body: &mut Option<String>,
+    creusot_inv_body: &mut Option<String>,
 ) {
     let list: MetaList = match attr.meta.clone() {
         Meta::List(l) => l,
@@ -386,6 +392,7 @@ fn parse_prop_attr(
                 "verus_invariant_fn" => *verus_fn = val,
                 "creusot_invariant_fn" => *creusot_fn = val,
                 "verus_inv_body" => *verus_inv_body = val,
+                "creusot_inv_body" => *creusot_inv_body = val,
                 _ => {}
             }
         }

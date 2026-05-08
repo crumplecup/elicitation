@@ -69,7 +69,7 @@ pub enum ArchiveOverlayState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: overlays render AccessKit nodes
 /// so WCAG compliance is the credential that bounds the proof state space.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent", kani_invariant_fn = "archive_overlay_consistent", verus_invariant_fn = "archive_overlay_consistent", verus_inv_body = "match *state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx <= entries@.len(), _ => true, }")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent", kani_invariant_fn = "archive_overlay_consistent", verus_invariant_fn = "archive_overlay_consistent", verus_inv_body = "match *state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx <= entries@.len(), _ => true, }", creusot_inv_body = "pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } }")]
 pub struct ArchiveOverlayConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
