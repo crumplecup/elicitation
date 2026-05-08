@@ -3,6 +3,7 @@
 //! Provides verification orchestration, analysis, and utilities.
 
 pub mod generate;
+pub mod prove;
 
 use clap::{Parser, Subcommand};
 use derive_getters::Getters;
@@ -55,6 +56,53 @@ pub enum Commands {
         #[command(subcommand)]
         target: GenerateTarget,
     },
+
+    /// Run proof backends (Kani / Verus / Creusot) in the current workspace.
+    ///
+    /// Configuration is read from `.env` in the current directory.
+    /// At least one of --kani, --verus, --creusot must be specified.
+    Prove(ProveOpts),
+}
+
+/// Options for `elicitation prove`.
+#[derive(Debug, Clone, clap::Args)]
+pub struct ProveOpts {
+    /// Run Kani verification (`cargo kani`).
+    #[arg(long)]
+    pub kani: bool,
+
+    /// Run Verus verification.
+    #[arg(long)]
+    pub verus: bool,
+
+    /// Run Creusot verification (`cargo creusot prove`).
+    #[arg(long)]
+    pub creusot: bool,
+
+    /// Cargo package name to verify (overrides PROVE_PACKAGE / KANI_PACKAGE /
+    /// CREUSOT_PACKAGE from .env).
+    #[arg(short = 'p', long)]
+    pub package: Option<String>,
+
+    /// Specific Kani harness to target (Kani only).
+    #[arg(long)]
+    pub kani_harness: Option<String>,
+
+    /// Path to the Verus binary (overrides VERUS_PATH from .env).
+    #[arg(long)]
+    pub verus_path: Option<PathBuf>,
+
+    /// Verus source file or directory (overrides VERUS_FILE from .env).
+    #[arg(long)]
+    pub verus_file: Option<PathBuf>,
+
+    /// Timeout in seconds for each backend (no timeout by default).
+    #[arg(long)]
+    pub timeout: Option<u64>,
+
+    /// Print commands without executing them.
+    #[arg(long)]
+    pub dry_run: bool,
 }
 
 /// Verification actions
@@ -280,6 +328,10 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
         Commands::Creusot { action } => handle_creusot(action),
         Commands::Graph { action } => handle_graph(action),
         Commands::Generate { target } => handle_generate(target),
+        Commands::Prove(opts) => {
+            let config = prove::ProveConfig::resolve(opts)?;
+            prove::run(&config)
+        }
     }
 }
 
