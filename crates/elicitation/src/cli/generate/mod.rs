@@ -15,6 +15,7 @@ pub mod creusot_gen;
 pub mod foundation_gen;
 pub mod kani_gen;
 pub mod scanner;
+pub mod type_resolver;
 pub mod verus_gen;
 
 pub use foundation_gen::{ElicitType, HarnessShape, generate_foundation_file, scan_elicit_types};
@@ -22,6 +23,7 @@ pub use scanner::{
     ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor, extract_prop_descriptor,
     extract_vsms_from_file, has_derive, scan_vsms,
 };
+pub use type_resolver::TypeResolver;
 
 /// Walk up from `search_from` to find the nearest `Cargo.toml` and return its
 /// `[package] name` value.

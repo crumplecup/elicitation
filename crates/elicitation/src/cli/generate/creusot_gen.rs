@@ -5,24 +5,28 @@
 //! replace what `VerifiedStateMachine::vsm_creusot_proof()` produces at build time.
 //!
 //! The generated file follows the pattern in `elicit_proofs/src/creusot/generated/`:
-//! 1. `#[cfg(creusot)] use` imports
-//! 2. `#[cfg(creusot)] #[logic] pub fn inv(state) -> bool { <body> }`
-//! 3. `#[cfg(creusot)] #[trusted] pub fn verify_*_prop_creusot()` marker
-//! 4. Per-transition: `#[cfg(creusot)] #[requires(inv)] #[ensures(inv)] pub(crate) fn t__creusot(...) { t(...) }`
+//! 1. `#![allow(unexpected_cfgs)]` — suppress unknown cfg key warnings
+//! 2. `#[cfg(creusot)] use` imports (fixed prelude + type-resolved)
+//! 3. `#[cfg(creusot)] #[logic] pub fn inv(state) -> bool { <body> }`
+//! 4. `#[cfg(creusot)] #[trusted] pub fn verify_*_prop_creusot()` marker
+//! 5. Per-transition: `#[cfg(creusot)] #[requires(inv)] #[ensures(inv)] pub fn t_creusot(...)` wrapper
 
+use std::collections::BTreeSet;
 use std::path::Path;
 
-use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, VsmDescriptor}};
+use crate::cli::generate::{
+    TypeResolver,
+    find_crate_name,
+    scanner::{ArgKind, TransitionFn, VsmDescriptor},
+};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /// Generate the full Creusot companion file content for `vsm`.
 ///
-/// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
-/// `use {crate_name}::*` alongside the Creusot stdlib imports.  When the VSM
-/// source file lives in a sub-module (e.g. `src/archive/vsm.rs`), an additional
-/// `use {crate_name}::{module}::*` import is emitted so that types defined in
-/// that module are in scope.
+/// `crate_root` is used to discover the crate name via `Cargo.toml`.  The VSM
+/// source file is parsed with [`TypeResolver`] to produce precise `use` imports
+/// rather than glob wildcards.
 ///
 /// Returns `Err` with an actionable message when a named invariant is present
 /// but `creusot_inv_body` could not be resolved.
@@ -35,63 +39,6 @@ pub fn generate_creusot_file(
     let state_ty = machine.replace("Machine", "State");
     let crate_root = crate_root.as_ref();
     let crate_name = find_crate_name(crate_root);
-
-    // Derive extra imports from the VSM source file itself.
-    //
-    // Strategy 1 — ancestor globs: emit `use {crate}::{prefix}::*` for every
-    // ancestor directory from crate root down to the file's parent.  This covers
-    // all types that are re-exported upward through the module hierarchy.
-    //
-    // Strategy 2 — mirror source imports: read the VSM source file and re-emit
-    // any `use crate::…` lines as `use {crate_name}::…`.  This covers sibling
-    // modules (e.g. `use crate::archive::display::…`) that are not ancestors.
-    //
-    // Together these make the generated file self-sufficient for any crate layout.
-    let extra_modules: Vec<String> = {
-        let src_dir = crate_root.join("src");
-        let mut result = Vec::new();
-
-        // Strategy 1: ancestor globs
-        if let Ok(rel) = vsm.source_file.strip_prefix(&src_dir) {
-            if let Some(parent) = rel.parent() {
-                let segs: Vec<String> = parent
-                    .components()
-                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
-                    .collect();
-                for i in 1..=segs.len() {
-                    result.push(format!("{crate_name}::{}::*", segs[..i].join("::")));
-                }
-            }
-        }
-
-        // Strategy 2: mirror `use crate::` imports from the source file
-        if let Ok(src) = std::fs::read_to_string(&vsm.source_file) {
-            for line in src.lines() {
-                let trimmed = line.trim();
-                // Match `use crate::path;` or `use crate::path::*;` etc.
-                if let Some(rest) = trimmed.strip_prefix("use crate::") {
-                    let path = rest.trim_end_matches(';').trim();
-                    // Skip single-segment paths — already covered by `use {crate}::*`
-                    if path.contains("::") {
-                        let candidate = format!("{crate_name}::{path}");
-                        // Convert specific imports to globs: `a::b::C` → `a::b::*`
-                        let glob = if candidate.ends_with("::*") {
-                            candidate
-                        } else {
-                            let mut parts: Vec<&str> = candidate.rsplitn(2, "::").collect();
-                            parts.reverse();
-                            format!("{}::*", parts[0])
-                        };
-                        if !result.contains(&glob) {
-                            result.push(glob);
-                        }
-                    }
-                }
-            }
-        }
-
-        result
-    };
 
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
@@ -116,6 +63,29 @@ pub fn generate_creusot_file(
         None => None,
     };
 
+    // ── Collect the bare type names this file will reference ─────────────────
+    let mut needed: BTreeSet<String> = BTreeSet::new();
+    TypeResolver::collect_type(&state_ty, &mut needed);
+    if let Some((_, consistent_ty, _)) = inv_parts {
+        TypeResolver::collect_type(consistent_ty, &mut needed);
+    }
+    for tfn in &vsm.transition_fns {
+        for arg in &tfn.args {
+            match &arg.kind {
+                ArgKind::State => {}
+                ArgKind::Proof { inner } => TypeResolver::collect_type(inner, &mut needed),
+                _ => TypeResolver::collect_type(&arg.ty, &mut needed),
+            }
+        }
+    }
+    let needs_kani_label = inv_parts
+        .map(|(_, _, body)| body.contains("kani_label"))
+        .unwrap_or(false);
+
+    // ── Resolve imports ───────────────────────────────────────────────────────
+    let resolver = TypeResolver::build(&vsm.source_file, &crate_name);
+    let resolved_imports = resolver.grouped_imports(&needed);
+
     let mut lines: Vec<String> = Vec::new();
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -127,19 +97,25 @@ pub fn generate_creusot_file(
     lines.push(
         "// All items are gated with #[cfg(creusot)]; invisible to normal Rust builds.".to_string(),
     );
+    lines.push("// The `creusot` cfg key is set by the Creusot toolchain, not by cargo.".to_string());
+    lines.push("#![allow(unexpected_cfgs)]".to_string());
     lines.push(String::new());
 
     // ── Imports ─────────────────────────────────────────────────────────────
-    let mut imports: Vec<String> = vec![
+    // Fixed: creusot stdlib prelude and elicitation types.
+    let mut fixed_imports = vec![
         "::creusot_std::prelude::*".to_string(),
         "elicitation::Established".to_string(),
-        "elicitation::kani_label".to_string(),
-        format!("{crate_name}::*"),
     ];
-    for m in &extra_modules {
-        imports.push(m.clone());
+    if needs_kani_label {
+        fixed_imports.push("elicitation::kani_label".to_string());
     }
-    for import in &imports {
+    for import in &fixed_imports {
+        lines.push("#[cfg(creusot)]".to_string());
+        lines.push(format!("use {import};"));
+    }
+    // Type-resolved: precise imports for every user-crate type referenced.
+    for import in &resolved_imports {
         lines.push("#[cfg(creusot)]".to_string());
         lines.push(format!("use {import};"));
     }
@@ -177,7 +153,7 @@ pub fn generate_creusot_file(
 
 // ─── Emitters ────────────────────────────────────────────────────────────────
 
-/// Emit one `#[cfg(creusot)] ... pub(crate) fn {name}__creusot(...)` call-through wrapper.
+/// Emit one `#[cfg(creusot)] ... pub fn {name}_creusot(...)` call-through wrapper.
 fn emit_creusot_wrapper(
     fn_name: &str,
     state_ty: &str,
@@ -197,8 +173,11 @@ fn emit_creusot_wrapper(
     lines.push("#[cfg(creusot)]".to_string());
     lines.push(format!("#[requires({inv_fn}(&state))]"));
     lines.push(format!("#[ensures({inv_fn}(&result.0))]"));
+    // `pub` (not `pub(crate)`) avoids spurious `dead_code` warnings under
+    // Creusot's compiler, where these functions are used as proof obligations
+    // but have no regular Rust call sites.
     lines.push(format!(
-        "pub(crate) fn {fn_name}__creusot({params}) \
+        "pub fn {fn_name}_creusot({params}) \
          -> ({state_ty}, Established<{consistent_ty}>) \
          {{ {fn_name}({call_args}) }}"
     ));
@@ -212,8 +191,6 @@ fn emit_params(tf: &TransitionFn, state_ty: &str) -> String {
     for arg in &tf.args {
         let (name, ty) = match &arg.kind {
             ArgKind::State => ("state".to_string(), state_ty.to_string()),
-            // Use the actual parameter name from the source (e.g. `proof`,
-            // `square_proof`, `turn_proof`) so there are no duplicate bindings.
             ArgKind::Proof { inner } => (arg.name.clone(), format!("Established<{inner}>")),
             _ => (arg.name.trim_start_matches('_').to_string(), arg.ty.clone()),
         };
@@ -228,7 +205,6 @@ fn emit_call_args(tf: &TransitionFn) -> String {
         .iter()
         .map(|arg| match arg.kind {
             ArgKind::State => "state".to_string(),
-            // Use the actual binding name so extra proofs forward correctly.
             ArgKind::Proof { .. } => arg.name.clone(),
             _ => arg.name.trim_start_matches('_').to_string(),
         })
@@ -249,3 +225,4 @@ fn to_snake(s: &str) -> String {
     }
     out
 }
+

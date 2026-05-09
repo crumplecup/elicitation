@@ -4,23 +4,19 @@
 // Regenerate: elicitation generate creusot --crate-path <root>
 //
 // All items are gated with #[cfg(creusot)]; invisible to normal Rust builds.
+// The `creusot` cfg key is set by the Creusot toolchain, not by cargo.
+#![allow(unexpected_cfgs)]
 
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
-use elicitation::kani_label;
+use elicit_server::archive::{AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout, ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, SavedQuery};
 #[cfg(creusot)]
-use elicit_server::*;
+use elicit_server::archive::display::{AdminSnapshotMode, ConnectionProfileMode, ConstraintDescriptorMode, DdlDescriptorMode, ErdDiagramMode, ExplainNodeMode, IndexDescriptorMode, MonitorSnapshotMode, QueryHistoryEntryMode, QueryResultMode, SavedQueryMode};
 #[cfg(creusot)]
-use elicit_server::archive::*;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::display::*;
-#[cfg(creusot)]
-use elicit_server::archive::types::*;
+use elicit_server::archive::vsm::{ArchivePanelConsistent, ArchivePanelState};
 
 #[cfg(creusot)]
 #[logic]
@@ -37,115 +33,115 @@ pub fn verify_archive_panel_consistent_prop_creusot() -> bool { true }
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn column_detail__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { column_detail(state, proof) }
+pub fn column_detail_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { column_detail(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn panel_loading__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, label: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { panel_loading(state, proof, schema, label) }
+pub fn panel_loading_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, label: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { panel_loading(state, proof, schema, label) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn panel_error__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, message: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { panel_error(state, proof, message) }
+pub fn panel_error_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, message: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { panel_error(state, proof, message) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn data_grid_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, query_result: QueryResult, display_mode: QueryResultMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { data_grid_ready(state, proof, schema, table, query_result, display_mode) }
+pub fn data_grid_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, query_result: QueryResult, display_mode: QueryResultMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { data_grid_ready(state, proof, schema, table, query_result, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn query_complete__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, query_result: QueryResult) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { query_complete(state, proof, query_result) }
+pub fn query_complete_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, query_result: QueryResult) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { query_complete(state, proof, query_result) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn begin_edit__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { begin_edit(state, proof) }
+pub fn begin_edit_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { begin_edit(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn commit_edits__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { commit_edits(state, proof) }
+pub fn commit_edits_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { commit_edits(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn abort_edits__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { abort_edits(state, proof) }
+pub fn abort_edits_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { abort_edits(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn open_sql_editor__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, initial_text: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_sql_editor(state, proof, initial_text) }
+pub fn open_sql_editor_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, initial_text: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_sql_editor(state, proof, initial_text) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn open_export_panel__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_export_panel(state, proof, schema, table) }
+pub fn open_export_panel_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_export_panel(state, proof, schema, table) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn open_help_panel__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_help_panel(state, proof) }
+pub fn open_help_panel_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_help_panel(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn open_saved_panel__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<SavedQuery>, display_mode: SavedQueryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_saved_panel(state, proof, entries, display_mode) }
+pub fn open_saved_panel_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<SavedQuery>, display_mode: SavedQueryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_saved_panel(state, proof, entries, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn open_connection_editor__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, profile: ConnectionProfile, display_mode: ConnectionProfileMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_connection_editor(state, proof, profile, display_mode) }
+pub fn open_connection_editor_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, profile: ConnectionProfile, display_mode: ConnectionProfileMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { open_connection_editor(state, proof, profile, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn ddl_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, ddl: DdlDescriptor, display_mode: DdlDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { ddl_ready(state, proof, schema, table, ddl, display_mode) }
+pub fn ddl_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, ddl: DdlDescriptor, display_mode: DdlDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { ddl_ready(state, proof, schema, table, ddl, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn explain_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, root: ExplainPlan, display_mode: ExplainNodeMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { explain_ready(state, proof, schema, table, root, display_mode) }
+pub fn explain_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, root: ExplainPlan, display_mode: ExplainNodeMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { explain_ready(state, proof, schema, table, root, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn export_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, export_result: ExportResult) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { export_ready(state, proof, export_result) }
+pub fn export_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, export_result: ExportResult) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { export_ready(state, proof, export_result) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn history_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<QueryHistoryEntry>, display_mode: QueryHistoryEntryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { history_ready(state, proof, entries, display_mode) }
+pub fn history_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<QueryHistoryEntry>, display_mode: QueryHistoryEntryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { history_ready(state, proof, entries, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn saved_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<SavedQuery>, display_mode: SavedQueryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { saved_ready(state, proof, entries, display_mode) }
+pub fn saved_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, entries: Vec<SavedQuery>, display_mode: SavedQueryMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { saved_ready(state, proof, entries, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn monitor_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, snapshot: MonitorSnapshot, display_mode: MonitorSnapshotMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { monitor_ready(state, proof, snapshot, display_mode) }
+pub fn monitor_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, snapshot: MonitorSnapshot, display_mode: MonitorSnapshotMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { monitor_ready(state, proof, snapshot, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn admin_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, snapshot: AdminSnapshot, display_mode: AdminSnapshotMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { admin_ready(state, proof, snapshot, display_mode) }
+pub fn admin_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, snapshot: AdminSnapshot, display_mode: AdminSnapshotMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { admin_ready(state, proof, snapshot, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn erd_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, diagram: ErdDiagram, layout: Option<ErdLayout>, display_mode: ErdDiagramMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { erd_ready(state, proof, schema, diagram, layout, display_mode) }
+pub fn erd_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, diagram: ErdDiagram, layout: Option<ErdLayout>, display_mode: ErdDiagramMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { erd_ready(state, proof, schema, diagram, layout, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn constraints_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, constraints: Vec<ConstraintDescriptor>, display_mode: ConstraintDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { constraints_ready(state, proof, schema, table, constraints, display_mode) }
+pub fn constraints_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, constraints: Vec<ConstraintDescriptor>, display_mode: ConstraintDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { constraints_ready(state, proof, schema, table, constraints, display_mode) }
 
 #[cfg(creusot)]
 #[requires(archive_panel_consistent(&state))]
 #[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn indexes_ready__creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, indexes: Vec<IndexDescriptor>, display_mode: IndexDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { indexes_ready(state, proof, schema, table, indexes, display_mode) }
+pub fn indexes_ready_creusot(state: ArchivePanelState, proof: Established<ArchivePanelConsistent>, schema: String, table: String, indexes: Vec<IndexDescriptor>, display_mode: IndexDescriptorMode) -> (ArchivePanelState, Established<ArchivePanelConsistent>) { indexes_ready(state, proof, schema, table, indexes, display_mode) }
 

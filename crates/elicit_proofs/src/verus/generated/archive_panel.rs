@@ -4,6 +4,8 @@
 // Regenerate: elicitation generate verus --crate-path <root>
 //
 // All items are gated with #[cfg(verus)]; invisible to normal Rust builds.
+// The `verus` cfg key is set by the Verus toolchain, not by cargo.
+#![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
 use ::vstd::prelude::*;
@@ -12,7 +14,11 @@ use ::verus_builtin_macros::verus;
 #[cfg(verus)]
 use elicitation::Established;
 #[cfg(verus)]
-use elicit_server::*;
+use elicit_server::archive::{AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout, ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, SavedQuery};
+#[cfg(verus)]
+use elicit_server::archive::display::{AdminSnapshotMode, ConnectionProfileMode, ConstraintDescriptorMode, DdlDescriptorMode, ErdDiagramMode, ExplainNodeMode, IndexDescriptorMode, MonitorSnapshotMode, QueryHistoryEntryMode, QueryResultMode, SavedQueryMode};
+#[cfg(verus)]
+use elicit_server::archive::vsm::{ArchivePanelConsistent, ArchivePanelState};
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_panel_consistent(state: &ArchivePanelState) -> bool { match *state { ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(), _ => true, } } }

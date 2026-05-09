@@ -8,18 +8,22 @@
 //! 1. depth-2 state via `KaniCompose::kani_depth2()` + `kani::assume(inv_fn(&state))` + `mem::forget`
 //! 2. depth-0 state via `KaniCompose::kani_depth0()` + proof credential + extra args + call + `mem::forget`
 
+use std::collections::BTreeSet;
 use std::path::Path;
 
-use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, VsmDescriptor}};
+use crate::cli::generate::{
+    TypeResolver,
+    find_crate_name,
+    scanner::{ArgKind, TransitionFn, VsmDescriptor},
+};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /// Generate the full Kani companion file content for `vsm`.
 ///
-/// Generate the full Kani companion file content for `vsm`.
-///
-/// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
-/// a `use {crate_name}::*` wildcard import alongside `elicitation::Established`.
+/// `crate_root` is used to discover the crate name via `Cargo.toml`.  The VSM
+/// source file is parsed with [`TypeResolver`] to produce precise `use` imports
+/// rather than glob wildcards.
 ///
 /// Returns `Err` with an actionable message when a named invariant is present
 /// but its `kani_invariant_fn` attribute is missing.
@@ -49,6 +53,28 @@ pub fn generate_kani_file(
 
     let crate_name = find_crate_name(crate_root.as_ref());
 
+    // ── Collect the bare type names this file will reference ─────────────────
+    let mut needed: BTreeSet<String> = BTreeSet::new();
+    if vsm.transition_fns.is_empty() {
+        TypeResolver::collect_type(&derive_state_ty(machine), &mut needed);
+        if has_invariant {
+            TypeResolver::collect_type(consistent_ty, &mut needed);
+        }
+    } else {
+        for tfn in &vsm.transition_fns {
+            for arg in &tfn.args {
+                match &arg.kind {
+                    ArgKind::State => TypeResolver::collect_type(&arg.ty, &mut needed),
+                    ArgKind::Proof { inner } => TypeResolver::collect_type(inner, &mut needed),
+                    _ => TypeResolver::collect_type(&arg.ty, &mut needed),
+                }
+            }
+        }
+    }
+
+    let resolver = TypeResolver::build(&vsm.source_file, &crate_name);
+    let resolved_imports = resolver.grouped_imports(&needed);
+
     let mut out = String::new();
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -57,14 +83,14 @@ pub fn generate_kani_file(
          //\n\
          // Kani proof_for_contract harnesses for {machine}.\n\
          // Regenerate: elicitation generate kani --crate-path <root>\n\
+         // The `kani` cfg key is set by the Kani toolchain, not by cargo.\n\
+         #![allow(unexpected_cfgs)]\n\
          \n"
     ));
 
     // ── Imports ─────────────────────────────────────────────────────────────
-    for import in &[
-        "elicitation::Established".to_string(),
-        format!("{crate_name}::*"),
-    ] {
+    out.push_str("#[cfg(kani)]\nuse elicitation::Established;\n");
+    for import in &resolved_imports {
         out.push_str(&format!("#[cfg(kani)]\nuse {import};\n"));
     }
     out.push('\n');
@@ -77,9 +103,8 @@ pub fn generate_kani_file(
         ));
     }
 
-    // ── per-transition harnesses ─────────────────────────────────────────────
+    // ── Per-transition harnesses ─────────────────────────────────────────────
     if vsm.transition_fns.is_empty() {
-        // Fallback: emit minimal placeholder harnesses from names only.
         let state_ty = derive_state_ty(machine);
         for name in &vsm.transitions {
             out.push('\n');
@@ -106,7 +131,7 @@ pub fn generate_kani_file(
 /// Emit a full `proof_for_contract` harness for a `TransitionFn` with known args.
 fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String {
     let fn_name = &tfn.name;
-    let closure_name = format!("{fn_name}__kani_closure");
+    let closure_name = format!("{fn_name}_kani_closure");
 
     let state_arg = tfn.state_arg();
     let state_ty = state_arg
@@ -135,14 +160,14 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
     // Proof credential and extra args.
     for arg in &tfn.args {
         match &arg.kind {
-            ArgKind::State => {} // already emitted above
+            ArgKind::State => {}
             ArgKind::Proof { inner } => {
                 let name = &arg.name;
                 lines.push(format!("    let {name}: Established<{inner}> = {{"));
                 lines.push(format!(
-                    "        let __cred = {inner}::kani_proof_credential();"
+                    "        let _cred = {inner}::kani_proof_credential();"
                 ));
-                lines.push("        ::elicitation::Established::prove(&__cred)".to_string());
+                lines.push("        ::elicitation::Established::prove(&_cred)".to_string());
                 lines.push("    };".to_string());
             }
             ArgKind::StringArg => {
@@ -182,7 +207,7 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
 
     let body = lines.join("\n");
     format!(
-        "#[allow(unexpected_cfgs)]\n#[cfg(kani)]\n#[::kani::proof_for_contract({fn_name})]\nfn {closure_name}() {{\n{body}\n}}\n"
+        "#[cfg(kani)]\n#[::kani::proof_for_contract({fn_name})]\nfn {closure_name}() {{\n{body}\n}}\n"
     )
 }
 
@@ -194,7 +219,7 @@ fn emit_minimal_harness(
     inv_fn: &str,
     has_invariant: bool,
 ) -> String {
-    let closure_name = format!("{fn_name}__kani_closure");
+    let closure_name = format!("{fn_name}_kani_closure");
     let assume_line = if has_invariant {
         format!("    ::kani::assume({inv_fn}(&_state));")
     } else {
@@ -204,8 +229,8 @@ fn emit_minimal_harness(
         (
             vec![
                 format!("    let proof: Established<{consistent_ty}> = {{"),
-                format!("        let __cred = {consistent_ty}::kani_proof_credential();"),
-                "        ::elicitation::Established::prove(&__cred)".to_string(),
+                format!("        let _cred = {consistent_ty}::kani_proof_credential();"),
+                "        ::elicitation::Established::prove(&_cred)".to_string(),
                 "    };".to_string(),
             ],
             ", proof".to_string(),
@@ -215,7 +240,6 @@ fn emit_minimal_harness(
     };
     let mut lines = vec![
         format!("// TODO: verify argument types for {fn_name} and regenerate"),
-        "#[allow(unexpected_cfgs)]".to_string(),
         "#[cfg(kani)]".to_string(),
         format!("#[::kani::proof_for_contract({fn_name})]"),
         format!("fn {closure_name}() {{"),

@@ -9,7 +9,7 @@ let%span slevel24'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/s
 let%span slevel24'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 177 10 177 45
 let%span slevel24'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 192 11 192 22
 let%span slevel24'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 193 10 193 29
-let%span slevel24'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 162 8 162 37
+let%span slevel24'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 162 8 162 35
 let%span slevel24'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 139 8 142 9
 let%span slevel24'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 150 8 154 9
 

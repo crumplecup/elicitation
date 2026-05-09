@@ -5,21 +5,28 @@
 //! what `VerifiedStateMachine::vsm_verus_proof()` produces at build time.
 //!
 //! The generated file follows the pattern in `elicit_proofs/src/verus/generated/`:
-//! 1. `#[cfg(verus)] use` imports
-//! 2. `#[cfg(verus)] verus! { pub open spec fn inv(state) -> bool { <body> } }`
-//! 3. `verus! { pub fn verify_*_prop_contract() }` marker
-//! 4. Per-transition: `verus! { pub assume_specification [fn_name](...) requires ..., ensures ...; }`
+//! 1. `#![allow(unexpected_cfgs)]` — suppress unknown cfg key warnings
+//! 2. `#[cfg(verus)] use` imports (fixed prelude + type-resolved)
+//! 3. `#[cfg(verus)] verus! { pub open spec fn inv(state) -> bool { <body> } }`
+//! 4. `verus! { pub fn verify_*_prop_contract() }` marker
+//! 5. Per-transition: `verus! { pub assume_specification [fn_name](...) requires ..., ensures ...; }`
 
+use std::collections::BTreeSet;
 use std::path::Path;
 
-use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, VsmDescriptor}};
+use crate::cli::generate::{
+    TypeResolver,
+    find_crate_name,
+    scanner::{ArgKind, TransitionFn, VsmDescriptor},
+};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /// Generate the full Verus companion file content for `vsm`.
 ///
-/// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
-/// `use {crate_name}::*` alongside the Verus stdlib imports.
+/// `crate_root` is used to discover the crate name via `Cargo.toml`.  The VSM
+/// source file is parsed with [`TypeResolver`] to produce precise `use` imports
+/// rather than glob wildcards.
 ///
 /// Returns `Err` with an actionable message when a named invariant is present
 /// but `verus_inv_body` could not be resolved.
@@ -55,6 +62,24 @@ pub fn generate_verus_file(
         None => None,
     };
 
+    // ── Collect the bare type names this file will reference ─────────────────
+    let mut needed: BTreeSet<String> = BTreeSet::new();
+    TypeResolver::collect_type(&state_ty, &mut needed);
+    if let Some((_, consistent_ty, _)) = inv_parts {
+        TypeResolver::collect_type(consistent_ty, &mut needed);
+    }
+    for tfn in &vsm.transition_fns {
+        for arg in &tfn.args {
+            match &arg.kind {
+                ArgKind::Proof { inner } => TypeResolver::collect_type(inner, &mut needed),
+                _ => TypeResolver::collect_type(&arg.ty, &mut needed),
+            }
+        }
+    }
+
+    let resolver = TypeResolver::build(&vsm.source_file, &crate_name);
+    let resolved_imports = resolver.grouped_imports(&needed);
+
     let mut lines: Vec<String> = Vec::new();
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -66,15 +91,22 @@ pub fn generate_verus_file(
     lines.push(
         "// All items are gated with #[cfg(verus)]; invisible to normal Rust builds.".to_string(),
     );
+    lines.push("// The `verus` cfg key is set by the Verus toolchain, not by cargo.".to_string());
+    lines.push("#![allow(unexpected_cfgs)]".to_string());
     lines.push(String::new());
 
     // ── Imports ─────────────────────────────────────────────────────────────
+    // Fixed: Verus stdlib prelude, macro re-export, and elicitation types.
     for import in &[
         "::vstd::prelude::*".to_string(),
         "::verus_builtin_macros::verus".to_string(),
         "elicitation::Established".to_string(),
-        format!("{crate_name}::*"),
     ] {
+        lines.push("#[cfg(verus)]".to_string());
+        lines.push(format!("use {import};"));
+    }
+    // Type-resolved: precise imports for every user-crate type referenced.
+    for import in &resolved_imports {
         lines.push("#[cfg(verus)]".to_string());
         lines.push(format!("use {import};"));
     }
@@ -125,19 +157,12 @@ fn emit_assume_specification(
         None => format!("(_state: {state_ty}, proof: Established<{consistent_ty}>,)"),
     };
 
-    // The state parameter name (strip leading underscore for `requires`/`ensures`).
     let state_param = match tf {
         Some(tf) => tf.state_arg().map(|a| a.name.as_str()).unwrap_or("_state"),
         None => "_state",
     };
-    // Verus uses the actual param name in requires/ensures — strip leading `_`.
     let state_ref = state_param.trim_start_matches('_');
-    // If the param was named `state` (no underscore prefix) use it directly.
-    let state_ref = if state_ref.is_empty() {
-        "state"
-    } else {
-        state_ref
-    };
+    let state_ref = if state_ref.is_empty() { "state" } else { state_ref };
 
     format!(
         "verus! {{ pub assume_specification [{fn_name}] \

@@ -4,6 +4,8 @@
 // Regenerate: elicitation generate verus --crate-path <root>
 //
 // All items are gated with #[cfg(verus)]; invisible to normal Rust builds.
+// The `verus` cfg key is set by the Verus toolchain, not by cargo.
+#![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
 use ::vstd::prelude::*;
@@ -12,7 +14,9 @@ use ::verus_builtin_macros::verus;
 #[cfg(verus)]
 use elicitation::Established;
 #[cfg(verus)]
-use elicit_server::*;
+use elicit_server::archive::{ExportFormat, SavedQuery};
+#[cfg(verus)]
+use elicit_server::archive::vsm::{ArchiveOverlayConsistent, ArchiveOverlayState};
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool { match *state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx <= entries@.len(), _ => true, } } }

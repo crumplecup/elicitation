@@ -4,23 +4,17 @@
 // Regenerate: elicitation generate creusot --crate-path <root>
 //
 // All items are gated with #[cfg(creusot)]; invisible to normal Rust builds.
+// The `creusot` cfg key is set by the Creusot toolchain, not by cargo.
+#![allow(unexpected_cfgs)]
 
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicitation::Established;
 #[cfg(creusot)]
-use elicitation::kani_label;
+use elicit_server::archive::NavTree;
 #[cfg(creusot)]
-use elicit_server::*;
-#[cfg(creusot)]
-use elicit_server::archive::*;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::*;
-#[cfg(creusot)]
-use elicit_server::archive::nav_model::*;
-#[cfg(creusot)]
-use elicit_server::archive::nav_tree::*;
+use elicit_server::archive::vsm::{ArchiveNavConsistent, ArchiveNavState};
 
 #[cfg(creusot)]
 #[logic]
@@ -37,45 +31,45 @@ pub fn verify_archive_nav_consistent_prop_creusot() -> bool { true }
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn load_nav__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { load_nav(state, proof) }
+pub fn load_nav_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { load_nav(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn nav_loaded__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, nav: NavTree) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { nav_loaded(state, proof, nav) }
+pub fn nav_loaded_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, nav: NavTree) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { nav_loaded(state, proof, nav) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn nav_refresh__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { nav_refresh(state, proof) }
+pub fn nav_refresh_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { nav_refresh(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn expand_schema__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, schema_idx: usize, expanded: bool) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { expand_schema(state, proof, schema_idx, expanded) }
+pub fn expand_schema_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, schema_idx: usize, expanded: bool) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { expand_schema(state, proof, schema_idx, expanded) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn collapse_schema__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, schema_idx: usize) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { collapse_schema(state, proof, schema_idx) }
+pub fn collapse_schema_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, schema_idx: usize) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { collapse_schema(state, proof, schema_idx) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn move_cursor_up__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { move_cursor_up(state, proof) }
+pub fn move_cursor_up_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { move_cursor_up(state, proof) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn move_cursor_down__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, max: usize) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { move_cursor_down(state, proof, max) }
+pub fn move_cursor_down_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, max: usize) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { move_cursor_down(state, proof, max) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn apply_filter__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, filter: String) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { apply_filter(state, proof, filter) }
+pub fn apply_filter_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>, filter: String) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { apply_filter(state, proof, filter) }
 
 #[cfg(creusot)]
 #[requires(archive_nav_consistent(&state))]
 #[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn clear_filter__creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { clear_filter(state, proof) }
+pub fn clear_filter_creusot(state: ArchiveNavState, proof: Established<ArchiveNavConsistent>) -> (ArchiveNavState, Established<ArchiveNavConsistent>) { clear_filter(state, proof) }
 
