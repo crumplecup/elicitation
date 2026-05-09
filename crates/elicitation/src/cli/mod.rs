@@ -84,7 +84,7 @@ pub struct ProveOpts {
     #[arg(short = 'p', long)]
     pub package: Option<String>,
 
-    /// Specific Kani harness to target (Kani only).
+    /// Specific Kani harness to target (Kani only; skips harness discovery).
     #[arg(long)]
     pub kani_harness: Option<String>,
 
@@ -96,9 +96,17 @@ pub struct ProveOpts {
     #[arg(long)]
     pub verus_file: Option<PathBuf>,
 
-    /// Timeout in seconds for each backend (no timeout by default).
+    /// CSV file for recording per-harness Kani results (overrides KANI_CSV from .env).
     #[arg(long)]
-    pub timeout: Option<u64>,
+    pub csv: Option<PathBuf>,
+
+    /// Skip Kani harnesses already recorded as PASS in the CSV (resume a previous run).
+    #[arg(long)]
+    pub resume: bool,
+
+    /// Timeout in seconds per verification unit — 0 means unlimited (default: 300).
+    #[arg(long, default_value_t = 300)]
+    pub timeout: u64,
 
     /// Print commands without executing them.
     #[arg(long)]

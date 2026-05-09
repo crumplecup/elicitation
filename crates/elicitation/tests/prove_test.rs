@@ -1,6 +1,6 @@
 //! Tests for `elicitation prove` configuration and dry-run behaviour.
 
-use elicitation::cli::{prove::ProveConfig, ProveOpts};
+use elicitation::cli::{prove::{ProveConfig, parse_kani_list_output}, ProveOpts};
 use std::path::PathBuf;
 
 fn base_opts() -> ProveOpts {
@@ -12,7 +12,9 @@ fn base_opts() -> ProveOpts {
         kani_harness: None,
         verus_path: None,
         verus_file: None,
-        timeout: None,
+        csv: None,
+        resume: false,
+        timeout: 300,
         dry_run: false,
     }
 }
@@ -106,4 +108,30 @@ fn multi_backend_dry_run_all_succeed() {
     let cfg = ProveConfig::resolve(&opts).unwrap();
     // verus is not selected, so no file needed
     assert!(elicitation::cli::prove::run(&cfg).is_ok());
+}
+
+#[test]
+fn parse_kani_list_regular_and_contract_harnesses() {
+    let output = "\
+|       | Crate     | Function                          | Contract Harnesses (#[kani::proof_for_contract]) |
+|-------+-----------+-----------------------------------+--------------------------------------------------|
+|       | my_proofs | my_proofs::contracts::fn_a        | my_proofs::contracts::fn_a                       |
+|-------+-----------+-----------------------------------+--------------------------------------------------|
+|       | my_proofs | my_proofs::tests::regular_harness |
+|-------+-----------+-----------------------------------+
+| Total |           | 2                                 |
+";
+    let harnesses = parse_kani_list_output(output).unwrap();
+    assert!(harnesses.contains(&"my_proofs::contracts::fn_a".to_string()));
+    assert!(harnesses.contains(&"my_proofs::tests::regular_harness".to_string()));
+    assert_eq!(harnesses.len(), 2);
+}
+
+#[test]
+fn config_csv_and_resume_defaults() {
+    let opts = base_opts();
+    let cfg = ProveConfig::resolve(&opts).unwrap();
+    assert_eq!(cfg.kani_csv, std::path::PathBuf::from("kani_verification_results.csv"));
+    assert!(!cfg.kani_resume);
+    assert_eq!(cfg.timeout, 300);
 }

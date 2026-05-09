@@ -4169,6 +4169,7 @@ dependencies = [
  "derive_more",
  "derive_setters",
  "dirs",
+ "dotenvy",
  "egui",
  "egui-winit",
  "elicit_chrono",
