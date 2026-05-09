@@ -96,8 +96,9 @@ pub struct ProveOpts {
     #[arg(long)]
     pub verus_file: Option<PathBuf>,
 
-    /// CSV file for recording per-harness Kani results (overrides KANI_CSV from .env).
-    #[arg(long)]
+    /// Record results to CSV files, one per backend (kani_NAME.csv, verus_NAME.csv, creusot_NAME.csv).
+    /// Optionally specify the base name; defaults to "verification_results".
+    #[arg(long, num_args = 0..=1, default_missing_value = "verification_results.csv")]
     pub csv: Option<PathBuf>,
 
     /// Skip Kani harnesses already recorded as PASS in the CSV (resume a previous run).
@@ -111,6 +112,12 @@ pub struct ProveOpts {
     /// Print commands without executing them.
     #[arg(long)]
     pub dry_run: bool,
+
+    /// Directory for per-backend log files (overrides PROVE_LOG_DIR from .env;
+    /// default: current directory). Filenames: prove_kani.log, prove_verus.log,
+    /// prove_creusot.log.
+    #[arg(long)]
+    pub log_dir: Option<PathBuf>,
 }
 
 /// Verification actions

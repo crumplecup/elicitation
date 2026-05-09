@@ -1,21 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 175 0 178 61 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 0 75 164 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 179 4 179 39
-let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 176 4 176 9
-let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 177 4 177 9
-let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 173 11 173 43
-let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 178 5 178 61
-let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 174 10 174 45
-let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 145 4 145 9
-let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 146 4 146 9
-let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 142 11 142 43
-let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 147 5 147 61
-let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 143 10 143 45
-let%span sarchive_panel'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 25 8 26 73
+let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 167 75 192
+let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 35 75 40
+let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 61 75 66
+let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 73 11 73 43
+let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 108 75 164
+let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 74 10 74 45
+let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 28 28 28 172
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
 
 use creusot.int.UInt64
@@ -23,10 +18,10 @@ use creusot.int.UInt32
 use creusot.float.Float64
 use creusot.float.Float32
 use creusot.int.UInt16
+use creusot.prelude.Any
 use seq.Seq
 use creusot.int.Int64
 use creusot.int.Int32
-use creusot.prelude.Any
 use int.Int
 
 type t_String
@@ -1256,8 +1251,8 @@ axiom inv_axiom'53 [@rewrite]: forall x: t_ArchivePanelState [inv_ArchivePanelSt
 
 predicate inv_Established_ArchivePanelConsistent (_1: t_Established_ArchivePanelConsistent)
 
-predicate archive_panel_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 23 0 23 66] (state'0: t_ArchivePanelState) =
-  [%#sarchive_panel'10] match state'0 with
+predicate archive_panel_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 27 0 27 66] (state'0: t_ArchivePanelState) =
+  [%#sarchive_panel'5] match state'0 with
     | SqlEditor'0 _ result running _ -> running
     -> match result with
       | None'2 -> true
@@ -1271,33 +1266,19 @@ predicate inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent [@inline
 
 meta "rewrite_def" predicate inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent
 
-let rec commit_edits__creusot (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent)
-  (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
-  {[@stop_split] [@expl:commit_edits__creusot requires] ([@stop_split] [@expl:commit_edits__creusot 'state' type invariant] [%#sarchive_panel'5] inv_ArchivePanelState state'0)
-  /\ ([@stop_split] [@expl:commit_edits__creusot 'proof' type invariant] [%#sarchive_panel'6] inv_Established_ArchivePanelConsistent proof)
-  /\ ([@stop_split] [@expl:commit_edits__creusot requires] [%#sarchive_panel'7] archive_panel_consistent state'0)}
-  any
-  [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
-  {[@stop_split] [@expl:commit_edits__creusot ensures] ([@stop_split] [@expl:commit_edits__creusot result type invariant] [%#sarchive_panel'8] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
-    /\ ([@stop_split] [@expl:commit_edits__creusot ensures] [%#sarchive_panel'9] archive_panel_consistent result.f0'0)}
-    (! return {result}) ]
-
 meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
 let rec abort_edits__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 175 0 178 61]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 75 0 75 164]
   (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent)
   (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
   {[@stop_split] [@expl:abort_edits__creusot requires] ([@stop_split] [@expl:abort_edits__creusot 'state' type invariant] [%#sarchive_panel'0] inv_ArchivePanelState state'0)
   /\ ([@stop_split] [@expl:abort_edits__creusot 'proof' type invariant] [%#sarchive_panel'1] inv_Established_ArchivePanelConsistent proof)
   /\ ([@stop_split] [@expl:abort_edits__creusot requires] [%#sarchive_panel'2] archive_panel_consistent state'0)}
   (! bb0
-  [ bb0 = s0
-    [ s0 = commit_edits__creusot [%#sarchive_panel] {state'0} {proof}
-        (fun (_x: tup2_ArchivePanelState_Established_ArchivePanelConsistent) -> [ &_ret <- _x ] s1)
-    | s1 = return {_ret} ] ]
+  [ bb0 = {[%#sarchive_panel] false} any ]
   [ & _ret: tup2_ArchivePanelState_Established_ArchivePanelConsistent = Any.any_l ()
   | & state'0: t_ArchivePanelState = state'0
   | & proof: t_Established_ArchivePanelConsistent = proof ])

@@ -19,7 +19,10 @@ use crate::cli::generate::{find_crate_name, scanner::{ArgKind, TransitionFn, Vsm
 /// Generate the full Creusot companion file content for `vsm`.
 ///
 /// `crate_root` is used to discover the crate name via `Cargo.toml` and emit
-/// `use {crate_name}::*` alongside the Creusot stdlib imports.
+/// `use {crate_name}::*` alongside the Creusot stdlib imports.  When the VSM
+/// source file lives in a sub-module (e.g. `src/archive/vsm.rs`), an additional
+/// `use {crate_name}::{module}::*` import is emitted so that types defined in
+/// that module are in scope.
 ///
 /// Returns `Err` with an actionable message when a named invariant is present
 /// but `creusot_inv_body` could not be resolved.
@@ -30,7 +33,65 @@ pub fn generate_creusot_file(
 ) -> Result<String, String> {
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
-    let crate_name = find_crate_name(crate_root.as_ref());
+    let crate_root = crate_root.as_ref();
+    let crate_name = find_crate_name(crate_root);
+
+    // Derive extra imports from the VSM source file itself.
+    //
+    // Strategy 1 — ancestor globs: emit `use {crate}::{prefix}::*` for every
+    // ancestor directory from crate root down to the file's parent.  This covers
+    // all types that are re-exported upward through the module hierarchy.
+    //
+    // Strategy 2 — mirror source imports: read the VSM source file and re-emit
+    // any `use crate::…` lines as `use {crate_name}::…`.  This covers sibling
+    // modules (e.g. `use crate::archive::display::…`) that are not ancestors.
+    //
+    // Together these make the generated file self-sufficient for any crate layout.
+    let extra_modules: Vec<String> = {
+        let src_dir = crate_root.join("src");
+        let mut result = Vec::new();
+
+        // Strategy 1: ancestor globs
+        if let Ok(rel) = vsm.source_file.strip_prefix(&src_dir) {
+            if let Some(parent) = rel.parent() {
+                let segs: Vec<String> = parent
+                    .components()
+                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                    .collect();
+                for i in 1..=segs.len() {
+                    result.push(format!("{crate_name}::{}::*", segs[..i].join("::")));
+                }
+            }
+        }
+
+        // Strategy 2: mirror `use crate::` imports from the source file
+        if let Ok(src) = std::fs::read_to_string(&vsm.source_file) {
+            for line in src.lines() {
+                let trimmed = line.trim();
+                // Match `use crate::path;` or `use crate::path::*;` etc.
+                if let Some(rest) = trimmed.strip_prefix("use crate::") {
+                    let path = rest.trim_end_matches(';').trim();
+                    // Skip single-segment paths — already covered by `use {crate}::*`
+                    if path.contains("::") {
+                        let candidate = format!("{crate_name}::{path}");
+                        // Convert specific imports to globs: `a::b::C` → `a::b::*`
+                        let glob = if candidate.ends_with("::*") {
+                            candidate
+                        } else {
+                            let mut parts: Vec<&str> = candidate.rsplitn(2, "::").collect();
+                            parts.reverse();
+                            format!("{}::*", parts[0])
+                        };
+                        if !result.contains(&glob) {
+                            result.push(glob);
+                        }
+                    }
+                }
+            }
+        }
+
+        result
+    };
 
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
@@ -69,12 +130,16 @@ pub fn generate_creusot_file(
     lines.push(String::new());
 
     // ── Imports ─────────────────────────────────────────────────────────────
-    for import in &[
+    let mut imports: Vec<String> = vec![
         "::creusot_std::prelude::*".to_string(),
         "elicitation::Established".to_string(),
         "elicitation::kani_label".to_string(),
         format!("{crate_name}::*"),
-    ] {
+    ];
+    for m in &extra_modules {
+        imports.push(m.clone());
+    }
+    for import in &imports {
         lines.push("#[cfg(creusot)]".to_string());
         lines.push(format!("use {import};"));
     }

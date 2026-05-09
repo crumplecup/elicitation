@@ -13,10 +13,20 @@ use elicitation::Established;
 use elicitation::kani_label;
 #[cfg(creusot)]
 use elicit_server::*;
+#[cfg(creusot)]
+use elicit_server::archive::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::display::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool { pearlite! { match state { ArchivePanelState::SqlEditor { running, result, .. } => *running ==> match result { None => true, Some(_) => false }, _ => true, } } }
+pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
+    pearlite! { pearlite! { match state { ArchivePanelState::SqlEditor { running, result, .. } => *running ==> match result { None => true, Some(_) => false }, _ => true, } } }
+}
 
 #[cfg(creusot)]
 #[requires(true)]

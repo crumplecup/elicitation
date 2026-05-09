@@ -1,10 +1,1 @@
-{
-  "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_apply_filter__creusot": { "prover": "cvc5", "time": 0.017 },
-      "vc_clear_filter__creusot": { "prover": "cvc5", "time": 0.024 },
-      "vc_new": { "prover": "cvc5", "time": 0.012 }
-    }
-  }
-}
+{ "profile": [], "proofs": { "Coma": { "vc_clear_filter__creusot": null } } }

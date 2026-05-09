@@ -1,25 +1,4 @@
 {
   "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_history_ready__creusot": {
-        "tactic": "compute_specified",
-        "children": [
-          {
-            "tactic": "split_vc",
-            "children": [
-              {
-                "tactic": "split_vc",
-                "children": [
-                  { "prover": "cvc5", "time": 0.053 },
-                  { "prover": "cvc5", "time": 0.082 }
-                ]
-              },
-              { "prover": "cvc5", "time": 0.039 }
-            ]
-          }
-        ]
-      }
-    }
-  }
+  "proofs": { "Coma": { "vc_history_ready__creusot": null } }
 }

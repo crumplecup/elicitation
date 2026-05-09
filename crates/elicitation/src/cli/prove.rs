@@ -19,13 +19,16 @@
 //! | `CREUSOT_BIN_DIR`     | `~/.local/share/creusot/bin`                          | creusot        |
 //! | `WHY3_CONFIG`         | `~/.config/creusot/why3.conf`                         | creusot        |
 //! | `DUNE_DIR_LOCATIONS`  | `why3find:lib:~/.local/share/creusot/share/why3find`  | creusot        |
+//! | `PROVE_LOG_DIR`       | `.` (current directory)                               | all backends   |
 
 use std::{
     collections::HashSet,
     fs,
-    io::Write as _,
-    path::PathBuf,
+    io::{Read, Write as _},
+    path::{Path, PathBuf},
     process::{Command, Stdio},
+    sync::{Arc, Mutex},
+    thread,
     time::Instant,
 };
 #[cfg(unix)]
@@ -50,8 +53,8 @@ pub struct ProveConfig {
     pub kani_flags: Vec<String>,
     /// Single harness to target instead of discovering all (Kani only).
     pub kani_harness: Option<String>,
-    /// CSV file path for per-harness results.
-    pub kani_csv: PathBuf,
+    /// CSV file path for per-harness results (None = no CSV).
+    pub kani_csv: Option<PathBuf>,
     /// Skip harnesses already recorded as PASS in the CSV.
     pub kani_resume: bool,
 
@@ -61,6 +64,8 @@ pub struct ProveConfig {
     pub verus_file: Option<PathBuf>,
     /// Extra flags passed verbatim to the `verus` binary.
     pub verus_flags: Vec<String>,
+    /// CSV file path for Verus results (None = no CSV).
+    pub verus_csv: Option<PathBuf>,
 
     /// `-p <package>` for Creusot.
     pub creusot_package: Option<String>,
@@ -72,12 +77,17 @@ pub struct ProveConfig {
     pub why3_config: PathBuf,
     /// `DUNE_DIR_LOCATIONS` value for why3find.
     pub dune_dir_locations: String,
+    /// CSV file path for Creusot results (None = no CSV).
+    pub creusot_csv: Option<PathBuf>,
 
     /// Timeout in seconds per verification unit. 0 means unlimited.
     pub timeout: u64,
 
     /// Print the commands that would run without executing them.
     pub dry_run: bool,
+
+    /// Directory for per-backend log files (prove_kani.log, prove_verus.log, prove_creusot.log).
+    pub log_dir: PathBuf,
 }
 
 impl ProveConfig {
@@ -113,12 +123,21 @@ impl ProveConfig {
 
         let kani_harness = opts.kani_harness.clone();
 
-        let kani_csv = opts
-            .csv
-            .clone()
-            .or_else(|| env_opt("KANI_CSV").map(PathBuf::from))
-            .unwrap_or_else(|| PathBuf::from("kani_verification_results.csv"));
+        // Derive per-backend CSV paths from the user-supplied stem (or env var).
+        // --csv bare → Some("verification_results.csv"); not passed → None.
+        // Each backend prefixes its name: kani_verification_results.csv, etc.
+        let csv_stem: Option<PathBuf> = opts.csv.clone();
+        let backend_csv = |prefix: &str, env_key: &str| -> Option<PathBuf> {
+            if let Some(p) = csv_stem.as_ref() {
+                let stem = p.file_stem().and_then(|s| s.to_str()).unwrap_or("verification_results");
+                let ext = p.extension().and_then(|s| s.to_str()).unwrap_or("csv");
+                Some(PathBuf::from(format!("{prefix}_{stem}.{ext}")))
+            } else {
+                env_opt(env_key).map(PathBuf::from)
+            }
+        };
 
+        let kani_csv = backend_csv("kani", "KANI_CSV");
         let kani_resume = opts.resume;
 
         // ── Verus ─────────────────────────────────────────────────────────────
@@ -143,6 +162,8 @@ impl ProveConfig {
             .filter(|s| !s.is_empty())
             .collect();
 
+        let verus_csv = backend_csv("verus", "VERUS_CSV");
+
         // ── Creusot ───────────────────────────────────────────────────────────
         let creusot_flags: Vec<String> = env_or("CREUSOT_FLAGS", "")
             .split_whitespace()
@@ -162,6 +183,14 @@ impl ProveConfig {
             format!("why3find:lib:{home}/.local/share/creusot/share/why3find")
         });
 
+        let creusot_csv = backend_csv("creusot", "CREUSOT_CSV");
+
+        let log_dir = opts
+            .log_dir
+            .clone()
+            .or_else(|| env_opt("PROVE_LOG_DIR").map(|p| PathBuf::from(expand(p))))
+            .unwrap_or_else(|| PathBuf::from("."));
+
         Ok(Self {
             run_kani: opts.kani,
             run_verus: opts.verus,
@@ -174,13 +203,16 @@ impl ProveConfig {
             verus_path,
             verus_file,
             verus_flags,
+            verus_csv,
             creusot_package,
             creusot_flags,
             creusot_bin_dir,
             why3_config,
             dune_dir_locations,
+            creusot_csv,
             timeout: opts.timeout,
             dry_run: opts.dry_run,
+            log_dir,
         })
     }
 }
@@ -239,42 +271,54 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
     // Single-harness shortcut (--kani-harness flag).
     if let Some(harness) = &config.kani_harness {
         let cmd = build_kani_harness_cmd(config, pkg, harness);
-        return execute_timed("cargo kani", cmd, config.timeout, config.dry_run)
+        let log = config.log_dir.join("prove_kani.log");
+        return execute_timed("cargo kani", cmd, config.timeout, config.dry_run, &log)
             .map(|_| ());
     }
 
     if config.dry_run {
-        println!("🔍 [dry-run] would discover harnesses via `cargo kani list`, then run each with timeout {}s → {}", config.timeout, config.kani_csv.display());
+        let csv_info = config.kani_csv.as_ref()
+            .map(|p| format!(" → {}", p.display()))
+            .unwrap_or_default();
+        println!("🔍 [dry-run] would discover harnesses via `cargo kani list`, then run each with timeout {}s{csv_info}", config.timeout);
         return Ok(());
     }
 
     // Warm up the codegen cache so the per-harness 300s timeout applies only
     // to CBMC model-checking, not compilation.
-    println!("🏗  Warming Kani codegen cache (--only-codegen)…");
     let mut warm_cmd = Command::new("cargo");
     warm_cmd.arg("kani").arg("-p").arg(pkg).arg("--only-codegen");
     for flag in &config.kani_flags {
         warm_cmd.arg(flag);
     }
-    let warm_status = warm_cmd.status().context("Failed to run `cargo kani --only-codegen`")?;
-    if !warm_status.success() {
-        anyhow::bail!("`cargo kani --only-codegen` failed — fix compilation errors before running harnesses");
-    }
+    let kani_log = config.log_dir.join("prove_kani.log");
+    execute_timed("cargo kani --only-codegen", warm_cmd, 0, false, &kani_log)
+        .context("`cargo kani --only-codegen` failed — fix compilation errors before running harnesses")?;
 
     // Discover harnesses.
     let harnesses = list_kani_harnesses(pkg, &config.kani_flags)?;
     let total = harnesses.len();
-    println!("🔬 Running {total} Kani harnesses → {}", config.kani_csv.display());
+    if let Some(csv) = &config.kani_csv {
+        println!("🔬 Running {total} Kani harnesses → {}", csv.display());
+    } else {
+        println!("🔬 Running {total} Kani harnesses");
+    }
 
     // Load already-passed harnesses when resuming.
-    let passed_set: HashSet<String> = if config.kani_resume && config.kani_csv.exists() {
-        load_passed_harnesses(&config.kani_csv)?
+    let passed_set: HashSet<String> = if config.kani_resume {
+        if let Some(csv) = &config.kani_csv {
+            if csv.exists() { load_passed_harnesses(csv)? } else { HashSet::new() }
+        } else {
+            HashSet::new()
+        }
     } else {
         HashSet::new()
     };
 
     // Write (or append) CSV header.
-    write_csv_header(&config.kani_csv, config.kani_resume)?;
+    if let Some(csv) = &config.kani_csv {
+        write_csv_header(csv, config.kani_resume)?;
+    }
 
     let mut pass = 0usize;
     let mut fail = 0usize;
@@ -294,7 +338,9 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
             run_harness_timed(cmd, config.timeout)?;
         let elapsed_s = elapsed.as_secs();
 
-        append_csv_row(&config.kani_csv, pkg, harness, &status_str, elapsed_s)?;
+        if let Some(csv) = &config.kani_csv {
+            append_csv_row(csv, pkg, harness, &status_str, elapsed_s)?;
+        }
 
         match status_str.as_str() {
             "PASS" => {
@@ -313,7 +359,9 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
     }
 
     println!("\nResults: {pass}/{total} passed, {fail} failed");
-    println!("CSV:     {}", config.kani_csv.display());
+    if let Some(csv) = &config.kani_csv {
+        println!("CSV:     {}", csv.display());
+    }
 
     if fail > 0 {
         anyhow::bail!("{fail} Kani harness(es) failed or timed out");
@@ -565,7 +613,19 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
         cmd.arg(flag);
     }
 
-    execute_timed("verus", cmd, config.timeout, config.dry_run).map(|_| ())
+    let log = config.log_dir.join("prove_verus.log");
+    let start = Instant::now();
+    let status = execute_timed("verus", cmd, config.timeout, config.dry_run, &log)?;
+    let elapsed_s = start.elapsed().as_secs();
+
+    if !config.dry_run {
+        if let Some(csv) = &config.verus_csv {
+            write_csv_header(csv, false)?;
+            append_csv_row(csv, "verus", "verus", &status, elapsed_s)?;
+        }
+    }
+
+    if status == "PASS" || status == "DRY-RUN" { Ok(()) } else { anyhow::bail!("verus verification failed") }
 }
 
 // ── Creusot ───────────────────────────────────────────────────────────────────
@@ -595,18 +655,34 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     cmd.env("WHY3CONFIG", &config.why3_config);
     cmd.env("DUNE_DIR_LOCATIONS", &config.dune_dir_locations);
 
-    execute_timed("cargo creusot prove", cmd, config.timeout, config.dry_run).map(|_| ())
+    let log = config.log_dir.join("prove_creusot.log");
+    let start = Instant::now();
+    let status = execute_timed("cargo creusot prove", cmd, config.timeout, config.dry_run, &log)?;
+    let elapsed_s = start.elapsed().as_secs();
+
+    if !config.dry_run {
+        if let Some(csv) = &config.creusot_csv {
+            write_csv_header(csv, false)?;
+            append_csv_row(csv, "creusot", "creusot", &status, elapsed_s)?;
+        }
+    }
+
+    if status == "PASS" || status == "DRY-RUN" { Ok(()) } else { anyhow::bail!("cargo creusot prove failed") }
 }
 
 // ── Shared execute helpers ────────────────────────────────────────────────────
 
-/// Run a command with inherited stdio, enforcing an optional timeout.
-/// Returns the exit status string ("PASS"/"FAIL"/"TIMEOUT").
+/// Run a command with a timeout, teeing stdout+stderr to both the terminal and
+/// `log_path`. Returns the status string ("PASS"/"FAIL"/"TIMEOUT").
+///
+/// On Unix the child is placed in its own process group so that a timeout
+/// SIGKILL reaches the full process tree.
 fn execute_timed(
     label: &str,
     mut cmd: Command,
     timeout_secs: u64,
     dry_run: bool,
+    log_path: &Path,
 ) -> anyhow::Result<String> {
     if dry_run {
         println!("🔍 [dry-run] {label}: {:?}", cmd);
@@ -614,42 +690,114 @@ fn execute_timed(
     }
 
     println!("🔬 Running {label}…");
-    cmd.stdout(Stdio::inherit()).stderr(Stdio::inherit());
+    println!("📝 Logging to {}", log_path.display());
 
-    if timeout_secs == 0 {
-        let status = cmd
-            .status()
-            .with_context(|| format!("Failed to execute {label}"))?;
-        if status.success() {
-            println!("✅ {label} passed");
-            return Ok("PASS".to_string());
-        } else {
-            anyhow::bail!("{label} exited with {status}");
-        }
-    }
+    let log = Arc::new(Mutex::new(
+        fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(log_path)
+            .with_context(|| format!("Failed to open log: {}", log_path.display()))?,
+    ));
+
+    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+    #[cfg(unix)]
+    cmd.process_group(0);
 
     let mut child = cmd
         .spawn()
         .with_context(|| format!("Failed to spawn {label}"))?;
-    let deadline = Instant::now() + std::time::Duration::from_secs(timeout_secs);
-    loop {
-        match child.try_wait()? {
-            Some(s) => {
-                if s.success() {
-                    println!("✅ {label} passed");
-                    return Ok("PASS".to_string());
-                } else {
-                    anyhow::bail!("{label} exited with {s}");
+
+    // Tee stdout → terminal + log.
+    let stdout_pipe = child.stdout.take();
+    let log_out = Arc::clone(&log);
+    let stdout_thread = stdout_pipe.map(|pipe| {
+        thread::spawn(move || {
+            let mut buf = [0u8; 8192];
+            let mut reader = pipe;
+            loop {
+                match reader.read(&mut buf) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        let _ = std::io::stdout().write_all(&buf[..n]);
+                        let _ = std::io::stdout().flush();
+                        if let Ok(mut f) = log_out.lock() {
+                            let _ = f.write_all(&buf[..n]);
+                        }
+                    }
                 }
             }
-            None => {
-                if Instant::now() >= deadline {
-                    let _ = child.kill();
-                    anyhow::bail!("{label} timed out after {timeout_secs}s");
+        })
+    });
+
+    // Tee stderr → terminal + log.
+    let stderr_pipe = child.stderr.take();
+    let log_err = Arc::clone(&log);
+    let stderr_thread = stderr_pipe.map(|pipe| {
+        thread::spawn(move || {
+            let mut buf = [0u8; 8192];
+            let mut reader = pipe;
+            loop {
+                match reader.read(&mut buf) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        let _ = std::io::stderr().write_all(&buf[..n]);
+                        let _ = std::io::stderr().flush();
+                        if let Ok(mut f) = log_err.lock() {
+                            let _ = f.write_all(&buf[..n]);
+                        }
+                    }
                 }
-                std::thread::sleep(std::time::Duration::from_millis(500));
+            }
+        })
+    });
+
+    let join_threads = |st: Option<thread::JoinHandle<()>>, et: Option<thread::JoinHandle<()>>| {
+        if let Some(t) = st { let _ = t.join(); }
+        if let Some(t) = et { let _ = t.join(); }
+    };
+
+    let status = if timeout_secs == 0 {
+        let s = child.wait().context("Failed to wait for child")?;
+        join_threads(stdout_thread, stderr_thread);
+        s
+    } else {
+        let deadline = Instant::now() + std::time::Duration::from_secs(timeout_secs);
+        loop {
+            match child.try_wait()? {
+                Some(s) => {
+                    join_threads(stdout_thread, stderr_thread);
+                    break s;
+                }
+                None => {
+                    if Instant::now() >= deadline {
+                        #[cfg(unix)]
+                        {
+                            let pgid = child.id() as i32;
+                            let _ = Command::new("kill")
+                                .args(["-9", &format!("-{pgid}")])
+                                .status();
+                        }
+                        let _ = child.kill();
+                        let _ = child.wait();
+                        join_threads(stdout_thread, stderr_thread);
+                        anyhow::bail!(
+                            "{label} timed out after {timeout_secs}s — see {}",
+                            log_path.display()
+                        );
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+                }
             }
         }
+    };
+
+    if status.success() {
+        println!("✅ {label} passed");
+        Ok("PASS".to_string())
+    } else {
+        anyhow::bail!("{label} exited with {status} — see {}", log_path.display());
     }
 }
 

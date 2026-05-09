@@ -159,7 +159,7 @@ pub fn c24_depth_decreased(r: &C24Result<C24Node>, input_depth: usize) -> bool {
 #[logic]
 pub fn c24_depth_ok_implies_result(depth: usize, r: &C24Result<C24Node>) -> bool {
     pearlite! {
-        (depth@ > 0) ==> c24_is_ok(r)
+        depth@ > 0 ==> c24_is_ok(r)
     }
 }
 

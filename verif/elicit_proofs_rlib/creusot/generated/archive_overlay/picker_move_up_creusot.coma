@@ -1,20 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 71 0 74 65 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 0 53 175 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
-let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
-let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
-let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 78 40 78 41
-let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 78 21 78 42
-let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 72 4 72 9
-let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 73 4 73 9
-let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 69 11 69 45
-let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 74 5 74 65
-let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 70 10 70 47
-let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 25 8 27 40
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 178 53 206
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 38 53 43
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 66 53 71
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 51 11 51 45
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 115 53 175
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 52 10 52 47
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 26 28 26 218
 
 use creusot.int.UInt64
 use creusot.prelude.Any
@@ -34,33 +30,6 @@ type t_ArchiveOverlayState =
   | ExportPickerOpen UInt64.t t_Vec_ExportFormat_Global
   | SavePromptOpen t_String
   | SavedBrowserOpen t_Vec_SavedQuery_Global UInt64.t
-
-let rec elim_ExportPickerOpen (_x: t_ArchiveOverlayState)
-  (return (idx: UInt64.t) (formats: t_Vec_ExportFormat_Global)) = any
-  [ _k (idx: UInt64.t) (formats: t_Vec_ExportFormat_Global) -> {ExportPickerOpen idx formats = _x}
-    (! return {idx} {formats})
-  | _chk -> (! {[@expl:elim ExportPickerOpen] match _x with
-      | ExportPickerOpen _ _ -> true
-      | _ -> false
-      end}
-    any) ]
-
-constant const_MIN: UInt64.t = (0: UInt64.t)
-
-constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
-
-let rec saturating_sub (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
-  [ return (result: UInt64.t) ->
-  {[@stop_split] [@expl:saturating_sub ensures] ([@stop_split] [@expl:saturating_sub ensures #0] [%#snum] UInt64.t'int self_
-            - UInt64.t'int rhs
-          >= UInt64.t'int const_MIN
-        /\ UInt64.t'int self_ - UInt64.t'int rhs <= UInt64.t'int const_MAX
-      -> UInt64.t'int result = UInt64.t'int self_ - UInt64.t'int rhs)
-    /\ ([@stop_split] [@expl:saturating_sub ensures #1] [%#snum'0] UInt64.t'int self_ - UInt64.t'int rhs
-        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
-    /\ ([@stop_split] [@expl:saturating_sub ensures #2] [%#snum'1] UInt64.t'int self_ - UInt64.t'int rhs
-      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
-    (! return {result}) ]
 
 type t_Established_ArchiveOverlayConsistent
 
@@ -103,6 +72,8 @@ predicate inv_Seq_SavedQuery [@inline:trivial] (_1: Seq.seq t_SavedQuery) = inva
 
 meta "rewrite_def" predicate inv_Seq_SavedQuery
 
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
 function view_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) : Seq.seq t_SavedQuery
 
 axiom view_Vec_SavedQuery_Global_spec:
@@ -137,8 +108,8 @@ axiom view_Vec_ExportFormat_Global_spec:
   forall self: t_Vec_ExportFormat_Global. [%#svec] Seq.length (view_Vec_ExportFormat_Global self)
     <= UInt64.t'int const_MAX
 
-predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 23 0 23 70] (state: t_ArchiveOverlayState) =
-  [%#sarchive_overlay'6] match state with
+predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 25 0 25 70] (state: t_ArchiveOverlayState) =
+  [%#sarchive_overlay'5] match state with
     | ExportPickerOpen idx formats -> UInt64.t'int idx <= Seq.length (view_Vec_ExportFormat_Global formats)
     | SavedBrowserOpen entries idx -> UInt64.t'int idx <= Seq.length (view_Vec_SavedQuery_Global entries)
     | _ -> true
@@ -154,39 +125,18 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec picker_move_up__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 71 0 74 65]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 53 0 53 175]
   (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent)
   (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
-  {[@stop_split] [@expl:picker_move_up__creusot requires] ([@stop_split] [@expl:picker_move_up__creusot 'state' type invariant] [%#sarchive_overlay'1] inv_ArchiveOverlayState state)
-  /\ ([@stop_split] [@expl:picker_move_up__creusot 'proof' type invariant] [%#sarchive_overlay'2] inv_Established_ArchiveOverlayConsistent proof)
-  /\ ([@stop_split] [@expl:picker_move_up__creusot requires] [%#sarchive_overlay'3] archive_overlay_consistent state)}
+  {[@stop_split] [@expl:picker_move_up__creusot requires] ([@stop_split] [@expl:picker_move_up__creusot 'state' type invariant] [%#sarchive_overlay'0] inv_ArchiveOverlayState state)
+  /\ ([@stop_split] [@expl:picker_move_up__creusot 'proof' type invariant] [%#sarchive_overlay'1] inv_Established_ArchiveOverlayConsistent proof)
+  /\ ([@stop_split] [@expl:picker_move_up__creusot requires] [%#sarchive_overlay'2] archive_overlay_consistent state)}
   (! bb0
-  [ bb0 = any
-    [ br0 -> {state = OverlayNone} (! bb1)
-    | br1 -> {state = HelpOpen} (! bb1)
-    | br2 (x0: UInt64.t) (x1: t_Vec_ExportFormat_Global) -> {state = ExportPickerOpen x0 x1} (! bb3)
-    | br3 (x0: t_String) -> {state = SavePromptOpen x0} (! bb1)
-    | br4 (x0: t_Vec_SavedQuery_Global) (x1: UInt64.t) -> {state = SavedBrowserOpen x0 x1} (! bb1) ]
-  | bb1 = s0 [ s0 = [ &other <- state ] s1 | s1 = [ &next <- other ] s2 | s2 = bb8 ]
-  | bb3 = s0
-    [ s0 = elim_ExportPickerOpen {state}
-        (fun (ridx: UInt64.t) (rformats: t_Vec_ExportFormat_Global) -> [ &idx <- ridx ] s1)
-    | s1 = elim_ExportPickerOpen {state}
-        (fun (ridx: UInt64.t) (rformats: t_Vec_ExportFormat_Global) -> [ &formats <- rformats ] s2)
-    | s2 = saturating_sub [%#sarchive_overlay'0] {idx} {[%#sarchive_overlay] (1: UInt64.t)}
-        (fun (_x: UInt64.t) -> [ &_10 <- _x ] s3)
-    | s3 = [ &next <- ExportPickerOpen _10 formats ] s4
-    | s4 = bb8 ]
-  | bb8 = s0 [ s0 = [ &_ret <- { f0 = next; f1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ bb0 = {[%#sarchive_overlay] false} any ]
   [ & _ret: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = Any.any_l ()
   | & state: t_ArchiveOverlayState = state
-  | & proof: t_Established_ArchiveOverlayConsistent = proof
-  | & next: t_ArchiveOverlayState = Any.any_l ()
-  | & idx: UInt64.t = Any.any_l ()
-  | & formats: t_Vec_ExportFormat_Global = Any.any_l ()
-  | & _10: UInt64.t = Any.any_l ()
-  | & other: t_ArchiveOverlayState = Any.any_l () ])
+  | & proof: t_Established_ArchiveOverlayConsistent = proof ])
   [ return (result: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) ->
-  {[@stop_split] [@expl:picker_move_up__creusot ensures] ([@stop_split] [@expl:picker_move_up__creusot result type invariant] [%#sarchive_overlay'4] inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent result)
-    /\ ([@stop_split] [@expl:picker_move_up__creusot ensures] [%#sarchive_overlay'5] archive_overlay_consistent result.f0)}
+  {[@stop_split] [@expl:picker_move_up__creusot ensures] ([@stop_split] [@expl:picker_move_up__creusot result type invariant] [%#sarchive_overlay'3] inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent result)
+    /\ ([@stop_split] [@expl:picker_move_up__creusot ensures] [%#sarchive_overlay'4] archive_overlay_consistent result.f0)}
     (! return {result}) ]

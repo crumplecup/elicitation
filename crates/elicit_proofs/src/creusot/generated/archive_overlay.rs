@@ -13,10 +13,18 @@ use elicitation::Established;
 use elicitation::kani_label;
 #[cfg(creusot)]
 use elicit_server::*;
+#[cfg(creusot)]
+use elicit_server::archive::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool { pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } } }
+pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
+    pearlite! { pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } } }
+}
 
 #[cfg(creusot)]
 #[requires(true)]

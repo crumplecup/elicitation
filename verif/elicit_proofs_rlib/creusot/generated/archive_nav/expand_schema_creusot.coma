@@ -1,35 +1,21 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 88 0 93 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 0 55 193 *)
 
-let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 102 29 102 56
-let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 89 4 89 9
-let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 90 4 90 9
-let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 86 11 86 41
-let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 93 5 93 57
-let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 87 10 87 43
-let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 25 8 26 20
-let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 204 26 204 30
-let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 202 18 202 34
-let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 203 18 203 40
-let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
-let%span svec'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 196 55 245
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 37 55 42
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 61 55 66
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 53 11 53 41
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 141 55 193
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 54 10 54 43
+let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 28 28 28 120
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
-let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 93 20 93 44
-let%span sinvariant'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span sslice = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 308 48 308 52
-let%span sslice'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 301 18 301 47
-let%span sslice'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 302 18 306 56
-let%span sslice'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 307 18 307 55
-let%span sslice'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 17 20 17 30
-let%span sslice'4 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 148 20 148 37
-let%span sslice'5 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 153 20 153 37
-let%span sslice'6 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/slice.rs" 158 20 158 88
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 
 use creusot.int.UInt64
+use creusot.prelude.Any
 use seq.Seq
 use creusot.int.Int64
-use creusot.prelude.MutBorrow
-use creusot.slice.Slice64
-use creusot.prelude.Any
 use creusot.prelude.Char
 use int.Int
 
@@ -43,17 +29,11 @@ type t_ArchiveNavState =
   | NavReady t_Vec_SchemaWithExpand_Global UInt64.t t_String bool bool
   | NavFiltered t_Vec_SchemaWithExpand_Global t_String UInt64.t
 
-let rec elim_NavReady (_x: t_ArchiveNavState)
-  (return (schemas: t_Vec_SchemaWithExpand_Global) (cursor: UInt64.t) (filter: t_String) (filter_active: bool) (show_help: bool)) =
-  any
-  [ _k (schemas: t_Vec_SchemaWithExpand_Global) (cursor: UInt64.t) (filter: t_String) (filter_active: bool)
-    (show_help: bool) -> {NavReady schemas cursor filter filter_active show_help = _x}
-    (! return {schemas} {cursor} {filter} {filter_active} {show_help})
-  | _chk -> (! {[@expl:elim NavReady] match _x with
-      | NavReady _ _ _ _ _ -> true
-      | _ -> false
-      end}
-    any) ]
+type t_Established_ArchiveNavConsistent
+
+type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
+  f0: t_ArchiveNavState;
+  f1: t_Established_ArchiveNavConsistent }
 
 type t_Vec_TableDescriptor_Global
 
@@ -119,7 +99,7 @@ predicate inv_Option_String (_1: t_Option_String)
 axiom inv_axiom [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
     = match x with
       | None'0 -> true
-      | Some'0 f0 -> inv_String f0
+      | Some'0 f0'0 -> inv_String f0'0
       end
 
 predicate inv_ColumnDescriptor (_1: t_ColumnDescriptor)
@@ -128,7 +108,7 @@ axiom inv_axiom'0 [@rewrite]: forall x: t_ColumnDescriptor [inv_ColumnDescriptor
     = (inv_String x.name'0 /\ inv_String x.sql_type'0 /\ inv_Option_String x.default_value'0)
 
 predicate invariant_ref_ColumnDescriptor [@inline:trivial] (self: t_ColumnDescriptor) =
-  [%#sinvariant'0] inv_ColumnDescriptor self
+  [%#sinvariant] inv_ColumnDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_ColumnDescriptor
 
@@ -151,11 +131,11 @@ constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
 function view_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) : Seq.seq t_ColumnDescriptor
 
 axiom view_Vec_ColumnDescriptor_Global_spec:
-  forall self: t_Vec_ColumnDescriptor_Global. [%#svec'2] Seq.length (view_Vec_ColumnDescriptor_Global self)
+  forall self: t_Vec_ColumnDescriptor_Global. [%#svec'0] Seq.length (view_Vec_ColumnDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) =
-  [%#svec'3] inv_Seq_ColumnDescriptor (view_Vec_ColumnDescriptor_Global self)
+  [%#svec] inv_Seq_ColumnDescriptor (view_Vec_ColumnDescriptor_Global self)
 
 predicate inv_Vec_ColumnDescriptor_Global (_1: t_Vec_ColumnDescriptor_Global)
 
@@ -169,7 +149,7 @@ axiom inv_axiom'2 [@rewrite]: forall x: t_TableDescriptor [inv_TableDescriptor x
     = (inv_String x.schema /\ inv_String x.table_name /\ inv_Vec_ColumnDescriptor_Global x.columns)
 
 predicate invariant_ref_TableDescriptor [@inline:trivial] (self: t_TableDescriptor) =
-  [%#sinvariant'0] inv_TableDescriptor self
+  [%#sinvariant] inv_TableDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_TableDescriptor
 
@@ -189,11 +169,11 @@ meta "rewrite_def" predicate inv_Seq_TableDescriptor
 function view_Vec_TableDescriptor_Global (self: t_Vec_TableDescriptor_Global) : Seq.seq t_TableDescriptor
 
 axiom view_Vec_TableDescriptor_Global_spec:
-  forall self: t_Vec_TableDescriptor_Global. [%#svec'2] Seq.length (view_Vec_TableDescriptor_Global self)
+  forall self: t_Vec_TableDescriptor_Global. [%#svec'0] Seq.length (view_Vec_TableDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_TableDescriptor_Global (self: t_Vec_TableDescriptor_Global) =
-  [%#svec'3] inv_Seq_TableDescriptor (view_Vec_TableDescriptor_Global self)
+  [%#svec] inv_Seq_TableDescriptor (view_Vec_TableDescriptor_Global self)
 
 predicate inv_Vec_TableDescriptor_Global (_1: t_Vec_TableDescriptor_Global)
 
@@ -222,7 +202,7 @@ axiom inv_axiom'4 [@rewrite]: forall x: t_FunctionDescriptor [inv_FunctionDescri
     /\ inv_String x.arguments'1 /\ inv_String x.return_type'1 /\ inv_String x.language'1 /\ inv_String x.body_preview'1)
 
 predicate invariant_ref_FunctionDescriptor [@inline:trivial] (self: t_FunctionDescriptor) =
-  [%#sinvariant'0] inv_FunctionDescriptor self
+  [%#sinvariant] inv_FunctionDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_FunctionDescriptor
 
@@ -243,11 +223,11 @@ meta "rewrite_def" predicate inv_Seq_FunctionDescriptor
 function view_Vec_FunctionDescriptor_Global (self: t_Vec_FunctionDescriptor_Global) : Seq.seq t_FunctionDescriptor
 
 axiom view_Vec_FunctionDescriptor_Global_spec:
-  forall self: t_Vec_FunctionDescriptor_Global. [%#svec'2] Seq.length (view_Vec_FunctionDescriptor_Global self)
+  forall self: t_Vec_FunctionDescriptor_Global. [%#svec'0] Seq.length (view_Vec_FunctionDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_FunctionDescriptor_Global (self: t_Vec_FunctionDescriptor_Global) =
-  [%#svec'3] inv_Seq_FunctionDescriptor (view_Vec_FunctionDescriptor_Global self)
+  [%#svec] inv_Seq_FunctionDescriptor (view_Vec_FunctionDescriptor_Global self)
 
 predicate inv_Vec_FunctionDescriptor_Global (_1: t_Vec_FunctionDescriptor_Global)
 
@@ -272,7 +252,7 @@ axiom inv_axiom'6 [@rewrite]: forall x: t_SequenceDescriptor [inv_SequenceDescri
     = (inv_String x.schema'2 /\ inv_String x.name'2 /\ inv_Option_String x.owned_by'2)
 
 predicate invariant_ref_SequenceDescriptor [@inline:trivial] (self: t_SequenceDescriptor) =
-  [%#sinvariant'0] inv_SequenceDescriptor self
+  [%#sinvariant] inv_SequenceDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_SequenceDescriptor
 
@@ -293,11 +273,11 @@ meta "rewrite_def" predicate inv_Seq_SequenceDescriptor
 function view_Vec_SequenceDescriptor_Global (self: t_Vec_SequenceDescriptor_Global) : Seq.seq t_SequenceDescriptor
 
 axiom view_Vec_SequenceDescriptor_Global_spec:
-  forall self: t_Vec_SequenceDescriptor_Global. [%#svec'2] Seq.length (view_Vec_SequenceDescriptor_Global self)
+  forall self: t_Vec_SequenceDescriptor_Global. [%#svec'0] Seq.length (view_Vec_SequenceDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_SequenceDescriptor_Global (self: t_Vec_SequenceDescriptor_Global) =
-  [%#svec'3] inv_Seq_SequenceDescriptor (view_Vec_SequenceDescriptor_Global self)
+  [%#svec] inv_Seq_SequenceDescriptor (view_Vec_SequenceDescriptor_Global self)
 
 predicate inv_Vec_SequenceDescriptor_Global (_1: t_Vec_SequenceDescriptor_Global)
 
@@ -309,7 +289,7 @@ type t_Vec_String_Global
 
 type t_EnumDescriptor = { schema'3: t_String; name'3: t_String; labels'3: t_Vec_String_Global }
 
-predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant'0] inv_String self
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
 
 meta "rewrite_def" predicate invariant_ref_String
 
@@ -328,11 +308,11 @@ meta "rewrite_def" predicate inv_Seq_String
 
 function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
 
-axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec'2] Seq.length (view_Vec_String_Global self)
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec'0] Seq.length (view_Vec_String_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
-  [%#svec'3] inv_Seq_String (view_Vec_String_Global self)
+  [%#svec] inv_Seq_String (view_Vec_String_Global self)
 
 predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
 
@@ -345,7 +325,7 @@ axiom inv_axiom'9 [@rewrite]: forall x: t_EnumDescriptor [inv_EnumDescriptor x].
     = (inv_String x.schema'3 /\ inv_String x.name'3 /\ inv_Vec_String_Global x.labels'3)
 
 predicate invariant_ref_EnumDescriptor [@inline:trivial] (self: t_EnumDescriptor) =
-  [%#sinvariant'0] inv_EnumDescriptor self
+  [%#sinvariant] inv_EnumDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_EnumDescriptor
 
@@ -365,11 +345,11 @@ meta "rewrite_def" predicate inv_Seq_EnumDescriptor
 function view_Vec_EnumDescriptor_Global (self: t_Vec_EnumDescriptor_Global) : Seq.seq t_EnumDescriptor
 
 axiom view_Vec_EnumDescriptor_Global_spec:
-  forall self: t_Vec_EnumDescriptor_Global. [%#svec'2] Seq.length (view_Vec_EnumDescriptor_Global self)
+  forall self: t_Vec_EnumDescriptor_Global. [%#svec'0] Seq.length (view_Vec_EnumDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_EnumDescriptor_Global (self: t_Vec_EnumDescriptor_Global) =
-  [%#svec'3] inv_Seq_EnumDescriptor (view_Vec_EnumDescriptor_Global self)
+  [%#svec] inv_Seq_EnumDescriptor (view_Vec_EnumDescriptor_Global self)
 
 predicate inv_Vec_EnumDescriptor_Global (_1: t_Vec_EnumDescriptor_Global)
 
@@ -393,7 +373,7 @@ axiom inv_axiom'11 [@rewrite]: forall x: t_DomainDescriptor [inv_DomainDescripto
     /\ inv_String x.base_type'4 /\ inv_Option_String x.default_expr'4 /\ inv_Vec_String_Global x.check_constraints'4)
 
 predicate invariant_ref_DomainDescriptor [@inline:trivial] (self: t_DomainDescriptor) =
-  [%#sinvariant'0] inv_DomainDescriptor self
+  [%#sinvariant] inv_DomainDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_DomainDescriptor
 
@@ -414,11 +394,11 @@ meta "rewrite_def" predicate inv_Seq_DomainDescriptor
 function view_Vec_DomainDescriptor_Global (self: t_Vec_DomainDescriptor_Global) : Seq.seq t_DomainDescriptor
 
 axiom view_Vec_DomainDescriptor_Global_spec:
-  forall self: t_Vec_DomainDescriptor_Global. [%#svec'2] Seq.length (view_Vec_DomainDescriptor_Global self)
+  forall self: t_Vec_DomainDescriptor_Global. [%#svec'0] Seq.length (view_Vec_DomainDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_DomainDescriptor_Global (self: t_Vec_DomainDescriptor_Global) =
-  [%#svec'3] inv_Seq_DomainDescriptor (view_Vec_DomainDescriptor_Global self)
+  [%#svec] inv_Seq_DomainDescriptor (view_Vec_DomainDescriptor_Global self)
 
 predicate inv_Vec_DomainDescriptor_Global (_1: t_Vec_DomainDescriptor_Global)
 
@@ -442,7 +422,7 @@ axiom inv_axiom'13 [@rewrite]:
     = (inv_String x.name'6 /\ inv_String x.type_name'6)
 
 predicate invariant_ref_CompositeTypeAttribute [@inline:trivial] (self: t_CompositeTypeAttribute) =
-  [%#sinvariant'0] inv_CompositeTypeAttribute self
+  [%#sinvariant] inv_CompositeTypeAttribute self
 
 meta "rewrite_def" predicate invariant_ref_CompositeTypeAttribute
 
@@ -464,11 +444,11 @@ meta "rewrite_def" predicate inv_Seq_CompositeTypeAttribute
 function view_Vec_CompositeTypeAttribute_Global (self: t_Vec_CompositeTypeAttribute_Global) : Seq.seq t_CompositeTypeAttribute
 
 axiom view_Vec_CompositeTypeAttribute_Global_spec:
-  forall self: t_Vec_CompositeTypeAttribute_Global. [%#svec'2] Seq.length (view_Vec_CompositeTypeAttribute_Global self)
+  forall self: t_Vec_CompositeTypeAttribute_Global. [%#svec'0] Seq.length (view_Vec_CompositeTypeAttribute_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_CompositeTypeAttribute_Global (self: t_Vec_CompositeTypeAttribute_Global) =
-  [%#svec'3] inv_Seq_CompositeTypeAttribute (view_Vec_CompositeTypeAttribute_Global self)
+  [%#svec] inv_Seq_CompositeTypeAttribute (view_Vec_CompositeTypeAttribute_Global self)
 
 predicate inv_Vec_CompositeTypeAttribute_Global (_1: t_Vec_CompositeTypeAttribute_Global)
 
@@ -483,7 +463,7 @@ axiom inv_axiom'15 [@rewrite]:
     = (inv_String x.schema'5 /\ inv_String x.name'5 /\ inv_Vec_CompositeTypeAttribute_Global x.attributes'5)
 
 predicate invariant_ref_CompositeTypeDescriptor [@inline:trivial] (self: t_CompositeTypeDescriptor) =
-  [%#sinvariant'0] inv_CompositeTypeDescriptor self
+  [%#sinvariant] inv_CompositeTypeDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_CompositeTypeDescriptor
 
@@ -505,11 +485,11 @@ meta "rewrite_def" predicate inv_Seq_CompositeTypeDescriptor
 function view_Vec_CompositeTypeDescriptor_Global (self: t_Vec_CompositeTypeDescriptor_Global) : Seq.seq t_CompositeTypeDescriptor
 
 axiom view_Vec_CompositeTypeDescriptor_Global_spec:
-  forall self: t_Vec_CompositeTypeDescriptor_Global. [%#svec'2] Seq.length (view_Vec_CompositeTypeDescriptor_Global self)
+  forall self: t_Vec_CompositeTypeDescriptor_Global. [%#svec'0] Seq.length (view_Vec_CompositeTypeDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_CompositeTypeDescriptor_Global (self: t_Vec_CompositeTypeDescriptor_Global) =
-  [%#svec'3] inv_Seq_CompositeTypeDescriptor (view_Vec_CompositeTypeDescriptor_Global self)
+  [%#svec] inv_Seq_CompositeTypeDescriptor (view_Vec_CompositeTypeDescriptor_Global self)
 
 predicate inv_Vec_CompositeTypeDescriptor_Global (_1: t_Vec_CompositeTypeDescriptor_Global)
 
@@ -536,7 +516,7 @@ axiom inv_axiom'17 [@rewrite]: forall x: t_TriggerDescriptor [inv_TriggerDescrip
     /\ inv_String x.table'7 /\ inv_String x.name'7 /\ inv_String x.timing'7 /\ inv_String x.function''7)
 
 predicate invariant_ref_TriggerDescriptor [@inline:trivial] (self: t_TriggerDescriptor) =
-  [%#sinvariant'0] inv_TriggerDescriptor self
+  [%#sinvariant] inv_TriggerDescriptor self
 
 meta "rewrite_def" predicate invariant_ref_TriggerDescriptor
 
@@ -557,11 +537,11 @@ meta "rewrite_def" predicate inv_Seq_TriggerDescriptor
 function view_Vec_TriggerDescriptor_Global (self: t_Vec_TriggerDescriptor_Global) : Seq.seq t_TriggerDescriptor
 
 axiom view_Vec_TriggerDescriptor_Global_spec:
-  forall self: t_Vec_TriggerDescriptor_Global. [%#svec'2] Seq.length (view_Vec_TriggerDescriptor_Global self)
+  forall self: t_Vec_TriggerDescriptor_Global. [%#svec'0] Seq.length (view_Vec_TriggerDescriptor_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_TriggerDescriptor_Global (self: t_Vec_TriggerDescriptor_Global) =
-  [%#svec'3] inv_Seq_TriggerDescriptor (view_Vec_TriggerDescriptor_Global self)
+  [%#svec] inv_Seq_TriggerDescriptor (view_Vec_TriggerDescriptor_Global self)
 
 predicate inv_Vec_TriggerDescriptor_Global (_1: t_Vec_TriggerDescriptor_Global)
 
@@ -587,7 +567,7 @@ axiom inv_axiom'20 [@rewrite]: forall x: t_SchemaWithExpand [inv_SchemaWithExpan
     = inv_SchemaEntry x.entry
 
 predicate invariant_ref_SchemaWithExpand [@inline:trivial] (self: t_SchemaWithExpand) =
-  [%#sinvariant'0] inv_SchemaWithExpand self
+  [%#sinvariant] inv_SchemaWithExpand self
 
 meta "rewrite_def" predicate invariant_ref_SchemaWithExpand
 
@@ -608,11 +588,11 @@ meta "rewrite_def" predicate inv_Seq_SchemaWithExpand
 function view_Vec_SchemaWithExpand_Global (self: t_Vec_SchemaWithExpand_Global) : Seq.seq t_SchemaWithExpand
 
 axiom view_Vec_SchemaWithExpand_Global_spec:
-  forall self: t_Vec_SchemaWithExpand_Global. [%#svec'2] Seq.length (view_Vec_SchemaWithExpand_Global self)
+  forall self: t_Vec_SchemaWithExpand_Global. [%#svec'0] Seq.length (view_Vec_SchemaWithExpand_Global self)
     <= UInt64.t'int const_MAX
 
 predicate invariant_Vec_SchemaWithExpand_Global (self: t_Vec_SchemaWithExpand_Global) =
-  [%#svec'3] inv_Seq_SchemaWithExpand (view_Vec_SchemaWithExpand_Global self)
+  [%#svec] inv_Seq_SchemaWithExpand (view_Vec_SchemaWithExpand_Global self)
 
 predicate inv_Vec_SchemaWithExpand_Global (_1: t_Vec_SchemaWithExpand_Global)
 
@@ -620,125 +600,9 @@ axiom inv_axiom'21:
   forall x: t_Vec_SchemaWithExpand_Global [inv_Vec_SchemaWithExpand_Global x]. inv_Vec_SchemaWithExpand_Global x
     -> invariant_Vec_SchemaWithExpand_Global x
 
-predicate invariant_refmut_Vec_SchemaWithExpand_Global [@inline:trivial] (self: MutBorrow.t t_Vec_SchemaWithExpand_Global) =
-  [%#sinvariant] inv_Vec_SchemaWithExpand_Global self.current /\ inv_Vec_SchemaWithExpand_Global self.final
-
-meta "rewrite_def" predicate invariant_refmut_Vec_SchemaWithExpand_Global
-
-predicate inv_refmut_Vec_SchemaWithExpand_Global [@inline:trivial] (_1: MutBorrow.t t_Vec_SchemaWithExpand_Global) =
-  invariant_refmut_Vec_SchemaWithExpand_Global _1
-
-meta "rewrite_def" predicate inv_refmut_Vec_SchemaWithExpand_Global
-
-predicate invariant_slice_SchemaWithExpand (self: Slice64.slice t_SchemaWithExpand) =
-  [%#sslice'3] inv_Seq_SchemaWithExpand (Slice64.view self)
-
-predicate inv_slice_SchemaWithExpand [@inline:trivial] (_1: Slice64.slice t_SchemaWithExpand) =
-  invariant_slice_SchemaWithExpand _1
-
-meta "rewrite_def" predicate inv_slice_SchemaWithExpand
-
-predicate invariant_refmut_slice_SchemaWithExpand [@inline:trivial] (self: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) =
-  [%#sinvariant] inv_slice_SchemaWithExpand self.current /\ inv_slice_SchemaWithExpand self.final
-
-meta "rewrite_def" predicate invariant_refmut_slice_SchemaWithExpand
-
-predicate inv_refmut_slice_SchemaWithExpand [@inline:trivial] (_1: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) =
-  invariant_refmut_slice_SchemaWithExpand _1
-
-meta "rewrite_def" predicate inv_refmut_slice_SchemaWithExpand
-
-let rec deref_mut_Vec_SchemaWithExpand_Global (self_: MutBorrow.t t_Vec_SchemaWithExpand_Global)
-  (return (x: MutBorrow.t (Slice64.slice t_SchemaWithExpand))) =
-  {[@stop_split] [@expl:deref_mut 'self_' type invariant] [%#svec] inv_refmut_Vec_SchemaWithExpand_Global self_}
-  any
-  [ return (result: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) ->
-  {[@stop_split] [@expl:deref_mut_Vec_SchemaWithExpand_Global ensures] ([@stop_split] [@expl:deref_mut result type invariant] inv_refmut_slice_SchemaWithExpand result)
-    /\ ([@stop_split] [@expl:deref_mut ensures #0] [%#svec'0] Slice64.view result.current
-      = view_Vec_SchemaWithExpand_Global self_.current)
-    /\ ([@stop_split] [@expl:deref_mut ensures #1] [%#svec'1] Slice64.view result.final
-    = view_Vec_SchemaWithExpand_Global self_.final)}
-    (! return {result}) ]
-
-type t_Option_refmut_SchemaWithExpand = None'1 | Some'1 (MutBorrow.t t_SchemaWithExpand)
-
-predicate invariant_refmut_SchemaWithExpand [@inline:trivial] (self: MutBorrow.t t_SchemaWithExpand) =
-  [%#sinvariant] inv_SchemaWithExpand self.current /\ inv_SchemaWithExpand self.final
-
-meta "rewrite_def" predicate invariant_refmut_SchemaWithExpand
-
-predicate inv_refmut_SchemaWithExpand [@inline:trivial] (_1: MutBorrow.t t_SchemaWithExpand) =
-  invariant_refmut_SchemaWithExpand _1
-
-meta "rewrite_def" predicate inv_refmut_SchemaWithExpand
-
-predicate inv_Option_refmut_SchemaWithExpand (_1: t_Option_refmut_SchemaWithExpand)
-
-axiom inv_axiom'22 [@rewrite]:
-  forall x: t_Option_refmut_SchemaWithExpand [inv_Option_refmut_SchemaWithExpand x]. inv_Option_refmut_SchemaWithExpand x
-    = match x with
-      | None'1 -> true
-      | Some'1 f0 -> inv_refmut_SchemaWithExpand f0
-      end
-
-predicate in_bounds_usize [@inline:trivial] (self: UInt64.t) (seq: Seq.seq t_SchemaWithExpand) =
-  [%#sslice'4] UInt64.t'int self < Seq.length seq
-
-meta "rewrite_def" predicate in_bounds_usize
-
-predicate has_value_usize [@inline:trivial] (self: UInt64.t) (seq: Seq.seq t_SchemaWithExpand) (out: t_SchemaWithExpand) =
-  [%#sslice'5] Seq.get seq (UInt64.t'int self) = out
-
-meta "rewrite_def" predicate has_value_usize
-
-predicate resolve_elswhere_usize [@inline:trivial] (self: UInt64.t) (old': Seq.seq t_SchemaWithExpand) (fin: Seq.seq t_SchemaWithExpand) =
-  [%#sslice'6] forall i: int. 0 <= i /\ i <> UInt64.t'int self /\ i < Seq.length old' -> Seq.get old' i = Seq.get fin i
-
-meta "rewrite_def" predicate resolve_elswhere_usize
-
-let rec get_mut_SchemaWithExpand (self_: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) (ix: UInt64.t)
-  (return (x: t_Option_refmut_SchemaWithExpand)) =
-  {[@stop_split] [@expl:get_mut 'self_' type invariant] [%#sslice] inv_refmut_slice_SchemaWithExpand self_}
-  any
-  [ return (result: t_Option_refmut_SchemaWithExpand) ->
-  {[@stop_split] [@expl:get_mut_SchemaWithExpand ensures] ([@stop_split] [@expl:get_mut result type invariant] inv_Option_refmut_SchemaWithExpand result)
-    /\ ([@stop_split] [@expl:get_mut ensures #0] [%#sslice'0] Seq.length (Slice64.view self_.final)
-      = Seq.length (Slice64.view self_.current))
-    /\ ([@stop_split] [@expl:get_mut ensures #1] [%#sslice'1] in_bounds_usize ix (Slice64.view self_.current)
-      -> (exists r: MutBorrow.t t_SchemaWithExpand. result = Some'1 r
-        /\ has_value_usize ix (Slice64.view self_.current) r.current
-        /\ has_value_usize ix (Slice64.view self_.final) r.final
-        /\ resolve_elswhere_usize ix (Slice64.view self_.current) (Slice64.view self_.final)))
-    /\ ([@stop_split] [@expl:get_mut ensures #2] [%#sslice'2] in_bounds_usize ix (Slice64.view self_.current)
-    \/ result = None'1)}
-    (! return {result}) ]
-
-predicate resolve_refmut_SchemaWithExpand [@inline:trivial] (_1: MutBorrow.t t_SchemaWithExpand) = _1.final = _1.current
-
-meta "rewrite_def" predicate resolve_refmut_SchemaWithExpand
-
-predicate resolve_refmut_slice_SchemaWithExpand [@inline:trivial] (_1: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) =
-  _1.final = _1.current
-
-meta "rewrite_def" predicate resolve_refmut_slice_SchemaWithExpand
-
-let rec elim_Some (_x: t_Option_refmut_SchemaWithExpand) (return (f0: MutBorrow.t t_SchemaWithExpand)) = any
-  [ _k (f0: MutBorrow.t t_SchemaWithExpand) -> {Some'1 f0 = _x} (! return {f0})
-  | _chk -> (! {[@expl:elim Some] match _x with
-      | Some'1 _ -> true
-      | _ -> false
-      end}
-    any) ]
-
-type t_Established_ArchiveNavConsistent
-
-type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
-  f0: t_ArchiveNavState;
-  f1: t_Established_ArchiveNavConsistent }
-
 predicate inv_ArchiveNavState (_1: t_ArchiveNavState)
 
-axiom inv_axiom'23 [@rewrite]: forall x: t_ArchiveNavState [inv_ArchiveNavState x]. inv_ArchiveNavState x
+axiom inv_axiom'22 [@rewrite]: forall x: t_ArchiveNavState [inv_ArchiveNavState x]. inv_ArchiveNavState x
     = match x with
       | NavUnloaded -> true
       | NavLoading -> true
@@ -751,7 +615,7 @@ predicate inv_Established_ArchiveNavConsistent (_1: t_Established_ArchiveNavCons
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 62] (state: t_ArchiveNavState) =
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 27 0 27 62] (state: t_ArchiveNavState) =
   [%#sarchive_nav'5] match state with
     | NavFiltered _ filter _ -> Seq.length (view_String filter) > 0
     | _ -> true
@@ -767,95 +631,19 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec expand_schema__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 88 0 93 57]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 55 0 55 193]
   (state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (schema_idx: UInt64.t) (expanded'0: bool)
   (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
   {[@stop_split] [@expl:expand_schema__creusot requires] ([@stop_split] [@expl:expand_schema__creusot 'state' type invariant] [%#sarchive_nav'0] inv_ArchiveNavState state)
   /\ ([@stop_split] [@expl:expand_schema__creusot 'proof' type invariant] [%#sarchive_nav'1] inv_Established_ArchiveNavConsistent proof)
   /\ ([@stop_split] [@expl:expand_schema__creusot requires] [%#sarchive_nav'2] archive_nav_consistent state)}
   (! bb0
-  [ bb0 = any
-    [ br0 -> {state = NavUnloaded} (! bb1)
-    | br1 -> {state = NavLoading} (! bb1)
-    | br2 (x0: t_Vec_SchemaWithExpand_Global) (x1: UInt64.t) (x2: t_String) (x3: bool) (x4: bool) -> {state
-      = NavReady x0 x1 x2 x3 x4}
-      (! bb3)
-    | br3 (x0: t_Vec_SchemaWithExpand_Global) (x1: t_String) (x2: UInt64.t) -> {state = NavFiltered x0 x1 x2} (! bb1) ]
-  | bb1 = s0 [ s0 = [ &other <- state ] s1 | s1 = [ &next <- other ] s2 | s2 = bb15 ]
-  | bb3 = s0
-    [ s0 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &schemas <- rschemas ] s1)
-    | s1 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &cursor <- rcursor ] s2)
-    | s2 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &filter <- rfilter ] s3)
-    | s3 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &filter_active <- rfilter_active ] s4)
-    | s4 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &show_help <- rshow_help ] s5)
-    | s5 = MutBorrow.borrow_mut <t_Vec_SchemaWithExpand_Global> {schemas}
-        (fun (_bor: MutBorrow.t t_Vec_SchemaWithExpand_Global) ->
-          [ &_19 <- _bor ] -{inv_Vec_SchemaWithExpand_Global _bor.final}-
-          [ &schemas <- _bor.final ] s6)
-      [ _ck -> (! {[@expl:type invariant] inv_Vec_SchemaWithExpand_Global schemas} any) ]
-    | s6 = deref_mut_Vec_SchemaWithExpand_Global [%#sarchive_nav] {_19}
-        (fun (_x: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) -> [ &_18 <- _x ] s7)
-    | s7 = MutBorrow.borrow_final <Slice64.slice t_SchemaWithExpand> {_18.current} {MutBorrow.get_id _18}
-        (fun (_bor: MutBorrow.t (Slice64.slice t_SchemaWithExpand)) ->
-          [ &_17 <- _bor ] -{inv_slice_SchemaWithExpand _bor.final}-
-          [ &_18 <- { _18 with current = _bor.final } ] s8)
-      [ _ck -> (! {[@expl:type invariant] inv_slice_SchemaWithExpand _18.current} any) ]
-    | s8 = get_mut_SchemaWithExpand [%#sarchive_nav] {_17} {schema_idx}
-        (fun (_x: t_Option_refmut_SchemaWithExpand) -> [ &_16 <- _x ] s9)
-    | s9 = any
-      [ br0 -> {_16 = None'1} (! bb8) | br1 (x0: MutBorrow.t t_SchemaWithExpand) -> {_16 = Some'1 x0} (! bb7) ] ]
-  | bb8 = s0
-    [ s0 = s1
-      [ _ck -> (! {[@expl:type invariant] match _16 with
-          | Some'1 x -> inv_refmut_SchemaWithExpand x
-          | _ -> true
-          end}
-        any) ]
-    | s1 = -{match _16 with
-        | Some'1 x -> resolve_refmut_SchemaWithExpand x
-        | _ -> true
-        end}-
-      s2
-    | s2 = s3 [ _ck -> (! {[@expl:type invariant] inv_refmut_slice_SchemaWithExpand _18} any) ]
-    | s3 = -{resolve_refmut_slice_SchemaWithExpand _18}- s4
-    | s4 = bb9 ]
-  | bb7 = s0
-    [ s0 = elim_Some {_16} (fun (r0: MutBorrow.t t_SchemaWithExpand) -> [ &s <- r0 ] s1)
-    | s1 = [ &s <- { s with current = { s.current with expanded = expanded'0 } } ] s2
-    | s2 = s3 [ _ck -> (! {[@expl:type invariant] inv_refmut_SchemaWithExpand s} any) ]
-    | s3 = -{resolve_refmut_SchemaWithExpand s}- s4
-    | s4 = s5 [ _ck -> (! {[@expl:type invariant] inv_refmut_slice_SchemaWithExpand _18} any) ]
-    | s5 = -{resolve_refmut_slice_SchemaWithExpand _18}- s6
-    | s6 = bb9 ]
-  | bb9 = s0 [ s0 = [ &next <- NavReady schemas cursor filter filter_active show_help ] s1 | s1 = bb15 ]
-  | bb15 = s0 [ s0 = [ &_ret <- { f0 = next; f1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ bb0 = {[%#sarchive_nav] false} any ]
   [ & _ret: tup2_ArchiveNavState_Established_ArchiveNavConsistent = Any.any_l ()
   | & state: t_ArchiveNavState = state
   | & proof: t_Established_ArchiveNavConsistent = proof
   | & schema_idx: UInt64.t = schema_idx
-  | & expanded'0: bool = expanded'0
-  | & next: t_ArchiveNavState = Any.any_l ()
-  | & schemas: t_Vec_SchemaWithExpand_Global = Any.any_l ()
-  | & cursor: UInt64.t = Any.any_l ()
-  | & filter: t_String = Any.any_l ()
-  | & filter_active: bool = Any.any_l ()
-  | & show_help: bool = Any.any_l ()
-  | & _16: t_Option_refmut_SchemaWithExpand = Any.any_l ()
-  | & _17: MutBorrow.t (Slice64.slice t_SchemaWithExpand) = Any.any_l ()
-  | & _18: MutBorrow.t (Slice64.slice t_SchemaWithExpand) = Any.any_l ()
-  | & _19: MutBorrow.t t_Vec_SchemaWithExpand_Global = Any.any_l ()
-  | & s: MutBorrow.t t_SchemaWithExpand = Any.any_l ()
-  | & other: t_ArchiveNavState = Any.any_l () ])
+  | & expanded'0: bool = expanded'0 ])
   [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
   {[@stop_split] [@expl:expand_schema__creusot ensures] ([@stop_split] [@expl:expand_schema__creusot result type invariant] [%#sarchive_nav'3] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
     /\ ([@stop_split] [@expl:expand_schema__creusot ensures] [%#sarchive_nav'4] archive_nav_consistent result.f0)}

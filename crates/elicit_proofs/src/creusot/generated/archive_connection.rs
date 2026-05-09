@@ -13,10 +13,18 @@ use elicitation::Established;
 use elicitation::kani_label;
 #[cfg(creusot)]
 use elicit_server::*;
+#[cfg(creusot)]
+use elicit_server::archive::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::types::*;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool { true }
+pub fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool {
+    pearlite! { true }
+}
 
 #[cfg(creusot)]
 #[requires(true)]

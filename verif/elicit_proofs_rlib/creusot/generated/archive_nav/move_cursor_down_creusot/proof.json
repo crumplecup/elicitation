@@ -1,36 +1,4 @@
 {
   "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_elim_NavReady": { "prover": "cvc5", "time": 0.022 },
-      "vc_min_usize": { "prover": "cvc5", "time": 0.021 },
-      "vc_move_cursor_down__creusot": {
-        "tactic": "compute_specified",
-        "children": [
-          {
-            "tactic": "split_vc",
-            "children": [
-              { "prover": "cvc5", "time": 0.028 },
-              { "prover": "cvc5", "time": 0.029 },
-              {
-                "tactic": "split_vc",
-                "children": [
-                  { "prover": "cvc5", "time": 0.036 },
-                  { "prover": "cvc5", "time": 0.026 }
-                ]
-              },
-              { "prover": "cvc5", "time": 0.032 },
-              { "prover": "cvc5", "time": 0.027 },
-              { "prover": "cvc5", "time": 0.028 },
-              { "prover": "cvc5", "time": 0.028 },
-              { "prover": "cvc5", "time": 0.028 },
-              { "prover": "cvc5", "time": 0.027 }
-            ]
-          }
-        ]
-      },
-      "vc_saturating_add": { "prover": "cvc5", "time": 0.021 },
-      "vc_saturating_sub": { "prover": "cvc5", "time": 0.021 }
-    }
-  }
+  "proofs": { "Coma": { "vc_move_cursor_down__creusot": null } }
 }

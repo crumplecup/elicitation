@@ -187,8 +187,14 @@ pub use server::ElicitServer;
 
 // Core traits
 pub use elicitation_style::StyleMarker;
+#[cfg(not(creusot))]
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
+    Prompt, TypeMetadata, VariantMetadata,
+};
+#[cfg(creusot)]
+pub use traits::{
+    ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
     Prompt, TypeMetadata, VariantMetadata,
 };
 

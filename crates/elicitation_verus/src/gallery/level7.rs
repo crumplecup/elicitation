@@ -16,7 +16,7 @@ verus! {
 use vstd::prelude::SpecOrd;
 
 /// A four-phase state machine with labeled loading and a result count.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum V7State {
     Initial,
     Loading { label: String },

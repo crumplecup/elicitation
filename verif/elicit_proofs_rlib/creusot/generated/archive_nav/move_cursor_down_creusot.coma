@@ -1,32 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 155 0 159 57 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 0 70 173 *)
 
-let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 169 42 169 43
-let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 169 20 169 44
-let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 169 68 169 69
-let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 169 49 169 70
-let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 169 20 169 71
-let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 156 4 156 9
-let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 157 4 157 9
-let%span sarchive_nav'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 153 11 153 41
-let%span sarchive_nav'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 159 5 159 57
-let%span sarchive_nav'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 154 10 154 43
-let%span sarchive_nav'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 25 8 26 20
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 176 70 211
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 40 70 45
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 64 70 69
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 68 11 68 41
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 121 70 173
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 69 10 69 43
+let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 28 28 28 120
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
-let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
-let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
-let%span snum'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
-let%span snum'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
-let%span snum'4 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
-let%span snum'5 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 25 28 25 33
-let%span scmp = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 87 26 87 66
-let%span scmp'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 88 26 88 63
-let%span scmp'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 89 26 89 55
-let%span scmp'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 90 26 90 79
-let%span scmp'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/cmp.rs" 91 26 91 77
 
 use creusot.int.UInt64
 use creusot.prelude.Any
@@ -44,62 +28,6 @@ type t_ArchiveNavState =
   | NavLoading
   | NavReady t_Vec_SchemaWithExpand_Global UInt64.t t_String bool bool
   | NavFiltered t_Vec_SchemaWithExpand_Global t_String UInt64.t
-
-let rec elim_NavReady (_x: t_ArchiveNavState)
-  (return (schemas: t_Vec_SchemaWithExpand_Global) (cursor: UInt64.t) (filter: t_String) (filter_active: bool) (show_help: bool)) =
-  any
-  [ _k (schemas: t_Vec_SchemaWithExpand_Global) (cursor: UInt64.t) (filter: t_String) (filter_active: bool)
-    (show_help: bool) -> {NavReady schemas cursor filter filter_active show_help = _x}
-    (! return {schemas} {cursor} {filter} {filter_active} {show_help})
-  | _chk -> (! {[@expl:elim NavReady] match _x with
-      | NavReady _ _ _ _ _ -> true
-      | _ -> false
-      end}
-    any) ]
-
-constant const_MIN: UInt64.t = (0: UInt64.t)
-
-constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
-
-let rec saturating_add (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
-  [ return (result: UInt64.t) ->
-  {[@stop_split] [@expl:saturating_add ensures] ([@stop_split] [@expl:saturating_add ensures #0] [%#snum] UInt64.t'int self_
-            + UInt64.t'int rhs
-          >= UInt64.t'int const_MIN
-        /\ UInt64.t'int self_ + UInt64.t'int rhs <= UInt64.t'int const_MAX
-      -> UInt64.t'int result = UInt64.t'int self_ + UInt64.t'int rhs)
-    /\ ([@stop_split] [@expl:saturating_add ensures #1] [%#snum'0] UInt64.t'int self_ + UInt64.t'int rhs
-        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
-    /\ ([@stop_split] [@expl:saturating_add ensures #2] [%#snum'1] UInt64.t'int self_ + UInt64.t'int rhs
-      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
-    (! return {result}) ]
-
-let rec saturating_sub (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
-  [ return (result: UInt64.t) ->
-  {[@stop_split] [@expl:saturating_sub ensures] ([@stop_split] [@expl:saturating_sub ensures #0] [%#snum'2] UInt64.t'int self_
-            - UInt64.t'int rhs
-          >= UInt64.t'int const_MIN
-        /\ UInt64.t'int self_ - UInt64.t'int rhs <= UInt64.t'int const_MAX
-      -> UInt64.t'int result = UInt64.t'int self_ - UInt64.t'int rhs)
-    /\ ([@stop_split] [@expl:saturating_sub ensures #1] [%#snum'3] UInt64.t'int self_ - UInt64.t'int rhs
-        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
-    /\ ([@stop_split] [@expl:saturating_sub ensures #2] [%#snum'4] UInt64.t'int self_ - UInt64.t'int rhs
-      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
-    (! return {result}) ]
-
-function deep_model_usize [@inline:trivial] (self: UInt64.t) : int = [%#snum'5] UInt64.t'int self
-
-meta "rewrite_def" function deep_model_usize
-
-let rec min_usize (self_: UInt64.t) (o: UInt64.t) (return (x: UInt64.t)) = any
-  [ return (result: UInt64.t) ->
-  {[@stop_split] [@expl:min_usize ensures] ([@stop_split] [@expl:min ensures #0] [%#scmp] deep_model_usize result
-      <= deep_model_usize self_)
-    /\ ([@stop_split] [@expl:min ensures #1] [%#scmp'0] deep_model_usize result <= deep_model_usize o)
-    /\ ([@stop_split] [@expl:min ensures #2] [%#scmp'1] result = self_ \/ result = o)
-    /\ ([@stop_split] [@expl:min ensures #3] [%#scmp'2] deep_model_usize self_ < deep_model_usize o -> result = self_)
-    /\ ([@stop_split] [@expl:min ensures #4] [%#scmp'3] deep_model_usize o <= deep_model_usize self_ -> result = o)}
-    (! return {result}) ]
 
 type t_Established_ArchiveNavConsistent
 
@@ -197,6 +125,8 @@ predicate inv_Seq_ColumnDescriptor [@inline:trivial] (_1: Seq.seq t_ColumnDescri
   invariant_Seq_ColumnDescriptor _1
 
 meta "rewrite_def" predicate inv_Seq_ColumnDescriptor
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
 
 function view_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) : Seq.seq t_ColumnDescriptor
 
@@ -685,8 +615,8 @@ predicate inv_Established_ArchiveNavConsistent (_1: t_Established_ArchiveNavCons
 
 function view_String (self: t_String) : Seq.seq Char.t
 
-predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 23 0 23 62] (state: t_ArchiveNavState) =
-  [%#sarchive_nav'9] match state with
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 27 0 27 62] (state: t_ArchiveNavState) =
+  [%#sarchive_nav'5] match state with
     | NavFiltered _ filter _ -> Seq.length (view_String filter) > 0
     | _ -> true
     end
@@ -701,60 +631,19 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec move_cursor_down__creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 155 0 159 57]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 70 0 70 173]
   (state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (max: UInt64.t)
   (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
-  {[@stop_split] [@expl:move_cursor_down__creusot requires] ([@stop_split] [@expl:move_cursor_down__creusot 'state' type invariant] [%#sarchive_nav'4] inv_ArchiveNavState state)
-  /\ ([@stop_split] [@expl:move_cursor_down__creusot 'proof' type invariant] [%#sarchive_nav'5] inv_Established_ArchiveNavConsistent proof)
-  /\ ([@stop_split] [@expl:move_cursor_down__creusot requires] [%#sarchive_nav'6] archive_nav_consistent state)}
+  {[@stop_split] [@expl:move_cursor_down__creusot requires] ([@stop_split] [@expl:move_cursor_down__creusot 'state' type invariant] [%#sarchive_nav'0] inv_ArchiveNavState state)
+  /\ ([@stop_split] [@expl:move_cursor_down__creusot 'proof' type invariant] [%#sarchive_nav'1] inv_Established_ArchiveNavConsistent proof)
+  /\ ([@stop_split] [@expl:move_cursor_down__creusot requires] [%#sarchive_nav'2] archive_nav_consistent state)}
   (! bb0
-  [ bb0 = any
-    [ br0 -> {state = NavUnloaded} (! bb1)
-    | br1 -> {state = NavLoading} (! bb1)
-    | br2 (x0: t_Vec_SchemaWithExpand_Global) (x1: UInt64.t) (x2: t_String) (x3: bool) (x4: bool) -> {state
-      = NavReady x0 x1 x2 x3 x4}
-      (! bb3)
-    | br3 (x0: t_Vec_SchemaWithExpand_Global) (x1: t_String) (x2: UInt64.t) -> {state = NavFiltered x0 x1 x2} (! bb1) ]
-  | bb1 = s0 [ s0 = [ &other <- state ] s1 | s1 = [ &next <- other ] s2 | s2 = bb12 ]
-  | bb3 = s0
-    [ s0 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &schemas <- rschemas ] s1)
-    | s1 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &cursor <- rcursor ] s2)
-    | s2 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &filter <- rfilter ] s3)
-    | s3 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &filter_active <- rfilter_active ] s4)
-    | s4 = elim_NavReady {state}
-        (fun (rschemas: t_Vec_SchemaWithExpand_Global) (rcursor: UInt64.t) (rfilter: t_String) (rfilter_active: bool) (rshow_help: bool) ->
-          [ &show_help <- rshow_help ] s5)
-    | s5 = saturating_add [%#sarchive_nav'0] {cursor} {[%#sarchive_nav] (1: UInt64.t)}
-        (fun (_x: UInt64.t) -> [ &_16 <- _x ] s6)
-    | s6 = saturating_sub [%#sarchive_nav'2] {max} {[%#sarchive_nav'1] (1: UInt64.t)}
-        (fun (_x: UInt64.t) -> [ &_18 <- _x ] s7)
-    | s7 = min_usize [%#sarchive_nav'3] {_16} {_18} (fun (_x: UInt64.t) -> [ &_15 <- _x ] s8)
-    | s8 = [ &next <- NavReady schemas _15 filter filter_active show_help ] s9
-    | s9 = bb12 ]
-  | bb12 = s0 [ s0 = [ &_ret <- { f0 = next; f1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ bb0 = {[%#sarchive_nav] false} any ]
   [ & _ret: tup2_ArchiveNavState_Established_ArchiveNavConsistent = Any.any_l ()
   | & state: t_ArchiveNavState = state
   | & proof: t_Established_ArchiveNavConsistent = proof
-  | & max: UInt64.t = max
-  | & next: t_ArchiveNavState = Any.any_l ()
-  | & schemas: t_Vec_SchemaWithExpand_Global = Any.any_l ()
-  | & cursor: UInt64.t = Any.any_l ()
-  | & filter: t_String = Any.any_l ()
-  | & filter_active: bool = Any.any_l ()
-  | & show_help: bool = Any.any_l ()
-  | & _15: UInt64.t = Any.any_l ()
-  | & _16: UInt64.t = Any.any_l ()
-  | & _18: UInt64.t = Any.any_l ()
-  | & other: t_ArchiveNavState = Any.any_l () ])
+  | & max: UInt64.t = max ])
   [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
-  {[@stop_split] [@expl:move_cursor_down__creusot ensures] ([@stop_split] [@expl:move_cursor_down__creusot result type invariant] [%#sarchive_nav'7] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
-    /\ ([@stop_split] [@expl:move_cursor_down__creusot ensures] [%#sarchive_nav'8] archive_nav_consistent result.f0)}
+  {[@stop_split] [@expl:move_cursor_down__creusot ensures] ([@stop_split] [@expl:move_cursor_down__creusot result type invariant] [%#sarchive_nav'3] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
+    /\ ([@stop_split] [@expl:move_cursor_down__creusot ensures] [%#sarchive_nav'4] archive_nav_consistent result.f0)}
     (! return {result}) ]

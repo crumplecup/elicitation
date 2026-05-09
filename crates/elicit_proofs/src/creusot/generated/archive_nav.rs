@@ -13,10 +13,20 @@ use elicitation::Established;
 use elicitation::kani_label;
 #[cfg(creusot)]
 use elicit_server::*;
+#[cfg(creusot)]
+use elicit_server::archive::*;
+#[cfg(creusot)]
+use elicit_server::archive::vsm::*;
+#[cfg(creusot)]
+use elicit_server::archive::nav_model::*;
+#[cfg(creusot)]
+use elicit_server::archive::nav_tree::*;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool { pearlite! { match state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, } } }
+pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool {
+    pearlite! { pearlite! { match state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, } } }
+}
 
 #[cfg(creusot)]
 #[requires(true)]

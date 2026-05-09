@@ -44,7 +44,9 @@
 
 // Re-export verification framework from main crate
 pub use elicitation::verification::contracts;
-pub use elicitation::verification::{Contract, WithContract};
+pub use elicitation::verification::Contract;
+#[cfg(not(creusot))]
+pub use elicitation::verification::WithContract;
 
 // Proof modules (organized by type category)
 #[cfg(kani)]

@@ -14,7 +14,7 @@ verus! {
 use vstd::prelude::SpecOrd;
 
 /// Minimal state machine: Initial → Loading → Loaded.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum V10State {
     Initial,
     Loading { label: String },
