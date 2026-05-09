@@ -13,6 +13,9 @@
 //! | `KANI_CSV`            | `kani_verification_results.csv`                       | kani           |
 //! | `VERUS_PATH`          | `~/repos/verus/source/target-verus/release/verus`     | verus          |
 //! | `VERUS_FILE`          | *(none — required for verus if no `--verus-file`)*   | verus          |
+//! |                       | May be a **directory**: all `*.rs` files (excluding   | verus          |
+//! |                       | `mod.rs`) are verified individually, matching the     | verus          |
+//! |                       | `generate verus --out <dir>` output path.             | verus          |
 //! | `VERUS_FLAGS`         | `""`                                                  | verus          |
 //! | `CREUSOT_PACKAGE`     | falls back to `PROVE_PACKAGE`                         | creusot        |
 //! | `CREUSOT_FLAGS`       | `""`                                                  | creusot        |
@@ -665,9 +668,17 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
         anyhow::bail!("No Verus source file — set VERUS_FILE in .env or pass --verus-file");
     };
 
+    if verus_file.is_dir() {
+        run_verus_dir(config, verus_file)
+    } else {
+        run_verus_file(config, verus_file)
+    }
+}
+
+/// Verify a single Verus source file.
+fn run_verus_file(config: &ProveConfig, verus_file: &Path) -> anyhow::Result<()> {
     let mut cmd = Command::new(&config.verus_path);
     cmd.arg("--crate-type=lib").arg(verus_file);
-
     for flag in &config.verus_flags {
         cmd.arg(flag);
     }
@@ -686,7 +697,7 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
     if !config.dry_run {
         if let Some(csv) = &config.verus_csv {
             write_csv_header(csv, false)?;
-            append_csv_row(csv, "verus", "verus", &status, elapsed_s)?;
+            append_csv_row(csv, "verus", verus_file.to_string_lossy().as_ref(), &status, elapsed_s)?;
         }
     }
 
@@ -697,6 +708,127 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
         println!("❌ verus FAIL ({elapsed_s}s) — see {}", log.display());
         anyhow::bail!("verus verification failed")
     }
+}
+
+/// Verify all `*.rs` files (excluding `mod.rs`) in a directory, one by one.
+///
+/// This matches the `generate verus --out <dir>` output layout: each generated
+/// file is self-contained and can be verified independently.
+fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
+    let mut files: Vec<PathBuf> = fs::read_dir(dir)
+        .with_context(|| format!("Cannot read Verus dir: {}", dir.display()))?
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .filter(|p| {
+            p.extension().map(|e| e == "rs").unwrap_or(false)
+                && p.file_name().map(|n| n != "mod.rs").unwrap_or(false)
+        })
+        .collect();
+    files.sort();
+
+    let total = files.len();
+    if total == 0 {
+        anyhow::bail!("No .rs files (other than mod.rs) found in {}", dir.display());
+    }
+
+    let csv_suffix = config
+        .verus_csv
+        .as_ref()
+        .map(|p| format!(" → {}", p.display()))
+        .unwrap_or_default();
+    println!("🔬 Running verus on {total} files in {}{csv_suffix}", dir.display());
+
+    if let Some(csv) = &config.verus_csv {
+        write_csv_header(csv, false)?;
+    }
+
+    let bar = ProgressBar::new(total as u64);
+    bar.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}",
+        )
+        .expect("valid template")
+        .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+    );
+    bar.enable_steady_tick(std::time::Duration::from_millis(80));
+
+    let mut pass = 0usize;
+    let mut fail = 0usize;
+
+    for (idx, file) in files.iter().enumerate() {
+        let stem = file
+            .file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| file.display().to_string());
+
+        bar.set_message(format!("{stem}…"));
+
+        let log_name = format!("prove_verus_{stem}.log");
+        let log = config.log_dir.join(&log_name);
+
+        let mut cmd = Command::new(&config.verus_path);
+        cmd.arg("--crate-type=lib").arg(file);
+        for flag in &config.verus_flags {
+            cmd.arg(flag);
+        }
+
+        let sink = verus_sink_quiet();
+        let start = Instant::now();
+        let status =
+            execute_with_progress("verus", cmd, config.timeout, config.dry_run, &log, sink)?;
+        let elapsed_s = start.elapsed().as_secs();
+
+        if let Some(csv) = &config.verus_csv {
+            if !config.dry_run {
+                append_csv_row(csv, "verus", &stem, &status, elapsed_s)?;
+            }
+        }
+
+        match status.as_str() {
+            "PASS" => {
+                bar.println(format!(
+                    "  [{}/{}] {:<55} ✅ PASS ({elapsed_s}s)",
+                    idx + 1,
+                    total,
+                    stem
+                ));
+                pass += 1;
+            }
+            "DRY-RUN" => {
+                bar.println(format!("  [{}/{}] {stem} 🔍 DRY-RUN", idx + 1, total));
+                pass += 1;
+            }
+            "TIMEOUT" => {
+                bar.println(format!(
+                    "  [{}/{}] {:<55} ⏱  TIMEOUT ({elapsed_s}s) — see {log_name}",
+                    idx + 1,
+                    total,
+                    stem
+                ));
+                fail += 1;
+            }
+            _ => {
+                bar.println(format!(
+                    "  [{}/{}] {:<55} ❌ FAIL ({elapsed_s}s) — see {log_name}",
+                    idx + 1,
+                    total,
+                    stem
+                ));
+                fail += 1;
+            }
+        }
+        bar.inc(1);
+    }
+
+    bar.finish_and_clear();
+    println!("\nResults: {pass}/{total} passed, {fail} failed");
+    if let Some(csv) = &config.verus_csv {
+        println!("CSV:     {}", csv.display());
+    }
+
+    if fail > 0 {
+        anyhow::bail!("{fail} Verus file(s) failed or timed out");
+    }
+    Ok(())
 }
 
 // ── Creusot ───────────────────────────────────────────────────────────────────
@@ -839,6 +971,12 @@ fn verus_sink(bar: ProgressBar) -> LineSink {
             b.println(line);
         }
     }))
+}
+
+/// A silent `LineSink` used in directory mode — results are shown per-file via
+/// the outer progress bar rather than by surfacing individual Verus output lines.
+fn verus_sink_quiet() -> LineSink {
+    Arc::new(Mutex::new(|_line: &str| {}))
 }
 
 /// Execute a command, driving an indicatif `LineSink` instead of echoing raw
