@@ -134,7 +134,7 @@ fn to_pascal_case(s: &str) -> String {
 
 // ── Attribute argument parsing ─────────────────────────────────────────────────
 
-/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...], creusot_requires = ["expr"], kani_requires = ["expr"])]`.
+/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...], creusot_requires = ["expr"], kani_requires = ["expr"], verus_class = "trivial")]`.
 struct FormalMethodArgs {
     contracts: Vec<syn::Path>,
     /// Extra Pearlite expressions added as `#[requires(expr)]` to the Creusot companion only.
@@ -149,6 +149,15 @@ struct FormalMethodArgs {
     /// CBMC cannot infer from the opaque `Established<P>` ZST — e.g. `"initial_bankroll > 0"`
     /// when the function accepts `bankroll_proof: Established<BankrollPositive>`.
     kani_requires: Vec<syn::LitStr>,
+    /// Verus generator postcondition class override.
+    ///
+    /// When set, the standalone Verus generator uses this class directly instead of
+    /// inferring it from the transition body.  Valid values: `"trivial"`, `"passthrough"`,
+    /// `"special_false"`, `"conditional_special"`.
+    ///
+    /// This annotation is consumed by the CLI scanner; the derive macro ignores it.
+    #[allow(dead_code)]
+    verus_class: Option<syn::LitStr>,
 }
 
 impl Parse for FormalMethodArgs {
@@ -158,11 +167,13 @@ impl Parse for FormalMethodArgs {
                 contracts: Vec::new(),
                 creusot_requires: Vec::new(),
                 kani_requires: Vec::new(),
+                verus_class: None,
             });
         }
         let mut contracts = Vec::new();
         let mut creusot_requires = Vec::new();
         let mut kani_requires = Vec::new();
+        let mut verus_class = None;
         loop {
             let ident: syn::Ident = input.parse()?;
             let _: Token![=] = input.parse()?;
@@ -185,11 +196,14 @@ impl Parse for FormalMethodArgs {
                     let lits = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
                     kani_requires = lits.into_iter().collect();
                 }
+                "verus_class" => {
+                    verus_class = Some(input.parse::<syn::LitStr>()?);
+                }
                 other => {
                     return Err(syn::Error::new(
                         ident.span(),
                         format!(
-                            "unknown key `{other}`; expected `contracts`, `creusot_requires`, or `kani_requires`"
+                            "unknown key `{other}`; expected `contracts`, `creusot_requires`, `kani_requires`, or `verus_class`"
                         ),
                     ));
                 }
@@ -205,6 +219,7 @@ impl Parse for FormalMethodArgs {
             contracts,
             creusot_requires,
             kani_requires,
+            verus_class,
         })
     }
 }

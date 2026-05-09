@@ -69,3 +69,6 @@ pub mod wgpu_types;
 
 // Proof gallery — learning curriculum for the VSM companion pattern
 pub mod gallery;
+
+// Generated VSM companion proofs (elicitation generate verus)
+pub mod generated;

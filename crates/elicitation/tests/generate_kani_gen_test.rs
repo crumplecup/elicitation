@@ -25,6 +25,7 @@ fn minimal_vsm(machine: &str) -> VsmDescriptor {
             creusot_fn: None,
             verus_inv_body: None,
             creusot_inv_body: None,
+            verus_state_body: None,
         }),
         transition_fns: vec![],
         source_file: PathBuf::from("src/vsm/thing.rs"),
@@ -67,10 +68,13 @@ fn vsm_with_transition(
             creusot_fn: None,
             verus_inv_body: None,
             creusot_inv_body: None,
+            verus_state_body: None,
         }),
         transition_fns: vec![TransitionFn {
             name: transition.to_string(),
             args,
+            body: None,
+            verus_class: None,
         }],
         source_file: PathBuf::from("src/vsm/thing.rs"),
     }

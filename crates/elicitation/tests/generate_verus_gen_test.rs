@@ -1,4 +1,4 @@
-//! Tests for `cli::generate::verus_gen` — validates generated Verus companion output.
+//! Tests for `cli::generate::verus_gen` — validates generated Verus V11/V12 companion output.
 
 #![cfg(feature = "cli")]
 
@@ -10,7 +10,12 @@ use std::path::{Path, PathBuf};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-fn vsm_with_body(machine: &str, body: Option<&str>, transitions: Vec<&str>) -> VsmDescriptor {
+fn vsm_with_body(
+    machine: &str,
+    inv_body: Option<&str>,
+    state_body: Option<&str>,
+    transitions: Vec<&str>,
+) -> VsmDescriptor {
     let consistent = machine.replace("Machine", "Consistent");
     let snake = to_snake(machine.trim_end_matches("Machine"));
     let inv_fn = format!("{snake}_consistent");
@@ -23,40 +28,26 @@ fn vsm_with_body(machine: &str, body: Option<&str>, transitions: Vec<&str>) -> V
             kani_fn: Some(inv_fn.clone()),
             verus_fn: Some(inv_fn.clone()),
             creusot_fn: None,
-            verus_inv_body: body.map(|s| s.to_string()),
+            verus_inv_body: inv_body.map(|s| s.to_string()),
             creusot_inv_body: None,
+            verus_state_body: state_body.map(|s| s.to_string()),
         }),
         transition_fns: vec![],
         source_file: PathBuf::from("src/vsm/thing.rs"),
     }
 }
 
-fn vsm_with_transition_and_body(
+fn vsm_with_transition(
     machine: &str,
     transition: &str,
-    body: Option<&str>,
-    extra: Vec<ArgDescriptor>,
+    inv_body: Option<&str>,
+    state_body: Option<&str>,
+    trans_body: Option<&str>,
 ) -> VsmDescriptor {
     let state = machine.replace("Machine", "State");
     let consistent = machine.replace("Machine", "Consistent");
     let snake = to_snake(machine.trim_end_matches("Machine"));
     let inv_fn = format!("{snake}_consistent");
-
-    let mut args = vec![
-        ArgDescriptor {
-            name: "_state".to_string(),
-            ty: state.clone(),
-            kind: ArgKind::State,
-        },
-        ArgDescriptor {
-            name: "proof".to_string(),
-            ty: format!("Established<{consistent}>"),
-            kind: ArgKind::Proof {
-                inner: consistent.clone(),
-            },
-        },
-    ];
-    args.extend(extra);
 
     VsmDescriptor {
         machine: machine.to_string(),
@@ -66,12 +57,28 @@ fn vsm_with_transition_and_body(
             kani_fn: Some(inv_fn.clone()),
             verus_fn: Some(inv_fn.clone()),
             creusot_fn: None,
-            verus_inv_body: body.map(|s| s.to_string()),
+            verus_inv_body: inv_body.map(|s| s.to_string()),
             creusot_inv_body: None,
+            verus_state_body: state_body.map(|s| s.to_string()),
         }),
         transition_fns: vec![TransitionFn {
             name: transition.to_string(),
-            args,
+            args: vec![
+                ArgDescriptor {
+                    name: "_state".to_string(),
+                    ty: state.clone(),
+                    kind: ArgKind::State,
+                },
+                ArgDescriptor {
+                    name: "proof".to_string(),
+                    ty: format!("Established<{consistent}>"),
+                    kind: ArgKind::Proof {
+                        inner: consistent.clone(),
+                    },
+                },
+            ],
+            body: trans_body.map(|s| s.to_string()),
+            verus_class: None,
         }],
         source_file: PathBuf::from("src/vsm/thing.rs"),
     }
@@ -91,50 +98,38 @@ fn to_snake(s: &str) -> String {
 
 #[test]
 fn generated_file_has_header_comment() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(
-        out.contains("AUTO-GENERATED"),
-        "expected AUTO-GENERATED header"
-    );
-    assert!(
-        out.contains("NavMachine"),
-        "expected machine name in header"
-    );
+    assert!(out.contains("AUTO-GENERATED"), "expected AUTO-GENERATED header");
+    assert!(out.contains("NavMachine"), "expected machine name in header");
 }
 
 #[test]
-fn generated_file_has_cfg_verus_imports() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
+fn generated_file_has_verus_imports() {
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("#[cfg(verus)]"), "expected #[cfg(verus)]");
-    assert!(out.contains("::vstd::prelude::*"), "expected vstd import");
-    assert!(
-        out.contains("elicitation::Established"),
-        "expected Established import"
-    );
+    assert!(out.contains("use vstd::prelude::*"), "expected vstd import");
+    assert!(out.contains("use verus_builtin_macros::verus"), "expected verus macro import");
+    // New output does NOT use #[cfg(verus)] gates — it targets elicitation_verus exclusively.
+    assert!(!out.contains("#[cfg(verus)]"), "new output should not have cfg(verus) gates");
 }
 
 #[test]
 fn invariant_spec_fn_emitted_with_body() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("pub open spec fn nav_consistent"),
         "expected open spec fn; got:\n{out}"
     );
-    // Body is verbatim
     assert!(out.contains("true"), "expected body in spec fn");
 }
 
 #[test]
 fn invariant_spec_fn_errors_when_body_missing() {
-    let vsm = vsm_with_body("NavMachine", None, vec!["go"]);
+    let vsm = vsm_with_body("NavMachine", None, None, vec!["go"]);
     let result = generate_verus_file(&vsm, Path::new("/repo"));
-    assert!(
-        result.is_err(),
-        "expected Err when verus_inv_body missing; got Ok"
-    );
+    assert!(result.is_err(), "expected Err when verus_inv_body missing; got Ok");
     let msg = result.unwrap_err();
     assert!(
         msg.contains("NavMachine"),
@@ -143,67 +138,121 @@ fn invariant_spec_fn_errors_when_body_missing() {
 }
 
 #[test]
-fn marker_proof_fn_emitted() {
-    let vsm = vsm_with_body("ConnMachine", Some("true"), vec!["begin"]);
-    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(
-        out.contains("verify_conn_consistent_prop_contract"),
-        "expected marker fn; got:\n{out}"
-    );
-    assert!(
-        out.contains("ensures result == true"),
-        "expected ensures clause"
-    );
-}
-
-#[test]
-fn assume_specification_emitted_per_transition() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go", "back"]);
-    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(
-        out.contains("assume_specification [go]"),
-        "expected go spec"
-    );
-    assert!(
-        out.contains("assume_specification [back]"),
-        "expected back spec"
-    );
-}
-
-#[test]
-fn assume_specification_has_requires_and_ensures() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
-    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(
-        out.contains("requires nav_consistent("),
-        "expected requires clause"
-    );
-    assert!(
-        out.contains("ensures nav_consistent(&r.0)"),
-        "expected ensures clause"
-    );
-}
-
-#[test]
-fn assume_specification_with_string_extra_arg() {
-    let vsm = vsm_with_transition_and_body(
+fn abstract_state_enum_emitted_when_state_body_set() {
+    let vsm = vsm_with_body(
         "ConnMachine",
-        "begin",
         Some("true"),
-        vec![ArgDescriptor {
-            name: "name".to_string(),
-            ty: "String".to_string(),
-            kind: ArgKind::StringArg,
-        }],
+        Some("Active, _Other,"),
+        vec!["connect"],
     );
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
-        out.contains("name: String"),
-        "expected String arg in spec; got:\n{out}"
+        out.contains("pub enum ConnState"),
+        "expected abstract state enum; got:\n{out}"
+    );
+    assert!(out.contains("Active,"), "expected Active variant");
+    assert!(out.contains("_Other,"), "expected _Other variant");
+}
+
+#[test]
+fn abstract_state_enum_has_unspecified_placeholder_when_no_state_body() {
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub enum NavState"),
+        "expected state enum even without state_body; got:\n{out}"
+    );
+    assert!(out.contains("_Unspecified"), "expected placeholder variant");
+}
+
+#[test]
+fn transition_tag_enum_emitted() {
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go", "back", "reset"]);
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub enum NavMachineTrans"),
+        "expected tag enum; got:\n{out}"
+    );
+    assert!(out.contains("Go,"), "expected Go tag");
+    assert!(out.contains("Back,"), "expected Back tag");
+    assert!(out.contains("Reset,"), "expected Reset tag");
+}
+
+#[test]
+fn composition_proof_fn_emitted() {
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub proof fn nav_composition"),
+        "expected composition proof fn; got:\n{out}"
+    );
+    assert!(out.contains("ensures nav_consistent(&post)"), "expected ensures clause");
+}
+
+#[test]
+fn dispatch_spec_fn_emitted() {
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub open spec fn nav_post"),
+        "expected nav_post dispatch fn; got:\n{out}"
     );
 }
 
-// ─── Snapshot test against archive_nav reference ──────────────────────────────
+#[test]
+fn leaf_trivial_emitted() {
+    // No state body → no special variants → all transitions are Trivial.
+    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub proof fn nav_leaf_trivial"),
+        "expected trivial leaf lemma; got:\n{out}"
+    );
+}
+
+#[test]
+fn passthrough_transition_uses_passthrough_lemma() {
+    // A transition body containing `other =>` is classified as Passthrough.
+    let vsm = vsm_with_transition(
+        "NavMachine",
+        "noop",
+        Some("true"),
+        Some("Active, _Other,"),
+        Some("match state { other => other }"), // passthrough body
+    );
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("pub proof fn nav_leaf_passthrough"),
+        "expected passthrough leaf lemma; got:\n{out}"
+    );
+    assert!(
+        out.contains("NavMachineTrans::Noop => nav_leaf_passthrough"),
+        "expected passthrough dispatch; got:\n{out}"
+    );
+}
+
+#[test]
+fn special_false_transition_uses_special_false_lemma() {
+    // A transition body that returns the special variant (no passthrough) → SpecialFalse.
+    let vsm = vsm_with_transition(
+        "NavMachine",
+        "activate",
+        Some("true"),
+        Some("Active { running: bool }, _Other,"),
+        Some("NavState :: Active { running : false }"), // returns Active, no passthrough
+    );
+    let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
+    assert!(
+        out.contains("nav_leaf_active_false"),
+        "expected SpecialFalse leaf; got:\n{out}"
+    );
+    assert!(
+        out.contains("NavMachineTrans::Activate => nav_leaf_active_false"),
+        "expected SpecialFalse dispatch; got:\n{out}"
+    );
+}
+
+// ─── Snapshot-style tests against archive_nav and archive_connection ──────────
 
 #[test]
 fn scan_and_generate_archive_nav_verus() {
@@ -224,7 +273,6 @@ fn scan_and_generate_archive_nav_verus() {
         .find(|v| v.machine == "ArchiveNavMachine")
         .expect("ArchiveNavMachine not found");
 
-    // verus_inv_body should now be populated from the annotation
     assert!(
         nav.invariant
             .as_ref()
@@ -238,28 +286,35 @@ fn scan_and_generate_archive_nav_verus() {
     assert!(out.contains("AUTO-GENERATED"), "missing header");
     assert!(
         out.contains("pub open spec fn archive_nav_consistent"),
-        "missing spec fn"
+        "missing spec fn; got:\n{out}"
     );
     assert!(
-        out.contains("verify_archive_nav_consistent_prop_contract"),
-        "missing marker"
+        out.contains("pub enum ArchiveNavMachineTrans"),
+        "missing tag enum; got:\n{out}"
+    );
+    assert!(
+        out.contains("pub proof fn archive_nav_composition"),
+        "missing composition proof; got:\n{out}"
+    );
+    assert!(
+        out.contains("ensures archive_nav_consistent(&post)"),
+        "missing ensures clause"
     );
 
-    // Each transition should have an assume_specification
+    // Every transition should appear as a tag variant.
     for t in &nav.transitions {
+        let pascal: String = t.split('_').map(|seg| {
+            let mut c = seg.chars();
+            match c.next() {
+                None => String::new(),
+                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+            }
+        }).collect();
         assert!(
-            out.contains(&format!("assume_specification [{t}]")),
-            "missing spec for transition {t}"
+            out.contains(&format!("    {pascal},")),
+            "missing tag {pascal} for transition {t}; got:\n{out}"
         );
     }
-    assert!(
-        out.contains("requires archive_nav_consistent"),
-        "missing requires"
-    );
-    assert!(
-        out.contains("ensures archive_nav_consistent"),
-        "missing ensures"
-    );
 }
 
 #[test]
@@ -293,5 +348,10 @@ fn scan_and_generate_archive_connection_verus() {
         out.contains("pub open spec fn archive_connection_consistent"),
         "missing spec fn"
     );
-    assert!(out.contains("{ true }"), "expected trivial body");
+    assert!(out.contains("{ true }"), "expected trivial invariant body");
+    assert!(
+        out.contains("pub proof fn archive_connection_composition"),
+        "missing composition proof"
+    );
 }
+

@@ -79,11 +79,7 @@ impl Parse for PropArgs {
                     let lit: syn::LitStr = input.parse()?;
                     verus_invariant_fn = Some(lit.value());
                 }
-                "verus_inv_body" => {
-                    // Parsed for attribute validation only; consumed by the CLI scanner, not by this macro.
-                    let _: syn::LitStr = input.parse()?;
-                }
-                "creusot_inv_body" => {
+                "verus_inv_body" | "verus_state_body" | "creusot_inv_body" => {
                     // Parsed for attribute validation only; consumed by the CLI scanner, not by this macro.
                     let _: syn::LitStr = input.parse()?;
                 }
@@ -91,7 +87,7 @@ impl Parse for PropArgs {
                     return Err(syn::Error::new(
                         ident.span(),
                         format!(
-                            "unknown prop key `{other}`; expected `credential`, `creusot_invariant_fn`, `kani_invariant_fn`, `verus_invariant_fn`, `verus_inv_body`, or `creusot_inv_body`"
+                            "unknown prop key `{other}`; expected `credential`, `creusot_invariant_fn`, `kani_invariant_fn`, `verus_invariant_fn`, `verus_inv_body`, `verus_state_body`, or `creusot_inv_body`"
                         ),
                     ));
                 }

@@ -262,7 +262,7 @@ pub enum ArchivePanelState {
 /// implementation is the source of WCAG compliance. The credential bounds CBMC
 /// to exploring only `WcagVerified` (a ZST), not all 18 `ArchivePanelState` variants.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_panel_consistent", kani_invariant_fn = "archive_panel_consistent", verus_invariant_fn = "archive_panel_consistent", verus_inv_body = "match *state { ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(), _ => true, }", creusot_inv_body = "pearlite! { match state { ArchivePanelState::SqlEditor { running, result, .. } => *running ==> match result { None => true, Some(_) => false }, _ => true, } }")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_panel_consistent", kani_invariant_fn = "archive_panel_consistent", verus_invariant_fn = "archive_panel_consistent", verus_inv_body = "match *state { ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(), _ => true, }", verus_state_body = "SqlEditor { running: bool, result: Option<u64> }, _Other,", creusot_inv_body = "pearlite! { match state { ArchivePanelState::SqlEditor { running, result, .. } => *running ==> match result { None => true, Some(_) => false }, _ => true, } }")]
 pub struct ArchivePanelConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}

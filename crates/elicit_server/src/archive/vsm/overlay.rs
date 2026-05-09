@@ -69,7 +69,7 @@ pub enum ArchiveOverlayState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: overlays render AccessKit nodes
 /// so WCAG compliance is the credential that bounds the proof state space.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent", kani_invariant_fn = "archive_overlay_consistent", verus_invariant_fn = "archive_overlay_consistent", verus_inv_body = "match *state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx <= entries@.len(), _ => true, }", creusot_inv_body = "pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } }")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_overlay_consistent", kani_invariant_fn = "archive_overlay_consistent", verus_invariant_fn = "archive_overlay_consistent", verus_inv_body = "match *state { ArchiveOverlayState::ExportPickerOpen { idx, len } => idx <= len, ArchiveOverlayState::SavedBrowserOpen { len, idx } => idx <= len, _ => true, }", verus_state_body = "ExportPickerOpen { idx: usize, len: usize }, SavedBrowserOpen { len: usize, idx: usize }, _Other,", creusot_inv_body = "pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } }")]
 pub struct ArchiveOverlayConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
@@ -114,7 +114,7 @@ pub struct ArchiveOverlayMachine;
 // ── Transitions ───────────────────────────────────────────────────────────────
 
 /// Close the active overlay (return to none).
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "trivial")]
 #[instrument(skip(proof))]
 pub fn close_overlay(
     _state: ArchiveOverlayState,
@@ -124,7 +124,7 @@ pub fn close_overlay(
 }
 
 /// Open the help overlay.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "trivial")]
 #[instrument(skip(proof))]
 pub fn open_help(
     _state: ArchiveOverlayState,
@@ -134,7 +134,7 @@ pub fn open_help(
 }
 
 /// Open the export format picker.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "special_false")]
 #[instrument(skip(proof))]
 pub fn open_export_picker(
     _state: ArchiveOverlayState,
@@ -148,7 +148,7 @@ pub fn open_export_picker(
 }
 
 /// Move the export picker selection up.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "conditional_special")]
 #[instrument(skip(proof))]
 pub fn picker_move_up(
     state: ArchiveOverlayState,
@@ -167,7 +167,7 @@ pub fn picker_move_up(
 }
 
 /// Move the export picker selection down.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "conditional_special")]
 #[instrument(skip(proof))]
 pub fn picker_move_down(
     state: ArchiveOverlayState,
@@ -187,7 +187,7 @@ pub fn picker_move_down(
 }
 
 /// Open the save-query name prompt.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "trivial")]
 #[instrument(skip(proof))]
 pub fn open_save_prompt(
     _state: ArchiveOverlayState,
@@ -202,7 +202,7 @@ pub fn open_save_prompt(
 }
 
 /// Append a character to the save-prompt text.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "passthrough")]
 #[instrument(skip(proof))]
 pub fn prompt_push(
     state: ArchiveOverlayState,
@@ -220,7 +220,7 @@ pub fn prompt_push(
 }
 
 /// Delete the last character from the save-prompt text.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "passthrough")]
 #[instrument(skip(proof))]
 pub fn prompt_backspace(
     state: ArchiveOverlayState,
@@ -237,7 +237,7 @@ pub fn prompt_backspace(
 }
 
 /// Open the saved queries browser.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "trivial")]
 #[instrument(skip(proof))]
 pub fn open_saved_browser(
     _state: ArchiveOverlayState,
@@ -251,7 +251,7 @@ pub fn open_saved_browser(
 }
 
 /// Move the saved browser selection up.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "passthrough")]
 #[instrument(skip(proof))]
 pub fn saved_browser_up(
     state: ArchiveOverlayState,
@@ -270,7 +270,7 @@ pub fn saved_browser_up(
 }
 
 /// Move the saved browser selection down.
-#[formal_method(contracts = [ArchiveOverlayConsistent])]
+#[formal_method(contracts = [ArchiveOverlayConsistent], verus_class = "passthrough")]
 #[instrument(skip(proof))]
 pub fn saved_browser_down(
     state: ArchiveOverlayState,

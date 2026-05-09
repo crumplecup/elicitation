@@ -67,7 +67,7 @@ pub enum ArchiveNavState {
 /// Wired to [`WcagVerified`] from `elicit_ui`: nav state produces AccessKit
 /// nodes via `to_ak_nodes`, so WCAG compliance is the appropriate credential.
 #[derive(Prop)]
-#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_nav_consistent", kani_invariant_fn = "archive_nav_consistent", verus_invariant_fn = "archive_nav_consistent", verus_inv_body = "match *state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, }", creusot_inv_body = "pearlite! { match state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, } }")]
+#[prop(credential = WcagVerified, creusot_invariant_fn = "archive_nav_consistent", kani_invariant_fn = "archive_nav_consistent", verus_invariant_fn = "archive_nav_consistent", verus_inv_body = "match *state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, }", verus_state_body = "NavFiltered { filter: String }, _Other,", creusot_inv_body = "pearlite! { match state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, } }")]
 pub struct ArchiveNavConsistent;
 
 impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}

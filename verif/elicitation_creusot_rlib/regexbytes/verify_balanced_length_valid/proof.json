@@ -1,9 +1,0 @@
-{
-  "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_from_slice": { "prover": "cvc5", "time": 0.014 },
-      "vc_verify_balanced_length_valid": { "prover": "cvc5", "time": 0.014 }
-    }
-  }
-}

@@ -43,6 +43,12 @@ pub struct PropDescriptor {
     pub verus_inv_body: Option<String>,
     /// `creusot_inv_body = "..."` value — verbatim body for the Creusot `#[logic]` fn.
     pub creusot_inv_body: Option<String>,
+    /// `verus_state_body = "..."` value — verbatim enum body for the Verus abstract state mirror.
+    ///
+    /// Lists only the variants relevant to the invariant; others are collapsed to a wildcard
+    /// variant (by convention, `_Other`).  Example:
+    /// `"SqlEditor { running: bool, result: Option<u64> }, _Other,"`.
+    pub verus_state_body: Option<String>,
 }
 
 /// Classification of a single transition function parameter for harness generation.
@@ -83,6 +89,16 @@ pub struct TransitionFn {
     pub name: String,
     /// All parameters of the function, including state and proof.
     pub args: Vec<ArgDescriptor>,
+    /// Body of the function as a token-stream string (whitespace-normalised by `quote`).
+    ///
+    /// Used by the Verus generator to classify transitions (trivial / passthrough / etc.)
+    /// without re-parsing the source.  `None` when the body was not captured.
+    pub body: Option<String>,
+    /// Explicit `verus_class = "..."` from `#[formal_method]`, overriding body-based inference.
+    ///
+    /// Valid values: `"trivial"`, `"passthrough"`, `"special_false"`, `"conditional_special"`.
+    /// When present the Verus generator skips `classify_transition` and uses this directly.
+    pub verus_class: Option<String>,
 }
 
 impl TransitionFn {
@@ -297,7 +313,17 @@ fn resolve_transition_fns(
                 let name = f.sig.ident.to_string();
                 if transitions.contains(&name) && !found.contains_key(&name) {
                     let args = classify_fn_args(&f.sig.inputs);
-                    found.insert(name.clone(), TransitionFn { name, args });
+                    let body = Some(block_body_string(&f.block));
+                    let verus_class = parse_formal_method_verus_class(f);
+                    found.insert(
+                        name.clone(),
+                        TransitionFn {
+                            name,
+                            args,
+                            body,
+                            verus_class,
+                        },
+                    );
                 }
             }
         }
@@ -450,6 +476,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
     let mut creusot_fn = None;
     let mut verus_inv_body = None;
     let mut creusot_inv_body = None;
+    let mut verus_state_body = None;
 
     for attr in &s.attrs {
         if attr.path().is_ident("prop") {
@@ -460,6 +487,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
                 &mut creusot_fn,
                 &mut verus_inv_body,
                 &mut creusot_inv_body,
+                &mut verus_state_body,
             );
         }
     }
@@ -471,6 +499,7 @@ pub fn extract_prop_descriptor(s: &syn::ItemStruct) -> Option<PropDescriptor> {
         creusot_fn,
         verus_inv_body,
         creusot_inv_body,
+        verus_state_body,
     })
 }
 
@@ -487,9 +516,13 @@ fn scan_transition_fns(file: &File, names: &[String]) -> Vec<TransitionFn> {
                 continue;
             }
             let args = classify_fn_args(&f.sig.inputs);
+            let body = Some(block_body_string(&f.block));
+            let verus_class = parse_formal_method_verus_class(f);
             result.push(TransitionFn {
                 name: fn_name,
                 args,
+                body,
+                verus_class,
             });
         }
     }
@@ -588,6 +621,7 @@ fn parse_prop_attr(
     creusot_fn: &mut Option<String>,
     verus_inv_body: &mut Option<String>,
     creusot_inv_body: &mut Option<String>,
+    verus_state_body: &mut Option<String>,
 ) {
     let list: MetaList = match attr.meta.clone() {
         Meta::List(l) => l,
@@ -612,6 +646,7 @@ fn parse_prop_attr(
                 "creusot_invariant_fn" => *creusot_fn = val,
                 "verus_inv_body" => *verus_inv_body = val,
                 "creusot_inv_body" => *creusot_inv_body = val,
+                "verus_state_body" => *verus_state_body = val,
                 _ => {}
             }
         }
@@ -703,4 +738,31 @@ fn string_lit_value(expr: &Expr) -> Option<String> {
     } else {
         None
     }
+}
+
+/// Extract `verus_class = "..."` from `#[formal_method(...)]`, if present.
+fn parse_formal_method_verus_class(f: &syn::ItemFn) -> Option<String> {
+    for attr in &f.attrs {
+        if !attr.path().is_ident("formal_method") {
+            continue;
+        }
+        let list: MetaList = match attr.meta.clone() {
+            Meta::List(l) => l,
+            _ => continue,
+        };
+        let nested = match list.parse_args_with(
+            syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated,
+        ) {
+            Ok(n) => n,
+            Err(_) => continue,
+        };
+        for meta in nested {
+            if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta {
+                if path.is_ident("verus_class") {
+                    return string_lit_value(&value);
+                }
+            }
+        }
+    }
+    None
 }
