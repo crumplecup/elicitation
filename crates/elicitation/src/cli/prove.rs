@@ -27,13 +27,15 @@ use std::os::unix::process::CommandExt as _;
 use std::{
     collections::HashSet,
     fs,
-    io::{Read, Write as _},
+    io::{BufRead as _, Read, Write as _},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::{Arc, Mutex},
     thread,
     time::Instant,
 };
+
+use indicatif::{ProgressBar, ProgressStyle};
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -298,18 +300,30 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
         warm_cmd.arg(flag);
     }
     let kani_log = config.log_dir.join("prove_kani.log");
-    execute_timed("cargo kani --only-codegen", warm_cmd, 0, false, &kani_log).context(
-        "`cargo kani --only-codegen` failed — fix compilation errors before running harnesses",
-    )?;
+    println!("🔬 Building Kani model…");
+    println!("📝 Logging to {}", kani_log.display());
+    let build_bar = spinner("Starting codegen…");
+    let build_sink = kani_build_sink(build_bar.clone());
+    execute_with_progress(
+        "cargo kani --only-codegen",
+        warm_cmd,
+        0,
+        false,
+        &kani_log,
+        build_sink,
+    )
+    .context("`cargo kani --only-codegen` failed — fix compilation errors before running harnesses")?;
+    build_bar.finish_and_clear();
 
     // Discover harnesses.
     let harnesses = list_kani_harnesses(pkg, &config.kani_flags)?;
     let total = harnesses.len();
-    if let Some(csv) = &config.kani_csv {
-        println!("🔬 Running {total} Kani harnesses → {}", csv.display());
-    } else {
-        println!("🔬 Running {total} Kani harnesses");
-    }
+    let csv_suffix = config
+        .kani_csv
+        .as_ref()
+        .map(|p| format!(" → {}", p.display()))
+        .unwrap_or_default();
+    println!("🔬 Running {total} Kani harnesses{csv_suffix}");
 
     // Load already-passed harnesses when resuming.
     let passed_set: HashSet<String> = if config.kani_resume {
@@ -334,20 +348,26 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
     let mut pass = 0usize;
     let mut fail = 0usize;
 
+    let bar = ProgressBar::new(total as u64);
+    bar.set_style(
+        ProgressStyle::with_template(
+            "{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}",
+        )
+        .expect("valid template")
+        .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+    );
+    bar.enable_steady_tick(std::time::Duration::from_millis(80));
+
     for (idx, harness) in harnesses.iter().enumerate() {
+        let short = short_name(harness);
         if passed_set.contains(harness) {
-            println!(
-                "  [{}/{}] {:<60} ⏭  SKIP",
-                idx + 1,
-                total,
-                short_name(harness)
-            );
+            bar.println(format!("  [{}/{}] {:<60} ⏭  SKIP", idx + 1, total, short));
+            bar.inc(1);
             pass += 1;
             continue;
         }
 
-        print!("  [{}/{}] {:<60}", idx + 1, total, short_name(harness));
-        let _ = std::io::stdout().flush();
+        bar.set_message(format!("{short}…"));
 
         let cmd = build_kani_harness_cmd(config, pkg, harness);
         let (status_str, elapsed) = run_harness_timed(cmd, config.timeout)?;
@@ -359,20 +379,37 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
 
         match status_str.as_str() {
             "PASS" => {
-                println!("✅ PASS ({elapsed_s}s)");
+                bar.println(format!(
+                    "  [{}/{}] {:<60} ✅ PASS ({elapsed_s}s)",
+                    idx + 1,
+                    total,
+                    short
+                ));
                 pass += 1;
             }
             "TIMEOUT" => {
-                println!("⏱  TIMEOUT ({elapsed_s}s)");
+                bar.println(format!(
+                    "  [{}/{}] {:<60} ⏱  TIMEOUT ({elapsed_s}s)",
+                    idx + 1,
+                    total,
+                    short
+                ));
                 fail += 1;
             }
             _ => {
-                println!("❌ FAIL ({elapsed_s}s)");
+                bar.println(format!(
+                    "  [{}/{}] {:<60} ❌ FAIL ({elapsed_s}s)",
+                    idx + 1,
+                    total,
+                    short
+                ));
                 fail += 1;
             }
         }
+        bar.inc(1);
     }
 
+    bar.finish_and_clear();
     println!("\nResults: {pass}/{total} passed, {fail} failed");
     if let Some(csv) = &config.kani_csv {
         println!("CSV:     {}", csv.display());
@@ -636,8 +673,14 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
     }
 
     let log = config.log_dir.join("prove_verus.log");
+    println!("🔬 Running verus…");
+    println!("📝 Logging to {}", log.display());
+    let bar = spinner("Verifying…");
+    let sink = verus_sink(bar.clone());
     let start = Instant::now();
-    let status = execute_timed("verus", cmd, config.timeout, config.dry_run, &log)?;
+    let status =
+        execute_with_progress("verus", cmd, config.timeout, config.dry_run, &log, sink)?;
+    bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
     if !config.dry_run {
@@ -682,14 +725,20 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     cmd.env("DUNE_DIR_LOCATIONS", &config.dune_dir_locations);
 
     let log = config.log_dir.join("prove_creusot.log");
+    println!("🔬 Running cargo creusot prove…");
+    println!("📝 Logging to {}", log.display());
+    let bar = spinner("Starting…");
+    let sink = creusot_sink(bar.clone());
     let start = Instant::now();
-    let status = execute_timed(
+    let status = execute_with_progress(
         "cargo creusot prove",
         cmd,
         config.timeout,
         config.dry_run,
         &log,
+        sink,
     )?;
+    bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
     if !config.dry_run {
@@ -707,6 +756,204 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
 }
 
 // ── Shared execute helpers ────────────────────────────────────────────────────
+
+/// Callback type shared between the stdout and stderr reader threads.
+///
+/// Each line of output is passed to the handler; the handler drives the
+/// indicatif progress bar and decides whether to surface anything to the
+/// terminal (via `bar.println`).  All raw output is always written to the log
+/// regardless of what the handler does.
+type LineSink = Arc<Mutex<dyn FnMut(&str) + Send>>;
+
+/// Create a spinning progress bar on stderr.
+fn spinner(msg: impl Into<String>) -> ProgressBar {
+    let bar = ProgressBar::new_spinner();
+    bar.set_style(
+        ProgressStyle::with_template("{spinner:.blue} {msg}")
+            .expect("valid template")
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+    );
+    bar.set_message(msg.into());
+    bar.enable_steady_tick(std::time::Duration::from_millis(80));
+    bar
+}
+
+/// Build a `LineSink` that drives a spinner during `cargo creusot prove`.
+///
+/// Two phases are detected from the output stream:
+/// - **Compile** (`Compiling …`): spinner message shows the crate count.
+/// - **Prove** (`Goal Coma.vc_…`): spinner message counts proved goals.
+///
+/// Dangling-file warnings and `cargo creusot clean` hints are surfaced above
+/// the bar via `bar.println` so the user still sees them.
+fn creusot_sink(bar: ProgressBar) -> LineSink {
+    let b = bar.clone();
+    let mut crates = 0usize;
+    let mut goals = 0usize;
+    let mut proving = false;
+    Arc::new(Mutex::new(move |line: &str| {
+        let t = line.trim();
+        if !proving && t.starts_with("Compiling ") {
+            crates += 1;
+            b.set_message(format!("🔨 Compiling ({crates} crates)…"));
+        } else if t.starts_with("Finished ") {
+            proving = true;
+            b.set_message("🔬 Proving…");
+        } else if proving && t.starts_with("Goal ") {
+            goals += 1;
+            b.set_message(format!("🔬 Proving [{goals} goals]…"));
+        } else if t.starts_with("Warning:") || t.contains("cargo creusot clean") {
+            b.println(line);
+        }
+    }))
+}
+
+/// Build a `LineSink` that drives a spinner during the Kani codegen warmup.
+fn kani_build_sink(bar: ProgressBar) -> LineSink {
+    let b = bar.clone();
+    let mut crates = 0usize;
+    Arc::new(Mutex::new(move |line: &str| {
+        let t = line.trim();
+        if t.starts_with("Compiling ") {
+            crates += 1;
+            b.set_message(format!("🔨 Building model ({crates} crates)…"));
+        } else if t.starts_with("error") {
+            b.println(line);
+        }
+    }))
+}
+
+/// Build a `LineSink` that drives a spinner during Verus.
+fn verus_sink(bar: ProgressBar) -> LineSink {
+    let b = bar.clone();
+    Arc::new(Mutex::new(move |line: &str| {
+        let t = line.trim();
+        // Surface the summary line ("N verified, M errors") above the bar.
+        if t.contains("verified,") || t.starts_with("error") {
+            b.println(line);
+        }
+    }))
+}
+
+/// Execute a command, driving an indicatif `LineSink` instead of echoing raw
+/// output to the terminal.  All stdout+stderr is still written to `log_path`.
+/// Returns `"PASS"` / `"FAIL"` / `"TIMEOUT"` / `"DRY-RUN"`.
+fn execute_with_progress(
+    label: &str,
+    mut cmd: Command,
+    timeout_secs: u64,
+    dry_run: bool,
+    log_path: &Path,
+    sink: LineSink,
+) -> anyhow::Result<String> {
+    if dry_run {
+        println!("🔍 [dry-run] {label}: {:?}", cmd);
+        return Ok("DRY-RUN".to_string());
+    }
+
+    let log = Arc::new(Mutex::new(
+        fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(log_path)
+            .with_context(|| format!("Failed to open log: {}", log_path.display()))?,
+    ));
+
+    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+    #[cfg(unix)]
+    cmd.process_group(0);
+
+    let mut child = cmd
+        .spawn()
+        .with_context(|| format!("Failed to spawn {label}"))?;
+
+    // Stdout reader: log every line + call sink.
+    let stdout_pipe = child.stdout.take();
+    let sink_out = Arc::clone(&sink);
+    let log_out = Arc::clone(&log);
+    let stdout_thread = stdout_pipe.map(|pipe| {
+        thread::spawn(move || {
+            let reader = std::io::BufReader::new(pipe);
+            for line in reader.lines().map_while(Result::ok) {
+                if let Ok(mut f) = log_out.lock() {
+                    let _ = writeln!(f, "{line}");
+                }
+                if let Ok(mut h) = sink_out.lock() {
+                    h(&line);
+                }
+            }
+        })
+    });
+
+    // Stderr reader: same.
+    let stderr_pipe = child.stderr.take();
+    let sink_err = Arc::clone(&sink);
+    let log_err = Arc::clone(&log);
+    let stderr_thread = stderr_pipe.map(|pipe| {
+        thread::spawn(move || {
+            let reader = std::io::BufReader::new(pipe);
+            for line in reader.lines().map_while(Result::ok) {
+                if let Ok(mut f) = log_err.lock() {
+                    let _ = writeln!(f, "{line}");
+                }
+                if let Ok(mut h) = sink_err.lock() {
+                    h(&line);
+                }
+            }
+        })
+    });
+
+    let join_threads = |st: Option<thread::JoinHandle<()>>, et: Option<thread::JoinHandle<()>>| {
+        if let Some(t) = st {
+            let _ = t.join();
+        }
+        if let Some(t) = et {
+            let _ = t.join();
+        }
+    };
+
+    let status = if timeout_secs == 0 {
+        let s = child.wait().context("Failed to wait for child")?;
+        join_threads(stdout_thread, stderr_thread);
+        s
+    } else {
+        let deadline = Instant::now() + std::time::Duration::from_secs(timeout_secs);
+        loop {
+            match child.try_wait()? {
+                Some(s) => {
+                    join_threads(stdout_thread, stderr_thread);
+                    break s;
+                }
+                None => {
+                    if Instant::now() >= deadline {
+                        #[cfg(unix)]
+                        {
+                            let pgid = child.id() as i32;
+                            let _ = Command::new("kill")
+                                .args(["-9", &format!("-{pgid}")])
+                                .status();
+                        }
+                        let _ = child.kill();
+                        let _ = child.wait();
+                        join_threads(stdout_thread, stderr_thread);
+                        anyhow::bail!(
+                            "{label} timed out after {timeout_secs}s — see {}",
+                            log_path.display()
+                        );
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                }
+            }
+        }
+    };
+
+    if status.success() {
+        Ok("PASS".to_string())
+    } else {
+        Ok("FAIL".to_string())
+    }
+}
 
 /// Run a command with a timeout, teeing stdout+stderr to both the terminal and
 /// `log_path`. Returns the status string ("PASS"/"FAIL"/"TIMEOUT").

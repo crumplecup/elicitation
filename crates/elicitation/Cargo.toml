@@ -45,6 +45,7 @@ toml_datetime = { workspace = true, optional = true }
 shellexpand = { workspace = true, optional = true }
 dirs = { workspace = true, optional = true }
 dotenvy = { workspace = true, optional = true }
+indicatif = { workspace = true, optional = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -189,7 +190,7 @@ clap-types = ["dep:clap"]
 sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
-cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs", "dep:dotenvy"]
+cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs", "dep:dotenvy", "dep:indicatif"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]

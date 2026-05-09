@@ -1,16 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 224 0 224 89 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 225 0 225 89 *)
 
-let%span slevel24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 225 13 225 34
-let%span slevel24'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 227 53 227 54
-let%span slevel24'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 227 46 227 54
-let%span slevel24'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 227 32 227 55
-let%span slevel24'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 218 11 218 22
-let%span slevel24'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 219 10 223 1
-let%span slevel24'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 175 11 175 21
-let%span slevel24'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 176 10 176 28
-let%span slevel24'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 177 10 177 45
-let%span slevel24'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 139 8 142 9
-let%span slevel24'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 150 8 154 9
+let%span slevel24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 226 13 226 34
+let%span slevel24'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 228 32 228 51
+let%span slevel24'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 219 11 219 22
+let%span slevel24'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 220 10 224 1
+let%span slevel24'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 174 11 174 21
+let%span slevel24'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 175 10 178 1
 
 use creusot.int.UInt64
 use creusot.int.Int32
@@ -21,24 +16,13 @@ type t_C24Node = { remaining_depth: UInt64.t; value: Int32.t }
 
 type t_C24Result_C24Node = DepthExceeded | Ok UInt64.t t_C24Node
 
-predicate c24_is_ok_C24Node [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 137 0 137 45] (r: t_C24Result_C24Node) =
-  [%#slevel24'8] match r with
-    | Ok _ _ -> true
-    | DepthExceeded -> false
-    end
-
-predicate c24_depth_decreased [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 148 0 148 78] (r: t_C24Result_C24Node) (input_depth: UInt64.t) =
-  [%#slevel24'9] match r with
-    | Ok remaining _node -> UInt64.t'int remaining < UInt64.t'int input_depth
-    | DepthExceeded -> true
-    end
-
 let rec c24_step (depth: UInt64.t) (leaf: Int32.t) (return (x: t_C24Result_C24Node)) =
-  {[@stop_split] [@expl:c24_step requires] [%#slevel24'5] UInt64.t'int depth > 0}
+  {[@stop_split] [@expl:c24_step requires] [%#slevel24'3] UInt64.t'int depth > 0}
   any
-  [ return (result: t_C24Result_C24Node) ->
-  {[@stop_split] [@expl:c24_step ensures] ([@stop_split] [@expl:c24_step ensures #0] [%#slevel24'6] c24_is_ok_C24Node result)
-    /\ ([@stop_split] [@expl:c24_step ensures #1] [%#slevel24'7] c24_depth_decreased result depth)}
+  [ return (result: t_C24Result_C24Node) -> {[@stop_split] [@expl:c24_step ensures] [%#slevel24'4] match result with
+      | Ok d _ -> UInt64.t'int d = UInt64.t'int depth - 1
+      | DepthExceeded -> false
+      end}
     (! return {result}) ]
 
 let rec elim_Ok (_x: t_C24Result_C24Node) (return (f0: UInt64.t) (f1: t_C24Node)) = any
@@ -57,9 +41,9 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec c24_two_steps [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 224 0 224 89]
+let rec c24_two_steps [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 225 0 225 89]
   (depth: UInt64.t) (leaf: Int32.t) (return (x: tup2_C24Result_C24Node_C24Result_C24Node)) =
-  {[@stop_split] [@expl:c24_two_steps requires] [%#slevel24'3] UInt64.t'int depth >= 2}
+  {[@stop_split] [@expl:c24_two_steps requires] [%#slevel24'1] UInt64.t'int depth >= 2}
   (! bb0
   [ bb0 = s0
     [ s0 = c24_step [%#slevel24] {depth} {leaf} (fun (_x: t_C24Result_C24Node) -> [ &r1 <- _x ] s1)
@@ -68,9 +52,8 @@ let rec c24_two_steps [#"/home/erik/repos/elicitation/crates/elicitation_creusot
       [ br0 -> {_11 = DepthExceeded} (! bb4) | br1 (x0: UInt64.t) (x1: t_C24Node) -> {_11 = Ok x0 x1} (! bb5) ] ]
   | bb5 = s0
     [ s0 = elim_Ok {_11} (fun (r0: UInt64.t) (r1'0: t_C24Node) -> [ &d1 <- r0 ] s1)
-    | s1 = Int32.add [%#slevel24'1] {leaf} {[%#slevel24'0] (1: Int32.t)} (fun (_x: Int32.t) -> [ &_15 <- _x ] s2)
-    | s2 = c24_step [%#slevel24'2] {d1} {_15} (fun (_x: t_C24Result_C24Node) -> [ &r2 <- _x ] s3)
-    | s3 = bb7 ]
+    | s1 = c24_step [%#slevel24'0] {d1} {leaf} (fun (_x: t_C24Result_C24Node) -> [ &r2 <- _x ] s2)
+    | s2 = bb7 ]
   | bb4 = s0 [ s0 = [ &r2 <- DepthExceeded ] s1 | s1 = bb7 ]
   | bb7 = s0 [ s0 = [ &_ret <- { f0 = r1; f1 = r2 } ] s1 | s1 = return {_ret} ] ]
   [ & _ret: tup2_C24Result_C24Node_C24Result_C24Node = Any.any_l ()
@@ -79,10 +62,9 @@ let rec c24_two_steps [#"/home/erik/repos/elicitation/crates/elicitation_creusot
   | & r1: t_C24Result_C24Node = Any.any_l ()
   | & r2: t_C24Result_C24Node = Any.any_l ()
   | & _11: t_C24Result_C24Node = Any.any_l ()
-  | & d1: UInt64.t = Any.any_l ()
-  | & _15: Int32.t = Any.any_l () ])
+  | & d1: UInt64.t = Any.any_l () ])
   [ return (result: tup2_C24Result_C24Node_C24Result_C24Node) ->
-  {[@stop_split] [@expl:c24_two_steps ensures] [%#slevel24'4] match { f0'0 = result.f0; f1'0 = result.f1 } with
+  {[@stop_split] [@expl:c24_two_steps ensures] [%#slevel24'2] match { f0'0 = result.f0; f1'0 = result.f1 } with
       | {f0'0 = Ok d1 _; f1'0 = Ok d2 _} -> UInt64.t'int d1 < UInt64.t'int depth /\ UInt64.t'int d2 < UInt64.t'int d1
       | _ -> false
       end}

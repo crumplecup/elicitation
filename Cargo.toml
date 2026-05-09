@@ -240,6 +240,7 @@ dotenvy = "0.15"
 clap = { version = "4", features = ["derive", "string"] }
 csv = "1.4"
 shellexpand = "3.1"
+indicatif = "0.18"
 
 # ── DateTime ──────────────────────────────────────────────────────────────────
 chrono = { version = "0.4", features = ["serde"] }
