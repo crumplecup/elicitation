@@ -316,7 +316,10 @@ fn scan_vsms_extracts_inv_body_from_plain_fn() {
     let vsms = scan_vsms(dir.path());
     assert_eq!(vsms.len(), 1);
     let inv = vsms[0].invariant.as_ref().unwrap();
-    let body = inv.verus_inv_body.as_deref().expect("body should be resolved");
+    let body = inv
+        .verus_inv_body
+        .as_deref()
+        .expect("body should be resolved");
     assert!(
         body.contains("valid"),
         "body should contain extracted source; got: {body}"
@@ -353,7 +356,10 @@ fn scan_vsms_emits_callthrough_for_cfg_gated_fn() {
     let vsms = scan_vsms(dir.path());
     assert_eq!(vsms.len(), 1);
     let inv = vsms[0].invariant.as_ref().unwrap();
-    let body = inv.verus_inv_body.as_deref().expect("callthrough should be set");
+    let body = inv
+        .verus_inv_body
+        .as_deref()
+        .expect("callthrough should be set");
     assert_eq!(
         body, "check_consistent(state)",
         "expected callthrough; got: {body}"

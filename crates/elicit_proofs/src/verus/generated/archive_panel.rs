@@ -8,17 +8,25 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
-use ::vstd::prelude::*;
-#[cfg(verus)]
 use ::verus_builtin_macros::verus;
 #[cfg(verus)]
-use elicitation::Established;
+use ::vstd::prelude::*;
 #[cfg(verus)]
-use elicit_server::archive::{AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout, ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, SavedQuery};
-#[cfg(verus)]
-use elicit_server::archive::display::{AdminSnapshotMode, ConnectionProfileMode, ConstraintDescriptorMode, DdlDescriptorMode, ErdDiagramMode, ExplainNodeMode, IndexDescriptorMode, MonitorSnapshotMode, QueryHistoryEntryMode, QueryResultMode, SavedQueryMode};
+use elicit_server::archive::display::{
+    AdminSnapshotMode, ConnectionProfileMode, ConstraintDescriptorMode, DdlDescriptorMode,
+    ErdDiagramMode, ExplainNodeMode, IndexDescriptorMode, MonitorSnapshotMode,
+    QueryHistoryEntryMode, QueryResultMode, SavedQueryMode,
+};
 #[cfg(verus)]
 use elicit_server::archive::vsm::{ArchivePanelConsistent, ArchivePanelState};
+#[cfg(verus)]
+use elicit_server::archive::{
+    AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout,
+    ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult,
+    SavedQuery,
+};
+#[cfg(verus)]
+use elicitation::Established;
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_panel_consistent(state: &ArchivePanelState) -> bool { match *state { ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(), _ => true, } } }

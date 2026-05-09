@@ -51,7 +51,9 @@ fn vsm_with_transition_and_body(
         ArgDescriptor {
             name: "proof".to_string(),
             ty: format!("Established<{consistent}>"),
-            kind: ArgKind::Proof { inner: consistent.clone() },
+            kind: ArgKind::Proof {
+                inner: consistent.clone(),
+            },
         },
     ];
     args.extend(extra);
@@ -91,8 +93,14 @@ fn to_snake(s: &str) -> String {
 fn generated_file_has_header_comment() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("AUTO-GENERATED"), "expected AUTO-GENERATED header");
-    assert!(out.contains("NavMachine"), "expected machine name in header");
+    assert!(
+        out.contains("AUTO-GENERATED"),
+        "expected AUTO-GENERATED header"
+    );
+    assert!(
+        out.contains("NavMachine"),
+        "expected machine name in header"
+    );
 }
 
 #[test]
@@ -100,8 +108,14 @@ fn generated_file_has_cfg_creusot_imports() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("#[cfg(creusot)]"), "expected #[cfg(creusot)]");
-    assert!(out.contains("::creusot_std::prelude::*"), "expected creusot_std import");
-    assert!(out.contains("elicitation::Established"), "expected Established import");
+    assert!(
+        out.contains("::creusot_std::prelude::*"),
+        "expected creusot_std import"
+    );
+    assert!(
+        out.contains("elicitation::Established"),
+        "expected Established import"
+    );
 }
 
 #[test]
@@ -141,30 +155,48 @@ fn marker_proof_fn_emitted() {
     );
     assert!(out.contains("#[trusted]"), "expected #[trusted]");
     assert!(out.contains("#[requires(true)]"), "expected requires(true)");
-    assert!(out.contains("#[ensures(result)]"), "expected ensures(result)");
+    assert!(
+        out.contains("#[ensures(result)]"),
+        "expected ensures(result)"
+    );
 }
 
 #[test]
 fn wrapper_emitted_per_transition() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go", "back"]);
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("fn go__creusot"), "expected go wrapper; got:\n{out}");
-    assert!(out.contains("fn back__creusot"), "expected back wrapper; got:\n{out}");
+    assert!(
+        out.contains("fn go_creusot"),
+        "expected go wrapper; got:\n{out}"
+    );
+    assert!(
+        out.contains("fn back_creusot"),
+        "expected back wrapper; got:\n{out}"
+    );
 }
 
 #[test]
 fn wrapper_has_requires_and_ensures() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("#[requires(nav_consistent(&state))]"), "expected requires; got:\n{out}");
-    assert!(out.contains("#[ensures(nav_consistent(&result.0))]"), "expected ensures; got:\n{out}");
+    assert!(
+        out.contains("#[requires(nav_consistent(&state))]"),
+        "expected requires; got:\n{out}"
+    );
+    assert!(
+        out.contains("#[ensures(nav_consistent(&result.0))]"),
+        "expected ensures; got:\n{out}"
+    );
 }
 
 #[test]
 fn wrapper_body_calls_through() {
     let vsm = vsm_with_body("NavMachine", Some("true"), vec!["go"]);
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("{ go("), "expected call-through body; got:\n{out}");
+    assert!(
+        out.contains("{ go("),
+        "expected call-through body; got:\n{out}"
+    );
 }
 
 #[test]
@@ -180,8 +212,14 @@ fn wrapper_with_extra_string_arg() {
         }],
     );
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("profile_name: String"), "expected String param; got:\n{out}");
-    assert!(out.contains("begin(state, proof, profile_name)"), "expected call with extra arg; got:\n{out}");
+    assert!(
+        out.contains("profile_name: String"),
+        "expected String param; got:\n{out}"
+    );
+    assert!(
+        out.contains("begin(state, proof, profile_name)"),
+        "expected call with extra arg; got:\n{out}"
+    );
 }
 
 // ─── Snapshot tests against live archive ──────────────────────────────────────
@@ -215,13 +253,19 @@ fn scan_and_generate_archive_connection_creusot() {
     let out = generate_creusot_file(conn, &vsm_dir).unwrap();
     assert!(out.contains("AUTO-GENERATED"), "missing header");
     assert!(out.contains("#[logic]"), "missing #[logic]");
-    assert!(out.contains("pub fn archive_connection_consistent"), "missing logic fn");
+    assert!(
+        out.contains("pub fn archive_connection_consistent"),
+        "missing logic fn"
+    );
     assert!(out.contains("{ true }"), "expected trivial body");
-    assert!(out.contains("verify_archive_connection_consistent_prop_creusot"), "missing marker");
+    assert!(
+        out.contains("verify_archive_connection_consistent_prop_creusot"),
+        "missing marker"
+    );
 
     for t in &conn.transitions {
         assert!(
-            out.contains(&format!("fn {t}__creusot")),
+            out.contains(&format!("fn {t}_creusot")),
             "missing wrapper for transition {t}"
         );
         assert!(
@@ -252,13 +296,25 @@ fn scan_and_generate_archive_nav_creusot() {
 
     let inv = nav.invariant.as_ref().expect("should have invariant");
     assert!(
-        inv.creusot_inv_body.as_ref().map(|b| b.contains("pearlite!")).unwrap_or(false),
+        inv.creusot_inv_body
+            .as_ref()
+            .map(|b| b.contains("pearlite!"))
+            .unwrap_or(false),
         "nav body should use pearlite!"
     );
 
     let out = generate_creusot_file(nav, &vsm_dir).unwrap();
-    assert!(out.contains("pub fn archive_nav_consistent"), "missing logic fn");
+    assert!(
+        out.contains("pub fn archive_nav_consistent"),
+        "missing logic fn"
+    );
     assert!(out.contains("pearlite!"), "expected pearlite body");
-    assert!(out.contains("requires(archive_nav_consistent"), "missing requires");
-    assert!(out.contains("ensures(archive_nav_consistent"), "missing ensures");
+    assert!(
+        out.contains("requires(archive_nav_consistent"),
+        "missing requires"
+    );
+    assert!(
+        out.contains("ensures(archive_nav_consistent"),
+        "missing ensures"
+    );
 }

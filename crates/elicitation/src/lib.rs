@@ -194,8 +194,8 @@ pub use traits::{
 };
 #[cfg(creusot)]
 pub use traits::{
-    ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
-    Prompt, TypeMetadata, VariantMetadata,
+    ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails, Prompt,
+    TypeMetadata, VariantMetadata,
 };
 
 // Type graph visualization — registry always available; builder/renderers gated on `graph`

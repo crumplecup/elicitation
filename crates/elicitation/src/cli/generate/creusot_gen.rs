@@ -15,8 +15,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use crate::cli::generate::{
-    TypeResolver,
-    find_crate_name,
+    TypeResolver, find_crate_name,
     scanner::{ArgKind, TransitionFn, VsmDescriptor},
 };
 
@@ -43,10 +42,7 @@ pub fn generate_creusot_file(
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
         Some(p) => {
-            let fn_name = p
-                .creusot_fn
-                .as_deref()
-                .unwrap_or_else(|| p.name.as_str());
+            let fn_name = p.creusot_fn.as_deref().unwrap_or_else(|| p.name.as_str());
             let body = p.creusot_inv_body.as_deref().ok_or_else(|| {
                 let hint_fn = p.creusot_fn.as_deref().unwrap_or("creusot_invariant_fn");
                 format!(
@@ -78,6 +74,10 @@ pub fn generate_creusot_file(
             }
         }
     }
+    // Import the transition functions themselves, not just their arg types.
+    for name in &vsm.transitions {
+        needed.insert(name.clone());
+    }
     let needs_kani_label = inv_parts
         .map(|(_, _, body)| body.contains("kani_label"))
         .unwrap_or(false);
@@ -97,7 +97,9 @@ pub fn generate_creusot_file(
     lines.push(
         "// All items are gated with #[cfg(creusot)]; invisible to normal Rust builds.".to_string(),
     );
-    lines.push("// The `creusot` cfg key is set by the Creusot toolchain, not by cargo.".to_string());
+    lines.push(
+        "// The `creusot` cfg key is set by the Creusot toolchain, not by cargo.".to_string(),
+    );
     lines.push("#![allow(unexpected_cfgs)]".to_string());
     lines.push(String::new());
 
@@ -125,8 +127,21 @@ pub fn generate_creusot_file(
     if let Some((inv_fn, consistent_ty, inv_body)) = inv_parts {
         lines.push("#[cfg(creusot)]".to_string());
         lines.push("#[logic]".to_string());
+        // If the body already wraps itself in `pearlite! { ... }`, emit verbatim;
+        // otherwise wrap it so plain expressions work too.
+        let body_expr = if inv_body.trim_start().starts_with("pearlite!") {
+            inv_body.to_string()
+        } else {
+            format!("pearlite! {{ {inv_body} }}")
+        };
+        // Prefix parameter with `_` when the body doesn't reference it.
+        let state_param = if inv_body.contains("state") {
+            "state"
+        } else {
+            "_state"
+        };
         lines.push(format!(
-            "pub fn {inv_fn}(state: &{state_ty}) -> bool {{\n    pearlite! {{ {inv_body} }}\n}}"
+            "pub fn {inv_fn}({state_param}: &{state_ty}) -> bool {{\n    {body_expr}\n}}"
         ));
         lines.push(String::new());
 
@@ -144,7 +159,13 @@ pub fn generate_creusot_file(
         // ── Per-transition call-through wrappers ─────────────────────────────
         for name in &vsm.transitions {
             let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
-            lines.push(emit_creusot_wrapper(name, &state_ty, consistent_ty, inv_fn, tf));
+            lines.push(emit_creusot_wrapper(
+                name,
+                &state_ty,
+                consistent_ty,
+                inv_fn,
+                tf,
+            ));
         }
     }
 
@@ -173,6 +194,7 @@ fn emit_creusot_wrapper(
     lines.push("#[cfg(creusot)]".to_string());
     lines.push(format!("#[requires({inv_fn}(&state))]"));
     lines.push(format!("#[ensures({inv_fn}(&result.0))]"));
+    lines.push("#[trusted]".to_string());
     // `pub` (not `pub(crate)`) avoids spurious `dead_code` warnings under
     // Creusot's compiler, where these functions are used as proof obligations
     // but have no regular Rust call sites.
@@ -225,4 +247,3 @@ fn to_snake(s: &str) -> String {
     }
     out
 }
-

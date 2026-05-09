@@ -722,7 +722,7 @@ extern_spec! {
 
 extern_spec! {
     impl Ipv4Private {
-        #[ensures((octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168)) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168) ==> match result { Ok(_) => true, Err(_) => false })]
         #[ensures(!(octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168)) ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(octets: [u8; 4]) -> Result<Ipv4Private, ValidationError>;
     }
@@ -737,7 +737,7 @@ extern_spec! {
 
 extern_spec! {
     impl Ipv6Private {
-        #[ensures((octets[0]@ / 2 == 126) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(octets[0]@ / 2 == 126 ==> match result { Ok(_) => true, Err(_) => false })]
         #[ensures(octets[0]@ / 2 != 126 ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(octets: [u8; 16]) -> Result<Ipv6Private, ValidationError>;
     }
@@ -806,7 +806,7 @@ extern_spec! {
 
 extern_spec! {
     impl IpPrivate {
-        #[ensures((match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) } ==> match result { Ok(_) => true, Err(_) => false })]
         #[ensures(!(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(ip: IpAddr) -> Result<IpPrivate, ValidationError>;
     }
@@ -815,7 +815,7 @@ extern_spec! {
 extern_spec! {
     impl IpPublic {
         #[ensures(!(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) } ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(ip: IpAddr) -> Result<IpPublic, ValidationError>;
     }
 }

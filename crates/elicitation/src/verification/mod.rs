@@ -192,10 +192,10 @@
 //! cargo run --example verification_demo --features verification
 //! ```
 
-use crate::traits::Elicitation;
-use std::fmt::Debug;
 #[cfg(not(creusot))]
 use crate::ElicitResult;
+use crate::traits::Elicitation;
+use std::fmt::Debug;
 
 // ============================================================================
 // Default Contract Selection (Feature-gated)

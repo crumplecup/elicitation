@@ -8,15 +8,15 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
-use ::vstd::prelude::*;
-#[cfg(verus)]
 use ::verus_builtin_macros::verus;
 #[cfg(verus)]
-use elicitation::Established;
+use ::vstd::prelude::*;
 #[cfg(verus)]
 use elicit_server::archive::NavTree;
 #[cfg(verus)]
 use elicit_server::archive::vsm::{ArchiveNavConsistent, ArchiveNavState};
+#[cfg(verus)]
+use elicitation::Established;
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_nav_consistent(state: &ArchiveNavState) -> bool { match *state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, } } }

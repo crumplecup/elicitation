@@ -6,11 +6,14 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
-use elicitation::Established;
-#[cfg(kani)]
 use elicit_server::archive::NavTree;
 #[cfg(kani)]
-use elicit_server::archive::vsm::{ArchiveNavConsistent, ArchiveNavState};
+use elicit_server::archive::vsm::{
+    ArchiveNavConsistent, ArchiveNavState, apply_filter, clear_filter, collapse_schema,
+    expand_schema, load_nav, move_cursor_down, move_cursor_up, nav_loaded, nav_refresh,
+};
+#[cfg(kani)]
+use elicitation::Established;
 
 #[cfg(kani)]
 #[kani::proof]

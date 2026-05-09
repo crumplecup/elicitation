@@ -293,11 +293,7 @@ fn register_local(
 /// already accessible via the public path (`vsm::ArchivePanelState`).
 ///
 /// Nearest parent wins because we use `or_insert` and walk inward-out.
-fn scan_parent_modules(
-    source_file: &Path,
-    crate_name: &str,
-    out: &mut HashMap<String, String>,
-) {
+fn scan_parent_modules(source_file: &Path, crate_name: &str, out: &mut HashMap<String, String>) {
     let mut dir = match source_file.parent() {
         Some(p) => p,
         None => return,
@@ -345,9 +341,7 @@ fn scan_parent_modules(
         }
 
         // Stop after processing the `src/` directory.
-        let dir_name = dir
-            .file_name()
-            .map_or("", |s| s.to_str().unwrap_or(""));
+        let dir_name = dir.file_name().map_or("", |s| s.to_str().unwrap_or(""));
         if dir_name == "src" {
             break;
         }

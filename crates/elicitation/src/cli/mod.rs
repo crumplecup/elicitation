@@ -584,7 +584,9 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 /// Handle `elicitation generate` subcommands.
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
-    use crate::cli::generate::{creusot_gen, foundation_gen, kani_gen, scan_elicit_types, scan_vsms, verus_gen};
+    use crate::cli::generate::{
+        creusot_gen, foundation_gen, kani_gen, scan_elicit_types, scan_vsms, verus_gen,
+    };
     use std::io::Write;
 
     let (crate_path, label) = match target {
@@ -643,7 +645,10 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
         GenerateTarget::Foundation { crate_path, out } => {
             let types = scan_elicit_types(crate_path);
             if types.is_empty() {
-                println!("No #[derive(Elicit)] types found in {}", crate_path.display());
+                println!(
+                    "No #[derive(Elicit)] types found in {}",
+                    crate_path.display()
+                );
                 return Ok(());
             }
             let content = foundation_gen::generate_foundation_file(&types, crate_path);

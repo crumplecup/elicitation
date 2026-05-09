@@ -8,15 +8,15 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
-use ::vstd::prelude::*;
-#[cfg(verus)]
 use ::verus_builtin_macros::verus;
 #[cfg(verus)]
-use elicitation::Established;
+use ::vstd::prelude::*;
+#[cfg(verus)]
+use elicit_server::archive::vsm::{ArchiveOverlayConsistent, ArchiveOverlayState};
 #[cfg(verus)]
 use elicit_server::archive::{ExportFormat, SavedQuery};
 #[cfg(verus)]
-use elicit_server::archive::vsm::{ArchiveOverlayConsistent, ArchiveOverlayState};
+use elicitation::Established;
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool { match *state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx <= entries@.len(), _ => true, } } }

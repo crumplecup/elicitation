@@ -15,8 +15,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use crate::cli::generate::{
-    TypeResolver,
-    find_crate_name,
+    TypeResolver, find_crate_name,
     scanner::{ArgKind, TransitionFn, VsmDescriptor},
 };
 
@@ -42,10 +41,7 @@ pub fn generate_verus_file(
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
         Some(p) => {
-            let fn_name = p
-                .verus_fn
-                .as_deref()
-                .unwrap_or_else(|| p.name.as_str());
+            let fn_name = p.verus_fn.as_deref().unwrap_or_else(|| p.name.as_str());
             let body = p.verus_inv_body.as_deref().ok_or_else(|| {
                 let hint_fn = p.verus_fn.as_deref().unwrap_or("verus_invariant_fn");
                 format!(
@@ -162,7 +158,11 @@ fn emit_assume_specification(
         None => "_state",
     };
     let state_ref = state_param.trim_start_matches('_');
-    let state_ref = if state_ref.is_empty() { "state" } else { state_ref };
+    let state_ref = if state_ref.is_empty() {
+        "state"
+    } else {
+        state_ref
+    };
 
     format!(
         "verus! {{ pub assume_specification [{fn_name}] \

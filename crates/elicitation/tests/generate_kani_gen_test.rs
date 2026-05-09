@@ -129,7 +129,7 @@ fn minimal_fallback_harness_emitted_without_transition_fns() {
     // transition_fns is empty → should emit minimal harness
     let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
-        out.contains("do_thing__kani_closure"),
+        out.contains("do_thing_kani_closure"),
         "expected closure fn, got:\n{out}"
     );
     assert!(
@@ -149,7 +149,7 @@ fn full_harness_emitted_with_known_transition_fn() {
     let vsm = vsm_with_transition("ConnMachine", "begin_connect", vec![]);
     let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
-        out.contains("begin_connect__kani_closure"),
+        out.contains("begin_connect_kani_closure"),
         "expected closure fn"
     );
     assert!(
@@ -252,7 +252,7 @@ fn scan_and_generate_archive_nav() {
     // Each transition should have a closure.
     for t in &nav.transitions {
         assert!(
-            out.contains(&format!("{t}__kani_closure")),
+            out.contains(&format!("{t}_kani_closure")),
             "missing harness for transition {t}"
         );
     }

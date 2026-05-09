@@ -8,15 +8,15 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(verus)]
-use ::vstd::prelude::*;
-#[cfg(verus)]
 use ::verus_builtin_macros::verus;
 #[cfg(verus)]
-use elicitation::Established;
+use ::vstd::prelude::*;
+#[cfg(verus)]
+use elicit_server::archive::vsm::{ArchiveConnectionConsistent, ArchiveConnectionState};
 #[cfg(verus)]
 use elicit_server::archive::{BackendKind, DatabaseDescriptor};
 #[cfg(verus)]
-use elicit_server::archive::vsm::{ArchiveConnectionConsistent, ArchiveConnectionState};
+use elicitation::Established;
 
 #[cfg(verus)]
 verus! { pub open spec fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool { true } }

@@ -43,10 +43,10 @@
 //! ```
 
 // Re-export verification framework from main crate
-pub use elicitation::verification::contracts;
 pub use elicitation::verification::Contract;
 #[cfg(not(creusot))]
 pub use elicitation::verification::WithContract;
+pub use elicitation::verification::contracts;
 
 // Proof modules (organized by type category)
 #[cfg(kani)]

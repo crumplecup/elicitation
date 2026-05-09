@@ -5,8 +5,8 @@
 use elicitation::cli::generate::foundation_gen::{
     ElicitType, HarnessShape, generate_foundation_file, scan_elicit_types,
 };
-use tempfile::tempdir;
 use std::fs;
+use tempfile::tempdir;
 
 // ─── scan_elicit_types ────────────────────────────────────────────────────────
 
@@ -131,10 +131,15 @@ fn generate_unit_enum_emits_constructible_harness() {
 
     let types = vec![ElicitType {
         name: "Color".to_string(),
-        shape: HarnessShape::Constructible { first_variant: "Red".to_string() },
+        shape: HarnessShape::Constructible {
+            first_variant: "Red".to_string(),
+        },
     }];
     let out = generate_foundation_file(&types, dir.path());
-    assert!(out.contains("fn verify_color_constructible()"), "output:\n{out}");
+    assert!(
+        out.contains("fn verify_color_constructible()"),
+        "output:\n{out}"
+    );
     assert!(out.contains("let _: Color = Color::Red;"), "output:\n{out}");
     assert!(out.contains("#[kani::proof]"), "output:\n{out}");
     assert!(out.contains("use my_crate::{Color}"), "output:\n{out}");
@@ -154,9 +159,18 @@ fn generate_struct_emits_newtype_wrapper_harness() {
         shape: HarnessShape::NewtypeWrapper,
     }];
     let out = generate_foundation_file(&types, dir.path());
-    assert!(out.contains("fn verify_board_newtype_wrapper()"), "output:\n{out}");
-    assert!(out.contains("let _: Board = kani::any();"), "output:\n{out}");
-    assert!(out.contains("#[cfg_attr(kani, ::kani::proof)]"), "output:\n{out}");
+    assert!(
+        out.contains("fn verify_board_newtype_wrapper()"),
+        "output:\n{out}"
+    );
+    assert!(
+        out.contains("let _: Board = kani::any();"),
+        "output:\n{out}"
+    );
+    assert!(
+        out.contains("#[cfg_attr(kani, ::kani::proof)]"),
+        "output:\n{out}"
+    );
 }
 
 #[test]
@@ -170,8 +184,14 @@ fn generate_deduplicates_same_function_name() {
 
     // Two types with the same name (shouldn't normally happen, but dedup must hold)
     let types = vec![
-        ElicitType { name: "Token".to_string(), shape: HarnessShape::NewtypeWrapper },
-        ElicitType { name: "Token".to_string(), shape: HarnessShape::NewtypeWrapper },
+        ElicitType {
+            name: "Token".to_string(),
+            shape: HarnessShape::NewtypeWrapper,
+        },
+        ElicitType {
+            name: "Token".to_string(),
+            shape: HarnessShape::NewtypeWrapper,
+        },
     ];
     let out = generate_foundation_file(&types, dir.path());
     let count = out.matches("fn verify_token_newtype_wrapper()").count();
@@ -209,7 +229,13 @@ pub struct Card(u8);
     let types = scan_elicit_types(dir.path());
     let out = generate_foundation_file(&types, dir.path());
 
-    assert!(out.contains("fn verify_suit_constructible()"), "output:\n{out}");
-    assert!(out.contains("fn verify_card_newtype_wrapper()"), "output:\n{out}");
+    assert!(
+        out.contains("fn verify_suit_constructible()"),
+        "output:\n{out}"
+    );
+    assert!(
+        out.contains("fn verify_card_newtype_wrapper()"),
+        "output:\n{out}"
+    );
     assert!(out.contains("use roundtrip::{"), "output:\n{out}");
 }

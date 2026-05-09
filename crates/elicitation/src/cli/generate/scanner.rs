@@ -278,12 +278,16 @@ fn resolve_transition_fns(
     let scope_files: Vec<&ParsedFile> = all_files
         .iter()
         .filter(|pf| pf.path == vsm_path)
-        .chain(all_files.iter().filter(|pf| {
-            pf.path != vsm_path && pf.path.parent() == vsm_dir
-        }))
-        .chain(all_files.iter().filter(|pf| {
-            pf.path != vsm_path && pf.path.parent() != vsm_dir
-        }))
+        .chain(
+            all_files
+                .iter()
+                .filter(|pf| pf.path != vsm_path && pf.path.parent() == vsm_dir),
+        )
+        .chain(
+            all_files
+                .iter()
+                .filter(|pf| pf.path != vsm_path && pf.path.parent() != vsm_dir),
+        )
         .collect();
 
     let mut found: HashMap<String, TransitionFn> = HashMap::new();

@@ -12,8 +12,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use crate::cli::generate::{
-    TypeResolver,
-    find_crate_name,
+    TypeResolver, find_crate_name,
     scanner::{ArgKind, TransitionFn, VsmDescriptor},
 };
 
@@ -69,6 +68,10 @@ pub fn generate_kani_file(
                     _ => TypeResolver::collect_type(&arg.ty, &mut needed),
                 }
             }
+        }
+        // Import the transition functions themselves, not just their arg types.
+        for name in &vsm.transitions {
+            needed.insert(name.clone());
         }
     }
 

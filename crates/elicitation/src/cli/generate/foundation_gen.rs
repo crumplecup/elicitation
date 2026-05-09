@@ -147,12 +147,20 @@ fn extract_elicit_type(item: &Item) -> Option<ElicitType> {
             shape: HarnessShape::NewtypeWrapper,
         }),
         Item::Enum(e) if has_derive_elicit(&e.attrs) => {
-            let first_unit = e.variants.iter().find(|v| v.fields.is_empty()).map(|v| v.ident.to_string());
+            let first_unit = e
+                .variants
+                .iter()
+                .find(|v| v.fields.is_empty())
+                .map(|v| v.ident.to_string());
             match first_unit {
-                Some(variant) if e.variants.iter().all(|v| v.fields.is_empty()) => Some(ElicitType {
-                    name: e.ident.to_string(),
-                    shape: HarnessShape::Constructible { first_variant: variant },
-                }),
+                Some(variant) if e.variants.iter().all(|v| v.fields.is_empty()) => {
+                    Some(ElicitType {
+                        name: e.ident.to_string(),
+                        shape: HarnessShape::Constructible {
+                            first_variant: variant,
+                        },
+                    })
+                }
                 _ => Some(ElicitType {
                     name: e.ident.to_string(),
                     shape: HarnessShape::NewtypeWrapper,
@@ -174,11 +182,9 @@ fn has_derive_elicit(attrs: &[syn::Attribute]) -> bool {
             syn::punctuated::Punctuated::<syn::Path, syn::Token![,]>::parse_terminated,
         )
         .map(|paths| {
-            paths.iter().any(|p| {
-                p.segments
-                    .last()
-                    .map_or(false, |seg| seg.ident == "Elicit")
-            })
+            paths
+                .iter()
+                .any(|p| p.segments.last().map_or(false, |seg| seg.ident == "Elicit"))
         })
         .unwrap_or(false)
     })

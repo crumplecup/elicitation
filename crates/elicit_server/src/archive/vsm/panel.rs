@@ -598,8 +598,8 @@ pub fn explain_ready(
     // If already showing an explain plan, promote to comparison view.
     let next = match state {
         ArchivePanelState::ExplainView {
-            schema: old_schema,
-            table: old_table,
+            schema: _old_schema,
+            table: _old_table,
             root: old_root,
             ..
         } => ArchivePanelState::ExplainCompare {
@@ -608,7 +608,7 @@ pub fn explain_ready(
             comparison: ExplainComparison {
                 left: old_root,
                 right: root,
-                label_left: kani_label!("{old_schema}.{old_table}"),
+                label_left: kani_label!("{_old_schema}.{_old_table}"),
                 label_right: kani_label!("{schema}.{table}"),
             },
         },
