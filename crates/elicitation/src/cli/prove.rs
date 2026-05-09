@@ -28,6 +28,8 @@ use std::{
     process::{Command, Stdio},
     time::Instant,
 };
+#[cfg(unix)]
+use std::os::unix::process::CommandExt as _;
 use anyhow::Context as _;
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -246,6 +248,19 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
         return Ok(());
     }
 
+    // Warm up the codegen cache so the per-harness 300s timeout applies only
+    // to CBMC model-checking, not compilation.
+    println!("🏗  Warming Kani codegen cache (--only-codegen)…");
+    let mut warm_cmd = Command::new("cargo");
+    warm_cmd.arg("kani").arg("-p").arg(pkg).arg("--only-codegen");
+    for flag in &config.kani_flags {
+        warm_cmd.arg(flag);
+    }
+    let warm_status = warm_cmd.status().context("Failed to run `cargo kani --only-codegen`")?;
+    if !warm_status.success() {
+        anyhow::bail!("`cargo kani --only-codegen` failed — fix compilation errors before running harnesses");
+    }
+
     // Discover harnesses.
     let harnesses = list_kani_harnesses(pkg, &config.kani_flags)?;
     let total = harnesses.len();
@@ -419,11 +434,20 @@ fn find_package_dir(package: &str) -> anyhow::Result<PathBuf> {
 }
 
 /// Run a command with a per-invocation timeout. Returns (status_str, elapsed).
+///
+/// On Unix, the child is placed in its own process group so that killing on
+/// timeout sends SIGKILL to the entire tree (including `cbmc` sub-processes
+/// spawned by `cargo kani` that would otherwise become orphans).
 fn run_harness_timed(
     mut cmd: Command,
     timeout_secs: u64,
 ) -> anyhow::Result<(String, std::time::Duration)> {
     cmd.stdout(Stdio::null()).stderr(Stdio::null());
+
+    // Put the child in its own process group (pgid == child pid).
+    #[cfg(unix)]
+    cmd.process_group(0);
+
     let start = Instant::now();
     let mut child = cmd.spawn().context("Failed to spawn cargo kani")?;
 
@@ -445,7 +469,17 @@ fn run_harness_timed(
             }
             None => {
                 if Instant::now() >= deadline {
+                    // Kill the entire process group, not just the direct child.
+                    // pgid == child.id() because we called process_group(0).
+                    #[cfg(unix)]
+                    {
+                        let pgid = child.id() as i32;
+                        let _ = Command::new("kill")
+                            .args(["-9", &format!("-{pgid}")])
+                            .status();
+                    }
                     let _ = child.kill();
+                    let _ = child.wait();
                     return Ok(("TIMEOUT".to_string(), start.elapsed()));
                 }
                 std::thread::sleep(std::time::Duration::from_millis(500));
