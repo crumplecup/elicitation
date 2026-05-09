@@ -170,11 +170,12 @@ pub fn c24_depth_ok_implies_result(depth: usize, r: &C24Result<C24Node>) -> bool
 /// Single-level depth-bounded step.
 ///
 /// Precondition: `depth > 0` — mirrors the guard in `elicit_toml_value_inner`.  
-/// Postcondition: the result is `Ok` and the remaining depth is strictly less
-/// than the input depth — the inductive measure decreases.
+/// Postcondition: the result is `Ok` with remaining depth exactly `depth - 1`.
 #[requires(depth@ > 0)]
-#[ensures(c24_is_ok(&result))]
-#[ensures(c24_depth_decreased(&result, depth))]
+#[ensures(match &result {
+    C24Result::Ok(d, _) => d@ == depth@ - 1,
+    C24Result::DepthExceeded => false,
+})]
 pub fn c24_step(depth: usize, leaf: i32) -> C24Result<C24Node> {
     C24Result::Ok(
         depth - 1,
@@ -224,7 +225,7 @@ pub fn c24_dispatch(depth: usize, leaf: i32) -> C24Result<C24Node> {
 pub fn c24_two_steps(depth: usize, leaf: i32) -> (C24Result<C24Node>, C24Result<C24Node>) {
     let r1 = c24_step(depth, leaf);
     let r2 = match &r1 {
-        C24Result::Ok(d1, _) => c24_step(*d1, leaf + 1),
+        C24Result::Ok(d1, _) => c24_step(*d1, leaf),
         C24Result::DepthExceeded => C24Result::DepthExceeded,
     };
     (r1, r2)
