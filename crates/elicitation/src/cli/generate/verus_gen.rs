@@ -133,19 +133,23 @@ pub fn generate_verus_file(
             for segment in split_state_body(sb) {
                 out.push_str(&format!("    {segment},\n"));
             }
-        } else {
-            out.push_str(
-                "    // TODO: add verus_state_body = \"...\" to #[prop(...)] to generate variants\n",
-            );
+        } else if inv.inv_body.trim() == "true" {
+            // Trivial invariant: no state variants needed. `_Unspecified` is the correct
+            // and complete representation — no annotation required from the user.
             out.push_str("    _Unspecified,\n");
+        } else {
+            // Non-trivial invariant but no state body: we cannot generate a sound file.
+            // Fail fast rather than emitting a broken or incomplete proof.
+            return Err(format!(
+                "cannot generate Verus companion for {machine}: \
+                 `verus_inv_body` references state variants but `verus_state_body` is missing\n  \
+                 hint: add `verus_state_body = \"Variant1 {{ field: Type }}, _Other,\"` \
+                 to #[prop(...)] to declare the abstract state enum"
+            ));
         }
         out.push_str("}\n\n");
 
         // ── Invariant spec fn ─────────────────────────────────────────────────
-        // When verus_state_body is absent the enum only has `_Unspecified`, so the
-        // real inv_body would reference variants that don't exist.  Fall back to
-        // `true` (trivially correct) and leave a TODO for the author — using a
-        // block comment so the closing `}` is not swallowed by a line comment.
         out.push_str(&format!("/// Invariant for `{machine}`.\n"));
         if inv.state_body.is_some() {
             out.push_str(&format!(
@@ -154,11 +158,9 @@ pub fn generate_verus_file(
                 inv_body = inv.inv_body,
             ));
         } else {
+            // Trivial invariant (`true`) — emit it cleanly, no state body needed.
             out.push_str(&format!(
-                "pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{\n\
-                 \x20\x20\x20\x20// TODO: add verus_state_body = \"...\" to #[prop(...)] to generate a real invariant\n\
-                 \x20\x20\x20\x20true\n\
-                 }}\n\n",
+                "pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{ true }}\n\n",
                 inv_fn = inv.inv_fn,
             ));
         }

@@ -16,15 +16,11 @@ use vstd::prelude::SpecOrd;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArchiveConnectionState {
-    // TODO: add verus_state_body = "..." to #[prop(...)] to generate variants
     _Unspecified,
 }
 
 /// Invariant for `ArchiveConnectionMachine`.
-pub open spec fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool {
-    // TODO: add verus_state_body = "..." to #[prop(...)] to generate a real invariant
-    true
-}
+pub open spec fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool { true }
 
 // ─── Postcondition predicates ──────────────────────────────────────────────────
 
