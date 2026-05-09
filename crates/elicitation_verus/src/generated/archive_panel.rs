@@ -32,12 +32,20 @@ pub open spec fn archive_panel_post_trivial(post: ArchivePanelState) -> bool { !
 pub open spec fn archive_panel_post_passthrough(pre: ArchivePanelState, post: ArchivePanelState) -> bool { post == pre }
 
 /// `SqlEditor` post with non-violating field (invariant vacuously satisfied).
-pub open spec fn archive_panel_post_sql_editor_false(post: ArchivePanelState) -> bool { post matches ArchivePanelState::SqlEditor { running: false, .. } }
+pub open spec fn archive_panel_post_sql_editor_false(post: ArchivePanelState) -> bool {
+    match post {
+        ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(),
+        _ => false,
+    }
+}
 
 /// Conditional: `SqlEditor` with non-violating field, or unchanged passthrough.
 pub open spec fn archive_panel_post_conditional_sql_editor(pre: ArchivePanelState, post: ArchivePanelState) -> bool {
     match pre {
-        ArchivePanelState::SqlEditor { .. } => post matches ArchivePanelState::SqlEditor { running: false, .. },
+        ArchivePanelState::SqlEditor { .. } => match post {
+            ArchivePanelState::SqlEditor { running, result, .. } => running ==> result.is_None(),
+            _ => false,
+        },
         _ => post == pre,
     }
 }

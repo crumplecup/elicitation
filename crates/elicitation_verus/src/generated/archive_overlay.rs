@@ -33,23 +33,39 @@ pub open spec fn archive_overlay_post_trivial(post: ArchiveOverlayState) -> bool
 pub open spec fn archive_overlay_post_passthrough(pre: ArchiveOverlayState, post: ArchiveOverlayState) -> bool { post == pre }
 
 /// `ExportPickerOpen` post with non-violating field (invariant vacuously satisfied).
-pub open spec fn archive_overlay_post_export_picker_open_false(post: ArchiveOverlayState) -> bool { post matches ArchiveOverlayState::ExportPickerOpen { idx: 0, .. } }
+pub open spec fn archive_overlay_post_export_picker_open_false(post: ArchiveOverlayState) -> bool {
+    match post {
+        ArchiveOverlayState::ExportPickerOpen { idx, len } => idx <= len,
+        _ => false,
+    }
+}
 
 /// Conditional: `ExportPickerOpen` with non-violating field, or unchanged passthrough.
 pub open spec fn archive_overlay_post_conditional_export_picker_open(pre: ArchiveOverlayState, post: ArchiveOverlayState) -> bool {
     match pre {
-        ArchiveOverlayState::ExportPickerOpen { .. } => post matches ArchiveOverlayState::ExportPickerOpen { idx: 0, .. },
+        ArchiveOverlayState::ExportPickerOpen { .. } => match post {
+            ArchiveOverlayState::ExportPickerOpen { idx, len } => idx <= len,
+            _ => false,
+        },
         _ => post == pre,
     }
 }
 
 /// `SavedBrowserOpen` post with non-violating field (invariant vacuously satisfied).
-pub open spec fn archive_overlay_post_saved_browser_open_false(post: ArchiveOverlayState) -> bool { post matches ArchiveOverlayState::SavedBrowserOpen { len: 0, .. } }
+pub open spec fn archive_overlay_post_saved_browser_open_false(post: ArchiveOverlayState) -> bool {
+    match post {
+        ArchiveOverlayState::SavedBrowserOpen { len, idx } => idx <= len,
+        _ => false,
+    }
+}
 
 /// Conditional: `SavedBrowserOpen` with non-violating field, or unchanged passthrough.
 pub open spec fn archive_overlay_post_conditional_saved_browser_open(pre: ArchiveOverlayState, post: ArchiveOverlayState) -> bool {
     match pre {
-        ArchiveOverlayState::SavedBrowserOpen { .. } => post matches ArchiveOverlayState::SavedBrowserOpen { len: 0, .. },
+        ArchiveOverlayState::SavedBrowserOpen { .. } => match post {
+            ArchiveOverlayState::SavedBrowserOpen { len, idx } => idx <= len,
+            _ => false,
+        },
         _ => post == pre,
     }
 }

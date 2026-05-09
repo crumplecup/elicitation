@@ -115,7 +115,19 @@ pub fn generate_verus_file(
             "/// Abstract mirror of `{state_ty}` (invariant-relevant variants only).\n"
         ));
         out.push_str("#[allow(unused_imports)]\nuse vstd::prelude::SpecOrd;\n\n");
-        out.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq)]\n");
+        // Derive `Copy` only when all struct-variant field types are known to be Copy.
+        // `String`, `Vec`, etc. are not Copy, so we check the state body.
+        let is_copy = inv
+            .state_body
+            .as_deref()
+            .is_none_or(state_body_is_all_copy);
+        let derives = if is_copy {
+            "#[derive(Debug, Clone, Copy, PartialEq, Eq)]"
+        } else {
+            "#[derive(Debug, Clone, PartialEq, Eq)]"
+        };
+        out.push_str(derives);
+        out.push('\n');
         out.push_str(&format!("pub enum {state_ty} {{\n"));
         if let Some(sb) = &inv.state_body {
             for segment in split_state_body(sb) {
@@ -132,17 +144,24 @@ pub fn generate_verus_file(
         // ── Invariant spec fn ─────────────────────────────────────────────────
         // When verus_state_body is absent the enum only has `_Unspecified`, so the
         // real inv_body would reference variants that don't exist.  Fall back to
-        // `true` (trivially correct) and leave a TODO for the author.
-        let effective_inv_body = if inv.state_body.is_some() {
-            inv.inv_body.as_str()
-        } else {
-            "true // TODO: add verus_state_body to generate a real invariant"
-        };
+        // `true` (trivially correct) and leave a TODO for the author — using a
+        // block comment so the closing `}` is not swallowed by a line comment.
         out.push_str(&format!("/// Invariant for `{machine}`.\n"));
-        out.push_str(&format!(
-            "pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{ {effective_inv_body} }}\n\n",
-            inv_fn = inv.inv_fn,
-        ));
+        if inv.state_body.is_some() {
+            out.push_str(&format!(
+                "pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{ {inv_body} }}\n\n",
+                inv_fn = inv.inv_fn,
+                inv_body = inv.inv_body,
+            ));
+        } else {
+            out.push_str(&format!(
+                "pub open spec fn {inv_fn}(state: &{state_ty}) -> bool {{\n\
+                 \x20\x20\x20\x20// TODO: add verus_state_body = \"...\" to #[prop(...)] to generate a real invariant\n\
+                 \x20\x20\x20\x20true\n\
+                 }}\n\n",
+                inv_fn = inv.inv_fn,
+            ));
+        }
 
         // ── Postcondition predicates ──────────────────────────────────────────
         out.push_str(
@@ -187,21 +206,32 @@ pub fn generate_verus_file(
                 .is_some_and(|sb| sb.contains(&format!("{variant} {{")));
 
             if needs_special_false {
-                let pat = if has_fields {
-                    let state_body = inv.state_body.as_deref().unwrap_or("");
-                    if let Some((field, zero)) = first_field_zero(state_body, variant) {
-                        format!("post matches {state_ty}::{variant} {{ {field}: {zero}, .. }}")
+                out.push_str(&format!(
+                    "/// `{variant}` post with non-violating field (invariant vacuously satisfied).\n"
+                ));
+                if has_fields {
+                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant) {
+                        out.push_str(&format!(
+                            "pub open spec fn {machine_prefix}_post_{v_lower}_false(post: {state_ty}) -> bool {{\n\
+                             \x20\x20\x20\x20match post {{\n\
+                             \x20\x20\x20\x20\x20\x20\x20\x20{pattern} => {rhs},\n\
+                             \x20\x20\x20\x20\x20\x20\x20\x20_ => false,\n\
+                             \x20\x20\x20\x20}}\n\
+                             }}\n\n"
+                        ));
                     } else {
-                        // Field type unknown — emit a TODO stub that compiles but doesn't constrain.
-                        format!("post matches {state_ty}::{variant} {{ .. }} // TODO: constrain invariant-relevant field")
+                        // No explicit invariant arm — any value of this variant satisfies the invariant.
+                        out.push_str(&format!(
+                            "pub open spec fn {machine_prefix}_post_{v_lower}_false(post: {state_ty}) -> bool \
+                             {{ post matches {state_ty}::{variant} {{ .. }} }}\n\n"
+                        ));
                     }
                 } else {
-                    format!("post == {state_ty}::{variant}")
-                };
-                out.push_str(&format!(
-                    "/// `{variant}` post with non-violating field (invariant vacuously satisfied).\n\
-                     pub open spec fn {machine_prefix}_post_{v_lower}_false(post: {state_ty}) -> bool {{ {pat} }}\n\n"
-                ));
+                    out.push_str(&format!(
+                        "pub open spec fn {machine_prefix}_post_{v_lower}_false(post: {state_ty}) -> bool \
+                         {{ post == {state_ty}::{variant} }}\n\n"
+                    ));
+                }
             }
 
             if needs_conditional {
@@ -212,16 +242,20 @@ pub fn generate_verus_file(
                     "pub open spec fn {machine_prefix}_post_conditional_{v_lower}(pre: {state_ty}, post: {state_ty}) -> bool {{\n"
                 ));
                 if has_fields {
-                    let state_body = inv.state_body.as_deref().unwrap_or("");
-                    let arm_rhs = if let Some((field, zero)) = first_field_zero(state_body, variant) {
-                        format!("post matches {state_ty}::{variant} {{ {field}: {zero}, .. }}")
+                    out.push_str("    match pre {\n");
+                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant) {
+                        out.push_str(&format!(
+                            "        {state_ty}::{variant} {{ .. }} => match post {{\n\
+                             \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20{pattern} => {rhs},\n\
+                             \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20_ => false,\n\
+                             \x20\x20\x20\x20\x20\x20\x20\x20}},\n"
+                        ));
                     } else {
-                        format!("post matches {state_ty}::{variant} {{ .. }} // TODO: constrain invariant-relevant field")
-                    };
-                    out.push_str(&format!("    match pre {{\n"));
-                    out.push_str(&format!(
-                        "        {state_ty}::{variant} {{ .. }} => {arm_rhs},\n"
-                    ));
+                        // No explicit invariant arm — any value of this variant satisfies the invariant.
+                        out.push_str(&format!(
+                            "        {state_ty}::{variant} {{ .. }} => post matches {state_ty}::{variant} {{ .. }},\n"
+                        ));
+                    }
                     out.push_str("        _ => post == pre,\n    }\n");
                 } else {
                     out.push_str(&format!(
@@ -528,39 +562,74 @@ fn first_ident(s: &str) -> Option<String> {
     if ident.is_empty() { None } else { Some(ident) }
 }
 
-/// Parse the first field name and its "zero" literal from a `verus_state_body` variant segment.
+/// Extract the explicit match arm for `variant` from a `verus_inv_body` match expression.
 ///
-/// Given e.g. `ExportPickerOpen { idx: usize, len: usize }` or `SqlEditor { running: bool, result: Option<u64> }`,
-/// extracts the FIRST named field and returns `(field_name, zero_literal)` where:
-/// - `bool` → `("running", "false")`
-/// - numeric types (`usize`, `u8`, `u16`, `u32`, `u64`, `i32`, …) → `("idx", "0")`
-/// - anything else → `None` (caller falls back to `..` without a field constraint)
-fn first_field_zero(state_body: &str, variant: &str) -> Option<(String, &'static str)> {
-    // Find the `{ ... }` block for this variant in the state body string.
-    let needle = format!("{variant} {{");
-    let start = state_body.find(&needle)? + needle.len();
-    let block = state_body[start..].split_once('}')?.0;
+/// Given e.g. `"match *state { ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0, _ => true, }"`,
+/// `state_ty = "ArchiveNavState"`, and `variant = "NavFiltered"`, returns:
+/// `Some(("ArchiveNavState::NavFiltered { filter, .. }", "filter@.len() > 0"))`.
+///
+/// Returns `None` if the variant has no explicit arm in the body (it falls through to a `_` arm,
+/// meaning the invariant is trivially satisfied — any value of that variant is valid).
+fn extract_inv_arm(inv_body: &str, state_ty: &str, variant: &str) -> Option<(String, String)> {
+    let qualified = format!("{state_ty}::{variant}");
+    let start = inv_body.find(&qualified)?;
+    let from_start = &inv_body[start..];
 
-    // Parse the first `name: type` pair.
-    let first_pair = block.split(',').next()?.trim();
-    let (name, ty) = first_pair.split_once(':')?;
-    let name = name.trim().to_string();
-    let ty = ty.trim();
-
-    let zero = match ty {
-        "bool" => "false",
-        t if matches!(
-            t,
-            "usize" | "u8" | "u16" | "u32" | "u64" | "u128"
-                | "isize" | "i8" | "i16" | "i32" | "i64" | "i128"
-                | "int" | "nat"
-        ) =>
-        {
-            "0"
+    // Scan from the variant name to find "=>" at brace depth 0, skipping over
+    // any `{ field_name, .. }` struct pattern.
+    let bytes = from_start.as_bytes();
+    let mut depth: i32 = 0;
+    let mut arrow_end: Option<usize> = None;
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'{' => depth += 1,
+            b'}' => depth -= 1,
+            b'=' if depth == 0 && i + 1 < bytes.len() && bytes[i + 1] == b'>' => {
+                arrow_end = Some(i + 2);
+                break;
+            }
+            _ => {}
         }
-        _ => return None,
-    };
-    Some((name, zero))
+        i += 1;
+    }
+    let arrow_end = arrow_end?;
+
+    // Pattern is everything from the variant name up to (not including) "=>", trimmed.
+    let pattern = from_start[..arrow_end - 2].trim().to_string();
+
+    // RHS expression is after "=>", up to the next top-level "," or closing "}".
+    let rhs_str = from_start[arrow_end..].trim_start();
+    let bytes = rhs_str.as_bytes();
+    let mut depth: i32 = 0;
+    let mut rhs_end = rhs_str.len();
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'{' | b'(' | b'[' => depth += 1,
+            b'}' | b')' | b']' => {
+                if depth == 0 {
+                    rhs_end = i;
+                    break;
+                }
+                depth -= 1;
+            }
+            b',' if depth == 0 => {
+                rhs_end = i;
+                break;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    let rhs = rhs_str[..rhs_end].trim().to_string();
+
+    // A bare "_" or "true" RHS means the invariant is trivially satisfied — treat as no explicit arm.
+    if rhs.is_empty() || rhs == "_" || rhs == "true" {
+        None
+    } else {
+        Some((pattern, rhs))
+    }
 }
 
 /// Classify a transition by inspecting its tokenised body string.
@@ -585,6 +654,16 @@ fn classify_transition(body: &str, state_ty: &str, special_variants: &[String]) 
 }
 
 // ─── String helpers ───────────────────────────────────────────────────────────
+
+/// Returns `true` if all struct-variant field types in `state_body` are known `Copy` types.
+///
+/// Used to decide whether to include `Copy` in the state enum `#[derive(...)]`.
+/// Types like `String`, `Vec`, `Box`, `Rc`, and `Arc` are not `Copy`, so if any appear
+/// in the state body the enum must not derive `Copy`.
+fn state_body_is_all_copy(state_body: &str) -> bool {
+    const NON_COPY_MARKERS: &[&str] = &["String", "Vec<", "Box<", "Rc<", "Arc<"];
+    !NON_COPY_MARKERS.iter().any(|t| state_body.contains(t))
+}
 
 /// Convert `PascalCase` → `snake_case`.
 fn to_snake(s: &str) -> String {

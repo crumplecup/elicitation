@@ -14,7 +14,7 @@ verus! {
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ArchiveNavState {
     NavFiltered { filter: String },
     _Other,
@@ -34,7 +34,10 @@ pub open spec fn archive_nav_post_passthrough(pre: ArchiveNavState, post: Archiv
 /// Conditional: `NavFiltered` with non-violating field, or unchanged passthrough.
 pub open spec fn archive_nav_post_conditional_nav_filtered(pre: ArchiveNavState, post: ArchiveNavState) -> bool {
     match pre {
-        ArchiveNavState::NavFiltered { .. } => post matches ArchiveNavState::NavFiltered { .. } // TODO: constrain invariant-relevant field,
+        ArchiveNavState::NavFiltered { .. } => match post {
+            ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0,
+            _ => false,
+        },
         _ => post == pre,
     }
 }

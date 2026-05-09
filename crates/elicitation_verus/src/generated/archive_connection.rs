@@ -21,7 +21,10 @@ pub enum ArchiveConnectionState {
 }
 
 /// Invariant for `ArchiveConnectionMachine`.
-pub open spec fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool { true // TODO: add verus_state_body to generate a real invariant }
+pub open spec fn archive_connection_consistent(state: &ArchiveConnectionState) -> bool {
+    // TODO: add verus_state_body = "..." to #[prop(...)] to generate a real invariant
+    true
+}
 
 // ─── Postcondition predicates ──────────────────────────────────────────────────
 
