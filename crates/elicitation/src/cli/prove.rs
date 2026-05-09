@@ -691,8 +691,10 @@ fn run_verus(config: &ProveConfig) -> anyhow::Result<()> {
     }
 
     if status == "PASS" || status == "DRY-RUN" {
+        println!("✅ verus PASS ({elapsed_s}s) — see {}", log.display());
         Ok(())
     } else {
+        println!("❌ verus FAIL ({elapsed_s}s) — see {}", log.display());
         anyhow::bail!("verus verification failed")
     }
 }
@@ -749,8 +751,10 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     }
 
     if status == "PASS" || status == "DRY-RUN" {
+        println!("✅ cargo creusot prove PASS ({elapsed_s}s) — see {}", log.display());
         Ok(())
     } else {
+        println!("❌ cargo creusot prove FAIL ({elapsed_s}s) — see {}", log.display());
         anyhow::bail!("cargo creusot prove failed")
     }
 }
@@ -784,8 +788,8 @@ fn spinner(msg: impl Into<String>) -> ProgressBar {
 /// - **Compile** (`Compiling …`): spinner message shows the crate count.
 /// - **Prove** (`Goal Coma.vc_…`): spinner message counts proved goals.
 ///
-/// Dangling-file warnings and `cargo creusot clean` hints are surfaced above
-/// the bar via `bar.println` so the user still sees them.
+/// Dangling-file warnings, `cargo creusot clean` hints, and the final
+/// `Proved (N files)` summary are surfaced above the bar via `bar.println`.
 fn creusot_sink(bar: ProgressBar) -> LineSink {
     let b = bar.clone();
     let mut crates = 0usize;
@@ -803,6 +807,8 @@ fn creusot_sink(bar: ProgressBar) -> LineSink {
             goals += 1;
             b.set_message(format!("🔬 Proving [{goals} goals]…"));
         } else if t.starts_with("Warning:") || t.contains("cargo creusot clean") {
+            b.println(line);
+        } else if t.starts_with("Proved ") || t.starts_with("Error ") || t.contains("FAILED") {
             b.println(line);
         }
     }))
