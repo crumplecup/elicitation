@@ -81,13 +81,12 @@ pub fn generate_verus_file(
             .iter()
             .map(|name| {
                 let tf = vsm.transition_fns.iter().find(|tf| &tf.name == name);
-                let kind = if let Some(class) =
-                    tf.and_then(|tf| tf.verus_class.as_deref())
-                {
-                    TransKind::from_class_str(class).unwrap_or_else(|| {
-                        let body = tf.and_then(|tf| tf.body.as_deref()).unwrap_or("");
-                        classify_transition(body, &state_ty, &special_variants)
-                    })
+                let kind = if let Some(class) = tf.and_then(|tf| tf.verus_class.as_deref()) {
+                    TransKind::from_class_str_with_fallback(class, &special_variants)
+                        .unwrap_or_else(|| {
+                            let body = tf.and_then(|tf| tf.body.as_deref()).unwrap_or("");
+                            classify_transition(body, &state_ty, &special_variants)
+                        })
                 } else {
                     let body = tf.and_then(|tf| tf.body.as_deref()).unwrap_or("");
                     classify_transition(body, &state_ty, &special_variants)
@@ -99,13 +98,13 @@ pub fn generate_verus_file(
         let has_special = !special_variants.is_empty();
         let needs_passthrough = classified
             .iter()
-            .any(|(_, k)| matches!(k, TransKind::Passthrough | TransKind::ConditionalSpecial));
+            .any(|(_, k)| matches!(k, TransKind::Passthrough | TransKind::ConditionalSpecial(_)));
         let needs_special_false = classified
             .iter()
-            .any(|(_, k)| *k == TransKind::SpecialFalse);
+            .any(|(_, k)| matches!(k, TransKind::SpecialFalse(_)));
         let needs_conditional = classified
             .iter()
-            .any(|(_, k)| *k == TransKind::ConditionalSpecial);
+            .any(|(_, k)| matches!(k, TransKind::ConditionalSpecial(_)));
         let needs_pre = classified.iter().any(|(_, k)| k.needs_pre());
 
         out.push_str("verus! {\n\n");
@@ -117,10 +116,7 @@ pub fn generate_verus_file(
         out.push_str("#[allow(unused_imports)]\nuse vstd::prelude::SpecOrd;\n\n");
         // Derive `Copy` only when all struct-variant field types are known to be Copy.
         // `String`, `Vec`, etc. are not Copy, so we check the state body.
-        let is_copy = inv
-            .state_body
-            .as_deref()
-            .is_none_or(state_body_is_all_copy);
+        let is_copy = inv.state_body.as_deref().is_none_or(state_body_is_all_copy);
         let derives = if is_copy {
             "#[derive(Debug, Clone, Copy, PartialEq, Eq)]"
         } else {
@@ -175,7 +171,11 @@ pub fn generate_verus_file(
                 .iter()
                 .filter(|v| !v.starts_with('_'))
                 .map(|v| {
-                    if inv.state_body.as_deref().is_some_and(|sb| sb.contains(&format!("{v} {{"))) {
+                    if inv
+                        .state_body
+                        .as_deref()
+                        .is_some_and(|sb| sb.contains(&format!("{v} {{")))
+                    {
                         format!("!(post matches {state_ty}::{v} {{ .. }})")
                     } else {
                         format!("post != {state_ty}::{v}")
@@ -183,7 +183,11 @@ pub fn generate_verus_file(
                 })
                 .collect::<Vec<_>>()
                 .join(" && ");
-            if not_special.is_empty() { "true".to_string() } else { not_special }
+            if not_special.is_empty() {
+                "true".to_string()
+            } else {
+                not_special
+            }
         } else {
             "true".to_string()
         };
@@ -212,7 +216,8 @@ pub fn generate_verus_file(
                     "/// `{variant}` post with non-violating field (invariant vacuously satisfied).\n"
                 ));
                 if has_fields {
-                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant) {
+                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant)
+                    {
                         out.push_str(&format!(
                             "pub open spec fn {machine_prefix}_post_{v_lower}_false(post: {state_ty}) -> bool {{\n\
                              \x20\x20\x20\x20match post {{\n\
@@ -245,7 +250,8 @@ pub fn generate_verus_file(
                 ));
                 if has_fields {
                     out.push_str("    match pre {\n");
-                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant) {
+                    if let Some((pattern, rhs)) = extract_inv_arm(&inv.inv_body, &state_ty, variant)
+                    {
                         out.push_str(&format!(
                             "        {state_ty}::{variant} {{ .. }} => match post {{\n\
                              \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20{pattern} => {rhs},\n\
@@ -353,7 +359,7 @@ pub fn generate_verus_file(
         out.push_str("    match tag {\n");
         for (name, kind) in &classified {
             let tag = to_pascal(name);
-            let pred = kind.post_pred(&machine_prefix, &state_ty, &special_variants);
+            let pred = kind.post_pred(&machine_prefix, &state_ty);
             out.push_str(&format!("        {trans_ty}::{tag} => {pred},\n"));
         }
         out.push_str("    }\n}\n\n");
@@ -382,7 +388,7 @@ pub fn generate_verus_file(
         out.push_str("{\n    match tag {\n");
         for (name, kind) in &classified {
             let tag = to_pascal(name);
-            let call = kind.leaf_call(&machine_prefix, &special_variants);
+            let call = kind.leaf_call(&machine_prefix);
             out.push_str(&format!("        {trans_ty}::{tag} => {call},\n"));
         }
         out.push_str("    }\n}\n\n");
@@ -401,80 +407,64 @@ struct InvParts {
     state_body: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum TransKind {
     /// No special variant in body — `_ => true` arm of the invariant applies.
     Trivial,
     /// Has a wildcard arm (`other => other`) but no special variant.
     Passthrough,
-    /// Returns the special variant with a non-violating field (no passthrough arm).
-    SpecialFalse,
-    /// Returns the special variant OR passes through unchanged.
-    ConditionalSpecial,
+    /// Returns a specific named variant with a non-violating field (no passthrough arm).
+    SpecialFalse(String),
+    /// Returns a specific named variant OR passes through unchanged.
+    ConditionalSpecial(String),
 }
 
 impl TransKind {
     /// Map a `verus_class = "..."` string to a `TransKind`, returning `None` for unknown values.
-    fn from_class_str(s: &str) -> Option<Self> {
+    /// For `SpecialFalse`/`ConditionalSpecial` without a named variant, falls back to first special.
+    fn from_class_str_with_fallback(s: &str, special_variants: &[String]) -> Option<Self> {
+        let first = special_variants
+            .iter()
+            .find(|v| !v.starts_with('_'))
+            .cloned()
+            .unwrap_or_else(|| "unknown".to_string());
         match s {
             "trivial" => Some(TransKind::Trivial),
             "passthrough" => Some(TransKind::Passthrough),
-            "special_false" => Some(TransKind::SpecialFalse),
-            "conditional_special" => Some(TransKind::ConditionalSpecial),
+            "special_false" => Some(TransKind::SpecialFalse(first)),
+            "conditional_special" => Some(TransKind::ConditionalSpecial(first)),
             _ => None,
         }
     }
 
-    fn needs_pre(self) -> bool {
-        matches!(self, TransKind::Passthrough | TransKind::ConditionalSpecial)
+    fn needs_pre(&self) -> bool {
+        matches!(self, TransKind::Passthrough | TransKind::ConditionalSpecial(_))
     }
 
-    fn post_pred(self, prefix: &str, state_ty: &str, special_variants: &[String]) -> String {
+    fn post_pred(&self, prefix: &str, _state_ty: &str) -> String {
         match self {
             TransKind::Trivial => format!("{prefix}_post_trivial(post)"),
             TransKind::Passthrough => format!("{prefix}_post_passthrough(pre, post)"),
-            TransKind::SpecialFalse => {
-                let default = String::from("unknown");
-                let v = special_variants
-                    .iter()
-                    .find(|v| !v.starts_with('_'))
-                    .unwrap_or(&default);
+            TransKind::SpecialFalse(v) => {
                 let v_lower = to_snake(v);
-                let _ = state_ty;
                 format!("{prefix}_post_{v_lower}_false(post)")
             }
-            TransKind::ConditionalSpecial => {
-                let default = String::from("unknown");
-                let v = special_variants
-                    .iter()
-                    .find(|v| !v.starts_with('_'))
-                    .unwrap_or(&default);
+            TransKind::ConditionalSpecial(v) => {
                 let v_lower = to_snake(v);
-                let _ = state_ty;
                 format!("{prefix}_post_conditional_{v_lower}(pre, post)")
             }
         }
     }
 
-    fn leaf_call(self, prefix: &str, special_variants: &[String]) -> String {
+    fn leaf_call(&self, prefix: &str) -> String {
         match self {
             TransKind::Trivial => format!("{prefix}_leaf_trivial(post)"),
             TransKind::Passthrough => format!("{prefix}_leaf_passthrough(pre, post)"),
-            TransKind::SpecialFalse => {
-                let default = String::from("unknown");
-                let v = special_variants
-                    .iter()
-                    .find(|v| !v.starts_with('_'))
-                    .unwrap_or(&default);
+            TransKind::SpecialFalse(v) => {
                 let v_lower = to_snake(v);
                 format!("{prefix}_leaf_{v_lower}_false(post)")
             }
-            TransKind::ConditionalSpecial => {
-                let default = String::from("unknown");
-                let v = special_variants
-                    .iter()
-                    .find(|v| !v.starts_with('_'))
-                    .unwrap_or(&default);
+            TransKind::ConditionalSpecial(v) => {
                 let v_lower = to_snake(v);
                 format!("{prefix}_leaf_conditional_{v_lower}(pre, post)")
             }
@@ -637,21 +627,26 @@ fn extract_inv_arm(inv_body: &str, state_ty: &str, variant: &str) -> Option<(Str
 /// Classify a transition by inspecting its tokenised body string.
 ///
 /// The body comes from `quote::ToTokens` so `::` becomes ` :: ` (with spaces).
+/// Detects the SPECIFIC named variant the transition returns (not just whether any special
+/// variant appears), so each transition maps to its own postcondition predicate.
 fn classify_transition(body: &str, state_ty: &str, special_variants: &[String]) -> TransKind {
     let has_passthrough = body.contains("other =>") || body.contains("_ =>");
-    let has_special = special_variants
+
+    // Find the SPECIFIC named variant this transition constructs.
+    let specific_variant = special_variants
         .iter()
         .filter(|v| !v.starts_with('_'))
-        .any(|v| {
+        .find(|v| {
             body.contains(&format!("{state_ty} :: {v}"))
                 || body.contains(&format!("{state_ty}::{v}"))
-        });
+        })
+        .cloned();
 
-    match (has_special, has_passthrough) {
-        (true, true) => TransKind::ConditionalSpecial,
-        (true, false) => TransKind::SpecialFalse,
-        (false, true) => TransKind::Passthrough,
-        (false, false) => TransKind::Trivial,
+    match (specific_variant, has_passthrough) {
+        (Some(v), true) => TransKind::ConditionalSpecial(v),
+        (Some(v), false) => TransKind::SpecialFalse(v),
+        (None, true) => TransKind::Passthrough,
+        (None, false) => TransKind::Trivial,
     }
 }
 
