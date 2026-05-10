@@ -50,7 +50,10 @@ pub fn generate_kani_file(
     };
     let has_invariant = !consistent_ty.is_empty();
 
-    let crate_name = find_crate_name(crate_root.as_ref());
+    // Derive crate name from the VSM's own source file, not the (possibly workspace)
+    // crate_root.  Walking up from the source file finds the crate's own Cargo.toml.
+    let vsm_crate_root = vsm.source_file.parent().unwrap_or_else(|| crate_root.as_ref());
+    let crate_name = find_crate_name(vsm_crate_root);
 
     // ── Collect the bare type names this file will reference ─────────────────
     let mut needed: BTreeSet<String> = BTreeSet::new();

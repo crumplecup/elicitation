@@ -37,7 +37,10 @@ pub fn generate_creusot_file(
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
     let crate_root = crate_root.as_ref();
-    let crate_name = find_crate_name(crate_root);
+    // Derive crate name from the VSM's own source file, not the (possibly workspace)
+    // crate_root.  Walking up from the source file finds the crate's own Cargo.toml.
+    let vsm_crate_root = vsm.source_file.parent().unwrap_or(crate_root);
+    let crate_name = find_crate_name(vsm_crate_root);
 
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
@@ -62,8 +65,10 @@ pub fn generate_creusot_file(
     // ── Collect the bare type names this file will reference ─────────────────
     let mut needed: BTreeSet<String> = BTreeSet::new();
     TypeResolver::collect_type(&state_ty, &mut needed);
-    if let Some((_, consistent_ty, _)) = inv_parts {
+    if let Some((_, consistent_ty, inv_body)) = inv_parts {
         TypeResolver::collect_type(consistent_ty, &mut needed);
+        // Also scan the body for constants and other identifiers (e.g. MAX_PLAYER_HANDS).
+        TypeResolver::collect_type(inv_body, &mut needed);
     }
     for tfn in &vsm.transition_fns {
         for arg in &tfn.args {
