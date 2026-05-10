@@ -4,275 +4,188 @@
 //! criteria, plus disclosure requirements.
 //!
 //! Source: FASB ASC 606 — <https://asc.fasb.org/606>
+// ── Step 1: Identify the Contract ────────────────────────────────────────
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+/// A contract has been identified that meets all five criteria of ASC 606-10-25-1.
+///
+/// Source: ASC 606-10-25-1 — Identifying the Contract
+#[derive(elicitation::Prop)]
+pub struct ContractIdentified;
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// The contract has commercial substance, approved by parties, and collectibility is probable.
+///
+/// Source: ASC 606-10-25-1(a)–(e) — Contract Criteria
+#[derive(elicitation::Prop)]
+pub struct ContractCriteriaMet;
 
-    // ── Step 1: Identify the Contract ────────────────────────────────────────
+/// Multiple contracts with the same customer have been assessed for combination.
+///
+/// Source: ASC 606-10-25-9 — Combining Contracts
+#[derive(elicitation::Prop)]
+pub struct ContractCombinationAssessed;
 
-    /// A contract has been identified that meets all five criteria of ASC 606-10-25-1.
-    ///
-    /// Source: ASC 606-10-25-1 — Identifying the Contract
-    pub struct ContractIdentified;
+/// A contract modification has been assessed and accounted for (new contract, cumulative catch-up, or prospective).
+///
+/// Source: ASC 606-10-25-10 — Contract Modifications
+#[derive(elicitation::Prop)]
+pub struct ContractModificationAccountedFor;
 
-    /// The contract has commercial substance, approved by parties, and collectibility is probable.
-    ///
-    /// Source: ASC 606-10-25-1(a)–(e) — Contract Criteria
-    pub struct ContractCriteriaMet;
+/// Collectibility of consideration is probable at contract inception.
+///
+/// Source: ASC 606-10-25-1(e) — Collectibility Threshold
+#[derive(elicitation::Prop)]
+pub struct CollectibilityProbable;
 
-    /// Multiple contracts with the same customer have been assessed for combination.
-    ///
-    /// Source: ASC 606-10-25-9 — Combining Contracts
-    pub struct ContractCombinationAssessed;
+// ── Step 2: Identify Performance Obligations ──────────────────────────────
 
-    /// A contract modification has been assessed and accounted for (new contract, cumulative catch-up, or prospective).
-    ///
-    /// Source: ASC 606-10-25-10 — Contract Modifications
-    pub struct ContractModificationAccountedFor;
+/// All distinct performance obligations in the contract are identified.
+///
+/// Source: ASC 606-10-25-14 — Identifying Performance Obligations
+#[derive(elicitation::Prop)]
+pub struct PerformanceObligationsIdentified;
 
-    /// Collectibility of consideration is probable at contract inception.
-    ///
-    /// Source: ASC 606-10-25-1(e) — Collectibility Threshold
-    pub struct CollectibilityProbable;
+/// Each performance obligation represents a distinct good or service.
+///
+/// Source: ASC 606-10-25-19 — Distinct Goods or Services
+#[derive(elicitation::Prop)]
+pub struct DistinctGoodOrServiceDetermined;
 
-    // ── Step 2: Identify Performance Obligations ──────────────────────────────
+/// A series of distinct goods or services is accounted for as a single performance obligation when appropriate.
+///
+/// Source: ASC 606-10-25-15 — Series of Distinct Goods or Services
+#[derive(elicitation::Prop)]
+pub struct SeriesPerformanceObligationAccountedFor;
 
-    /// All distinct performance obligations in the contract are identified.
-    ///
-    /// Source: ASC 606-10-25-14 — Identifying Performance Obligations
-    pub struct PerformanceObligationsIdentified;
+/// Principal vs. agent determination is made for each performance obligation.
+///
+/// Source: ASC 606-10-55-36 — Principal vs. Agent Considerations
+#[derive(elicitation::Prop)]
+pub struct PrincipalVsAgentDetermined;
 
-    /// Each performance obligation represents a distinct good or service.
-    ///
-    /// Source: ASC 606-10-25-19 — Distinct Goods or Services
-    pub struct DistinctGoodOrServiceDetermined;
+// ── Step 3: Determine the Transaction Price ───────────────────────────────
 
-    /// A series of distinct goods or services is accounted for as a single performance obligation when appropriate.
-    ///
-    /// Source: ASC 606-10-25-15 — Series of Distinct Goods or Services
-    pub struct SeriesPerformanceObligationAccountedFor;
+/// The transaction price is determined for the contract.
+///
+/// Source: ASC 606-10-32-2 — Determining the Transaction Price
+#[derive(elicitation::Prop)]
+pub struct TransactionPriceDetermined;
 
-    /// Principal vs. agent determination is made for each performance obligation.
-    ///
-    /// Source: ASC 606-10-55-36 — Principal vs. Agent Considerations
-    pub struct PrincipalVsAgentDetermined;
+/// Variable consideration is estimated using the expected value or most likely amount method.
+///
+/// Source: ASC 606-10-32-8 — Variable Consideration
+#[derive(elicitation::Prop)]
+pub struct VariableConsiderationEstimated;
 
-    // ── Step 3: Determine the Transaction Price ───────────────────────────────
+/// Variable consideration is constrained to the amount unlikely to result in a significant revenue reversal.
+///
+/// Source: ASC 606-10-32-11 — Constraint on Variable Consideration
+#[derive(elicitation::Prop)]
+pub struct VariableConsiderationConstraintApplied;
 
-    /// The transaction price is determined for the contract.
-    ///
-    /// Source: ASC 606-10-32-2 — Determining the Transaction Price
-    pub struct TransactionPriceDetermined;
+/// Significant financing component is assessed and interest income/expense adjusted when material.
+///
+/// Source: ASC 606-10-32-15 — Significant Financing Component
+#[derive(elicitation::Prop)]
+pub struct SignificantFinancingComponentAssessed;
 
-    /// Variable consideration is estimated using the expected value or most likely amount method.
-    ///
-    /// Source: ASC 606-10-32-8 — Variable Consideration
-    pub struct VariableConsiderationEstimated;
+/// Noncash consideration is measured at fair value at contract inception.
+///
+/// Source: ASC 606-10-32-21 — Noncash Consideration
+#[derive(elicitation::Prop)]
+pub struct NonCashConsiderationMeasured;
 
-    /// Variable consideration is constrained to the amount unlikely to result in a significant revenue reversal.
-    ///
-    /// Source: ASC 606-10-32-11 — Constraint on Variable Consideration
-    pub struct VariableConsiderationConstraintApplied;
+/// Consideration payable to the customer is accounted for as a reduction of the transaction price.
+///
+/// Source: ASC 606-10-32-25 — Consideration Payable to a Customer
+#[derive(elicitation::Prop)]
+pub struct ConsiderationPayableToCustomerDeducted;
 
-    /// Significant financing component is assessed and interest income/expense adjusted when material.
-    ///
-    /// Source: ASC 606-10-32-15 — Significant Financing Component
-    pub struct SignificantFinancingComponentAssessed;
+// ── Step 4: Allocate the Transaction Price ────────────────────────────────
 
-    /// Noncash consideration is measured at fair value at contract inception.
-    ///
-    /// Source: ASC 606-10-32-21 — Noncash Consideration
-    pub struct NonCashConsiderationMeasured;
+/// The transaction price is allocated to each performance obligation based on relative standalone selling prices.
+///
+/// Source: ASC 606-10-32-28 — Allocating the Transaction Price
+#[derive(elicitation::Prop)]
+pub struct TransactionPriceAllocated;
 
-    /// Consideration payable to the customer is accounted for as a reduction of the transaction price.
-    ///
-    /// Source: ASC 606-10-32-25 — Consideration Payable to a Customer
-    pub struct ConsiderationPayableToCustomerDeducted;
+/// Standalone selling price is determined for each distinct performance obligation.
+///
+/// Source: ASC 606-10-32-31 — Standalone Selling Price
+#[derive(elicitation::Prop)]
+pub struct StandaloneSellingPriceDetermined;
 
-    // ── Step 4: Allocate the Transaction Price ────────────────────────────────
+/// The residual approach is used only when the standalone selling price is highly variable or uncertain.
+///
+/// Source: ASC 606-10-32-34 — Residual Approach
+#[derive(elicitation::Prop)]
+pub struct ResidualApproachApplied;
 
-    /// The transaction price is allocated to each performance obligation based on relative standalone selling prices.
-    ///
-    /// Source: ASC 606-10-32-28 — Allocating the Transaction Price
-    pub struct TransactionPriceAllocated;
+/// Transaction price allocation is adjusted when a contract modification occurs.
+///
+/// Source: ASC 606-10-25-12 — Allocation Adjustments for Modifications
+#[derive(elicitation::Prop)]
+pub struct AllocationAdjustedForModification;
 
-    /// Standalone selling price is determined for each distinct performance obligation.
-    ///
-    /// Source: ASC 606-10-32-31 — Standalone Selling Price
-    pub struct StandaloneSellingPriceDetermined;
+// ── Step 5: Recognize Revenue ─────────────────────────────────────────────
 
-    /// The residual approach is used only when the standalone selling price is highly variable or uncertain.
-    ///
-    /// Source: ASC 606-10-32-34 — Residual Approach
-    pub struct ResidualApproachApplied;
+/// Revenue is recognized at a point in time when control of the good or service transfers.
+///
+/// Source: ASC 606-10-25-30 — Point-in-Time Recognition
+#[derive(elicitation::Prop)]
+pub struct RevenueRecognizedAtPointInTime;
 
-    /// Transaction price allocation is adjusted when a contract modification occurs.
-    ///
-    /// Source: ASC 606-10-25-12 — Allocation Adjustments for Modifications
-    pub struct AllocationAdjustedForModification;
+/// Revenue is recognized over time because one of the three over-time criteria is met.
+///
+/// Source: ASC 606-10-25-27 — Over-Time Recognition Criteria
+#[derive(elicitation::Prop)]
+pub struct RevenueRecognizedOverTime;
 
-    // ── Step 5: Recognize Revenue ─────────────────────────────────────────────
+/// At least one of the three over-time recognition criteria is satisfied.
+///
+/// Source: ASC 606-10-25-27(a)–(c) — Over-Time Criteria
+#[derive(elicitation::Prop)]
+pub struct OverTimeCriteriaMet;
 
-    /// Revenue is recognized at a point in time when control of the good or service transfers.
-    ///
-    /// Source: ASC 606-10-25-30 — Point-in-Time Recognition
-    pub struct RevenueRecognizedAtPointInTime;
+/// An input or output method is selected and applied consistently to measure progress.
+///
+/// Source: ASC 606-10-55-16 — Methods to Measure Progress
+#[derive(elicitation::Prop)]
+pub struct ProgressMeasurementMethodSelected;
 
-    /// Revenue is recognized over time because one of the three over-time criteria is met.
-    ///
-    /// Source: ASC 606-10-25-27 — Over-Time Recognition Criteria
-    pub struct RevenueRecognizedOverTime;
+/// Contract asset (unbilled revenue) or contract liability (deferred revenue) is recorded correctly.
+///
+/// Source: ASC 606-10-45 — Contract Assets and Liabilities Presentation
+#[derive(elicitation::Prop)]
+pub struct ContractBalanceRecordedCorrectly;
 
-    /// At least one of the three over-time recognition criteria is satisfied.
-    ///
-    /// Source: ASC 606-10-25-27(a)–(c) — Over-Time Criteria
-    pub struct OverTimeCriteriaMet;
+// ── Disclosure requirements ───────────────────────────────────────────────
 
-    /// An input or output method is selected and applied consistently to measure progress.
-    ///
-    /// Source: ASC 606-10-55-16 — Methods to Measure Progress
-    pub struct ProgressMeasurementMethodSelected;
+/// Revenue is disaggregated into categories depicting how economic factors affect revenue.
+///
+/// Source: ASC 606-10-50-5 — Disaggregation of Revenue
+#[derive(elicitation::Prop)]
+pub struct RevenueDisaggregated;
 
-    /// Contract asset (unbilled revenue) or contract liability (deferred revenue) is recorded correctly.
-    ///
-    /// Source: ASC 606-10-45 — Contract Assets and Liabilities Presentation
-    pub struct ContractBalanceRecordedCorrectly;
+/// Opening and closing balances of contract assets and liabilities are disclosed.
+///
+/// Source: ASC 606-10-50-8 — Contract Balances Disclosure
+#[derive(elicitation::Prop)]
+pub struct ContractBalancesDisclosed;
 
-    // ── Disclosure requirements ───────────────────────────────────────────────
+/// Remaining performance obligations and expected timing of recognition are disclosed.
+///
+/// Source: ASC 606-10-50-13 — Remaining Performance Obligations
+#[derive(elicitation::Prop)]
+pub struct RemainingPerformanceObligationsDisclosed;
 
-    /// Revenue is disaggregated into categories depicting how economic factors affect revenue.
-    ///
-    /// Source: ASC 606-10-50-5 — Disaggregation of Revenue
-    pub struct RevenueDisaggregated;
+/// Revenue recognition policies and judgments are disclosed.
+///
+/// Source: ASC 606-10-50-1 — Disclosure Objective
+#[derive(elicitation::Prop)]
+pub struct RevenueRecognitionPolicyDisclosed;
 
-    /// Opening and closing balances of contract assets and liabilities are disclosed.
-    ///
-    /// Source: ASC 606-10-50-8 — Contract Balances Disclosure
-    pub struct ContractBalancesDisclosed;
-
-    /// Remaining performance obligations and expected timing of recognition are disclosed.
-    ///
-    /// Source: ASC 606-10-50-13 — Remaining Performance Obligations
-    pub struct RemainingPerformanceObligationsDisclosed;
-
-    /// Revenue recognition policies and judgments are disclosed.
-    ///
-    /// Source: ASC 606-10-50-1 — Disclosure Objective
-    pub struct RevenueRecognitionPolicyDisclosed;
-
-    /// Revenue recognized from satisfying performance obligations in prior periods is disclosed.
-    ///
-    /// Source: ASC 606-10-50-12 — Revenue from Prior-Period POs
-    pub struct PriorPeriodPerformanceObligationRevenueDisclosed;
-
-    structural_prop!(ContractIdentified, "ContractIdentified");
-    structural_prop!(ContractCriteriaMet, "ContractCriteriaMet");
-    structural_prop!(ContractCombinationAssessed, "ContractCombinationAssessed");
-    structural_prop!(
-        ContractModificationAccountedFor,
-        "ContractModificationAccountedFor"
-    );
-    structural_prop!(CollectibilityProbable, "CollectibilityProbable");
-    structural_prop!(
-        PerformanceObligationsIdentified,
-        "PerformanceObligationsIdentified"
-    );
-    structural_prop!(
-        DistinctGoodOrServiceDetermined,
-        "DistinctGoodOrServiceDetermined"
-    );
-    structural_prop!(
-        SeriesPerformanceObligationAccountedFor,
-        "SeriesPerformanceObligationAccountedFor"
-    );
-    structural_prop!(PrincipalVsAgentDetermined, "PrincipalVsAgentDetermined");
-    structural_prop!(TransactionPriceDetermined, "TransactionPriceDetermined");
-    structural_prop!(
-        VariableConsiderationEstimated,
-        "VariableConsiderationEstimated"
-    );
-    structural_prop!(
-        VariableConsiderationConstraintApplied,
-        "VariableConsiderationConstraintApplied"
-    );
-    structural_prop!(
-        SignificantFinancingComponentAssessed,
-        "SignificantFinancingComponentAssessed"
-    );
-    structural_prop!(NonCashConsiderationMeasured, "NonCashConsiderationMeasured");
-    structural_prop!(
-        ConsiderationPayableToCustomerDeducted,
-        "ConsiderationPayableToCustomerDeducted"
-    );
-    structural_prop!(TransactionPriceAllocated, "TransactionPriceAllocated");
-    structural_prop!(
-        StandaloneSellingPriceDetermined,
-        "StandaloneSellingPriceDetermined"
-    );
-    structural_prop!(ResidualApproachApplied, "ResidualApproachApplied");
-    structural_prop!(
-        AllocationAdjustedForModification,
-        "AllocationAdjustedForModification"
-    );
-    structural_prop!(
-        RevenueRecognizedAtPointInTime,
-        "RevenueRecognizedAtPointInTime"
-    );
-    structural_prop!(RevenueRecognizedOverTime, "RevenueRecognizedOverTime");
-    structural_prop!(OverTimeCriteriaMet, "OverTimeCriteriaMet");
-    structural_prop!(
-        ProgressMeasurementMethodSelected,
-        "ProgressMeasurementMethodSelected"
-    );
-    structural_prop!(
-        ContractBalanceRecordedCorrectly,
-        "ContractBalanceRecordedCorrectly"
-    );
-    structural_prop!(RevenueDisaggregated, "RevenueDisaggregated");
-    structural_prop!(ContractBalancesDisclosed, "ContractBalancesDisclosed");
-    structural_prop!(
-        RemainingPerformanceObligationsDisclosed,
-        "RemainingPerformanceObligationsDisclosed"
-    );
-    structural_prop!(
-        RevenueRecognitionPolicyDisclosed,
-        "RevenueRecognitionPolicyDisclosed"
-    );
-    structural_prop!(
-        PriorPeriodPerformanceObligationRevenueDisclosed,
-        "PriorPeriodPerformanceObligationRevenueDisclosed"
-    );
-}
-
-pub use emit_impls::{
-    AllocationAdjustedForModification, CollectibilityProbable,
-    ConsiderationPayableToCustomerDeducted, ContractBalanceRecordedCorrectly,
-    ContractBalancesDisclosed, ContractCombinationAssessed, ContractCriteriaMet,
-    ContractIdentified, ContractModificationAccountedFor, DistinctGoodOrServiceDetermined,
-    NonCashConsiderationMeasured, OverTimeCriteriaMet, PerformanceObligationsIdentified,
-    PrincipalVsAgentDetermined, PriorPeriodPerformanceObligationRevenueDisclosed,
-    ProgressMeasurementMethodSelected, RemainingPerformanceObligationsDisclosed,
-    ResidualApproachApplied, RevenueDisaggregated, RevenueRecognitionPolicyDisclosed,
-    RevenueRecognizedAtPointInTime, RevenueRecognizedOverTime,
-    SeriesPerformanceObligationAccountedFor, SignificantFinancingComponentAssessed,
-    StandaloneSellingPriceDetermined, TransactionPriceAllocated, TransactionPriceDetermined,
-    VariableConsiderationConstraintApplied, VariableConsiderationEstimated,
-};
+/// Revenue recognized from satisfying performance obligations in prior periods is disclosed.
+///
+/// Source: ASC 606-10-50-12 — Revenue from Prior-Period POs
+#[derive(elicitation::Prop)]
+pub struct PriorPeriodPerformanceObligationRevenueDisclosed;

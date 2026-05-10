@@ -5,130 +5,98 @@
 //! the FASB Accounting Standards Codification.
 //!
 //! Source: FASB Accounting Standards Codification — <https://asc.fasb.org/>
+// ── Core assumptions (ASC 105) ────────────────────────────────────────────
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+/// Every transaction records equal and opposite entries; Assets = Liabilities + Equity.
+///
+/// Pre-ASC foundational requirement. Required by FASB for GAAP compliance.
+#[derive(elicitation::Prop)]
+pub struct DoubleEntryBookkeeping;
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// Transactions are recorded when they occur, not when cash changes hands.
+///
+/// Source: ASC 606-10-25-1 — Revenue Recognition
+#[derive(elicitation::Prop)]
+pub struct AccrualBasis;
 
-    // ── Core assumptions (ASC 105) ────────────────────────────────────────────
+/// All transactions are measured in a single stable monetary unit (e.g., USD cents).
+///
+/// Source: ASC 105 — Generally Accepted Accounting Principles
+#[derive(elicitation::Prop)]
+pub struct MonetaryUnitAssumption;
 
-    /// Every transaction records equal and opposite entries; Assets = Liabilities + Equity.
-    ///
-    /// Pre-ASC foundational requirement. Required by FASB for GAAP compliance.
-    pub struct DoubleEntryBookkeeping;
+/// The reporting entity is separate and distinct from its owners.
+///
+/// Source: ASC 105 — Generally Accepted Accounting Principles
+#[derive(elicitation::Prop)]
+pub struct EconomicEntityAssumption;
 
-    /// Transactions are recorded when they occur, not when cash changes hands.
-    ///
-    /// Source: ASC 606-10-25-1 — Revenue Recognition
-    pub struct AccrualBasis;
+/// Financial statements are prepared for a discrete time period.
+///
+/// Source: ASC 105, ASC 270 — Interim Reporting
+#[derive(elicitation::Prop)]
+pub struct TimePeriodAssumption;
 
-    /// All transactions are measured in a single stable monetary unit (e.g., USD cents).
-    ///
-    /// Source: ASC 105 — Generally Accepted Accounting Principles
-    pub struct MonetaryUnitAssumption;
+/// Financial statements are prepared assuming the entity will continue operating.
+///
+/// Source: ASC 105, ASC 205-40 — Going Concern
+#[derive(elicitation::Prop)]
+pub struct GoingConcernAssumption;
 
-    /// The reporting entity is separate and distinct from its owners.
-    ///
-    /// Source: ASC 105 — Generally Accepted Accounting Principles
-    pub struct EconomicEntityAssumption;
+// ── Recognition and measurement principles ────────────────────────────────
 
-    /// Financial statements are prepared for a discrete time period.
-    ///
-    /// Source: ASC 105, ASC 270 — Interim Reporting
-    pub struct TimePeriodAssumption;
+/// Revenue and associated expenses are recognized in the same accounting period.
+///
+/// Source: ASC 606-10-25-23 — Revenue Recognition
+#[derive(elicitation::Prop)]
+pub struct MatchingPrinciple;
 
-    /// Financial statements are prepared assuming the entity will continue operating.
-    ///
-    /// Source: ASC 105, ASC 205-40 — Going Concern
-    pub struct GoingConcernAssumption;
+/// Assets are recorded at original acquisition cost, not current market value.
+///
+/// Source: ASC 820-10 — Fair Value Measurement (defines exceptions)
+#[derive(elicitation::Prop)]
+pub struct HistoricalCostPrinciple;
 
-    // ── Recognition and measurement principles ────────────────────────────────
+/// All information that could affect financial decisions is disclosed.
+///
+/// Source: ASC 235 — Notes to Financial Statements
+#[derive(elicitation::Prop)]
+pub struct FullDisclosurePrinciple;
 
-    /// Revenue and associated expenses are recognized in the same accounting period.
-    ///
-    /// Source: ASC 606-10-25-23 — Revenue Recognition
-    pub struct MatchingPrinciple;
+/// Revenue is recognized when earned and realizable.
+///
+/// Source: ASC 606-10-25 — Revenue Recognition
+#[derive(elicitation::Prop)]
+pub struct RevenueRecognitionPrinciple;
 
-    /// Assets are recorded at original acquisition cost, not current market value.
-    ///
-    /// Source: ASC 820-10 — Fair Value Measurement (defines exceptions)
-    pub struct HistoricalCostPrinciple;
+// ── Qualitative principles ────────────────────────────────────────────────
 
-    /// All information that could affect financial decisions is disclosed.
-    ///
-    /// Source: ASC 235 — Notes to Financial Statements
-    pub struct FullDisclosurePrinciple;
+/// When uncertain, choose options resulting in lower income or smaller asset values.
+///
+/// Source: ASC 250, ASC 450 — Contingencies
+#[derive(elicitation::Prop)]
+pub struct ConservatismPrinciple;
 
-    /// Revenue is recognized when earned and realizable.
-    ///
-    /// Source: ASC 606-10-25 — Revenue Recognition
-    pub struct RevenueRecognitionPrinciple;
+/// Significant items affecting financial decisions are reported.
+///
+/// Source: ASC 250 — Accounting Changes and Error Corrections; SEC SAB 99
+#[derive(elicitation::Prop)]
+pub struct MaterialityPrinciple;
 
-    // ── Qualitative principles ────────────────────────────────────────────────
+/// Accounting methods are applied consistently across reporting periods.
+///
+/// Source: ASC 250-10-45 — Accounting Changes and Error Corrections
+#[derive(elicitation::Prop)]
+pub struct ConsistencyPrinciple;
 
-    /// When uncertain, choose options resulting in lower income or smaller asset values.
-    ///
-    /// Source: ASC 250, ASC 450 — Contingencies
-    pub struct ConservatismPrinciple;
+/// Financial information is free from bias and represents economic reality.
+///
+/// Source: FASB Concepts Statement No. 8 — Conceptual Framework
+#[derive(elicitation::Prop)]
+pub struct NeutralityPrinciple;
 
-    /// Significant items affecting financial decisions are reported.
-    ///
-    /// Source: ASC 250 — Accounting Changes and Error Corrections; SEC SAB 99
-    pub struct MaterialityPrinciple;
-
-    /// Accounting methods are applied consistently across reporting periods.
-    ///
-    /// Source: ASC 250-10-45 — Accounting Changes and Error Corrections
-    pub struct ConsistencyPrinciple;
-
-    /// Financial information is free from bias and represents economic reality.
-    ///
-    /// Source: FASB Concepts Statement No. 8 — Conceptual Framework
-    pub struct NeutralityPrinciple;
-
-    /// Economic substance governs accounting treatment, not legal form.
-    ///
-    /// Source: FASB Concepts Statement No. 8 — Conceptual Framework
-    pub struct SubstanceOverFormPrinciple;
-
-    structural_prop!(DoubleEntryBookkeeping, "DoubleEntryBookkeeping");
-    structural_prop!(AccrualBasis, "AccrualBasis");
-    structural_prop!(MonetaryUnitAssumption, "MonetaryUnitAssumption");
-    structural_prop!(EconomicEntityAssumption, "EconomicEntityAssumption");
-    structural_prop!(TimePeriodAssumption, "TimePeriodAssumption");
-    structural_prop!(GoingConcernAssumption, "GoingConcernAssumption");
-    structural_prop!(MatchingPrinciple, "MatchingPrinciple");
-    structural_prop!(HistoricalCostPrinciple, "HistoricalCostPrinciple");
-    structural_prop!(FullDisclosurePrinciple, "FullDisclosurePrinciple");
-    structural_prop!(RevenueRecognitionPrinciple, "RevenueRecognitionPrinciple");
-    structural_prop!(ConservatismPrinciple, "ConservatismPrinciple");
-    structural_prop!(MaterialityPrinciple, "MaterialityPrinciple");
-    structural_prop!(ConsistencyPrinciple, "ConsistencyPrinciple");
-    structural_prop!(NeutralityPrinciple, "NeutralityPrinciple");
-    structural_prop!(SubstanceOverFormPrinciple, "SubstanceOverFormPrinciple");
-}
-
-pub use emit_impls::{
-    AccrualBasis, ConservatismPrinciple, ConsistencyPrinciple, DoubleEntryBookkeeping,
-    EconomicEntityAssumption, FullDisclosurePrinciple, GoingConcernAssumption,
-    HistoricalCostPrinciple, MatchingPrinciple, MaterialityPrinciple, MonetaryUnitAssumption,
-    NeutralityPrinciple, RevenueRecognitionPrinciple, SubstanceOverFormPrinciple,
-    TimePeriodAssumption,
-};
+/// Economic substance governs accounting treatment, not legal form.
+///
+/// Source: FASB Concepts Statement No. 8 — Conceptual Framework
+#[derive(elicitation::Prop)]
+pub struct SubstanceOverFormPrinciple;

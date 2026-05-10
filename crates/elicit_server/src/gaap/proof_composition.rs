@@ -205,3 +205,23 @@ pub struct RetainedEarningsEvidence {
 }
 
 impl ProvableFrom<RetainedEarningsEvidence> for RetainedEarningsRollforward {}
+
+// ── Journal-entry → GAAP bridges ─────────────────────────────────────────────
+//
+// These bridges connect domain-level journal-entry propositions
+// (`elicit_server::ledger::journal`) to canonical GAAP invariants, encoding
+// the accounting rules at the type level.
+
+use crate::ledger::journal::{EntryBalanced, NetIncomeComputed};
+
+/// Given that an entry is balanced (`EntryBalanced`), you can issue a
+/// `DebitEqualsCreditPerEntry` GAAP proof token.
+///
+/// Source: double-entry bookkeeping — debit/credit symmetry; ASC 210.
+impl ProvableFrom<EntryBalanced> for DebitEqualsCreditPerEntry {}
+
+/// Given that net income has been correctly computed (`NetIncomeComputed`),
+/// you can issue a `NetIncomeAggregation` GAAP proof token.
+///
+/// Source: ASC 225 — Income Statement.
+impl ProvableFrom<NetIncomeComputed> for NetIncomeAggregation {}

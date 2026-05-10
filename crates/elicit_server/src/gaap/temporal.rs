@@ -7,171 +7,120 @@
 //!
 //! Source: ASC 250, ASC 270, ASC 606, ASC 830, ASC 842;
 //!         FASB Concepts Statement No. 5 — Recognition and Measurement
+// ── Period cut-off ────────────────────────────────────────────────────────
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+/// Every transaction is recorded in the accounting period in which it occurred.
+///
+/// Source: ASC 250-10 — Accounting Changes and Errors; accrual basis cut-off principle
+#[derive(elicitation::Prop)]
+pub struct TransactionCutoffRespected;
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// Revenue is recognized only in the period in which it is earned and the performance obligation is satisfied.
+///
+/// Source: ASC 606-10-25 — Revenue Recognition Timing
+#[derive(elicitation::Prop)]
+pub struct RevenueEarnedInPeriod;
 
-    // ── Period cut-off ────────────────────────────────────────────────────────
+/// Period-end accruals are recorded before the financial statement close.
+///
+/// Source: ASC 250-10; accrual accounting — period-end recognition
+#[derive(elicitation::Prop)]
+pub struct AccrualRecordedAtPeriodEnd;
 
-    /// Every transaction is recorded in the accounting period in which it occurred.
-    ///
-    /// Source: ASC 250-10 — Accounting Changes and Errors; accrual basis cut-off principle
-    pub struct TransactionCutoffRespected;
+/// Deferred revenue or prepaid expense is released in the period when earned or incurred.
+///
+/// Source: ASC 606-10-45 — Contract Liabilities Release; ASC 430-10 — Deferred Revenue
+#[derive(elicitation::Prop)]
+pub struct DeferralReleasedInEarnedPeriod;
 
-    /// Revenue is recognized only in the period in which it is earned and the performance obligation is satisfied.
-    ///
-    /// Source: ASC 606-10-25 — Revenue Recognition Timing
-    pub struct RevenueEarnedInPeriod;
+// ── Amortization and depreciation timing ──────────────────────────────────
 
-    /// Period-end accruals are recorded before the financial statement close.
-    ///
-    /// Source: ASC 250-10; accrual accounting — period-end recognition
-    pub struct AccrualRecordedAtPeriodEnd;
+/// Depreciation and amortization reflect the full period's allocation (not partial if in service all period).
+///
+/// Source: ASC 360-10-35 — PP&E Depreciation; ASC 350-30-35 — Intangible Amortization
+#[derive(elicitation::Prop)]
+pub struct DepreciationComputedForFullPeriod;
 
-    /// Deferred revenue or prepaid expense is released in the period when earned or incurred.
-    ///
-    /// Source: ASC 606-10-45 — Contract Liabilities Release; ASC 430-10 — Deferred Revenue
-    pub struct DeferralReleasedInEarnedPeriod;
+/// Interest accrual is computed through the last calendar day of the reporting period.
+///
+/// Source: ASC 835-10-25 — Interest Accrual
+#[derive(elicitation::Prop)]
+pub struct InterestAccruedThroughPeriodEnd;
 
-    // ── Amortization and depreciation timing ──────────────────────────────────
+// ── Dividends and corporate actions ───────────────────────────────────────
 
-    /// Depreciation and amortization reflect the full period's allocation (not partial if in service all period).
-    ///
-    /// Source: ASC 360-10-35 — PP&E Depreciation; ASC 350-30-35 — Intangible Amortization
-    pub struct DepreciationComputedForFullPeriod;
+/// Dividends are recorded in the period in which the board declaration occurs.
+///
+/// Source: ASC 505-10-25-1 — Dividend Declaration Date
+#[derive(elicitation::Prop)]
+pub struct DividendsDeclaredInCorrectPeriod;
 
-    /// Interest accrual is computed through the last calendar day of the reporting period.
-    ///
-    /// Source: ASC 835-10-25 — Interest Accrual
-    pub struct InterestAccruedThroughPeriodEnd;
+// ── Foreign currency translation timing ───────────────────────────────────
 
-    // ── Dividends and corporate actions ───────────────────────────────────────
+/// Balance sheet monetary items are translated at the period-end spot exchange rate.
+///
+/// Source: ASC 830-10-45-17 — Closing Rate Translation
+#[derive(elicitation::Prop)]
+pub struct FxTranslationAtClosingRate;
 
-    /// Dividends are recorded in the period in which the board declaration occurs.
-    ///
-    /// Source: ASC 505-10-25-1 — Dividend Declaration Date
-    pub struct DividendsDeclaredInCorrectPeriod;
+/// Income statement items are translated at the period-average exchange rate.
+///
+/// Source: ASC 830-30-45-3 — Average Rate Translation
+#[derive(elicitation::Prop)]
+pub struct FxTranslationAtAverageRate;
 
-    // ── Foreign currency translation timing ───────────────────────────────────
+// ── Deferred tax timing ───────────────────────────────────────────────────
 
-    /// Balance sheet monetary items are translated at the period-end spot exchange rate.
-    ///
-    /// Source: ASC 830-10-45-17 — Closing Rate Translation
-    pub struct FxTranslationAtClosingRate;
+/// Temporary differences originate and reverse in their correct tax periods.
+///
+/// Source: ASC 740-10-25 — Deferred Tax Timing Differences
+#[derive(elicitation::Prop)]
+pub struct TemporaryDifferenceTimingCorrect;
 
-    /// Income statement items are translated at the period-average exchange rate.
-    ///
-    /// Source: ASC 830-30-45-3 — Average Rate Translation
-    pub struct FxTranslationAtAverageRate;
+/// The taxable year end is aligned with the financial reporting period, or the difference is noted.
+///
+/// Source: ASC 740-270 — Interim-Period Tax Accounting
+#[derive(elicitation::Prop)]
+pub struct TaxPeriodAligned;
 
-    // ── Deferred tax timing ───────────────────────────────────────────────────
+// ── Interim period timing ─────────────────────────────────────────────────
 
-    /// Temporary differences originate and reverse in their correct tax periods.
-    ///
-    /// Source: ASC 740-10-25 — Deferred Tax Timing Differences
-    pub struct TemporaryDifferenceTimingCorrect;
+/// Interim period accruals are based on the same method as the annual estimate.
+///
+/// Source: ASC 270-10-45-6 — Interim Accrual Consistency
+#[derive(elicitation::Prop)]
+pub struct InterimAccrualMethodConsistent;
 
-    /// The taxable year end is aligned with the financial reporting period, or the difference is noted.
-    ///
-    /// Source: ASC 740-270 — Interim-Period Tax Accounting
-    pub struct TaxPeriodAligned;
+/// The subsequent event evaluation period ends on a specific identifiable issuance date.
+///
+/// Source: ASC 855-10-25-1 — Subsequent Event Period Boundary
+#[derive(elicitation::Prop)]
+pub struct SubsequentEventDateBound;
 
-    // ── Interim period timing ─────────────────────────────────────────────────
+// ── Stock awards and lease timing ─────────────────────────────────────────
 
-    /// Interim period accruals are based on the same method as the annual estimate.
-    ///
-    /// Source: ASC 270-10-45-6 — Interim Accrual Consistency
-    pub struct InterimAccrualMethodConsistent;
+/// The grant date for a stock award is the date on which mutual understanding of the terms is reached.
+///
+/// Source: ASC 718-10-25-5 — Grant Date Definition
+#[derive(elicitation::Prop)]
+pub struct StockOptionGrantDateCorrect;
 
-    /// The subsequent event evaluation period ends on a specific identifiable issuance date.
-    ///
-    /// Source: ASC 855-10-25-1 — Subsequent Event Period Boundary
-    pub struct SubsequentEventDateBound;
+/// The lease commencement date (not the signing date) determines when recognition begins.
+///
+/// Source: ASC 842-20-25-1 — Lease Commencement Date
+#[derive(elicitation::Prop)]
+pub struct LeaseCommencementDateCorrect;
 
-    // ── Stock awards and lease timing ─────────────────────────────────────────
+// ── Revenue transfer-of-control timing ───────────────────────────────────
 
-    /// The grant date for a stock award is the date on which mutual understanding of the terms is reached.
-    ///
-    /// Source: ASC 718-10-25-5 — Grant Date Definition
-    pub struct StockOptionGrantDateCorrect;
+/// The point-in-time transfer date is the date on which control passes to the customer.
+///
+/// Source: ASC 606-10-25-30 — Point-in-Time Transfer
+#[derive(elicitation::Prop)]
+pub struct RevenueTransferDateCorrect;
 
-    /// The lease commencement date (not the signing date) determines when recognition begins.
-    ///
-    /// Source: ASC 842-20-25-1 — Lease Commencement Date
-    pub struct LeaseCommencementDateCorrect;
-
-    // ── Revenue transfer-of-control timing ───────────────────────────────────
-
-    /// The point-in-time transfer date is the date on which control passes to the customer.
-    ///
-    /// Source: ASC 606-10-25-30 — Point-in-Time Transfer
-    pub struct RevenueTransferDateCorrect;
-
-    /// Expense is matched to the same period as the revenue it helps to generate.
-    ///
-    /// Source: FASB Concepts Statement No. 5 — Matching Principle
-    pub struct ExpenseMatchedToPeriod;
-
-    structural_prop!(TransactionCutoffRespected, "TransactionCutoffRespected");
-    structural_prop!(RevenueEarnedInPeriod, "RevenueEarnedInPeriod");
-    structural_prop!(AccrualRecordedAtPeriodEnd, "AccrualRecordedAtPeriodEnd");
-    structural_prop!(
-        DeferralReleasedInEarnedPeriod,
-        "DeferralReleasedInEarnedPeriod"
-    );
-    structural_prop!(
-        DepreciationComputedForFullPeriod,
-        "DepreciationComputedForFullPeriod"
-    );
-    structural_prop!(
-        InterestAccruedThroughPeriodEnd,
-        "InterestAccruedThroughPeriodEnd"
-    );
-    structural_prop!(
-        DividendsDeclaredInCorrectPeriod,
-        "DividendsDeclaredInCorrectPeriod"
-    );
-    structural_prop!(FxTranslationAtClosingRate, "FxTranslationAtClosingRate");
-    structural_prop!(FxTranslationAtAverageRate, "FxTranslationAtAverageRate");
-    structural_prop!(
-        TemporaryDifferenceTimingCorrect,
-        "TemporaryDifferenceTimingCorrect"
-    );
-    structural_prop!(TaxPeriodAligned, "TaxPeriodAligned");
-    structural_prop!(
-        InterimAccrualMethodConsistent,
-        "InterimAccrualMethodConsistent"
-    );
-    structural_prop!(SubsequentEventDateBound, "SubsequentEventDateBound");
-    structural_prop!(StockOptionGrantDateCorrect, "StockOptionGrantDateCorrect");
-    structural_prop!(LeaseCommencementDateCorrect, "LeaseCommencementDateCorrect");
-    structural_prop!(RevenueTransferDateCorrect, "RevenueTransferDateCorrect");
-    structural_prop!(ExpenseMatchedToPeriod, "ExpenseMatchedToPeriod");
-}
-
-pub use emit_impls::{
-    AccrualRecordedAtPeriodEnd, DeferralReleasedInEarnedPeriod, DepreciationComputedForFullPeriod,
-    DividendsDeclaredInCorrectPeriod, ExpenseMatchedToPeriod, FxTranslationAtAverageRate,
-    FxTranslationAtClosingRate, InterestAccruedThroughPeriodEnd, InterimAccrualMethodConsistent,
-    LeaseCommencementDateCorrect, RevenueEarnedInPeriod, RevenueTransferDateCorrect,
-    StockOptionGrantDateCorrect, SubsequentEventDateBound, TaxPeriodAligned,
-    TemporaryDifferenceTimingCorrect, TransactionCutoffRespected,
-};
+/// Expense is matched to the same period as the revenue it helps to generate.
+///
+/// Source: FASB Concepts Statement No. 5 — Matching Principle
+#[derive(elicitation::Prop)]
+pub struct ExpenseMatchedToPeriod;

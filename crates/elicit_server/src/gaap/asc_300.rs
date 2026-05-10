@@ -4,265 +4,194 @@
 //! inventory, intangibles/goodwill, and property, plant, and equipment.
 //!
 //! Source: FASB ASC 300 series — <https://asc.fasb.org/>
+// ── ASC 310 — Receivables ─────────────────────────────────────────────────
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+/// Receivable is carried at amortized cost.
+///
+/// Source: ASC 310-20-35 — Amortized Cost
+#[derive(elicitation::Prop)]
+pub struct ReceivableRecordedAtAmortizedCost;
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// Allowance for credit losses is estimated under the CECL model.
+///
+/// Source: ASC 326-20-30 — Current Expected Credit Loss (CECL)
+#[derive(elicitation::Prop)]
+pub struct AllowanceForCreditLossEstimated;
 
-    // ── ASC 310 — Receivables ─────────────────────────────────────────────────
+/// Troubled debt restructuring is identified and accounted for under ASC 310-40.
+///
+/// Source: ASC 310-40-15 — Troubled Debt Restructuring by Creditors
+#[derive(elicitation::Prop)]
+pub struct TroubledDebtRestructuringIdentified;
 
-    /// Receivable is carried at amortized cost.
-    ///
-    /// Source: ASC 310-20-35 — Amortized Cost
-    pub struct ReceivableRecordedAtAmortizedCost;
+/// Factoring transaction is properly determined to be a sale or secured borrowing.
+///
+/// Source: ASC 860-10-40 — Transfers and Servicing — Sale vs. Secured Borrowing
+#[derive(elicitation::Prop)]
+pub struct FactoredReceivableSaleAccountedFor;
 
-    /// Allowance for credit losses is estimated under the CECL model.
-    ///
-    /// Source: ASC 326-20-30 — Current Expected Credit Loss (CECL)
-    pub struct AllowanceForCreditLossEstimated;
+/// Loan origination fees and costs are deferred and amortized using the effective interest method.
+///
+/// Source: ASC 310-20-35-2 — Loan Fees and Costs
+#[derive(elicitation::Prop)]
+pub struct LoanOriginationFeesDeferred;
 
-    /// Troubled debt restructuring is identified and accounted for under ASC 310-40.
-    ///
-    /// Source: ASC 310-40-15 — Troubled Debt Restructuring by Creditors
-    pub struct TroubledDebtRestructuringIdentified;
+// ── ASC 320 — Investments — Debt Securities ───────────────────────────────
 
-    /// Factoring transaction is properly determined to be a sale or secured borrowing.
-    ///
-    /// Source: ASC 860-10-40 — Transfers and Servicing — Sale vs. Secured Borrowing
-    pub struct FactoredReceivableSaleAccountedFor;
+/// Debt security is classified as trading, available-for-sale, or held-to-maturity.
+///
+/// Source: ASC 320-10-25 — Classification of Debt Securities
+#[derive(elicitation::Prop)]
+pub struct DebtSecurityClassified;
 
-    /// Loan origination fees and costs are deferred and amortized using the effective interest method.
-    ///
-    /// Source: ASC 310-20-35-2 — Loan Fees and Costs
-    pub struct LoanOriginationFeesDeferred;
+/// Trading security is carried at fair value with unrealized gains/losses in earnings.
+///
+/// Source: ASC 320-10-35-1 — Trading Securities
+#[derive(elicitation::Prop)]
+pub struct TradingSecurityAtFairValue;
 
-    // ── ASC 320 — Investments — Debt Securities ───────────────────────────────
+/// Available-for-sale security is carried at fair value with unrealized gains/losses in OCI.
+///
+/// Source: ASC 320-10-35-1 — Available-for-Sale Securities
+#[derive(elicitation::Prop)]
+pub struct AfsSecurityAtFairValue;
 
-    /// Debt security is classified as trading, available-for-sale, or held-to-maturity.
-    ///
-    /// Source: ASC 320-10-25 — Classification of Debt Securities
-    pub struct DebtSecurityClassified;
+/// Held-to-maturity security is carried at amortized cost (intent and ability to hold).
+///
+/// Source: ASC 320-10-35-2 — Held-to-Maturity Securities
+#[derive(elicitation::Prop)]
+pub struct HtmSecurityAtAmortizedCost;
 
-    /// Trading security is carried at fair value with unrealized gains/losses in earnings.
-    ///
-    /// Source: ASC 320-10-35-1 — Trading Securities
-    pub struct TradingSecurityAtFairValue;
+/// Impairment review is performed on AFS and HTM securities each reporting period.
+///
+/// Source: ASC 320-10-35-34 — Impairment of Investments
+#[derive(elicitation::Prop)]
+pub struct InvestmentImpairmentReviewed;
 
-    /// Available-for-sale security is carried at fair value with unrealized gains/losses in OCI.
-    ///
-    /// Source: ASC 320-10-35-1 — Available-for-Sale Securities
-    pub struct AfsSecurityAtFairValue;
+// ── ASC 321 — Investments — Equity Securities ─────────────────────────────
 
-    /// Held-to-maturity security is carried at amortized cost (intent and ability to hold).
-    ///
-    /// Source: ASC 320-10-35-2 — Held-to-Maturity Securities
-    pub struct HtmSecurityAtAmortizedCost;
+/// Equity investment is measured at fair value through earnings.
+///
+/// Source: ASC 321-10-35-1 — Equity Securities at Fair Value
+#[derive(elicitation::Prop)]
+pub struct EquitySecurityAtFairValue;
 
-    /// Impairment review is performed on AFS and HTM securities each reporting period.
-    ///
-    /// Source: ASC 320-10-35-34 — Impairment of Investments
-    pub struct InvestmentImpairmentReviewed;
+/// Equity method is applied when the investor has significant influence (generally 20–50%).
+///
+/// Source: ASC 323-10-15-8 — Equity Method Investments
+#[derive(elicitation::Prop)]
+pub struct EquityMethodApplied;
 
-    // ── ASC 321 — Investments — Equity Securities ─────────────────────────────
+/// All equity method investees are identified and not omitted.
+///
+/// Source: ASC 323-10-15 — Scope of Equity Method
+#[derive(elicitation::Prop)]
+pub struct EquityMethodInvesteeIdentified;
 
-    /// Equity investment is measured at fair value through earnings.
-    ///
-    /// Source: ASC 321-10-35-1 — Equity Securities at Fair Value
-    pub struct EquitySecurityAtFairValue;
+/// Equity method investment is tested for impairment when indicators exist.
+///
+/// Source: ASC 323-10-35-32 — Impairment of Equity Method Investments
+#[derive(elicitation::Prop)]
+pub struct EquityMethodImpairmentAssessed;
 
-    /// Equity method is applied when the investor has significant influence (generally 20–50%).
-    ///
-    /// Source: ASC 323-10-15-8 — Equity Method Investments
-    pub struct EquityMethodApplied;
+// ── ASC 330 — Inventory ───────────────────────────────────────────────────
 
-    /// All equity method investees are identified and not omitted.
-    ///
-    /// Source: ASC 323-10-15 — Scope of Equity Method
-    pub struct EquityMethodInvesteeIdentified;
+/// Inventory is carried at the lower of cost or net realizable value.
+///
+/// Source: ASC 330-10-35-1 — Lower of Cost or Net Realizable Value
+#[derive(elicitation::Prop)]
+pub struct InventoryAtLowerOfCostOrNrv;
 
-    /// Equity method investment is tested for impairment when indicators exist.
-    ///
-    /// Source: ASC 323-10-35-32 — Impairment of Equity Method Investments
-    pub struct EquityMethodImpairmentAssessed;
+/// The cost flow assumption (FIFO, LIFO, weighted-average) is disclosed.
+///
+/// Source: ASC 330-10-30-9 — Cost Flow Assumptions
+#[derive(elicitation::Prop)]
+pub struct CostFlowAssumptionDisclosed;
 
-    // ── ASC 330 — Inventory ───────────────────────────────────────────────────
+/// Write-down to NRV is recognized in the period the decline occurs and is not reversed.
+///
+/// Source: ASC 330-10-35-14 — Inventory Write-Downs
+#[derive(elicitation::Prop)]
+pub struct InventoryWriteDownRecognized;
 
-    /// Inventory is carried at the lower of cost or net realizable value.
-    ///
-    /// Source: ASC 330-10-35-1 — Lower of Cost or Net Realizable Value
-    pub struct InventoryAtLowerOfCostOrNrv;
+/// LIFO reserve is disclosed when LIFO is used.
+///
+/// Source: ASC 330-10-50-1 — LIFO Reserve Disclosure
+#[derive(elicitation::Prop)]
+pub struct LifoReserveDisclosed;
 
-    /// The cost flow assumption (FIFO, LIFO, weighted-average) is disclosed.
-    ///
-    /// Source: ASC 330-10-30-9 — Cost Flow Assumptions
-    pub struct CostFlowAssumptionDisclosed;
+// ── ASC 350 — Intangibles — Goodwill and Other ────────────────────────────
 
-    /// Write-down to NRV is recognized in the period the decline occurs and is not reversed.
-    ///
-    /// Source: ASC 330-10-35-14 — Inventory Write-Downs
-    pub struct InventoryWriteDownRecognized;
+/// Goodwill is tested for impairment at least annually or when indicators exist.
+///
+/// Source: ASC 350-20-35-28 — Goodwill Impairment Testing
+#[derive(elicitation::Prop)]
+pub struct GoodwillAnnuallyTested;
 
-    /// LIFO reserve is disclosed when LIFO is used.
-    ///
-    /// Source: ASC 330-10-50-1 — LIFO Reserve Disclosure
-    pub struct LifoReserveDisclosed;
+/// Goodwill impairment loss is recognized in the period identified.
+///
+/// Source: ASC 350-20-35-8a — Goodwill Impairment Recognition
+#[derive(elicitation::Prop)]
+pub struct GoodwillImpairmentRecognized;
 
-    // ── ASC 350 — Intangibles — Goodwill and Other ────────────────────────────
+/// Indefinite-lived intangible assets are tested for impairment at least annually.
+///
+/// Source: ASC 350-30-35-18 — Indefinite-Lived Intangibles Impairment
+#[derive(elicitation::Prop)]
+pub struct IndefiniteLifeIntangibleTested;
 
-    /// Goodwill is tested for impairment at least annually or when indicators exist.
-    ///
-    /// Source: ASC 350-20-35-28 — Goodwill Impairment Testing
-    pub struct GoodwillAnnuallyTested;
+/// Finite-lived intangible assets are amortized over their estimated useful lives.
+///
+/// Source: ASC 350-30-35-6 — Amortization of Finite-Lived Intangibles
+#[derive(elicitation::Prop)]
+pub struct FiniteLifeIntangibleAmortized;
 
-    /// Goodwill impairment loss is recognized in the period identified.
-    ///
-    /// Source: ASC 350-20-35-8a — Goodwill Impairment Recognition
-    pub struct GoodwillImpairmentRecognized;
+/// Intangible asset useful life is reassessed each reporting period.
+///
+/// Source: ASC 350-30-35-9 — Reassessment of Useful Life
+#[derive(elicitation::Prop)]
+pub struct IntangibleUsefulLifeReassessed;
 
-    /// Indefinite-lived intangible assets are tested for impairment at least annually.
-    ///
-    /// Source: ASC 350-30-35-18 — Indefinite-Lived Intangibles Impairment
-    pub struct IndefiniteLifeIntangibleTested;
+/// Internal-use software development costs in the application development stage are capitalized.
+///
+/// Source: ASC 350-40-25-1 — Internal-Use Software
+#[derive(elicitation::Prop)]
+pub struct InternalUseSoftwareCostCapitalized;
 
-    /// Finite-lived intangible assets are amortized over their estimated useful lives.
-    ///
-    /// Source: ASC 350-30-35-6 — Amortization of Finite-Lived Intangibles
-    pub struct FiniteLifeIntangibleAmortized;
+// ── ASC 360 — Property, Plant, and Equipment ──────────────────────────────
 
-    /// Intangible asset useful life is reassessed each reporting period.
-    ///
-    /// Source: ASC 350-30-35-9 — Reassessment of Useful Life
-    pub struct IntangibleUsefulLifeReassessed;
+/// PP&E is carried at cost less accumulated depreciation.
+///
+/// Source: ASC 360-10-30-1 — Initial Measurement of PP&E
+#[derive(elicitation::Prop)]
+pub struct PpeCarriedAtCost;
 
-    /// Internal-use software development costs in the application development stage are capitalized.
-    ///
-    /// Source: ASC 350-40-25-1 — Internal-Use Software
-    pub struct InternalUseSoftwareCostCapitalized;
+/// Depreciation method is disclosed for each major class of PP&E.
+///
+/// Source: ASC 360-10-50-1 — Depreciation Method Disclosure
+#[derive(elicitation::Prop)]
+pub struct DepreciationMethodDisclosed;
 
-    // ── ASC 360 — Property, Plant, and Equipment ──────────────────────────────
+/// Useful life is estimated for each PP&E class and applied consistently.
+///
+/// Source: ASC 360-10-35-4 — Useful Life Estimation
+#[derive(elicitation::Prop)]
+pub struct UsefulLifeEstimated;
 
-    /// PP&E is carried at cost less accumulated depreciation.
-    ///
-    /// Source: ASC 360-10-30-1 — Initial Measurement of PP&E
-    pub struct PpeCarriedAtCost;
+/// Long-lived asset is tested for recoverability when impairment indicators exist.
+///
+/// Source: ASC 360-10-35-17 — Impairment of Long-Lived Assets
+#[derive(elicitation::Prop)]
+pub struct LongLivedAssetImpairmentTested;
 
-    /// Depreciation method is disclosed for each major class of PP&E.
-    ///
-    /// Source: ASC 360-10-50-1 — Depreciation Method Disclosure
-    pub struct DepreciationMethodDisclosed;
+/// Gain or loss on disposal of PP&E is recognized in the period of disposal.
+///
+/// Source: ASC 360-10-40-5 — Disposal of Long-Lived Assets
+#[derive(elicitation::Prop)]
+pub struct DisposalGainLossRecognized;
 
-    /// Useful life is estimated for each PP&E class and applied consistently.
-    ///
-    /// Source: ASC 360-10-35-4 — Useful Life Estimation
-    pub struct UsefulLifeEstimated;
-
-    /// Long-lived asset is tested for recoverability when impairment indicators exist.
-    ///
-    /// Source: ASC 360-10-35-17 — Impairment of Long-Lived Assets
-    pub struct LongLivedAssetImpairmentTested;
-
-    /// Gain or loss on disposal of PP&E is recognized in the period of disposal.
-    ///
-    /// Source: ASC 360-10-40-5 — Disposal of Long-Lived Assets
-    pub struct DisposalGainLossRecognized;
-
-    /// Asset retirement obligation is recognized at fair value when incurred (see also ASC 410).
-    ///
-    /// Source: ASC 410-20-25-1 — Asset Retirement Obligations
-    pub struct PpeAroRecognized;
-
-    structural_prop!(
-        ReceivableRecordedAtAmortizedCost,
-        "ReceivableRecordedAtAmortizedCost"
-    );
-    structural_prop!(
-        AllowanceForCreditLossEstimated,
-        "AllowanceForCreditLossEstimated"
-    );
-    structural_prop!(
-        TroubledDebtRestructuringIdentified,
-        "TroubledDebtRestructuringIdentified"
-    );
-    structural_prop!(
-        FactoredReceivableSaleAccountedFor,
-        "FactoredReceivableSaleAccountedFor"
-    );
-    structural_prop!(LoanOriginationFeesDeferred, "LoanOriginationFeesDeferred");
-    structural_prop!(DebtSecurityClassified, "DebtSecurityClassified");
-    structural_prop!(TradingSecurityAtFairValue, "TradingSecurityAtFairValue");
-    structural_prop!(AfsSecurityAtFairValue, "AfsSecurityAtFairValue");
-    structural_prop!(HtmSecurityAtAmortizedCost, "HtmSecurityAtAmortizedCost");
-    structural_prop!(InvestmentImpairmentReviewed, "InvestmentImpairmentReviewed");
-    structural_prop!(EquitySecurityAtFairValue, "EquitySecurityAtFairValue");
-    structural_prop!(EquityMethodApplied, "EquityMethodApplied");
-    structural_prop!(
-        EquityMethodInvesteeIdentified,
-        "EquityMethodInvesteeIdentified"
-    );
-    structural_prop!(
-        EquityMethodImpairmentAssessed,
-        "EquityMethodImpairmentAssessed"
-    );
-    structural_prop!(InventoryAtLowerOfCostOrNrv, "InventoryAtLowerOfCostOrNrv");
-    structural_prop!(CostFlowAssumptionDisclosed, "CostFlowAssumptionDisclosed");
-    structural_prop!(InventoryWriteDownRecognized, "InventoryWriteDownRecognized");
-    structural_prop!(LifoReserveDisclosed, "LifoReserveDisclosed");
-    structural_prop!(GoodwillAnnuallyTested, "GoodwillAnnuallyTested");
-    structural_prop!(GoodwillImpairmentRecognized, "GoodwillImpairmentRecognized");
-    structural_prop!(
-        IndefiniteLifeIntangibleTested,
-        "IndefiniteLifeIntangibleTested"
-    );
-    structural_prop!(
-        FiniteLifeIntangibleAmortized,
-        "FiniteLifeIntangibleAmortized"
-    );
-    structural_prop!(
-        IntangibleUsefulLifeReassessed,
-        "IntangibleUsefulLifeReassessed"
-    );
-    structural_prop!(
-        InternalUseSoftwareCostCapitalized,
-        "InternalUseSoftwareCostCapitalized"
-    );
-    structural_prop!(PpeCarriedAtCost, "PpeCarriedAtCost");
-    structural_prop!(DepreciationMethodDisclosed, "DepreciationMethodDisclosed");
-    structural_prop!(UsefulLifeEstimated, "UsefulLifeEstimated");
-    structural_prop!(
-        LongLivedAssetImpairmentTested,
-        "LongLivedAssetImpairmentTested"
-    );
-    structural_prop!(DisposalGainLossRecognized, "DisposalGainLossRecognized");
-    structural_prop!(PpeAroRecognized, "PpeAroRecognized");
-}
-
-pub use emit_impls::{
-    AfsSecurityAtFairValue, AllowanceForCreditLossEstimated, CostFlowAssumptionDisclosed,
-    DebtSecurityClassified, DepreciationMethodDisclosed, DisposalGainLossRecognized,
-    EquityMethodApplied, EquityMethodImpairmentAssessed, EquityMethodInvesteeIdentified,
-    EquitySecurityAtFairValue, FactoredReceivableSaleAccountedFor, FiniteLifeIntangibleAmortized,
-    GoodwillAnnuallyTested, GoodwillImpairmentRecognized, HtmSecurityAtAmortizedCost,
-    IndefiniteLifeIntangibleTested, IntangibleUsefulLifeReassessed,
-    InternalUseSoftwareCostCapitalized, InventoryAtLowerOfCostOrNrv, InventoryWriteDownRecognized,
-    InvestmentImpairmentReviewed, LifoReserveDisclosed, LoanOriginationFeesDeferred,
-    LongLivedAssetImpairmentTested, PpeAroRecognized, PpeCarriedAtCost,
-    ReceivableRecordedAtAmortizedCost, TradingSecurityAtFairValue,
-    TroubledDebtRestructuringIdentified, UsefulLifeEstimated,
-};
+/// Asset retirement obligation is recognized at fair value when incurred (see also ASC 410).
+///
+/// Source: ASC 410-20-25-1 — Asset Retirement Obligations
+#[derive(elicitation::Prop)]
+pub struct PpeAroRecognized;

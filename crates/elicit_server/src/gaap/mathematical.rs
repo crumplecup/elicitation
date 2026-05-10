@@ -7,179 +7,138 @@
 //!
 //! Source: Pre-ASC foundational arithmetic requirements; FASB Concepts Statements
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+// ── Fundamental identities ────────────────────────────────────────────────
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// Assets = Liabilities + Stockholders' Equity at every period-end.
+///
+/// Source: Double-entry bookkeeping foundational equation; ASC 210 — Balance Sheet
+#[derive(elicitation::Prop)]
+pub struct AccountingEquationHolds;
 
-    // ── Fundamental identities ────────────────────────────────────────────────
+/// The sum of all debits equals the sum of all credits in every journal entry.
+///
+/// Source: Double-entry bookkeeping — debit/credit symmetry
+#[derive(elicitation::Prop)]
+pub struct DebitEqualsCreditPerEntry;
 
-    /// Assets = Liabilities + Stockholders' Equity at every period-end.
-    ///
-    /// Source: Double-entry bookkeeping foundational equation; ASC 210 — Balance Sheet
-    pub struct AccountingEquationHolds;
+/// The trial balance total debits equal total credits before adjustments.
+///
+/// Source: Double-entry bookkeeping — trial balance
+#[derive(elicitation::Prop)]
+pub struct TrialBalanceBalances;
 
-    /// The sum of all debits equals the sum of all credits in every journal entry.
-    ///
-    /// Source: Double-entry bookkeeping — debit/credit symmetry
-    pub struct DebitEqualsCreditPerEntry;
+// ── Income and equity rollforwards ────────────────────────────────────────
 
-    /// The trial balance total debits equal total credits before adjustments.
-    ///
-    /// Source: Double-entry bookkeeping — trial balance
-    pub struct TrialBalanceBalances;
+/// RE_end = RE_begin + Net Income − Dividends Declared.
+///
+/// Source: ASC 505-10 — Retained Earnings
+#[derive(elicitation::Prop)]
+pub struct RetainedEarningsRollforward;
 
-    // ── Income and equity rollforwards ────────────────────────────────────────
+/// Net income equals the sum of revenue minus all expenses and tax.
+///
+/// Source: ASC 225 — Income Statement aggregation
+#[derive(elicitation::Prop)]
+pub struct NetIncomeAggregation;
 
-    /// RE_end = RE_begin + Net Income − Dividends Declared.
-    ///
-    /// Source: ASC 505-10 — Retained Earnings
-    pub struct RetainedEarningsRollforward;
+/// Ending AOCI = Beginning AOCI + Current OCI − Reclassifications to Income.
+///
+/// Source: ASC 220-10 — Comprehensive Income
+#[derive(elicitation::Prop)]
+pub struct OciRollforward;
 
-    /// Net income equals the sum of revenue minus all expenses and tax.
-    ///
-    /// Source: ASC 225 — Income Statement aggregation
-    pub struct NetIncomeAggregation;
+// ── Cash flow reconciliation ──────────────────────────────────────────────
 
-    /// Ending AOCI = Beginning AOCI + Current OCI − Reclassifications to Income.
-    ///
-    /// Source: ASC 220-10 — Comprehensive Income
-    pub struct OciRollforward;
+/// Net change in cash per the statement of cash flows equals the change in the cash balance on the balance sheet.
+///
+/// Source: ASC 230-10-45 — Cash Flows Reconciliation
+#[derive(elicitation::Prop)]
+pub struct CashFlowReconciles;
 
-    // ── Cash flow reconciliation ──────────────────────────────────────────────
+// ── Earnings per share invariants ─────────────────────────────────────────
 
-    /// Net change in cash per the statement of cash flows equals the change in the cash balance on the balance sheet.
-    ///
-    /// Source: ASC 230-10-45 — Cash Flows Reconciliation
-    pub struct CashFlowReconciles;
+/// Basic EPS numerator equals net income attributable to common stockholders after preferred dividends.
+///
+/// Source: ASC 260-10-45-11 — EPS Numerator
+#[derive(elicitation::Prop)]
+pub struct EpsNumeratorCorrect;
 
-    // ── Earnings per share invariants ─────────────────────────────────────────
+/// Basic EPS denominator equals the correctly computed weighted-average shares outstanding.
+///
+/// Source: ASC 260-10-45-10 — EPS Denominator
+#[derive(elicitation::Prop)]
+pub struct EpsDenominatorCorrect;
 
-    /// Basic EPS numerator equals net income attributable to common stockholders after preferred dividends.
-    ///
-    /// Source: ASC 260-10-45-11 — EPS Numerator
-    pub struct EpsNumeratorCorrect;
+/// Diluted EPS ≤ Basic EPS (anti-dilution constraint prevents increasing EPS by adding dilutive securities).
+///
+/// Source: ASC 260-10-45-17 — Anti-Dilution Constraint
+#[derive(elicitation::Prop)]
+pub struct DilutedEpsNoMoreThanBasic;
 
-    /// Basic EPS denominator equals the correctly computed weighted-average shares outstanding.
-    ///
-    /// Source: ASC 260-10-45-10 — EPS Denominator
-    pub struct EpsDenominatorCorrect;
+// ── Asset rollforwards ────────────────────────────────────────────────────
 
-    /// Diluted EPS ≤ Basic EPS (anti-dilution constraint prevents increasing EPS by adding dilutive securities).
-    ///
-    /// Source: ASC 260-10-45-17 — Anti-Dilution Constraint
-    pub struct DilutedEpsNoMoreThanBasic;
+/// Ending Inventory = Beginning Inventory + Purchases − Cost of Goods Sold.
+///
+/// Source: ASC 330-10 — Inventory rollforward identity
+#[derive(elicitation::Prop)]
+pub struct InventoryRollforward;
 
-    // ── Asset rollforwards ────────────────────────────────────────────────────
+/// AR_end = AR_begin + Credit Sales − Collections − Write-Offs.
+///
+/// Source: ASC 310-10 — Accounts receivable rollforward identity
+#[derive(elicitation::Prop)]
+pub struct ReceivablesRollforward;
 
-    /// Ending Inventory = Beginning Inventory + Purchases − Cost of Goods Sold.
-    ///
-    /// Source: ASC 330-10 — Inventory rollforward identity
-    pub struct InventoryRollforward;
+/// Allowance_end = Allowance_begin + Provision − Write-Offs + Recoveries.
+///
+/// Source: ASC 326-20 — Allowance for credit losses rollforward
+#[derive(elicitation::Prop)]
+pub struct AllowanceForCreditLossRollforward;
 
-    /// AR_end = AR_begin + Credit Sales − Collections − Write-Offs.
-    ///
-    /// Source: ASC 310-10 — Accounts receivable rollforward identity
-    pub struct ReceivablesRollforward;
+/// Goodwill_end = Goodwill_begin + Acquisitions − Impairment − Disposals ± FX.
+///
+/// Source: ASC 350-20-50 — Goodwill rollforward
+#[derive(elicitation::Prop)]
+pub struct GoodwillRollforward;
 
-    /// Allowance_end = Allowance_begin + Provision − Write-Offs + Recoveries.
-    ///
-    /// Source: ASC 326-20 — Allowance for credit losses rollforward
-    pub struct AllowanceForCreditLossRollforward;
+// ── Debt and lease invariants ─────────────────────────────────────────────
 
-    /// Goodwill_end = Goodwill_begin + Acquisitions − Impairment − Disposals ± FX.
-    ///
-    /// Source: ASC 350-20-50 — Goodwill rollforward
-    pub struct GoodwillRollforward;
+/// Lease liability equals the present value of future minimum lease payments discounted at the lease rate.
+///
+/// Source: ASC 842-20-30-1 — Lease Liability Present Value
+#[derive(elicitation::Prop)]
+pub struct LeaseLiabilityPvCorrect;
 
-    // ── Debt and lease invariants ─────────────────────────────────────────────
+/// The amortization schedule advances the carrying value by exactly the effective interest each period.
+///
+/// Source: ASC 835-30-35-2 — Effective Interest Amortization Identity
+#[derive(elicitation::Prop)]
+pub struct AmortizationScheduleCorrect;
 
-    /// Lease liability equals the present value of future minimum lease payments discounted at the lease rate.
-    ///
-    /// Source: ASC 842-20-30-1 — Lease Liability Present Value
-    pub struct LeaseLiabilityPvCorrect;
+/// Accumulated depreciation never exceeds the depreciable cost basis of the asset.
+///
+/// Source: ASC 360-10-35 — PP&E Depreciation Accumulation Bound
+#[derive(elicitation::Prop)]
+pub struct DepreciationAccumulatesCorrectly;
 
-    /// The amortization schedule advances the carrying value by exactly the effective interest each period.
-    ///
-    /// Source: ASC 835-30-35-2 — Effective Interest Amortization Identity
-    pub struct AmortizationScheduleCorrect;
+// ── Tax invariants ────────────────────────────────────────────────────────
 
-    /// Accumulated depreciation never exceeds the depreciable cost basis of the asset.
-    ///
-    /// Source: ASC 360-10-35 — PP&E Depreciation Accumulation Bound
-    pub struct DepreciationAccumulatesCorrectly;
+/// The statutory rate plus reconciling items equals the reported effective tax rate.
+///
+/// Source: ASC 740-10-50-12 — Effective Tax Rate Reconciliation Identity
+#[derive(elicitation::Prop)]
+pub struct TaxRateReconciles;
 
-    // ── Tax invariants ────────────────────────────────────────────────────────
+/// DTA and DTL are presented net only when they arise from the same tax jurisdiction and entity.
+///
+/// Source: ASC 740-10-45-6 — Deferred Tax Netting Constraint
+#[derive(elicitation::Prop)]
+pub struct DeferredTaxNetPresentable;
 
-    /// The statutory rate plus reconciling items equals the reported effective tax rate.
-    ///
-    /// Source: ASC 740-10-50-12 — Effective Tax Rate Reconciliation Identity
-    pub struct TaxRateReconciles;
+// ── Segment reconciliation ────────────────────────────────────────────────
 
-    /// DTA and DTL are presented net only when they arise from the same tax jurisdiction and entity.
-    ///
-    /// Source: ASC 740-10-45-6 — Deferred Tax Netting Constraint
-    pub struct DeferredTaxNetPresentable;
-
-    // ── Segment reconciliation ────────────────────────────────────────────────
-
-    /// Sum of reportable segment revenues reconciles to consolidated revenue.
-    ///
-    /// Source: ASC 280-10-50-30 — Segment Reconciliation
-    pub struct SegmentRevenueSumsToConsolidated;
-
-    structural_prop!(AccountingEquationHolds, "AccountingEquationHolds");
-    structural_prop!(DebitEqualsCreditPerEntry, "DebitEqualsCreditPerEntry");
-    structural_prop!(TrialBalanceBalances, "TrialBalanceBalances");
-    structural_prop!(RetainedEarningsRollforward, "RetainedEarningsRollforward");
-    structural_prop!(NetIncomeAggregation, "NetIncomeAggregation");
-    structural_prop!(OciRollforward, "OciRollforward");
-    structural_prop!(CashFlowReconciles, "CashFlowReconciles");
-    structural_prop!(EpsNumeratorCorrect, "EpsNumeratorCorrect");
-    structural_prop!(EpsDenominatorCorrect, "EpsDenominatorCorrect");
-    structural_prop!(DilutedEpsNoMoreThanBasic, "DilutedEpsNoMoreThanBasic");
-    structural_prop!(InventoryRollforward, "InventoryRollforward");
-    structural_prop!(ReceivablesRollforward, "ReceivablesRollforward");
-    structural_prop!(
-        AllowanceForCreditLossRollforward,
-        "AllowanceForCreditLossRollforward"
-    );
-    structural_prop!(GoodwillRollforward, "GoodwillRollforward");
-    structural_prop!(LeaseLiabilityPvCorrect, "LeaseLiabilityPvCorrect");
-    structural_prop!(AmortizationScheduleCorrect, "AmortizationScheduleCorrect");
-    structural_prop!(
-        DepreciationAccumulatesCorrectly,
-        "DepreciationAccumulatesCorrectly"
-    );
-    structural_prop!(TaxRateReconciles, "TaxRateReconciles");
-    structural_prop!(DeferredTaxNetPresentable, "DeferredTaxNetPresentable");
-    structural_prop!(
-        SegmentRevenueSumsToConsolidated,
-        "SegmentRevenueSumsToConsolidated"
-    );
-}
-
-pub use emit_impls::{
-    AccountingEquationHolds, AllowanceForCreditLossRollforward, AmortizationScheduleCorrect,
-    CashFlowReconciles, DebitEqualsCreditPerEntry, DeferredTaxNetPresentable,
-    DepreciationAccumulatesCorrectly, DilutedEpsNoMoreThanBasic, EpsDenominatorCorrect,
-    EpsNumeratorCorrect, GoodwillRollforward, InventoryRollforward, LeaseLiabilityPvCorrect,
-    NetIncomeAggregation, OciRollforward, ReceivablesRollforward, RetainedEarningsRollforward,
-    SegmentRevenueSumsToConsolidated, TaxRateReconciles, TrialBalanceBalances,
-};
+/// Sum of reportable segment revenues reconciles to consolidated revenue.
+///
+/// Source: ASC 280-10-50-30 — Segment Reconciliation
+#[derive(elicitation::Prop)]
+pub struct SegmentRevenueSumsToConsolidated;

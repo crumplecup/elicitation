@@ -5,330 +5,230 @@
 //! measurement props in the ASC series modules.
 //!
 //! Source: FASB ASC §50 disclosure subsections across the codification
+// ── General and cross-cutting disclosures ─────────────────────────────────
 
-mod emit_impls {
-    use elicitation::contracts::Prop;
-    use elicitation::proc_macro2::TokenStream;
-    use elicitation::quote::quote;
+/// Summary of significant accounting policies note is included.
+///
+/// Source: ASC 235-10-50-1 — Notes to Financial Statements
+#[derive(elicitation::Prop)]
+pub struct SignificantAccountingPoliciesDisclosed;
 
-    macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
-            impl Prop for $t {
-                fn kani_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn verus_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-                fn creusot_proof() -> TokenStream {
-                    quote! { /* structural */ }
-                }
-            }
-        };
-    }
+/// All related-party transactions are identified and disclosed.
+///
+/// Source: ASC 850-10-50-1 — Related Party Disclosures
+#[derive(elicitation::Prop)]
+pub struct RelatedPartyTransactionsDisclosed;
 
-    // ── General and cross-cutting disclosures ─────────────────────────────────
+/// Subsequent events are reviewed through the issuance date and material events disclosed.
+///
+/// Source: ASC 855-10-50-2 — Subsequent Events Disclosure
+#[derive(elicitation::Prop)]
+pub struct SubsequentEventsDisclosed;
 
-    /// Summary of significant accounting policies note is included.
-    ///
-    /// Source: ASC 235-10-50-1 — Notes to Financial Statements
-    pub struct SignificantAccountingPoliciesDisclosed;
+/// Commitments and contingencies are disclosed in the balance sheet caption and notes.
+///
+/// Source: ASC 440-10-50 — Commitments Disclosure; ASC 450-20-50 — Contingencies
+#[derive(elicitation::Prop)]
+pub struct CommitmentsAndContingenciesDisclosed;
 
-    /// All related-party transactions are identified and disclosed.
-    ///
-    /// Source: ASC 850-10-50-1 — Related Party Disclosures
-    pub struct RelatedPartyTransactionsDisclosed;
+/// Recently issued accounting standards and their expected impact are disclosed.
+///
+/// Source: ASC 250-10-50-1 — New Accounting Standards
+#[derive(elicitation::Prop)]
+pub struct NewAccountingStandardsDisclosed;
 
-    /// Subsequent events are reviewed through the issuance date and material events disclosed.
-    ///
-    /// Source: ASC 855-10-50-2 — Subsequent Events Disclosure
-    pub struct SubsequentEventsDisclosed;
+/// Concentrations of credit risk are disclosed for all significant counterparties.
+///
+/// Source: ASC 825-10-50-21 — Concentrations of Credit Risk
+#[derive(elicitation::Prop)]
+pub struct ConcentrationRisksDisclosed;
 
-    /// Commitments and contingencies are disclosed in the balance sheet caption and notes.
-    ///
-    /// Source: ASC 440-10-50 — Commitments Disclosure; ASC 450-20-50 — Contingencies
-    pub struct CommitmentsAndContingenciesDisclosed;
+/// Liquidity risk, available funding sources, and any going concern indicators are disclosed.
+///
+/// Source: ASC 205-40-50 — Going Concern; ASC 275-10-50 — Liquidity Risks
+#[derive(elicitation::Prop)]
+pub struct LiquidityRisksDisclosed;
 
-    /// Recently issued accounting standards and their expected impact are disclosed.
-    ///
-    /// Source: ASC 250-10-50-1 — New Accounting Standards
-    pub struct NewAccountingStandardsDisclosed;
+// ── Revenue and contract disclosures ──────────────────────────────────────
 
-    /// Concentrations of credit risk are disclosed for all significant counterparties.
-    ///
-    /// Source: ASC 825-10-50-21 — Concentrations of Credit Risk
-    pub struct ConcentrationRisksDisclosed;
+/// Revenue recognition policy, including the nature of performance obligations, is disclosed.
+///
+/// Source: ASC 606-10-50-1 — Revenue Recognition Policy
+#[derive(elicitation::Prop)]
+pub struct RevenueRecognitionPolicyNote;
 
-    /// Liquidity risk, available funding sources, and any going concern indicators are disclosed.
-    ///
-    /// Source: ASC 205-40-50 — Going Concern; ASC 275-10-50 — Liquidity Risks
-    pub struct LiquidityRisksDisclosed;
+/// Revenue is disaggregated into categories that depict economic factors.
+///
+/// Source: ASC 606-10-50-5 — Disaggregation of Revenue
+#[derive(elicitation::Prop)]
+pub struct RevenueDisaggregationNote;
 
-    // ── Revenue and contract disclosures ──────────────────────────────────────
+/// Contract asset and liability opening and closing balances are disclosed.
+///
+/// Source: ASC 606-10-50-8 — Contract Balances
+#[derive(elicitation::Prop)]
+pub struct ContractBalanceNote;
 
-    /// Revenue recognition policy, including the nature of performance obligations, is disclosed.
-    ///
-    /// Source: ASC 606-10-50-1 — Revenue Recognition Policy
-    pub struct RevenueRecognitionPolicyNote;
+/// Remaining performance obligations and expected recognition timing are disclosed.
+///
+/// Source: ASC 606-10-50-13 — Remaining Performance Obligations
+#[derive(elicitation::Prop)]
+pub struct RemainingPerformanceObligationNote;
 
-    /// Revenue is disaggregated into categories that depict economic factors.
-    ///
-    /// Source: ASC 606-10-50-5 — Disaggregation of Revenue
-    pub struct RevenueDisaggregationNote;
+// ── Asset and investment disclosures ──────────────────────────────────────
 
-    /// Contract asset and liability opening and closing balances are disclosed.
-    ///
-    /// Source: ASC 606-10-50-8 — Contract Balances
-    pub struct ContractBalanceNote;
+/// Goodwill rollforward by reportable segment is disclosed.
+///
+/// Source: ASC 350-20-50-1 — Goodwill Rollforward
+#[derive(elicitation::Prop)]
+pub struct GoodwillRollforwardDisclosed;
 
-    /// Remaining performance obligations and expected recognition timing are disclosed.
-    ///
-    /// Source: ASC 606-10-50-13 — Remaining Performance Obligations
-    pub struct RemainingPerformanceObligationNote;
+/// Intangible assets subject to amortization and indefinite-lived are separately disclosed.
+///
+/// Source: ASC 350-30-50-1 — Intangible Assets Disclosure
+#[derive(elicitation::Prop)]
+pub struct IntangibleAssetsDisclosed;
 
-    // ── Asset and investment disclosures ──────────────────────────────────────
+/// Depreciation method and range of useful lives for each PP&E class are disclosed.
+///
+/// Source: ASC 360-10-50-1 — PP&E Disclosure
+#[derive(elicitation::Prop)]
+pub struct PpeDepreciationPolicyDisclosed;
 
-    /// Goodwill rollforward by reportable segment is disclosed.
-    ///
-    /// Source: ASC 350-20-50-1 — Goodwill Rollforward
-    pub struct GoodwillRollforwardDisclosed;
+// ── Debt and equity disclosures ───────────────────────────────────────────
 
-    /// Intangible assets subject to amortization and indefinite-lived are separately disclosed.
-    ///
-    /// Source: ASC 350-30-50-1 — Intangible Assets Disclosure
-    pub struct IntangibleAssetsDisclosed;
+/// Debt covenant terms, required ratios, and compliance status are disclosed.
+///
+/// Source: ASC 470-10-50-1 — Debt Covenants
+#[derive(elicitation::Prop)]
+pub struct DebtCovenantsDisclosed;
 
-    /// Depreciation method and range of useful lives for each PP&E class are disclosed.
-    ///
-    /// Source: ASC 360-10-50-1 — PP&E Disclosure
-    pub struct PpeDepreciationPolicyDisclosed;
+/// Aggregate annual maturities of long-term debt for the next five years are disclosed.
+///
+/// Source: ASC 470-10-50-1 — Debt Maturity Schedule
+#[derive(elicitation::Prop)]
+pub struct DebtMaturityScheduleDisclosed;
 
-    // ── Debt and equity disclosures ───────────────────────────────────────────
+/// Preferred stock terms (liquidation preference, dividend rate, conversion rights) are disclosed.
+///
+/// Source: ASC 505-10-50-4 — Preferred Stock Disclosures
+#[derive(elicitation::Prop)]
+pub struct PreferredStockDisclosures;
 
-    /// Debt covenant terms, required ratios, and compliance status are disclosed.
-    ///
-    /// Source: ASC 470-10-50-1 — Debt Covenants
-    pub struct DebtCovenantsDisclosed;
+// ── Income tax disclosures ────────────────────────────────────────────────
 
-    /// Aggregate annual maturities of long-term debt for the next five years are disclosed.
-    ///
-    /// Source: ASC 470-10-50-1 — Debt Maturity Schedule
-    pub struct DebtMaturityScheduleDisclosed;
+/// Deferred tax asset and liability components are disclosed.
+///
+/// Source: ASC 740-10-50-2 — Deferred Tax Components
+#[derive(elicitation::Prop)]
+pub struct DeferredTaxComponentsDisclosed;
 
-    /// Preferred stock terms (liquidation preference, dividend rate, conversion rights) are disclosed.
-    ///
-    /// Source: ASC 505-10-50-4 — Preferred Stock Disclosures
-    pub struct PreferredStockDisclosures;
+/// Effective tax rate reconciliation from statutory rate to reported rate is disclosed.
+///
+/// Source: ASC 740-10-50-12 — Effective Tax Rate Reconciliation
+#[derive(elicitation::Prop)]
+pub struct EffectiveTaxRateReconciliationDisclosed;
 
-    // ── Income tax disclosures ────────────────────────────────────────────────
+/// Unrecognized tax benefits and the potential impact on the effective tax rate are disclosed.
+///
+/// Source: ASC 740-10-50-15 — Uncertain Tax Positions Disclosure
+#[derive(elicitation::Prop)]
+pub struct UncertainTaxBenefitsDisclosed;
 
-    /// Deferred tax asset and liability components are disclosed.
-    ///
-    /// Source: ASC 740-10-50-2 — Deferred Tax Components
-    pub struct DeferredTaxComponentsDisclosed;
+/// Material tax jurisdictions subject to examination are disclosed.
+///
+/// Source: ASC 740-10-50-15 — Tax Jurisdictions
+#[derive(elicitation::Prop)]
+pub struct TaxJurisdictionsDisclosed;
 
-    /// Effective tax rate reconciliation from statutory rate to reported rate is disclosed.
-    ///
-    /// Source: ASC 740-10-50-12 — Effective Tax Rate Reconciliation
-    pub struct EffectiveTaxRateReconciliationDisclosed;
+// ── Pension and post-retirement benefit disclosures ───────────────────────
 
-    /// Unrecognized tax benefits and the potential impact on the effective tax rate are disclosed.
-    ///
-    /// Source: ASC 740-10-50-15 — Uncertain Tax Positions Disclosure
-    pub struct UncertainTaxBenefitsDisclosed;
+/// Pension and OPEB benefit obligations and plan assets are disclosed.
+///
+/// Source: ASC 715-20-50 — Defined Benefit Plan Disclosures
+#[derive(elicitation::Prop)]
+pub struct PensionObligationDisclosed;
 
-    /// Material tax jurisdictions subject to examination are disclosed.
-    ///
-    /// Source: ASC 740-10-50-15 — Tax Jurisdictions
-    pub struct TaxJurisdictionsDisclosed;
+/// Net periodic benefit cost components are disclosed.
+///
+/// Source: ASC 715-20-50-1(h) — Net Periodic Benefit Cost
+#[derive(elicitation::Prop)]
+pub struct NetPeriodicBenefitCostDisclosed;
 
-    // ── Pension and post-retirement benefit disclosures ───────────────────────
+// ── Derivative and hedging disclosures ────────────────────────────────────
 
-    /// Pension and OPEB benefit obligations and plan assets are disclosed.
-    ///
-    /// Source: ASC 715-20-50 — Defined Benefit Plan Disclosures
-    pub struct PensionObligationDisclosed;
+/// Derivative instruments, hedging strategy, and fair value amounts are disclosed.
+///
+/// Source: ASC 815-10-50-1 — Derivatives and Hedging Disclosures
+#[derive(elicitation::Prop)]
+pub struct DerivativeAndHedgingDisclosed;
 
-    /// Net periodic benefit cost components are disclosed.
-    ///
-    /// Source: ASC 715-20-50-1(h) — Net Periodic Benefit Cost
-    pub struct NetPeriodicBenefitCostDisclosed;
+/// Tabular disclosure of derivatives' fair value and gain/loss by category is included.
+///
+/// Source: ASC 815-10-50-1A — Quantitative Derivative Disclosures
+#[derive(elicitation::Prop)]
+pub struct DerivativeFairValueTableDisclosed;
 
-    // ── Derivative and hedging disclosures ────────────────────────────────────
+// ── Lease disclosures ─────────────────────────────────────────────────────
 
-    /// Derivative instruments, hedging strategy, and fair value amounts are disclosed.
-    ///
-    /// Source: ASC 815-10-50-1 — Derivatives and Hedging Disclosures
-    pub struct DerivativeAndHedgingDisclosed;
+/// Lease supplemental quantitative disclosures (cost, cash paid, ROU assets) are included.
+///
+/// Source: ASC 842-20-50-4 — Quantitative Lease Disclosures
+#[derive(elicitation::Prop)]
+pub struct LeaseQuantitativeDisclosed;
 
-    /// Tabular disclosure of derivatives' fair value and gain/loss by category is included.
-    ///
-    /// Source: ASC 815-10-50-1A — Quantitative Derivative Disclosures
-    pub struct DerivativeFairValueTableDisclosed;
+/// Future undiscounted lease payments reconciled to the lease liability are disclosed.
+///
+/// Source: ASC 842-20-50-6 — Maturity Analysis of Lease Liabilities
+#[derive(elicitation::Prop)]
+pub struct LeaseLiabilityMaturityDisclosed;
 
-    // ── Lease disclosures ─────────────────────────────────────────────────────
+// ── Stock compensation disclosures ────────────────────────────────────────
 
-    /// Lease supplemental quantitative disclosures (cost, cash paid, ROU assets) are included.
-    ///
-    /// Source: ASC 842-20-50-4 — Quantitative Lease Disclosures
-    pub struct LeaseQuantitativeDisclosed;
+/// Stock compensation plan description, assumptions, and expense are disclosed.
+///
+/// Source: ASC 718-10-50-1 — Stock Compensation Disclosures
+#[derive(elicitation::Prop)]
+pub struct StockCompensationPlanDisclosed;
 
-    /// Future undiscounted lease payments reconciled to the lease liability are disclosed.
-    ///
-    /// Source: ASC 842-20-50-6 — Maturity Analysis of Lease Liabilities
-    pub struct LeaseLiabilityMaturityDisclosed;
+/// Unrecognized compensation cost and expected recognition period are disclosed.
+///
+/// Source: ASC 718-10-50-2(i) — Unrecognized Compensation Cost
+#[derive(elicitation::Prop)]
+pub struct UnrecognizedCompensationCostDisclosed;
 
-    // ── Stock compensation disclosures ────────────────────────────────────────
+// ── Segment disclosures ───────────────────────────────────────────────────
 
-    /// Stock compensation plan description, assumptions, and expense are disclosed.
-    ///
-    /// Source: ASC 718-10-50-1 — Stock Compensation Disclosures
-    pub struct StockCompensationPlanDisclosed;
+/// Revenue, profit or loss, and total assets by reportable segment are disclosed.
+///
+/// Source: ASC 280-10-50-22 — Segment Information
+#[derive(elicitation::Prop)]
+pub struct SegmentInformationDisclosed;
 
-    /// Unrecognized compensation cost and expected recognition period are disclosed.
-    ///
-    /// Source: ASC 718-10-50-2(i) — Unrecognized Compensation Cost
-    pub struct UnrecognizedCompensationCostDisclosed;
+/// Entity-wide disclosures (products, geographic areas, major customers) are included.
+///
+/// Source: ASC 280-10-50-38 — Entity-Wide Disclosures
+#[derive(elicitation::Prop)]
+pub struct EntityWideDisclosuresIncluded;
 
-    // ── Segment disclosures ───────────────────────────────────────────────────
+// ── Fair value disclosures ────────────────────────────────────────────────
 
-    /// Revenue, profit or loss, and total assets by reportable segment are disclosed.
-    ///
-    /// Source: ASC 280-10-50-22 — Segment Information
-    pub struct SegmentInformationDisclosed;
+/// Valuation techniques and inputs used for recurring and nonrecurring FV measurements are disclosed.
+///
+/// Source: ASC 820-10-50-2 — Fair Value Measurement Disclosures
+#[derive(elicitation::Prop)]
+pub struct FairValueMeasurementMethodsDisclosed;
 
-    /// Entity-wide disclosures (products, geographic areas, major customers) are included.
-    ///
-    /// Source: ASC 280-10-50-38 — Entity-Wide Disclosures
-    pub struct EntityWideDisclosuresIncluded;
+/// Rollforward of Level 3 fair value measurements is disclosed.
+///
+/// Source: ASC 820-10-50-2(d) — Level 3 Rollforward
+#[derive(elicitation::Prop)]
+pub struct Level3FairValueRollforwardDisclosed;
 
-    // ── Fair value disclosures ────────────────────────────────────────────────
+// ── Interim disclosures ───────────────────────────────────────────────────
 
-    /// Valuation techniques and inputs used for recurring and nonrecurring FV measurements are disclosed.
-    ///
-    /// Source: ASC 820-10-50-2 — Fair Value Measurement Disclosures
-    pub struct FairValueMeasurementMethodsDisclosed;
-
-    /// Rollforward of Level 3 fair value measurements is disclosed.
-    ///
-    /// Source: ASC 820-10-50-2(d) — Level 3 Rollforward
-    pub struct Level3FairValueRollforwardDisclosed;
-
-    // ── Interim disclosures ───────────────────────────────────────────────────
-
-    /// Material changes from the prior annual report are disclosed in interim financial statements.
-    ///
-    /// Source: ASC 270-10-50 — Interim Disclosures
-    pub struct InterimSignificantChangesDisclosed;
-
-    structural_prop!(
-        SignificantAccountingPoliciesDisclosed,
-        "SignificantAccountingPoliciesDisclosed"
-    );
-    structural_prop!(
-        RelatedPartyTransactionsDisclosed,
-        "RelatedPartyTransactionsDisclosed"
-    );
-    structural_prop!(SubsequentEventsDisclosed, "SubsequentEventsDisclosed");
-    structural_prop!(
-        CommitmentsAndContingenciesDisclosed,
-        "CommitmentsAndContingenciesDisclosed"
-    );
-    structural_prop!(
-        NewAccountingStandardsDisclosed,
-        "NewAccountingStandardsDisclosed"
-    );
-    structural_prop!(ConcentrationRisksDisclosed, "ConcentrationRisksDisclosed");
-    structural_prop!(LiquidityRisksDisclosed, "LiquidityRisksDisclosed");
-    structural_prop!(RevenueRecognitionPolicyNote, "RevenueRecognitionPolicyNote");
-    structural_prop!(RevenueDisaggregationNote, "RevenueDisaggregationNote");
-    structural_prop!(ContractBalanceNote, "ContractBalanceNote");
-    structural_prop!(
-        RemainingPerformanceObligationNote,
-        "RemainingPerformanceObligationNote"
-    );
-    structural_prop!(GoodwillRollforwardDisclosed, "GoodwillRollforwardDisclosed");
-    structural_prop!(IntangibleAssetsDisclosed, "IntangibleAssetsDisclosed");
-    structural_prop!(
-        PpeDepreciationPolicyDisclosed,
-        "PpeDepreciationPolicyDisclosed"
-    );
-    structural_prop!(DebtCovenantsDisclosed, "DebtCovenantsDisclosed");
-    structural_prop!(
-        DebtMaturityScheduleDisclosed,
-        "DebtMaturityScheduleDisclosed"
-    );
-    structural_prop!(PreferredStockDisclosures, "PreferredStockDisclosures");
-    structural_prop!(
-        DeferredTaxComponentsDisclosed,
-        "DeferredTaxComponentsDisclosed"
-    );
-    structural_prop!(
-        EffectiveTaxRateReconciliationDisclosed,
-        "EffectiveTaxRateReconciliationDisclosed"
-    );
-    structural_prop!(
-        UncertainTaxBenefitsDisclosed,
-        "UncertainTaxBenefitsDisclosed"
-    );
-    structural_prop!(TaxJurisdictionsDisclosed, "TaxJurisdictionsDisclosed");
-    structural_prop!(PensionObligationDisclosed, "PensionObligationDisclosed");
-    structural_prop!(
-        NetPeriodicBenefitCostDisclosed,
-        "NetPeriodicBenefitCostDisclosed"
-    );
-    structural_prop!(
-        DerivativeAndHedgingDisclosed,
-        "DerivativeAndHedgingDisclosed"
-    );
-    structural_prop!(
-        DerivativeFairValueTableDisclosed,
-        "DerivativeFairValueTableDisclosed"
-    );
-    structural_prop!(LeaseQuantitativeDisclosed, "LeaseQuantitativeDisclosed");
-    structural_prop!(
-        LeaseLiabilityMaturityDisclosed,
-        "LeaseLiabilityMaturityDisclosed"
-    );
-    structural_prop!(
-        StockCompensationPlanDisclosed,
-        "StockCompensationPlanDisclosed"
-    );
-    structural_prop!(
-        UnrecognizedCompensationCostDisclosed,
-        "UnrecognizedCompensationCostDisclosed"
-    );
-    structural_prop!(SegmentInformationDisclosed, "SegmentInformationDisclosed");
-    structural_prop!(
-        EntityWideDisclosuresIncluded,
-        "EntityWideDisclosuresIncluded"
-    );
-    structural_prop!(
-        FairValueMeasurementMethodsDisclosed,
-        "FairValueMeasurementMethodsDisclosed"
-    );
-    structural_prop!(
-        Level3FairValueRollforwardDisclosed,
-        "Level3FairValueRollforwardDisclosed"
-    );
-    structural_prop!(
-        InterimSignificantChangesDisclosed,
-        "InterimSignificantChangesDisclosed"
-    );
-}
-
-pub use emit_impls::{
-    CommitmentsAndContingenciesDisclosed, ConcentrationRisksDisclosed, ContractBalanceNote,
-    DebtCovenantsDisclosed, DebtMaturityScheduleDisclosed, DeferredTaxComponentsDisclosed,
-    DerivativeAndHedgingDisclosed, DerivativeFairValueTableDisclosed,
-    EffectiveTaxRateReconciliationDisclosed, EntityWideDisclosuresIncluded,
-    FairValueMeasurementMethodsDisclosed, GoodwillRollforwardDisclosed, IntangibleAssetsDisclosed,
-    InterimSignificantChangesDisclosed, LeaseLiabilityMaturityDisclosed,
-    LeaseQuantitativeDisclosed, Level3FairValueRollforwardDisclosed, LiquidityRisksDisclosed,
-    NetPeriodicBenefitCostDisclosed, NewAccountingStandardsDisclosed, PensionObligationDisclosed,
-    PpeDepreciationPolicyDisclosed, PreferredStockDisclosures, RelatedPartyTransactionsDisclosed,
-    RemainingPerformanceObligationNote, RevenueDisaggregationNote, RevenueRecognitionPolicyNote,
-    SegmentInformationDisclosed, SignificantAccountingPoliciesDisclosed,
-    StockCompensationPlanDisclosed, SubsequentEventsDisclosed, TaxJurisdictionsDisclosed,
-    UncertainTaxBenefitsDisclosed, UnrecognizedCompensationCostDisclosed,
-};
+/// Material changes from the prior annual report are disclosed in interim financial statements.
+///
+/// Source: ASC 270-10-50 — Interim Disclosures
+#[derive(elicitation::Prop)]
+pub struct InterimSignificantChangesDisclosed;
