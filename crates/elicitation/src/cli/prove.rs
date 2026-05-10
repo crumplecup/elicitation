@@ -84,6 +84,10 @@ pub struct ProveConfig {
     pub dune_dir_locations: String,
     /// CSV file path for Creusot results (None = no CSV).
     pub creusot_csv: Option<PathBuf>,
+    /// Timeout for the entire `cargo creusot prove` invocation. 0 means unlimited.
+    /// Defaults to 0 because creusot compiles the whole workspace before proving,
+    /// so a short global timeout would fire during compilation on a cold cache.
+    pub creusot_timeout: u64,
 
     /// Timeout in seconds per verification unit. 0 means unlimited.
     pub timeout: u64,
@@ -189,6 +193,10 @@ impl ProveConfig {
 
         let creusot_csv = backend_csv("creusot", "CREUSOT_CSV");
 
+        let creusot_timeout = env_opt("CREUSOT_TIMEOUT")
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(0); // 0 = unlimited: creusot compiles the whole workspace first
+
         let log_dir = opts
             .log_dir
             .clone()
@@ -214,6 +222,7 @@ impl ProveConfig {
             why3_config,
             dune_dir_locations,
             creusot_csv,
+            creusot_timeout,
             timeout: opts.timeout,
             dry_run: opts.dry_run,
             log_dir,
@@ -584,6 +593,7 @@ fn run_harness_timed(
                         let pgid = child.id() as i32;
                         let _ = Command::new("kill")
                             .args(["-9", &format!("-{pgid}")])
+                            .stderr(Stdio::null())
                             .status();
                     }
                     let _ = child.kill();
@@ -867,7 +877,7 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     let status = execute_with_progress(
         "cargo creusot prove",
         cmd,
-        config.timeout,
+        config.creusot_timeout,
         config.dry_run,
         &log,
         sink,
@@ -1076,6 +1086,7 @@ fn execute_with_progress(
                             let pgid = child.id() as i32;
                             let _ = Command::new("kill")
                                 .args(["-9", &format!("-{pgid}")])
+                                .stderr(Stdio::null())
                                 .status();
                         }
                         let _ = child.kill();
@@ -1208,6 +1219,7 @@ fn execute_timed(
                             let pgid = child.id() as i32;
                             let _ = Command::new("kill")
                                 .args(["-9", &format!("-{pgid}")])
+                                .stderr(Stdio::null())
                                 .status();
                         }
                         let _ = child.kill();
