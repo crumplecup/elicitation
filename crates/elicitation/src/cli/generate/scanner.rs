@@ -750,9 +750,9 @@ fn parse_formal_method_verus_class(f: &syn::ItemFn) -> Option<String> {
             Meta::List(l) => l,
             _ => continue,
         };
-        let nested = match list.parse_args_with(
-            syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated,
-        ) {
+        let nested = match list
+            .parse_args_with(syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated)
+        {
             Ok(n) => n,
             Err(_) => continue,
         };

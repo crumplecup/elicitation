@@ -168,7 +168,11 @@ impl kani::Arbitrary for G15ArrayState {
         let buf: [u8; 9] = kani::any();
         let len: usize = kani::any();
         kani::assume(len <= 9);
-        Self { buf, len, val: kani::any() }
+        Self {
+            buf,
+            len,
+            val: kani::any(),
+        }
     }
 }
 

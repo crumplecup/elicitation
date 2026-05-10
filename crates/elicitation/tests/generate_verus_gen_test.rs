@@ -100,8 +100,14 @@ fn to_snake(s: &str) -> String {
 fn generated_file_has_header_comment() {
     let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
-    assert!(out.contains("AUTO-GENERATED"), "expected AUTO-GENERATED header");
-    assert!(out.contains("NavMachine"), "expected machine name in header");
+    assert!(
+        out.contains("AUTO-GENERATED"),
+        "expected AUTO-GENERATED header"
+    );
+    assert!(
+        out.contains("NavMachine"),
+        "expected machine name in header"
+    );
 }
 
 #[test]
@@ -109,9 +115,15 @@ fn generated_file_has_verus_imports() {
     let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go"]);
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
     assert!(out.contains("use vstd::prelude::*"), "expected vstd import");
-    assert!(out.contains("use verus_builtin_macros::verus"), "expected verus macro import");
+    assert!(
+        out.contains("use verus_builtin_macros::verus"),
+        "expected verus macro import"
+    );
     // New output does NOT use #[cfg(verus)] gates — it targets elicitation_verus exclusively.
-    assert!(!out.contains("#[cfg(verus)]"), "new output should not have cfg(verus) gates");
+    assert!(
+        !out.contains("#[cfg(verus)]"),
+        "new output should not have cfg(verus) gates"
+    );
 }
 
 #[test]
@@ -129,7 +141,10 @@ fn invariant_spec_fn_emitted_with_body() {
 fn invariant_spec_fn_errors_when_body_missing() {
     let vsm = vsm_with_body("NavMachine", None, None, vec!["go"]);
     let result = generate_verus_file(&vsm, Path::new("/repo"));
-    assert!(result.is_err(), "expected Err when verus_inv_body missing; got Ok");
+    assert!(
+        result.is_err(),
+        "expected Err when verus_inv_body missing; got Ok"
+    );
     let msg = result.unwrap_err();
     assert!(
         msg.contains("NavMachine"),
@@ -167,7 +182,12 @@ fn abstract_state_enum_has_unspecified_placeholder_when_no_state_body() {
 
 #[test]
 fn transition_tag_enum_emitted() {
-    let vsm = vsm_with_body("NavMachine", Some("true"), None, vec!["go", "back", "reset"]);
+    let vsm = vsm_with_body(
+        "NavMachine",
+        Some("true"),
+        None,
+        vec!["go", "back", "reset"],
+    );
     let out = generate_verus_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
         out.contains("pub enum NavMachineTrans"),
@@ -186,7 +206,10 @@ fn composition_proof_fn_emitted() {
         out.contains("pub proof fn nav_composition"),
         "expected composition proof fn; got:\n{out}"
     );
-    assert!(out.contains("ensures nav_consistent(&post)"), "expected ensures clause");
+    assert!(
+        out.contains("ensures nav_consistent(&post)"),
+        "expected ensures clause"
+    );
 }
 
 #[test]
@@ -303,13 +326,16 @@ fn scan_and_generate_archive_nav_verus() {
 
     // Every transition should appear as a tag variant.
     for t in &nav.transitions {
-        let pascal: String = t.split('_').map(|seg| {
-            let mut c = seg.chars();
-            match c.next() {
-                None => String::new(),
-                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-            }
-        }).collect();
+        let pascal: String = t
+            .split('_')
+            .map(|seg| {
+                let mut c = seg.chars();
+                match c.next() {
+                    None => String::new(),
+                    Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+                }
+            })
+            .collect();
         assert!(
             out.contains(&format!("    {pascal},")),
             "missing tag {pascal} for transition {t}; got:\n{out}"
@@ -354,4 +380,3 @@ fn scan_and_generate_archive_connection_verus() {
         "missing composition proof"
     );
 }
-

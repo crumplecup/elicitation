@@ -438,7 +438,10 @@ impl TransKind {
     }
 
     fn needs_pre(&self) -> bool {
-        matches!(self, TransKind::Passthrough | TransKind::ConditionalSpecial(_))
+        matches!(
+            self,
+            TransKind::Passthrough | TransKind::ConditionalSpecial(_)
+        )
     }
 
     fn post_pred(&self, prefix: &str, _state_ty: &str) -> String {

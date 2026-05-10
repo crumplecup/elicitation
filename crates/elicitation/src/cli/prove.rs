@@ -333,7 +333,9 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
         &kani_log,
         build_sink,
     )
-    .context("`cargo kani --only-codegen` failed — fix compilation errors before running harnesses")?;
+    .context(
+        "`cargo kani --only-codegen` failed — fix compilation errors before running harnesses",
+    )?;
     build_bar.finish_and_clear();
 
     // Discover harnesses.
@@ -371,11 +373,9 @@ fn run_kani(config: &ProveConfig) -> anyhow::Result<()> {
 
     let bar = ProgressBar::new(total as u64);
     bar.set_style(
-        ProgressStyle::with_template(
-            "{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}",
-        )
-        .expect("valid template")
-        .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+        ProgressStyle::with_template("{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}")
+            .expect("valid template")
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
     );
     bar.enable_steady_tick(std::time::Duration::from_millis(80));
 
@@ -709,15 +709,20 @@ fn run_verus_file(config: &ProveConfig, verus_file: &Path) -> anyhow::Result<()>
     let bar = spinner("Verifying…");
     let sink = verus_sink(bar.clone());
     let start = Instant::now();
-    let status =
-        execute_with_progress("verus", cmd, config.timeout, config.dry_run, &log, sink)?;
+    let status = execute_with_progress("verus", cmd, config.timeout, config.dry_run, &log, sink)?;
     bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
     if !config.dry_run {
         if let Some(csv) = &config.verus_csv {
             write_csv_header(csv, false)?;
-            append_csv_row(csv, "verus", verus_file.to_string_lossy().as_ref(), &status, elapsed_s)?;
+            append_csv_row(
+                csv,
+                "verus",
+                verus_file.to_string_lossy().as_ref(),
+                &status,
+                elapsed_s,
+            )?;
         }
     }
 
@@ -747,7 +752,10 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
 
     let total = files.len();
     if total == 0 {
-        anyhow::bail!("No .rs files (other than mod.rs) found in {}", dir.display());
+        anyhow::bail!(
+            "No .rs files (other than mod.rs) found in {}",
+            dir.display()
+        );
     }
 
     let csv_suffix = config
@@ -755,7 +763,10 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
         .as_ref()
         .map(|p| format!(" → {}", p.display()))
         .unwrap_or_default();
-    println!("🔬 Running verus on {total} files in {}{csv_suffix}", dir.display());
+    println!(
+        "🔬 Running verus on {total} files in {}{csv_suffix}",
+        dir.display()
+    );
 
     if let Some(csv) = &config.verus_csv {
         write_csv_header(csv, false)?;
@@ -763,11 +774,9 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
 
     let bar = ProgressBar::new(total as u64);
     bar.set_style(
-        ProgressStyle::with_template(
-            "{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}",
-        )
-        .expect("valid template")
-        .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+        ProgressStyle::with_template("{spinner:.blue} [{pos}/{len}] {wide_msg} {elapsed_precise}")
+            .expect("valid template")
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
     );
     bar.enable_steady_tick(std::time::Duration::from_millis(80));
 
@@ -903,10 +912,16 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     }
 
     if status == "PASS" || status == "DRY-RUN" {
-        println!("✅ cargo creusot prove PASS ({elapsed_s}s) — see {}", log.display());
+        println!(
+            "✅ cargo creusot prove PASS ({elapsed_s}s) — see {}",
+            log.display()
+        );
         Ok(())
     } else {
-        println!("❌ cargo creusot prove FAIL ({elapsed_s}s) — see {}", log.display());
+        println!(
+            "❌ cargo creusot prove FAIL ({elapsed_s}s) — see {}",
+            log.display()
+        );
         anyhow::bail!("cargo creusot prove failed")
     }
 }

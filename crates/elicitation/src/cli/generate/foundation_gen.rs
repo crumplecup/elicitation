@@ -31,9 +31,9 @@
 //!   }
 //!   ```
 
+use quote::ToTokens;
 use std::collections::HashSet;
 use std::path::Path;
-use quote::ToTokens;
 use syn::{File, Item};
 use walkdir::WalkDir;
 
@@ -154,12 +154,16 @@ pub fn generate_foundation_file(types: &[ElicitType], crate_root: impl AsRef<Pat
 fn extract_elicit_type(item: &Item) -> Option<ElicitType> {
     match item {
         Item::Struct(s) if has_derive_elicit(&s.attrs) => {
-            let shape = if has_cfg_attr_kani_compose(&s.attrs) || has_derive_kani_compose(&s.attrs) {
+            let shape = if has_cfg_attr_kani_compose(&s.attrs) || has_derive_kani_compose(&s.attrs)
+            {
                 HarnessShape::KaniCompose
             } else {
                 HarnessShape::NewtypeWrapper
             };
-            Some(ElicitType { name: s.ident.to_string(), shape })
+            Some(ElicitType {
+                name: s.ident.to_string(),
+                shape,
+            })
         }
         Item::Enum(e) if has_derive_elicit(&e.attrs) => {
             let first_unit = e
@@ -177,12 +181,17 @@ fn extract_elicit_type(item: &Item) -> Option<ElicitType> {
                     })
                 }
                 _ => {
-                    let shape = if has_cfg_attr_kani_compose(&e.attrs) || has_derive_kani_compose(&e.attrs) {
+                    let shape = if has_cfg_attr_kani_compose(&e.attrs)
+                        || has_derive_kani_compose(&e.attrs)
+                    {
                         HarnessShape::KaniCompose
                     } else {
                         HarnessShape::NewtypeWrapper
                     };
-                    Some(ElicitType { name: e.ident.to_string(), shape })
+                    Some(ElicitType {
+                        name: e.ident.to_string(),
+                        shape,
+                    })
                 }
             }
         }
@@ -221,9 +230,7 @@ fn has_cfg_attr_kani_compose(attrs: &[syn::Attribute]) -> bool {
         }
         // Parse `cfg_attr(kani, derive(...))` — we only need to detect KaniCompose
         // anywhere in the token stream; a simple string search is sufficient.
-        a.to_token_stream()
-            .to_string()
-            .contains("KaniCompose")
+        a.to_token_stream().to_string().contains("KaniCompose")
     })
 }
 
@@ -237,9 +244,7 @@ fn has_derive_kani_compose(attrs: &[syn::Attribute]) -> bool {
         if !a.path().is_ident("derive") {
             return false;
         }
-        a.to_token_stream()
-            .to_string()
-            .contains("KaniCompose")
+        a.to_token_stream().to_string().contains("KaniCompose")
     })
 }
 

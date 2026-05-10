@@ -84,10 +84,7 @@ fn verus_binary_not_found_is_error() {
     };
     let cfg = ProveConfig::resolve(&opts).unwrap();
     let err = elicitation::cli::prove::run(&cfg).unwrap_err();
-    assert!(
-        err.to_string().contains("Verus not found")
-            || err.to_string().contains("verus")
-    );
+    assert!(err.to_string().contains("Verus not found") || err.to_string().contains("verus"));
 }
 
 #[test]
