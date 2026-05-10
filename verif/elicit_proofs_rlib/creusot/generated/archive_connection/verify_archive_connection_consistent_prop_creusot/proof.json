@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_verify_archive_connection_consistent_prop_creusot": {
+        "prover": "cvc5",
+        "time": 0.016
+      }
+    }
+  }
+}

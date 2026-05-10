@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_commit_edits": { "prover": "cvc5", "time": 0.042 },
+      "vc_commit_edits_creusot": { "prover": "cvc5", "time": 0.041 }
+    }
+  }
+}

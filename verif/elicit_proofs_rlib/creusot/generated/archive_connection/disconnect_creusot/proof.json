@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_disconnect": { "prover": "cvc5", "time": 0.014 },
+      "vc_disconnect_creusot": { "prover": "cvc5", "time": 0.014 }
+    }
+  }
+}
