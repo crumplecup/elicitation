@@ -152,6 +152,7 @@ derive_more = { version = "2", features = [
   "as_ref",
 ] }
 anyhow = "1.0"
+libc = "0"
 
 # ── Derive utilities ──────────────────────────────────────────────────────────
 derive-getters = "0.5"

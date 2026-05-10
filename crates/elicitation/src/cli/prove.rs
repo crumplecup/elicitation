@@ -230,7 +230,9 @@ impl ProveConfig {
             dune_dir_locations,
             creusot_csv,
             creusot_timeout,
-            timeout: opts.timeout,
+            timeout: env_opt("KANI_TIMEOUT")
+                .and_then(|v| v.parse::<u64>().ok())
+                .unwrap_or(opts.timeout),
             dry_run: opts.dry_run,
             log_dir,
         })
