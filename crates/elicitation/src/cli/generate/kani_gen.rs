@@ -73,6 +73,10 @@ pub fn generate_kani_file(
         for name in &vsm.transitions {
             needed.insert(name.clone());
         }
+        // Import the invariant function used in kani::assume calls.
+        if has_invariant {
+            needed.insert(inv_fn.to_string());
+        }
     }
 
     let resolver = TypeResolver::build(&vsm.source_file, &crate_name);

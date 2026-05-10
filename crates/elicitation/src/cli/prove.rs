@@ -101,9 +101,15 @@ pub struct ProveConfig {
 
 impl ProveConfig {
     /// Build from CLI overrides on top of values loaded from `.env`.
+    #[tracing::instrument(skip(opts))]
     pub fn resolve(opts: &super::ProveOpts) -> anyhow::Result<Self> {
         // Load .env — walk up from cwd until found; silently skip if absent.
-        let _ = dotenvy::dotenv();
+        // Use dotenv_override so explicit `.env` values take precedence over
+        // empty/unset shell environment variables (e.g. KANI_FLAGS='').
+        match dotenvy::dotenv_override() {
+            Ok(path) => tracing::debug!(dotenv_path = %path.display(), "Loaded .env"),
+            Err(e) => tracing::debug!(error = %e, "No .env loaded"),
+        }
 
         let home = std::env::var("HOME").unwrap_or_default();
         let expand = |s: String| shellexpand::tilde(&s).to_string();
@@ -126,6 +132,7 @@ impl ProveConfig {
             .map(str::to_string)
             .filter(|s| !s.is_empty())
             .collect();
+        tracing::debug!(kani_flags = ?kani_flags, "Resolved KANI_FLAGS");
 
         let kani_harness = opts.kani_harness.clone();
 
@@ -483,6 +490,7 @@ fn list_kani_harnesses(pkg: &str, extra_flags: &[String]) -> anyhow::Result<Vec<
 /// - Contract harness: `| | <crate> | <function> | <qualified::harness> |`
 ///
 /// We take the last `::` column of each data row.
+#[tracing::instrument(skip(output))]
 pub fn parse_kani_list_output(output: &str) -> anyhow::Result<Vec<String>> {
     let mut harnesses = Vec::new();
 

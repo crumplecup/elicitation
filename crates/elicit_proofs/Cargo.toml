@@ -30,7 +30,6 @@ creusot-std = { workspace = true, optional = true }
 [[bin]]
 name = "elicit_proofs"
 path = "src/main.rs"
-required-features = ["runner"]
 
 [features]
 default = []

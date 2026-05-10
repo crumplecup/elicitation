@@ -98,6 +98,14 @@ impl TypeResolver {
                         &mut name_to_path,
                     );
                 }
+                Item::Fn(f) if is_pub(&f.vis) => {
+                    register_local(
+                        &f.sig.ident.to_string(),
+                        crate_name,
+                        &module_path,
+                        &mut name_to_path,
+                    );
+                }
                 _ => {}
             }
         }

@@ -27,7 +27,7 @@
 //! [Creusot deductive verifier]: https://github.com/creusot-rs/creusot
 //! [Verus verifier]: https://github.com/verus-lang/verus
 
-#[cfg(feature = "kani")]
+#[cfg(kani)]
 pub mod kani;
 
 #[cfg(any(feature = "creusot", creusot))]
