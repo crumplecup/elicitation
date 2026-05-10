@@ -11,6 +11,7 @@
 //! | 3     | `GVec` (Vec<u32>)      | Vec<u32>     | `v.len() <= 3`     | symbolic Vecs                    |
 //! | 13    | `G13State` (unit enum) | none         | `true`             | callee `#[instrument]`           |
 //! | 14    | `G14Outcome` (enum)    | none         | `true`             | inline `tracing::debug!(?field)` |
+//! | 15    | `G15State` (struct)    | Vec<u8>      | `true`             | DFCC + bounded Vec + push        |
 //!
 //! Run a single level:
 //! ```bash
@@ -27,6 +28,7 @@ pub mod level11;
 pub mod level12;
 pub mod level13;
 pub mod level14;
+pub mod level15;
 pub mod level2;
 pub mod level3;
 pub mod level4;

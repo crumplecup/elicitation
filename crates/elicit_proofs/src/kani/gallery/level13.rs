@@ -38,6 +38,9 @@
 
 // ── State type ────────────────────────────────────────────────────────────────
 
+#[cfg(kani)]
+use elicitation::KaniCompose as _;
+
 /// Minimal two-variant unit enum — zero heap, trivially-true invariant.
 /// Keeps the state-machine cost identical across both experiments so the only
 /// variable is callee instrumentation.

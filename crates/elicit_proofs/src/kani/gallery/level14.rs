@@ -83,6 +83,9 @@
 
 // ── State type (reuse the minimal two-variant unit enum from Level 13) ────────
 
+#[cfg(kani)]
+use elicitation::KaniCompose as _;
+
 /// Outcome enum with a Debug-formatted field — mirrors `strictly_blackjack::Outcome`.
 /// The `?val` field in `tracing::debug!` triggers `format!("{:?}", val)`, which
 /// allocates a heap String that CBMC models symbolically.
