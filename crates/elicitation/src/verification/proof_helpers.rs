@@ -1094,7 +1094,6 @@ pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
         #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result)]
-        #[trusted]
         pub fn #fn_ident() -> bool {
             true
         }
@@ -1691,7 +1690,6 @@ pub fn creusot_type_stub(type_name: &str) -> TokenStream {
         #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result)]
-        #[trusted]
         pub fn #fn_ident() -> bool {
             true
         }
@@ -1951,7 +1949,6 @@ pub fn creusot_formal_method_spec(
         #[cfg(creusot)]
         #[requires(true)]
         #[ensures(result)]
-        #[trusted]
         pub fn #spec_fn() -> bool {
             true
         }

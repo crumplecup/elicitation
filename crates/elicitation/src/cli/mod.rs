@@ -734,6 +734,10 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }
+        // Emit shared elicitation extern_specs once per crate (not per VSM file).
+        // These would conflict if duplicated across multiple generated files in the same crate.
+        let shared = creusot_gen::generate_creusot_shared_file();
+        emit_content(&shared, "elicitation_specs.rs", out_dir)?;
     }
 
     Ok(())

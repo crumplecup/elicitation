@@ -799,7 +799,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                             + &#creusot_body_src
                     } else {
                         String::new()
-                            + "# [cfg (creusot)] # [requires (true)] # [ensures (true)] # [trusted] pub (crate) fn "
+                            + "# [cfg (creusot)] # [requires (true)] # [ensures (true)] pub (crate) fn "
                             + #creusot_fn_src
                             + " ("
                             + #inputs_src
