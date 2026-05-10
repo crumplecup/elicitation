@@ -387,3 +387,20 @@ impl KaniCompose for chrono::DateTime<chrono::Utc> {
         chrono::DateTime::from_timestamp(0, 0).unwrap_or_default()
     }
 }
+
+/// `Established<P>` is a ZST proof token — `kani_depth0()` at every depth
+/// is just `Established::assert()`, identical to the `kani::Arbitrary` impl.
+#[cfg(kani)]
+impl<P: crate::contracts::Prop> KaniCompose for crate::contracts::Established<P> {
+    fn kani_depth0() -> Self {
+        crate::contracts::Established::assert()
+    }
+
+    fn kani_depth1() -> Self {
+        crate::contracts::Established::assert()
+    }
+
+    fn kani_depth2() -> Self {
+        crate::contracts::Established::assert()
+    }
+}

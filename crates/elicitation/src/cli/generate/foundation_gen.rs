@@ -4,7 +4,7 @@
 //! emits a single `foundation.rs` file with one `#[kani::proof]` harness per
 //! type, deduplicated by function name.
 //!
-//! Two harness shapes are emitted depending on the item kind:
+//! Three harness shapes are emitted depending on the item kind:
 //!
 //! - **Enum with all unit variants** — direct construction via the first variant:
 //!   ```ignore
@@ -14,8 +14,16 @@
 //!   }
 //!   ```
 //!
-//! - **Struct or data-carrying enum** — uses `kani::any()` (type must implement
-//!   `kani::Arbitrary`, which `#[derive(Elicit)]` arranges):
+//! - **Type with `KaniCompose`** — uses `KaniCompose::kani_depth0()`:
+//!   ```ignore
+//!   #[cfg_attr(kani, ::kani::proof)]
+//!   fn verify_{lower}_kani_compose() {
+//!       let _: Ty = <Ty as ::elicitation::KaniCompose>::kani_depth0();
+//!   }
+//!   ```
+//!
+//! - **Struct or data-carrying enum without `KaniCompose`** — uses `kani::any()`
+//!   (type must implement `kani::Arbitrary`):
 //!   ```ignore
 //!   #[cfg_attr(kani, ::kani::proof)]
 //!   fn verify_{lower}_newtype_wrapper() {
@@ -25,6 +33,7 @@
 
 use std::collections::HashSet;
 use std::path::Path;
+use quote::ToTokens;
 use syn::{File, Item};
 use walkdir::WalkDir;
 
@@ -49,7 +58,9 @@ pub enum HarnessShape {
         /// The first unit variant name.
         first_variant: String,
     },
-    /// Struct or data-carrying enum — use `kani::any()`.
+    /// Type with `KaniCompose` — use `<Ty as KaniCompose>::kani_depth0()`.
+    KaniCompose,
+    /// Struct or data-carrying enum without `KaniCompose` — use `kani::any()`.
     NewtypeWrapper,
 }
 
@@ -142,10 +153,14 @@ pub fn generate_foundation_file(types: &[ElicitType], crate_root: impl AsRef<Pat
 /// Extract an `ElicitType` from a syn `Item`, or return `None`.
 fn extract_elicit_type(item: &Item) -> Option<ElicitType> {
     match item {
-        Item::Struct(s) if has_derive_elicit(&s.attrs) => Some(ElicitType {
-            name: s.ident.to_string(),
-            shape: HarnessShape::NewtypeWrapper,
-        }),
+        Item::Struct(s) if has_derive_elicit(&s.attrs) => {
+            let shape = if has_cfg_attr_kani_compose(&s.attrs) || has_derive_kani_compose(&s.attrs) {
+                HarnessShape::KaniCompose
+            } else {
+                HarnessShape::NewtypeWrapper
+            };
+            Some(ElicitType { name: s.ident.to_string(), shape })
+        }
         Item::Enum(e) if has_derive_elicit(&e.attrs) => {
             let first_unit = e
                 .variants
@@ -161,10 +176,14 @@ fn extract_elicit_type(item: &Item) -> Option<ElicitType> {
                         },
                     })
                 }
-                _ => Some(ElicitType {
-                    name: e.ident.to_string(),
-                    shape: HarnessShape::NewtypeWrapper,
-                }),
+                _ => {
+                    let shape = if has_cfg_attr_kani_compose(&e.attrs) || has_derive_kani_compose(&e.attrs) {
+                        HarnessShape::KaniCompose
+                    } else {
+                        HarnessShape::NewtypeWrapper
+                    };
+                    Some(ElicitType { name: e.ident.to_string(), shape })
+                }
             }
         }
         _ => None,
@@ -190,11 +209,46 @@ fn has_derive_elicit(attrs: &[syn::Attribute]) -> bool {
     })
 }
 
+/// Return `true` if attrs contain `#[cfg_attr(kani, derive(... KaniCompose ...))]`.
+///
+/// Types with `KaniCompose` should use `kani_depth0()` rather than `kani::any()`,
+/// since they may not implement `kani::Arbitrary` (e.g. types with `AtomicUsize`
+/// fields or complex nested structures that cannot auto-derive `Arbitrary`).
+fn has_cfg_attr_kani_compose(attrs: &[syn::Attribute]) -> bool {
+    attrs.iter().any(|a| {
+        if !a.path().is_ident("cfg_attr") {
+            return false;
+        }
+        // Parse `cfg_attr(kani, derive(...))` — we only need to detect KaniCompose
+        // anywhere in the token stream; a simple string search is sufficient.
+        a.to_token_stream()
+            .to_string()
+            .contains("KaniCompose")
+    })
+}
+
+/// Return `true` if attrs contain `#[derive(... KaniCompose ...)]` (plain, not cfg_attr).
+///
+/// Some types (e.g. VSM state enums) use a plain `#[derive(KaniCompose)]` because
+/// the `KaniCompose` derive macro gates its generated code with `#[cfg(kani)]`
+/// internally, so it is safe to place outside a `cfg_attr`.
+fn has_derive_kani_compose(attrs: &[syn::Attribute]) -> bool {
+    attrs.iter().any(|a| {
+        if !a.path().is_ident("derive") {
+            return false;
+        }
+        a.to_token_stream()
+            .to_string()
+            .contains("KaniCompose")
+    })
+}
+
 /// Derive the harness function name for an `ElicitType`.
 fn harness_fn_name(et: &ElicitType) -> String {
     let lower = to_snake(&et.name);
     match &et.shape {
         HarnessShape::Constructible { .. } => format!("verify_{lower}_constructible"),
+        HarnessShape::KaniCompose => format!("verify_{lower}_kani_compose"),
         HarnessShape::NewtypeWrapper => format!("verify_{lower}_newtype_wrapper"),
     }
 }
@@ -207,6 +261,12 @@ fn emit_harness(et: &ElicitType, fn_name: &str) -> String {
                 "#[kani::proof]\nfn {fn_name}() {{\n    let _: {ty} = {ty}::{v};\n}}",
                 ty = et.name,
                 v = first_variant,
+            )
+        }
+        HarnessShape::KaniCompose => {
+            format!(
+                "#[cfg_attr(kani, ::kani::proof)]\nfn {fn_name}() {{\n    let _: {ty} = <{ty} as ::elicitation::KaniCompose>::kani_depth0();\n}}",
+                ty = et.name,
             )
         }
         HarnessShape::NewtypeWrapper => {
