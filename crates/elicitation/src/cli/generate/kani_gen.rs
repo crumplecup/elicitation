@@ -52,7 +52,10 @@ pub fn generate_kani_file(
 
     // Derive crate name from the VSM's own source file, not the (possibly workspace)
     // crate_root.  Walking up from the source file finds the crate's own Cargo.toml.
-    let vsm_crate_root = vsm.source_file.parent().unwrap_or_else(|| crate_root.as_ref());
+    let vsm_crate_root = vsm
+        .source_file
+        .parent()
+        .unwrap_or_else(|| crate_root.as_ref());
     let crate_name = find_crate_name(vsm_crate_root);
 
     // ── Collect the bare type names this file will reference ─────────────────
@@ -162,9 +165,9 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
     }
     lines.push(format!("    ::std::mem::forget({state_pat});"));
 
-    // Shadow 2: depth-0 state.
+    // Shadow 2: depth-1 state (non-empty String fields satisfy non-empty invariants).
     lines.push(format!(
-        "    let {state_pat}: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth0();"
+        "    let {state_pat}: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth1();"
     ));
 
     // Proof credential and extra args.
@@ -182,7 +185,7 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
             }
             ArgKind::StringArg => {
                 lines.push(format!(
-                    "    let {name}: {ty} = ::std::string::String::new();",
+                    "    let {name}: {ty} = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();",
                     name = arg.name,
                     ty = arg.ty,
                 ));
@@ -259,7 +262,7 @@ fn emit_minimal_harness(
         assume_line,
         "    ::std::mem::forget(_state);".to_string(),
         format!(
-            "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth0();"
+            "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth1();"
         ),
     ];
     lines.extend(proof_lines);

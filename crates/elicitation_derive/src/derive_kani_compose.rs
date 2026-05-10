@@ -157,8 +157,13 @@ fn field_exprs(
         };
         (d0, d1, d2)
     } else if is_string(ty) {
-        let s = quote! { ::std::string::String::new() };
-        (s.clone(), s.clone(), s)
+        // depth 0 = empty (fastest, used for simple baseline)
+        // depth 1 = one symbolic char  (non-empty — satisfies `!s.is_empty()`)
+        // depth 2 = two symbolic chars (non-empty, covers length growth)
+        let d0 = quote! { ::std::string::String::new() };
+        let d1 = quote! { <::std::string::String as ::elicitation::KaniCompose>::kani_depth1() };
+        let d2 = quote! { <::std::string::String as ::elicitation::KaniCompose>::kani_depth2() };
+        (d0, d1, d2)
     } else if is_option(ty) {
         let d0 = quote! { ::core::option::Option::None };
         let d1 = if let Some(inner) = first_generic(ty) {
