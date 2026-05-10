@@ -18,29 +18,19 @@ elicitation = { workspace = true }
 elicit_server = { workspace = true }
 elicit_db = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
-anyhow = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
-clap = { workspace = true, optional = true }
-csv = { workspace = true, optional = true }
-serde = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
-creusot-std = { workspace = true, optional = true }
+creusot-std = { workspace = true }
 
-
-[[bin]]
-name = "elicit_proofs"
-path = "src/main.rs"
 
 [features]
 default = []
 ## Enable Kani proof harnesses for archive VSMs.
 kani = ["dep:elicit_db", "dep:serde_json", "dep:chrono", "dep:tracing"]
 ## Enable Creusot companions for archive VSMs.
-creusot = ["dep:creusot-std"]
+creusot = []
 ## Enable Verus companions for archive VSMs.
 verus = []
-## Enable the proof runner CLI binary.
-runner = ["dep:anyhow", "dep:chrono", "dep:clap", "dep:csv", "dep:serde", "dep:serde_json", "dep:tracing"]
 
 [lints]
 workspace = true

@@ -3681,15 +3681,11 @@ dependencies = [
 name = "elicit_proofs"
 version = "0.10.0"
 dependencies = [
- "anyhow",
  "chrono",
- "clap",
  "creusot-std",
- "csv",
  "elicit_db",
  "elicit_server",
  "elicitation",
- "serde",
  "serde_json",
  "tracing",
 ]

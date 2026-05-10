@@ -36,8 +36,4 @@ pub mod creusot;
 #[cfg(feature = "verus")]
 pub mod verus;
 
-#[cfg(feature = "runner")]
-pub mod cli;
 
-#[cfg(feature = "runner")]
-pub mod vsm;
