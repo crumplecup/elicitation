@@ -280,11 +280,19 @@ check-features:
         exit 1
     fi
 
-    # Check for warnings across all feature combinations
-    if grep -qE "^warning(\[|:)" "$LOG_FILE"; then
+    # Check for warnings across all feature combinations.
+    # Exclude the pearlite-syn patch warning: it is a Creusot vendored crate
+    # that cargo reports as unused when the creusot toolchain is not active.
+    # It is not a real code-quality issue and cannot be silenced at the
+    # crate level, so we filter it here.
+    if grep -E "^warning(\[|:)" "$LOG_FILE" \
+        | grep -v "patch.*pearlite-syn.*was not used" \
+        | grep -q .; then
         echo ""
         echo "⚠️  Warnings found in feature powerset check:"
-        grep -E "^warning(\[|:)" "$LOG_FILE" | sort -u
+        grep -E "^warning(\[|:)" "$LOG_FILE" \
+            | grep -v "patch.*pearlite-syn.*was not used" \
+            | sort -u
         echo ""
         echo "❌ Feature powerset check failed due to warnings. See: $LOG_FILE"
         exit 1
