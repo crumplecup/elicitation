@@ -16,7 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            extra_exclude: ""
+          - os: windows-latest
+            # proj-sys requires building PROJ from source via cmake+sqlite3
+            # which is not available on the Windows runner. Skip elicit_proj.
+            extra_exclude: "--exclude elicit_proj"
+          - os: macos-latest
+            extra_exclude: ""
 
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +34,10 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y libasound2-dev libudev-dev
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install proj
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -42,10 +54,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
       - name: Test workspace (default features)
-        run: cargo test --workspace
+        run: cargo test --workspace ${{ matrix.extra_exclude }}
 
       - name: Test derive — all third-party feature combinations
         run: cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"

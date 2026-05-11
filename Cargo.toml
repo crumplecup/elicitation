@@ -59,6 +59,10 @@ exclude = [
   # surrealdb-core pins i_overlay ^4.0 which conflicts with geo 0.33 (needs i_overlay ^4.5).
   # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
   "crates/elicit_surrealdb",
+  # vendored copy of surrealdb-types (patched to allow geo 0.33). Exclude from
+  # workspace membership so `--workspace --all-targets` does not lint its test
+  # targets (which contain third-party unwrap() calls we cannot change).
+  "vendor/surrealdb-types-3.0.5",
 ]
 resolver = "2"
 
