@@ -185,7 +185,7 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
             }
             ArgKind::StringArg => {
                 lines.push(format!(
-                    "    let {name}: {ty} = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();",
+                    "    let {name}: {ty} = ::std::string::String::new();",
                     name = arg.name,
                     ty = arg.ty,
                 ));

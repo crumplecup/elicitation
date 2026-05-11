@@ -20,7 +20,7 @@ elicit_db = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
-creusot-std = { workspace = true }
+creusot-std = { workspace = true, optional = true }
 
 
 [features]
@@ -28,7 +28,7 @@ default = []
 ## Enable Kani proof harnesses for archive VSMs.
 kani = ["dep:elicit_db", "dep:serde_json", "dep:chrono", "dep:tracing"]
 ## Enable Creusot companions for archive VSMs.
-creusot = []
+creusot = ["dep:creusot-std"]
 ## Enable Verus companions for archive VSMs.
 verus = []
 

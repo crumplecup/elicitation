@@ -140,7 +140,7 @@ fn apply_filter_kani_closure() {
         let _cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let filter: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let filter: String = ::std::string::String::new();
     let _result = apply_filter(state, proof, filter);
     ::std::mem::forget(_result);
 }

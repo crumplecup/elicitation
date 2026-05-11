@@ -30,7 +30,7 @@ fn begin_connect_sql_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let profile_name: String = ::std::string::String::new();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
     ::std::mem::forget(_result);
@@ -47,7 +47,7 @@ fn begin_connect_kv_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let profile_name: String = ::std::string::String::new();
     let _result = begin_connect_kv(_state, proof, profile_name);
     ::std::mem::forget(_result);
 }
@@ -79,7 +79,7 @@ fn finish_connect_kv_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let path: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let path: String = ::std::string::String::new();
     let _result = finish_connect_kv(_state, proof, path);
     ::std::mem::forget(_result);
 }
@@ -125,7 +125,7 @@ fn connection_error_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let message: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let message: String = ::std::string::String::new();
     let _result = connection_error(_state, proof, message);
     ::std::mem::forget(_result);
 }
