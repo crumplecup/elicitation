@@ -46,92 +46,146 @@ verification paths.
 
 ---
 
-## 2. The `assume_specification` Companion Pattern
+## 2. The V13 `assume_specification` + Verified-Caller Pattern
 
-Verus cannot verify the production VSM transitions directly — they are
-`async fn`s that use `tokio`, database drivers, and other runtime machinery.
-Instead, **companion contracts** are generated in `crates/elicit_proofs/src/verus/generated/`
-using `assume_specification`, which injects a trusted postcondition for an
-external function without requiring Verus to verify its body.
+Verus cannot verify production VSM transitions directly — they are `async fn`s
+that use tokio, database drivers, and other runtime machinery. The generated
+companion architecture uses three pieces working together:
 
-For each archive machine transition `my_transition`, the generated file contains:
+### Part 1 — External stubs (outside `verus! { }`)
+
+A `#[verifier::external]` stub is declared as a plain Rust function with a
+`todo!()` body. It has the simplified signature of the transition (state in →
+state out), stripping async and extra runtime arguments:
 
 ```rust
-#[cfg(verus)]
+// Outside the verus! block — regular Rust, #[verifier::external]
+#[verifier::external]
+pub fn apply_filter_stub(state: ArchiveNavState) -> ArchiveNavState {
+    todo!()
+}
+```
+
+The `#[verifier::external]` attribute tells Verus to treat this function as
+external — it will be given its contract via `assume_specification`.
+
+### Part 2 — `assume_specification` (inside `verus! { }`)
+
+Inside the `verus! { }` block, `assume_specification` attaches a trusted
+postcondition to the stub. Verus treats this as an axiom — it does not verify
+the body, only the contract:
+
+```rust
 verus! {
-    pub assume_specification [my_transition] (
-        state: MyMachineState,
-        proof: Established<MyMachineConsistent>,
-        // ... additional parameters
-    ) -> (r: (MyMachineState, Established<MyMachineConsistent>))
-        requires archive_machine_consistent(&state),
-        ensures  archive_machine_consistent(&r.0),
+    pub assume_specification [apply_filter_stub](
+        state: ArchiveNavState,
+    ) -> (r: ArchiveNavState)
+        requires archive_nav_consistent(&state),
+        ensures  archive_nav_consistent(&r),
     ;
 }
 ```
 
-The `;` at the end (no body) tells Verus to trust this contract as an axiom.
-Callers can then reason from `requires`/`ensures` in their own proofs.
+This is the trust anchor: "the real `apply_filter` satisfies this contract
+because Kani and Creusot verify it independently."
 
-### Key differences from Creusot companions
+### Part 3 — Verified exec callers (inside `verus! { }`)
 
-| | Creusot | Verus |
-|-|---------|-------|
-| Mechanism | `#[requires]` / `#[ensures]` on a wrapper fn | `assume_specification` block |
-| Body required? | Yes — calls the production fn | No — trusted axiom |
-| Works cross-crate? | `extern_spec!` needed per crate | Yes — `assume_specification` is cross-crate |
-| Gate | `#[cfg(creusot)]` | `#[cfg(verus)]` |
+A verified exec function calls the stub and proves the invariant is preserved.
+Verus uses the `assume_specification` ensures to discharge the proof goal:
+
+```rust
+verus! {
+    pub fn apply_filter_verified(
+        state: ArchiveNavState,
+    ) -> (r: ArchiveNavState)
+        requires archive_nav_consistent(&state),
+        ensures  archive_nav_consistent(&r),
+    {
+        let r = apply_filter_stub(state);
+        r
+    }
+}
+```
+
+Z3 chains: `assume_specification` ensures `archive_nav_consistent(&r)` →
+`verified` fn's `ensures` is satisfied. No manual proof hints needed.
+
+### Why this V13 pattern is sound
+
+- Kani and Creusot independently verify the real transition contracts on the
+  production code. Those contracts are the same postconditions asserted in
+  `assume_specification`.
+- Verus trusts `assume_specification` and proves invariant preservation.
+- All three backends satisfy the same proof obligation via different paths.
+
+### Key differences from older patterns
+
+| | V9/V10 (old) | V13 (current) |
+|-|-------------|---------------|
+| Spec attachment | `assume_specification` on production fn directly | `assume_specification` on `#[verifier::external]` stub |
+| Verified exec caller | Not generated | Generated — explicitly proves invariant preservation |
+| Connection to Kani/Creusot | Indirect (abstract spec) | Direct — same postcondition predicates |
 
 ---
 
 ## 3. How Companions Are Generated
 
-Companions are **auto-generated** by `crates/elicit_proofs/build.rs`. You
-never write them by hand. To regenerate after changing a VSM:
+Companions are **auto-generated** by `crates/elicitation/src/cli/generate/verus_gen.rs`
+via the `elicitation generate` command. You never write them by hand.
+To regenerate after changing a VSM:
 
 ```bash
-cargo build -p elicit_proofs
+cargo build --release -p elicitation --features cli
+cp target/release/elicitation ~/.cargo/bin/elicitation
+elicitation generate  # regenerates all backends including Verus
 ```
 
 ### File layout
 
+Generated files live in the `elicitation_verus` crate, which is built with
+`vargo` (excluded from the normal cargo workspace):
+
 ```text
-crates/elicit_proofs/src/verus/generated/
-├── mod.rs                    # Static: declares the four per-machine modules
-├── archive_connection.rs     # Generated: ArchiveConnectionMachine companions
-├── archive_nav.rs            # Generated: ArchiveNavMachine companions
-├── archive_overlay.rs        # Generated: ArchiveOverlayMachine companions
-└── archive_panel.rs          # Generated: ArchivePanelMachine companions
+crates/elicitation_verus/src/generated/
+├── mod.rs                    # Declares the four per-machine modules
+├── archive_connection.rs     # ArchiveConnectionMachine companions
+├── archive_nav.rs            # ArchiveNavMachine companions
+├── archive_overlay.rs        # ArchiveOverlayMachine companions
+└── archive_panel.rs          # ArchivePanelMachine companions
 ```
 
-### build.rs structure
+Each file has a three-part structure:
 
-```rust
-// Invariant predicate bodies (currently trivially true; Phase 4 adds real bodies)
-const VERUS_INV_CONNECTION: &str = "\
-#[cfg(verus)]
-verus! { pub open spec fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool { true } }";
+```text
+// 1. External stubs (outside verus! { })
+//    — #[verifier::external] fns with todo!() bodies
 
-// Called for each machine
-fn write_verus_vsm_file(
-    out_dir: &str,
-    machine_name: &str,       // e.g. "archive_connection"
-    state_type: &str,         // e.g. "ArchiveConnectionState"
-    consistent_type: &str,    // e.g. "ArchiveConnectionConsistent"
-    inv_fn: &str,             // e.g. "archive_connection_consistent"
-    inv_body: &str,           // the VERUS_INV_* constant
-    contracts: Vec<String>,   // one assume_specification per transition
-) { ... }
+// 2. verus! { ... } block:
+//    a. Abstract state enum + pub open spec fn consistent(...)
+//    b. Postcondition predicates (trivial / passthrough / conditional)
+//    c. Leaf lemmas  
+//    d. assume_specification blocks (one per transition)
+//    e. Verified exec callers (one per transition)
+//    f. Tag enum + composition proof (over all transitions simultaneously)
 ```
 
-The contracts come from the `VerifiedStateMachine::transition_verus_contracts()`
-method, which is auto-generated by `#[derive(VerifiedStateMachine)]` using
-each transition's `#[formal_method]` companion struct.
+### `verus_gen.rs` structure
+
+`verus_gen.rs` drives generation from the machine's `#[formal_method]`
+metadata. For each transition the generator emits:
+
+1. A stub via `TransKind::external_stub()` → placed before `verus! {`
+2. An `assume_specification` via `TransKind::assume_spec_ensures()` → inside `verus! {`
+3. A verified exec caller via `TransKind::verified_caller()` → inside `verus! {`
+
+The composition proof (tag enum dispatch) is emitted once per machine and covers
+all transitions simultaneously via Verus's Z3 ADT theory.
 
 ### Marking the invariant type
 
 Each machine's invariant type carries a `verus_invariant_fn` attribute
-so the derive macro knows which spec function to use:
+so the generator knows which spec function to use:
 
 ```rust
 #[prop(
@@ -213,9 +267,9 @@ verus! {
 
 ---
 
-## 6. The Gallery Curriculum (V1–V10)
+## 6. The Gallery Curriculum (V1–V13)
 
-The gallery in `crates/elicitation_verus/src/gallery/` is a ten-level
+The gallery in `crates/elicitation_verus/src/gallery/` is a thirteen-level
 learning curriculum that validates each Verus capability needed by the
 production VSM companions before applying it to real archive code.
 
@@ -231,20 +285,31 @@ production VSM companions before applying it to real archive code.
 | V8 | `level8.rs` | `#[verifier::type_invariant]` | Auto-checked invariant, private fields, spec accessors |
 | V9 | `level9.rs` | `assume_specification` | Trusted axiom for external/async fn |
 | V10 | `level10.rs` | Proof composition | `Tracked<T>` through two transitions, exec compose |
+| V11 | `level11.rs` | Leaf + composition | Full proof: leaf lemmas + composition proof over all transitions |
+| V12 | `level12.rs` | Multi-machine composition | Composition across two cooperating state machines |
+| V13 | `level13.rs` | **Production reference** | `#[verifier::external]` stub + `assume_specification` + verified exec caller |
 
-V7 is the **key level**: it proves that a state machine with the exact shape of
-a production archive machine (multi-variant, `String` + `u64` fields, multiple
-transitions all preserving the same `pub open spec fn` invariant) can be fully
-verified by Verus without per-variant harnesses.
+V7 is the **invariant level**: proves a production-shaped state machine fully.
 
-V9 is the **mechanism level**: it validates `assume_specification` in isolation
-before we rely on it for every archive transition companion.
+V13 is the **V13 reference**: the pattern used by all generated companions.
+Read `level13.rs` before modifying `verus_gen.rs`.
 
-All ten levels pass: `verification results:: 780 verified, 0 errors`.
+All levels pass: `verification results:: 780 verified, 0 errors` (or greater).
 
 ---
 
 ## 7. Running Verification
+
+### Using `elicitation prove`
+
+The recommended invocation handles all environment setup automatically:
+
+```bash
+elicitation prove --verus --csv
+```
+
+This runs `vargo` on `crates/elicitation_verus/src/lib.rs` and writes results
+to `./verus_verification_results.csv`. The command exits non-zero on any failure.
 
 ### Gallery only
 
@@ -254,7 +319,7 @@ just verify-verus
 
 This runs Verus on `crates/elicitation_verus/src/lib.rs` (the gallery crate,
 which is excluded from the normal workspace). Expected output:
-`verification results:: 780 verified, 0 errors`.
+`verification results:: 780 verified, 0 errors` (or greater).
 
 ### Tracked run
 
@@ -346,26 +411,38 @@ Key rules:
 | Phase 1 | ✅ Done | Gallery V1–V6 (toolchain, patterns, ghost tokens) |
 | Phase 2 | ✅ Done | Gallery V7–V10 (full VSM, type_invariant, compose) |
 | Phase 3 | ✅ Done | `vsm_verus_proof()` infra + auto-generated companion files |
-| Phase 4 | ✅ Done | Real invariant bodies in `VERUS_INV_*` constants |
+| Phase 4 | ✅ Done | Real invariant bodies in generated companions |
 | Phase 5 | ✅ Done | Standalone Verus VSM contracts via `strictly_verus` crate |
-| Phase 6 | 🔲 Planned | Standalone `elicit_verus` crate — archive machines verified like `strictly_verus` |
+| Phase 6 | ✅ Done | Archive machines verified in `elicitation_verus` via V13 pattern |
+| Gallery V11–V13 | ✅ Done | Leaf+composition (V11), multi-machine (V12), V13 reference impl |
+
+### Phase 6 notes
+
+Phase 6 upgraded `verus_gen.rs` to the **V13 pattern**. Archive companions now live
+in `crates/elicitation_verus/src/generated/` and are verified by `vargo`:
+
+```bash
+elicitation prove --verus --csv   # 4/4 machines, all passing
+```
+
+Each generated file contains:
+1. `#[verifier::external]` stubs (one per transition) — before `verus! { }`
+2. `assume_specification` blocks — axiomatize the real contracts
+3. Verified exec callers — Verus proves invariant preservation from axioms
+4. Tag enum + composition proof — covers all transitions simultaneously
+
+This makes Verus independently satisfy the same proof obligation as Kani and
+Creusot, each from a different verification path.
 
 ### Phase 4 notes
 
-Real invariant bodies are in place in `elicit_proofs/build.rs`:
+Real invariant bodies are now in `verus_gen.rs` and emitted into
+`crates/elicitation_verus/src/generated/*.rs`:
 
 - `archive_panel_consistent`: `SqlEditor { running, result, .. }` → `running ==> result.is_None()`
 - `archive_nav_consistent`: `NavFiltered { filter, .. }` → `filter@.len() > 0`
 - `archive_overlay_consistent`: `ExportPickerOpen` → `idx <= formats@.len()`, `SavedBrowserOpen` → `idx <= entries@.len()`
 - `archive_connection_consistent`: trivially `true` (no cross-field constraints by design)
-
-These are generated into `crates/elicit_proofs/src/verus/generated/*.rs` at `cargo build -p elicit_proofs`.
-The generated files use `#[cfg(verus)]` and are invisible to normal Rust builds.
-
-**Verification status**: The companion files compile as Rust (under `#[cfg(verus)]` gates) but have not
-yet been run through the Verus toolchain. This is blocked by the same rlib incompatibility that Phase 5
-solved for game crates — `elicit_server` types are compiled by rustc, not vargo. Phase 6 addresses this
-by creating a standalone `elicit_verus` crate analogous to `strictly_verus`.
 
 ### Phase 5 notes
 
@@ -374,15 +451,6 @@ Phase 5 is implemented in `strictly_games` via the `strictly_verus` crate, not
 `vsm_verus_transitions()` method generates **fully self-contained** Verus source
 files — each file defines inline stub types and `#[verifier::external]` stubs
 alongside `assume_specification` contracts.
-
-The `vsm_verus_transitions()` implementation is in three parts:
-
-1. **`formal_method.rs`** — `verus_external_stub()` generates the
-   `#[verifier::external] pub fn fn_name(inputs) output { todo!() }` stub
-2. **`derive_vsm.rs`** — `transition_verus_stubs()` collects all stubs from
-   the machine's `#[formal_method]` transitions
-3. **`contracts.rs`** — `vsm_verus_transitions()` composes stubs + contracts
-   into a single `TokenStream` that `strictly_verus/build.rs` materialises
 
 Results: `blackjack` 11 verified, `craps` 8 verified, `tictactoe` 9 verified
 — all with 0 errors.  Run via `just verify-verus-vsm` in `strictly_games`.

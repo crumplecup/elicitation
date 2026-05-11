@@ -626,6 +626,20 @@ CBMC-tractable value of the right type. `kani_depth0()` satisfies this with
 bounded destructor complexity. The important symbolic work has already been done
 by the `kani_any()` + `assume()` pair constraining the proof's precondition.
 
+**String shadows must use `String::new()`:** `KaniCompose` returns `String::new()`
+for all depths (including depth-1 and depth-2), *not* a non-empty literal like
+`String::from("a")`. The reason is DFCC's freeable-ptr check. DFCC tracks every
+heap allocation a function is allowed to free — anything allocated *outside* the
+harness must appear in a `#[kani::modifies]` annotation. `String::from("a")`
+allocates a heap buffer; if the function body drops that `String` on any path
+(e.g., an early-return when `is_empty()` is true), DFCC reports an unauthorized
+`free()`. `String::new()` uses `NonNull::dangling()` — no backing storage, no
+heap allocation, no free. This also applies to any generator that emits String
+arguments for harnesses (`ArgKind::StringArg` in `kani_gen.rs`).
+
+Depth-1 and depth-2 results are safely `mem::forget`'d before return, so their
+String fields also never fire a free.
+
 **Gallery evidence:** experiments 12e (String heap in result variant, 39s) and
 12f (match on 18-variant input state, 33s) confirm that heap allocation and
 large match trees have negligible DFCC overhead when the result is forgotten.
@@ -1008,15 +1022,17 @@ cargo kani -p elicit_proofs --lib --features kani --harness start__kani__idle__d
 
 ### Production harnesses (`proof_for_contract` closure architecture)
 
-| Module | Closure harnesses | Notes |
-|---|---|---|
-| `archive_panel` | 23 | One per transition; 418 generated lines |
-| `archive_connection` | TBD | Regenerate to apply closure architecture |
-| `archive_nav` | TBD | Regenerate to apply closure architecture |
-| `archive_overlay` | TBD | Regenerate to apply closure architecture |
+| Module | Closure harnesses |
+|---|---|
+| `archive_panel` | 23 |
+| `archive_connection` | 7 |
+| `archive_nav` | 8 |
+| `archive_overlay` | 10 |
+| **Total** | **48** |
 
 Each module also emits 1 invariant `#[kani::proof]` harness
-(`{module}_invariant__kani`).
+(`{module}_invariant__kani`). Gallery levels contribute additional harnesses.
+**All 54 harnesses pass** (`elicitation prove --kani --csv` result).
 
 ### Diagnostic per-variant harnesses (legacy — still generated, not in default suite)
 
@@ -1235,6 +1251,26 @@ cargo kani -p elicit_proofs --lib --features kani --harness HARNESS_NAME
    **Fix:** replace `#[instrument(...)]` with
    `#[cfg_attr(not(kani), tracing::instrument(...))]`. `#[formal_method]` does
    this automatically; only manually added instrument attrs need the gate.
+
+8. **DFCC freeable-ptr from String arguments.** If a `proof_for_contract`
+   closure harness fails with a freeable-ptr DFCC violation (a memory-safety
+   error, not an assertion failure), check whether any String value flowing
+   through the harness is a non-empty literal.
+
+   **Why it fires:** DFCC requires every `free()` to match the function's
+   `#[kani::modifies]` set. `String::from("a")` allocates a heap buffer;
+   when the transition body drops that String on any path (even an early-return
+   where `is_empty()` is true), DFCC sees an unauthorized `free()` because the
+   buffer wasn't allocated inside the function's frame.
+
+   **Fix:** `KaniCompose` returns `String::new()` for all depths (no backing
+   buffer → no free). Similarly, any harness generator that emits String
+   arguments (e.g. `ArgKind::StringArg` in `kani_gen.rs`) must emit
+   `String::new()`, not `String::from("...")`.
+
+   **Reference:** `apply_filter__kani_closure` was the last failing harness
+   (53/54) for exactly this reason; changing `String::kani_depth1()` and the
+   generator fixed it to 54/54.
 
 ### Closure harness naming
 
