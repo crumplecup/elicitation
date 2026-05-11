@@ -5,8 +5,8 @@
 //
 // No imports from the VSM crate — self-contained for vargo builds.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 verus! {
 

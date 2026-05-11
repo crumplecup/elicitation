@@ -35,5 +35,3 @@ pub mod creusot;
 
 #[cfg(feature = "verus")]
 pub mod verus;
-
-

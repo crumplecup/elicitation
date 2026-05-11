@@ -61,7 +61,9 @@ pub fn g17_replace(state: G17State, new_label: String) -> G17State {
 #[cfg(kani)]
 #[kani::proof_for_contract(g17_replace)]
 fn gallery17a_empty_string_drop() {
-    let pre = G17State::Active { label: String::new() };
+    let pre = G17State::Active {
+        label: String::new(),
+    };
     let new_label = String::from("b");
     let result = g17_replace(pre, new_label);
     forget(result);
@@ -73,7 +75,9 @@ fn gallery17a_empty_string_drop() {
 #[cfg(kani)]
 #[kani::proof_for_contract(g17_replace)]
 fn gallery17b_literal_string_drop() {
-    let pre = G17State::Active { label: String::from("a") };
+    let pre = G17State::Active {
+        label: String::from("a"),
+    };
     let new_label = String::from("b");
     let result = g17_replace(pre, new_label);
     forget(result);
@@ -88,7 +92,9 @@ fn gallery17b_literal_string_drop() {
 fn gallery17c_symbolic_string_drop() {
     let symbolic_label = String::kani_depth1();
     kani::assume(!symbolic_label.is_empty());
-    let pre = G17State::Active { label: symbolic_label };
+    let pre = G17State::Active {
+        label: symbolic_label,
+    };
     let new_label = String::from("b");
     let result = g17_replace(pre, new_label);
     forget(result);
@@ -105,7 +111,9 @@ fn gallery17d_symbolic_string_moved() {
     // Use Idle pre-state so the function hits `other => other` branch.
     // new_label is also dropped in that branch — so this is actually the same issue.
     // Re-designed: give Active state with EMPTY label (no heap) so old label drop is free.
-    let pre = G17State::Active { label: String::new() };
+    let pre = G17State::Active {
+        label: String::new(),
+    };
     // kani::assume(g17_consistent(&pre)) would fail (empty label) → vacuous pass.
     // So this tests: what happens when requires is unsatisfied? (vacuous)
     let new_label = String::from("b");
@@ -120,7 +128,9 @@ fn gallery17d_symbolic_string_moved() {
 #[cfg(kani)]
 #[kani::proof]
 fn gallery17e_plain_proof_literal_drop() {
-    let pre = G17State::Active { label: String::from("a") };
+    let pre = G17State::Active {
+        label: String::from("a"),
+    };
     kani::assume(g17_consistent(&pre));
     let new_label = String::from("b");
     let result = g17_replace(pre, new_label);
@@ -153,10 +163,7 @@ pub fn g17_permissive_consistent(_s: &G17StatePermissive) -> bool {
 
 #[cfg_attr(kani, kani::requires(g17_permissive_consistent(&state)))]
 #[cfg_attr(kani, kani::ensures(|r| g17_permissive_consistent(r)))]
-pub fn g17_permissive_replace(
-    state: G17StatePermissive,
-    new_label: String,
-) -> G17StatePermissive {
+pub fn g17_permissive_replace(state: G17StatePermissive, new_label: String) -> G17StatePermissive {
     match state {
         G17StatePermissive::Active { .. } => G17StatePermissive::Active { label: new_label },
         other => other,
@@ -168,7 +175,9 @@ pub fn g17_permissive_replace(
 #[cfg(kani)]
 #[kani::proof_for_contract(g17_permissive_replace)]
 fn gallery17f_pfc_empty_string_drop() {
-    let pre = G17StatePermissive::Active { label: String::new() };
+    let pre = G17StatePermissive::Active {
+        label: String::new(),
+    };
     let new_label = String::from("b");
     let result = g17_permissive_replace(pre, new_label);
     forget(result);

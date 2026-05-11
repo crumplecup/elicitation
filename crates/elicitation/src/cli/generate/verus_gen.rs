@@ -120,12 +120,8 @@ pub fn generate_verus_file(
         out.push_str(
             "// ─── External transition stubs ─────────────────────────────────────────────────\n",
         );
-        out.push_str(
-            "// These functions represent the real transitions in elicit_server.\n",
-        );
-        out.push_str(
-            "// Verus does not verify their bodies; assume_specification below injects\n",
-        );
+        out.push_str("// These functions represent the real transitions in elicit_server.\n");
+        out.push_str("// Verus does not verify their bodies; assume_specification below injects\n");
         out.push_str(
             "// the trusted contracts.  Kani/Creusot independently verify the real bodies.\n\n",
         );
@@ -366,7 +362,9 @@ pub fn generate_verus_file(
             "// ─── Assume specifications (V13 trust anchors) ──────────────────────────────────\n\n",
         );
         out.push_str("// Each assume_specification axiomatizes the contract for its stub.\n");
-        out.push_str("// The postcondition predicate is the same one used by the leaf lemma above,\n");
+        out.push_str(
+            "// The postcondition predicate is the same one used by the leaf lemma above,\n",
+        );
         out.push_str("// ensuring Verus proof and assume_specification are tightly aligned.\n\n");
         for (name, kind) in &classified {
             let post_pred = kind.assume_spec_ensures(&machine_prefix);
@@ -396,7 +394,9 @@ pub fn generate_verus_file(
             "// ─── Verified exec callers ───────────────────────────────────────────────────────\n\n",
         );
         out.push_str("// These exec fns close the proof loop: calling any stub on a consistent\n");
-        out.push_str("// pre-state yields a consistent post-state, by the assume_specification.\n\n");
+        out.push_str(
+            "// pre-state yields a consistent post-state, by the assume_specification.\n\n",
+        );
         for (name, _kind) in &classified {
             out.push_str(&format!(
                 "/// Proof that `{name}` preserves the invariant (via assume_specification).\n\

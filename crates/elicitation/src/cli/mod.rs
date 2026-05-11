@@ -676,6 +676,9 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
     }
 
     /// Write content to `<dir>/<filename>` or print to stdout if dir is None.
+    ///
+    /// When writing to a file, runs `rustfmt` on the output so generated code
+    /// always passes `cargo fmt --check`.
     fn emit_content(
         content: &str,
         filename: &str,
@@ -686,6 +689,20 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
                 std::fs::create_dir_all(dir)?;
                 let path = dir.join(filename);
                 std::fs::write(&path, content)?;
+                // Format the file in-place so it passes `cargo fmt --check`.
+                let fmt_status = std::process::Command::new("rustfmt")
+                    .arg("--edition=2021")
+                    .arg(&path)
+                    .status();
+                match fmt_status {
+                    Ok(s) if s.success() => {}
+                    Ok(s) => {
+                        tracing::warn!(path = %path.display(), status = %s, "rustfmt exited non-zero")
+                    }
+                    Err(e) => {
+                        tracing::warn!(path = %path.display(), error = %e, "rustfmt not available")
+                    }
+                }
                 println!("Written: {}", path.display());
             }
             None => {
