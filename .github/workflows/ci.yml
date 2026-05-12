@@ -59,7 +59,8 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
-  # Ubuntu only: test core crates (avoids disk exhaustion from full workspace test binaries)
+  # Ubuntu only: per-package testing avoids feature unification and disk exhaustion.
+  # Each `cargo test -p <crate>` builds only that crate's feature set independently.
   test:
     name: Test (ubuntu-latest)
     runs-on: ubuntu-latest
@@ -79,7 +80,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y libasound2-dev libudev-dev
+          sudo apt-get install -y libasound2-dev libudev-dev libproj-dev
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -90,7 +91,63 @@ jobs:
           key: test-ubuntu-${{ hashFiles('Cargo.lock') }}
 
       - name: Test core library and derive macros
-        run: cargo test -p elicitation -p elicitation_derive
+        run: |
+          cargo test -p elicitation
+          cargo test -p elicitation_derive
+          cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
+          cargo test -p elicitation_macros
 
-      - name: Test derive — all third-party feature combinations
-        run: cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
+      - name: Test proof harness crates (compile + 0 tests)
+        run: |
+          cargo test -p elicitation_rand
+          cargo test -p elicitation_creusot
+          cargo test -p elicitation_kani
+          cargo test -p elicit_proofs
+          # elicitation_verus: excluded — requires verus toolchain
+
+      - name: Test type and primitive crates
+        run: |
+          cargo test -p elicit_accesskit
+          cargo test -p elicit_axum
+          cargo test -p elicit_bevy
+          cargo test -p elicit_chrono
+          cargo test -p elicit_clap
+          cargo test -p elicit_csv
+          cargo test -p elicit_db
+          cargo test -p elicit_egui
+          cargo test -p elicit_geo
+          cargo test -p elicit_geo_types
+          cargo test -p elicit_geojson
+          cargo test -p elicit_georaster
+          cargo test -p elicit_gis
+          cargo test -p elicit_jiff
+          cargo test -p elicit_leptos
+          cargo test -p elicit_polars
+          cargo test -p elicit_proj
+          cargo test -p elicit_ratatui
+          cargo test -p elicit_redb
+          cargo test -p elicit_regex
+          cargo test -p elicit_reqwest
+          cargo test -p elicit_rstar
+          cargo test -p elicit_serde
+          cargo test -p elicit_serde_json
+          cargo test -p elicit_std
+          cargo test -p elicit_surrealdb
+          cargo test -p elicit_time
+          cargo test -p elicit_tokio
+          cargo test -p elicit_toml
+          cargo test -p elicit_tower
+          cargo test -p elicit_ui
+          cargo test -p elicit_uom
+          cargo test -p elicit_url
+          cargo test -p elicit_uuid
+          cargo test -p elicit_wgpu
+          cargo test -p elicit_winit
+          cargo test -p elicit_wkb
+          cargo test -p elicit_wkt
+
+      - name: Test server and database crates
+        run: |
+          # ci feature gates emit smoke tests (they spawn nested cargo processes)
+          cargo test -p elicit_server --features ci
+          cargo test -p elicit_sqlx

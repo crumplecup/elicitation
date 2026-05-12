@@ -100,6 +100,8 @@ mod smoke {
 
     // ── elicit_reqwest — pure tools ───────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_status_summary_and_run() {
         assert_runs(
@@ -108,6 +110,8 @@ mod smoke {
             serde_json::json!({ "status": 200 }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_url_build_and_run() {
@@ -124,6 +128,8 @@ mod smoke {
 
     // ── elicit_reqwest — network tools (build only) ───────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_fetch_builds() {
         assert_builds(
@@ -135,6 +141,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_auth_fetch_builds() {
@@ -149,6 +157,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_post_builds() {
         assert_builds(
@@ -161,6 +171,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_api_call_builds() {
@@ -175,6 +187,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_health_check_builds() {
         assert_builds(
@@ -186,6 +200,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_build_request_builds() {
@@ -203,6 +219,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_paginated_get_builds() {
         assert_builds(
@@ -217,6 +235,8 @@ mod smoke {
 
     // ── elicit_serde_json — all pure ──────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_parse_and_focus_and_run() {
         assert_runs(
@@ -229,6 +249,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_validate_object_and_run() {
         assert_runs(
@@ -240,6 +262,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_safe_merge_and_run() {
@@ -254,6 +278,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_pointer_update_and_run() {
         assert_runs(
@@ -267,6 +293,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_field_chain_and_run() {
@@ -284,6 +312,7 @@ mod smoke {
 
     /// Compose url_build + status_summary in a single binary — the core
     /// "code recovery" use case where an agent chains two verified tools.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn emit_multi_step_composition_and_run() {
         let step1 = elicit_server::emit_dispatch(
@@ -318,6 +347,8 @@ mod smoke {
 
     // ── elicit_url ────────────────────────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_parse_url_and_run() {
         assert_runs(
@@ -327,6 +358,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_assert_https_and_run() {
         assert_runs(
@@ -335,6 +368,8 @@ mod smoke {
             serde_json::json!({ "url": "https://api.example.com/secure" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_build_url_and_run() {
@@ -348,6 +383,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_join_url_and_run() {
@@ -363,6 +400,8 @@ mod smoke {
 
     // ── elicit_chrono ─────────────────────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_parse_datetime_and_run() {
         assert_runs(
@@ -372,6 +411,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_assert_future_chrono_and_run() {
         assert_runs(
@@ -380,6 +421,8 @@ mod smoke {
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_assert_in_range_and_run() {
@@ -394,6 +437,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_compute_duration_chrono_and_run() {
         assert_runs(
@@ -405,6 +450,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_add_seconds_chrono_and_run() {
@@ -420,6 +467,8 @@ mod smoke {
 
     // ── elicit_jiff ───────────────────────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_parse_timestamp_and_run() {
         assert_runs(
@@ -428,6 +477,8 @@ mod smoke {
             serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_parse_zoned_and_run() {
@@ -438,6 +489,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_assert_future_jiff_and_run() {
         assert_runs(
@@ -446,6 +499,8 @@ mod smoke {
             serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_convert_tz_and_run() {
@@ -458,6 +513,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_compute_span_and_run() {
@@ -473,6 +530,8 @@ mod smoke {
 
     // ── elicit_time ───────────────────────────────────────────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_parse_offset_datetime_and_run() {
         assert_runs(
@@ -481,6 +540,8 @@ mod smoke {
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_parse_primitive_datetime_and_run() {
@@ -491,6 +552,8 @@ mod smoke {
         );
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_assert_future_time_and_run() {
         assert_runs(
@@ -499,6 +562,8 @@ mod smoke {
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_compute_duration_time_and_run() {
@@ -511,6 +576,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_add_seconds_time_and_run() {
@@ -539,6 +606,7 @@ mod smoke {
 
     /// Step 1 — `crate_deps()` must be non-empty and include the crates the
     /// emitted code actually references.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn elicit_server_secure_fetch_crate_deps_non_empty() {
         let step = elicit_server::emit_dispatch(
@@ -570,6 +638,7 @@ mod smoke {
     }
 
     /// Step 1 (variant) — validated_api_call has the same dep requirements.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn elicit_server_validated_api_call_crate_deps_non_empty() {
         let step = elicit_server::emit_dispatch(
@@ -599,6 +668,7 @@ mod smoke {
 
     /// Step 1 (passing baseline) — a tool from elicit_url that already passes,
     /// to confirm the pipeline works for non-elicit_server tools.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn elicit_url_parse_url_crate_deps_non_empty() {
         let step = elicit_server::emit_dispatch(
@@ -623,6 +693,7 @@ mod smoke {
 
     /// Step 2 — `BinaryScaffold::all_deps()` merges scaffold defaults with step
     /// deps; the result must include both `tokio` (scaffold) and `elicitation`.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn elicit_server_secure_fetch_scaffold_all_deps() {
         let step = elicit_server::emit_dispatch(
@@ -652,6 +723,7 @@ mod smoke {
 
     /// Step 3 — the rendered `Cargo.toml` string must contain the required dep
     /// entries so the generated crate actually compiles.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn elicit_server_secure_fetch_cargo_toml_contains_deps() {
         let step = elicit_server::emit_dispatch(
@@ -681,6 +753,8 @@ mod smoke {
 
     // ── Cross-crate: secure_fetch (build only — network) ─────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_secure_fetch_tokens() {
         let step = elicit_server::emit_dispatch(
@@ -698,6 +772,8 @@ mod smoke {
         }
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_secure_fetch_builds() {
         assert_builds(
@@ -709,6 +785,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_validated_api_call_builds() {
@@ -725,6 +803,8 @@ mod smoke {
 
     // ── Cross-crate: fetch_and_parse (build only — network) ──────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_fetch_and_extract_builds() {
         assert_builds(
@@ -736,6 +816,8 @@ mod smoke {
             }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_fetch_and_validate_builds() {
@@ -750,6 +832,8 @@ mod smoke {
     }
 
     // ── Cross-crate multi-step: parse_url + secure_fetch ─────────────────────
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_parse_url_then_secure_fetch_builds() {
@@ -791,6 +875,8 @@ mod smoke {
 
     // ── elicit_sqlx workflow — individual tool dispatch ───────────────────────
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_sqlx_workflow_connect_dispatch() {
         assert_builds(
@@ -799,6 +885,8 @@ mod smoke {
             serde_json::json!({ "database_url": "sqlite::memory:", "max_connections": 1 }),
         );
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_sqlx_workflow_execute_dispatch() {
@@ -812,6 +900,8 @@ mod smoke {
         .expect("dispatch sqlx_workflow__execute");
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_sqlx_workflow_fetch_all_dispatch() {
         // fetch_all emits `...fetch_all(&pool)` — requires a preceding connect step.
@@ -822,6 +912,8 @@ mod smoke {
         )
         .expect("dispatch sqlx_workflow__fetch_all");
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_sqlx_workflow_begin_dispatch() {
@@ -834,6 +926,8 @@ mod smoke {
         .expect("dispatch sqlx_workflow__begin");
     }
 
+    #[cfg_attr(feature = "ci", ignore)]
+
     #[test]
     fn emit_sqlx_workflow_commit_dispatch() {
         // commit emits `tx.commit()` — requires a preceding begin step.
@@ -844,6 +938,8 @@ mod smoke {
         )
         .expect("dispatch sqlx_workflow__commit");
     }
+
+    #[cfg_attr(feature = "ci", ignore)]
 
     #[test]
     fn emit_sqlx_workflow_rollback_dispatch() {
@@ -860,6 +956,7 @@ mod smoke {
 
     /// Verifies that a connect → execute → begin → commit chain assembles into
     /// a compilable Rust binary via `BinaryScaffold::to_source()`.
+    #[cfg_attr(feature = "ci", ignore)]
     #[test]
     fn emit_sqlx_workflow_chain_builds() {
         let ws = workspace_root();
