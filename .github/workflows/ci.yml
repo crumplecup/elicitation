@@ -59,28 +59,12 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
-  # Ubuntu only: core library tests on every push.
-  # Satellite crates (elicit_*) are tested via satellite.yml on demand.
-  test:
-    name: Test core (ubuntu-latest)
+  # Ubuntu only: test elicitation_derive and elicitation_macros (fast, no heavy deps).
+  test-derive:
+    name: Test derive and macros
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: false
-          swap-storage: true
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y libasound2-dev libudev-dev
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -88,11 +72,80 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          key: test-core-ubuntu-${{ hashFiles('Cargo.lock') }}
+          key: test-derive-ubuntu-${{ hashFiles('Cargo.lock') }}
 
-      - name: Test core library and derive macros
+      - name: Test elicitation_derive
         run: |
-          cargo test -p elicitation
           cargo test -p elicitation_derive
           cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
           cargo test -p elicitation_macros
+
+  # Ubuntu only: elicitation split by feature group to stay within runner memory/disk limits.
+  # Heavy GUI/GPU features (bevy-types, wgpu-types, egui-winit-types, winit-types) are
+  # excluded from core CI and tested via satellite.yml on demand.
+  test-elicitation:
+    name: Test elicitation (${{ matrix.group }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: core
+            features: "--no-default-features"
+            sys_deps: ""
+
+          - group: datetime-scalar
+            features: >-
+              --no-default-features
+              --features chrono,time,jiff,uuid,url,regex,rand,serde,serde_json,emit,graph
+            sys_deps: ""
+
+          - group: storage
+            features: >-
+              --no-default-features
+              --features csv-types,toml-types,redb-types
+            sys_deps: ""
+
+          - group: network
+            features: >-
+              --no-default-features
+              --features reqwest,url,clap-types,sqlx-types,axum-types,tower-types,leptos-types
+            sys_deps: ""
+
+          - group: geo
+            features: >-
+              --no-default-features
+              --features geo-types,geo,proj-types,rstar-types,geojson-types,wkt-types,wkb-types,georaster-types,serde_json
+            sys_deps: "libproj-dev"
+
+          - group: analytics
+            features: >-
+              --no-default-features
+              --features polars-types,uom-types,surreal-types,uuid,chrono,serde_json,geo-types
+            sys_deps: ""
+
+          - group: ui-light
+            features: >-
+              --no-default-features
+              --features ratatui,egui-types,accesskit,palette
+            sys_deps: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        if: matrix.sys_deps != ''
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ${{ matrix.sys_deps }}
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-elicitation-${{ matrix.group }}-ubuntu-${{ hashFiles('Cargo.lock') }}
+
+      - name: Test elicitation (${{ matrix.group }})
+        run: cargo test -p elicitation ${{ matrix.features }}
