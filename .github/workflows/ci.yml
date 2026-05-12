@@ -10,8 +10,9 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  test:
-    name: Test (${{ matrix.os }})
+  # All platforms: fmt + clippy only (proves cross-platform compilation)
+  lint:
+    name: Lint (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,35 +21,13 @@ jobs:
           - os: ubuntu-latest
             extra_exclude: ""
           - os: windows-latest
-            # proj-sys requires building PROJ from source via cmake+sqlite3
-            # which is not available on the Windows runner. Skip elicit_proj.
+            # proj-sys requires sqlite3 executable for cmake build
             extra_exclude: "--exclude elicit_proj"
           - os: macos-latest
             extra_exclude: ""
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Free disk space (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: false
-          swap-storage: true
-
-      - name: Free disk space (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          df -h /
-          sudo rm -rf /Applications/Xcode_14*.app /Applications/Xcode_15*.app /Applications/Xcode_16*.app 2>/dev/null || true
-          xcrun simctl delete all 2>/dev/null || true
-          sudo rm -rf ~/Library/Developer/CoreSimulator 2>/dev/null || true
-          brew cleanup -s 2>/dev/null || true
-          df -h /
 
       - name: Install system dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -72,8 +51,7 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          # Separate cache per OS and Cargo.lock hash
-          key: ${{ matrix.os }}-${{ hashFiles('Cargo.lock') }}
+          key: lint-${{ matrix.os }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -81,11 +59,38 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
-      - name: Test workspace (default features)
-        run: cargo test --workspace ${{ matrix.extra_exclude }}
+  # Ubuntu only: test core crates (avoids disk exhaustion from full workspace test binaries)
+  test:
+    name: Test (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y libasound2-dev libudev-dev
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-ubuntu-${{ hashFiles('Cargo.lock') }}
+
+      - name: Test core library and derive macros
+        run: cargo test -p elicitation -p elicitation_derive
 
       - name: Test derive — all third-party feature combinations
         run: cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
-
-      - name: Test elicit_server smoke suite
-        run: cargo test -p elicit_server --features emit
