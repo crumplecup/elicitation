@@ -101,7 +101,6 @@ mod smoke {
     // ── elicit_reqwest — pure tools ───────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_status_summary_and_run() {
         assert_runs(
@@ -112,7 +111,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_url_build_and_run() {
         assert_runs(
@@ -129,7 +127,6 @@ mod smoke {
     // ── elicit_reqwest — network tools (build only) ───────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_fetch_builds() {
         assert_builds(
@@ -143,7 +140,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_auth_fetch_builds() {
         assert_builds(
@@ -158,7 +154,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_post_builds() {
         assert_builds(
@@ -173,7 +168,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_api_call_builds() {
         assert_builds(
@@ -188,7 +182,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_health_check_builds() {
         assert_builds(
@@ -202,7 +195,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_build_request_builds() {
         assert_builds(
@@ -220,7 +212,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_paginated_get_builds() {
         assert_builds(
@@ -236,7 +227,6 @@ mod smoke {
     // ── elicit_serde_json — all pure ──────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_and_focus_and_run() {
         assert_runs(
@@ -250,7 +240,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_validate_object_and_run() {
         assert_runs(
@@ -264,7 +253,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_safe_merge_and_run() {
         assert_runs(
@@ -279,7 +267,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_pointer_update_and_run() {
         assert_runs(
@@ -295,7 +282,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_field_chain_and_run() {
         assert_runs(
@@ -348,7 +334,6 @@ mod smoke {
     // ── elicit_url ────────────────────────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_url_and_run() {
         assert_runs(
@@ -359,7 +344,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_assert_https_and_run() {
         assert_runs(
@@ -370,7 +354,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_build_url_and_run() {
         assert_runs(
@@ -385,7 +368,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_join_url_and_run() {
         assert_runs(
@@ -401,7 +383,6 @@ mod smoke {
     // ── elicit_chrono ─────────────────────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_datetime_and_run() {
         assert_runs(
@@ -412,7 +393,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_assert_future_chrono_and_run() {
         assert_runs(
@@ -423,7 +403,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_assert_in_range_and_run() {
         assert_runs(
@@ -438,7 +417,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_compute_duration_chrono_and_run() {
         assert_runs(
@@ -452,7 +430,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_add_seconds_chrono_and_run() {
         assert_runs(
@@ -468,7 +445,6 @@ mod smoke {
     // ── elicit_jiff ───────────────────────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_timestamp_and_run() {
         assert_runs(
@@ -479,7 +455,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_zoned_and_run() {
         assert_runs(
@@ -490,7 +465,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_assert_future_jiff_and_run() {
         assert_runs(
@@ -501,7 +475,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_convert_tz_and_run() {
         assert_runs(
@@ -515,7 +488,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_compute_span_and_run() {
         assert_runs(
@@ -531,7 +503,6 @@ mod smoke {
     // ── elicit_time ───────────────────────────────────────────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_offset_datetime_and_run() {
         assert_runs(
@@ -542,7 +513,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_primitive_datetime_and_run() {
         assert_runs(
@@ -553,7 +523,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_assert_future_time_and_run() {
         assert_runs(
@@ -564,7 +533,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_compute_duration_time_and_run() {
         assert_runs(
@@ -578,7 +546,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_add_seconds_time_and_run() {
         assert_runs(
@@ -754,7 +721,6 @@ mod smoke {
     // ── Cross-crate: secure_fetch (build only — network) ─────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_secure_fetch_tokens() {
         let step = elicit_server::emit_dispatch(
@@ -773,7 +739,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_secure_fetch_builds() {
         assert_builds(
@@ -787,7 +752,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_validated_api_call_builds() {
         assert_builds(
@@ -804,7 +768,6 @@ mod smoke {
     // ── Cross-crate: fetch_and_parse (build only — network) ──────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_fetch_and_extract_builds() {
         assert_builds(
@@ -818,7 +781,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_fetch_and_validate_builds() {
         assert_builds(
@@ -834,7 +796,6 @@ mod smoke {
     // ── Cross-crate multi-step: parse_url + secure_fetch ─────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_parse_url_then_secure_fetch_builds() {
         let step1 = elicit_server::emit_dispatch(
@@ -876,7 +837,6 @@ mod smoke {
     // ── elicit_sqlx workflow — individual tool dispatch ───────────────────────
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_connect_dispatch() {
         assert_builds(
@@ -887,7 +847,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_execute_dispatch() {
         // execute emits `pool.execute(...)` — requires a preceding connect step.
@@ -901,7 +860,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_fetch_all_dispatch() {
         // fetch_all emits `...fetch_all(&pool)` — requires a preceding connect step.
@@ -914,7 +872,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_begin_dispatch() {
         // begin emits `pool.begin()` — requires a preceding connect step.
@@ -927,7 +884,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_commit_dispatch() {
         // commit emits `tx.commit()` — requires a preceding begin step.
@@ -940,7 +896,6 @@ mod smoke {
     }
 
     #[cfg_attr(feature = "ci", ignore)]
-
     #[test]
     fn emit_sqlx_workflow_rollback_dispatch() {
         // rollback emits `tx.rollback()` — requires a preceding begin step.
