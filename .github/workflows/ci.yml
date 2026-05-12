@@ -66,6 +66,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y libasound2-dev libudev-dev
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -92,49 +97,48 @@ jobs:
         include:
           - group: core
             features: "--no-default-features"
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
           - group: datetime-scalar
             features: >-
               --no-default-features
               --features chrono,time,jiff,uuid,url,regex,rand,serde,serde_json,emit,graph
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
           - group: storage
             features: >-
               --no-default-features
               --features csv-types,toml-types,redb-types
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
           - group: network
             features: >-
               --no-default-features
               --features reqwest,url,clap-types,sqlx-types,axum-types,tower-types,leptos-types
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
           - group: geo
             features: >-
               --no-default-features
               --features geo-types,geo,proj-types,rstar-types,geojson-types,wkt-types,wkb-types,georaster-types,serde_json
-            sys_deps: "libproj-dev"
+            sys_deps: "libasound2-dev libudev-dev libproj-dev"
 
           - group: analytics
             features: >-
               --no-default-features
               --features polars-types,uom-types,surreal-types,uuid,chrono,serde_json,geo-types
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
           - group: ui-light
             features: >-
               --no-default-features
               --features ratatui,egui-types,accesskit,palette
-            sys_deps: ""
+            sys_deps: "libasound2-dev libudev-dev"
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install system dependencies
-        if: matrix.sys_deps != ''
         run: |
           sudo apt-get update -q
           sudo apt-get install -y ${{ matrix.sys_deps }}
