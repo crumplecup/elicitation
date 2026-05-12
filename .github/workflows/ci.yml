@@ -29,6 +29,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          df -h /
+          sudo rm -rf /Applications/Xcode_14*.app /Applications/Xcode_15*.app /Applications/Xcode_16*.app 2>/dev/null || true
+          xcrun simctl delete all 2>/dev/null || true
+          sudo rm -rf ~/Library/Developer/CoreSimulator 2>/dev/null || true
+          brew cleanup -s 2>/dev/null || true
+          df -h /
+
       - name: Install system dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -38,6 +48,10 @@ jobs:
       - name: Install system dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: brew install proj
+
+      - name: Install system dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install sqlite --no-progress -y
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
