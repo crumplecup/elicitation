@@ -8,17 +8,9 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
-description = "Procedural macros for MCP tool generation, tracing instrumentation, and newtype wrapping in the elicitation framework"
-keywords = ["macros", "elicitation", "mcp", "procedural", "codegen"]
-categories = ["development-tools::procedural-macro-helpers"]
-
-[lib]
-proc-macro = true
-
-[dependencies]
-syn = { workspace = true }
-quote = { workspace = true }
-proc-macro2 = { workspace = true }
+description = "Helper macros for Kani formal verification in the elicitation framework"
+keywords = ["macros", "elicitation", "kani", "verification"]
+categories = ["development-tools"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

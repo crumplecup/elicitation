@@ -1,0 +1,140 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 0 124 63 *)
+
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 72 20 72 76
+let%span svec'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 42 20 42 29
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span slevel21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 125 40 125 41
+let%span slevel21'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 16 124 18
+let%span slevel21'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 30 124 37
+let%span slevel21'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 120 11 120 29
+let%span slevel21'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 121 11 121 81
+let%span slevel21'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 55 124 63
+let%span slevel21'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 122 10 122 33
+let%span slevel21'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 123 10 123 32
+let%span slevel21'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 87 8 93 9
+let%span slevel21'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 104 16 104 71
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.prelude.Any
+use creusot.prelude.Char
+use int.Int
+
+type t_Vec_String_Global
+
+type t_C21State = Empty | Loaded t_Vec_String_Global UInt64.t
+
+type t_String
+
+predicate inv_String (_1: t_String)
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec'0] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_C21State (_1: t_C21State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C21State [inv_C21State x]. inv_C21State x
+    = match x with
+      | Empty -> true
+      | Loaded entries cursor -> inv_Vec_String_Global entries
+      end
+
+predicate resolve_String (_1: t_String)
+
+function index_Vec_String_Global [@inline:trivial] (self: t_Vec_String_Global) (ix: int) : t_String =
+  [%#svec'2] Seq.get (view_Vec_String_Global self) ix
+
+meta "rewrite_def" function index_Vec_String_Global
+
+predicate resolve_Vec_String_Global [@inline:trivial] (self: t_Vec_String_Global) =
+  [%#svec'1] forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global self)
+    -> resolve_String (index_Vec_String_Global self i)
+
+meta "rewrite_def" predicate resolve_Vec_String_Global
+
+predicate resolve_Vec_String_Global'0 (_1: t_Vec_String_Global)
+
+axiom resolve_axiom: forall x: t_Vec_String_Global [resolve_Vec_String_Global'0 x]. resolve_Vec_String_Global'0 x
+    -> resolve_Vec_String_Global x
+
+predicate resolve_C21State (_1: t_C21State)
+
+axiom resolve_axiom'0 [@rewrite]: forall x: t_C21State [resolve_C21State x]. resolve_C21State x
+    = match x with
+      | Empty -> true
+      | Loaded x0 x1 -> resolve_Vec_String_Global'0 x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c21_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 85 0 85 43] (s: t_C21State) =
+  [%#slevel21'7] match s with
+    | Empty -> true
+    | Loaded entries cursor -> Seq.length (view_Vec_String_Global entries) > 0
+    /\ UInt64.t'int cursor < Seq.length (view_Vec_String_Global entries)
+    /\ (forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global entries)
+      -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)
+    end
+
+predicate c21_is_loaded [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 103 0 103 42] (s: t_C21State) =
+  [%#slevel21'8] match s with
+    | Loaded _ _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c21_load [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 0 124 63]
+  (_s: t_C21State) (entries: t_Vec_String_Global) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_load requires] ([@stop_split] [@expl:c21_load '_s' type invariant] [%#slevel21'0] inv_C21State _s)
+  /\ ([@stop_split] [@expl:c21_load 'entries' type invariant] [%#slevel21'1] inv_Vec_String_Global entries)
+  /\ ([@stop_split] [@expl:c21_load requires #0] [%#slevel21'2] Seq.length (view_Vec_String_Global entries) > 0)
+  /\ ([@stop_split] [@expl:c21_load requires #1] [%#slevel21'3] forall i: int. 0 <= i
+      /\ i < Seq.length (view_Vec_String_Global entries)
+    -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C21State _s} any) ]
+    | s1 = -{resolve_C21State _s}- s2
+    | s2 = [ &_ret <- Loaded entries ([%#slevel21] (0: UInt64.t)) ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C21State = Any.any_l () | & _s: t_C21State = _s | & entries: t_Vec_String_Global = entries ])
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_load ensures] ([@stop_split] [@expl:c21_load result type invariant] [%#slevel21'4] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_load ensures #0] [%#slevel21'5] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_load ensures #1] [%#slevel21'6] c21_is_loaded result)}
+    (! return {result}) ]

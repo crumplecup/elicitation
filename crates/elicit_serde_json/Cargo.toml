@@ -30,5 +30,7 @@ proc-macro2 = { workspace = true }
 
 [features]
 emit = ["elicitation/emit"]
-prompt-tree = ["elicitation/prompt-tree"]
 serde = []
+
+[lints]
+workspace = true

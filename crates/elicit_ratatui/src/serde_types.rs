@@ -4,6 +4,7 @@
 //! conversion to/from the corresponding ratatui type and derives
 //! `Serialize`, `Deserialize`, `JsonSchema` for MCP transport.
 
+use elicit_ui::ColorTheme;
 use elicitation::ToCodeLiteral;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -1096,5 +1097,14 @@ pub enum TuiNode {
         /// Outer margin.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         margin: Option<MarginJson>,
+    },
+    /// A Zellij-style keybinding status bar rendered as a single-line strip.
+    ///
+    /// Each chip is a `(key_label, action_description)` pair.
+    StatusBar {
+        /// Key/action chip pairs.
+        chips: Vec<(String, String)>,
+        /// Color theme.
+        theme: ColorTheme,
     },
 }

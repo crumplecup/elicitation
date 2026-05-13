@@ -1,193 +1,32 @@
-//! Proof-carrying validation for ledger transfers using elicitation contracts.
+//! Transfer-level proof propositions for the ledger typestate machine.
 //!
-//! This module defines propositions (type-level statements) that must be proven
-//! before a transfer can proceed. Proofs are zero-cost (`PhantomData`) but enforce
-//! validation at compile time.
+//! These propositions are structural proof tokens — they carry no runtime data and
+//! compose freely with `both()` / `And<A, B>`. Backends establish them by calling
+//! `Established::assert()` after satisfying the stated criterion.
 
-use elicitation::contracts::{And, Prop};
-use quote::quote;
-
-// ─────────────────────────────────────────────────────────────
-//  Basic Propositions
-// ─────────────────────────────────────────────────────────────
-
-/// Proposition: The transfer amount is positive (> 0).
+use elicitation::contracts::And;
+/// Transfer amount is positive (> 0).
+///
+/// Source: pre-ASC ledger invariant — amounts must be non-zero and non-negative.
+#[derive(elicitation::Prop)]
 pub struct AmountPositive;
 
-impl Prop for AmountPositive {
-    fn kani_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[kani::proof]
-            fn verify_amount_positive() {
-                let amount: i64 = kani::any();
-                kani::assume(amount > 0);
-                assert!(amount > 0, "Amount must be positive");
-            }
-        }
-    }
-
-    fn verus_proof() -> proc_macro2::TokenStream {
-        quote! {
-            verus! {
-                pub fn verify_amount_positive(amount: i64) -> (result: bool)
-                    requires amount > 0,
-                    ensures result == true,
-                {
-                    true
-                }
-            }
-        }
-    }
-
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[requires(amount > 0)]
-            #[ensures(result == true)]
-            #[trusted]
-            pub fn verify_amount_positive(amount: i64) -> bool {
-                true
-            }
-        }
-    }
-}
-
-/// Proposition: The source account has sufficient funds.
+/// Source account holds at least the transfer amount.
+///
+/// Source: pre-ASC ledger invariant — no overdraft without explicit credit facility.
+#[derive(elicitation::Prop)]
 pub struct SufficientFunds;
 
-impl Prop for SufficientFunds {
-    fn kani_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[kani::proof]
-            fn verify_sufficient_funds() {
-                let balance: i64 = kani::any();
-                let amount: i64 = kani::any();
-                kani::assume(amount > 0);
-                kani::assume(balance >= amount);
-                assert!(balance - amount >= 0, "Sufficient funds required");
-            }
-        }
-    }
-
-    fn verus_proof() -> proc_macro2::TokenStream {
-        quote! {
-            verus! {
-                pub fn verify_sufficient_funds(balance: i64, amount: i64) -> (result: bool)
-                    requires amount > 0,
-                    requires balance >= amount,
-                    ensures result == true,
-                    ensures balance - amount >= 0,
-                {
-                    true
-                }
-            }
-        }
-    }
-
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[requires(amount > 0)]
-            #[requires(balance >= amount)]
-            #[ensures(result == true)]
-            #[ensures(balance - amount >= 0)]
-            #[trusted]
-            pub fn verify_sufficient_funds(balance: i64, amount: i64) -> bool {
-                true
-            }
-        }
-    }
-}
-
-/// Proposition: The source and destination accounts are distinct.
+/// Source and destination accounts are distinct.
+///
+/// Source: ASC 230 — Statement of Cash Flows; gross vs. net presentation.
+#[derive(elicitation::Prop)]
 pub struct AccountsDistinct;
 
-impl Prop for AccountsDistinct {
-    fn kani_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[kani::proof]
-            fn verify_accounts_distinct() {
-                let from: u32 = kani::any();
-                let to: u32 = kani::any();
-                kani::assume(from != to);
-                assert!(from != to, "Accounts must be distinct");
-            }
-        }
-    }
-
-    fn verus_proof() -> proc_macro2::TokenStream {
-        quote! {
-            verus! {
-                pub fn verify_accounts_distinct(from: u32, to: u32) -> (result: bool)
-                    requires from != to,
-                    ensures result == true,
-                {
-                    true
-                }
-            }
-        }
-    }
-
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[requires(from != to)]
-            #[ensures(result == true)]
-            #[trusted]
-            pub fn verify_accounts_distinct(from: u32, to: u32) -> bool {
-                true
-            }
-        }
-    }
-}
-
-/// Proposition: The ledger entries balance (debit + credit = 0).
+/// Debit entry and credit entry balance (debit + credit = 0).
+///
+/// Source: pre-ASC foundational double-entry requirement.
+#[derive(elicitation::Prop)]
 pub struct BalancedEntries;
-
-impl Prop for BalancedEntries {
-    fn kani_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[kani::proof]
-            fn verify_balanced_entries() {
-                let debit: i64 = kani::any();
-                let credit: i64 = kani::any();
-                kani::assume(debit < 0);  // Debits are negative
-                kani::assume(credit > 0);  // Credits are positive
-                kani::assume(debit + credit == 0);  // Must balance
-                assert!(debit + credit == 0, "Entries must balance");
-            }
-        }
-    }
-
-    fn verus_proof() -> proc_macro2::TokenStream {
-        quote! {
-            verus! {
-                pub fn verify_balanced_entries(debit: i64, credit: i64) -> (result: bool)
-                    requires debit < 0,
-                    requires credit > 0,
-                    requires debit + credit == 0,
-                    ensures result == true,
-                {
-                    true
-                }
-            }
-        }
-    }
-
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        quote! {
-            #[requires(debit < 0)]
-            #[requires(credit > 0)]
-            #[requires(debit + credit == 0)]
-            #[ensures(result == true)]
-            #[trusted]
-            pub fn verify_balanced_entries(debit: i64, credit: i64) -> bool {
-                true
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────
-//  Composite Propositions
-// ─────────────────────────────────────────────────────────────
-
-/// Composite: A transfer is valid (positive amount AND sufficient funds AND distinct accounts).
+/// Composite: transfer is valid when amount, funds, and account identity all hold.
 pub type ValidTransfer = And<AmountPositive, And<SufficientFunds, AccountsDistinct>>;

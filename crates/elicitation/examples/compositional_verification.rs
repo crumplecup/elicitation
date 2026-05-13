@@ -129,7 +129,6 @@ use layer2::{AppMetadata, NetworkConfig};
 
 mod layer3 {
     use super::*;
-    use elicitation::{Prompt, Select};
 
     /// Complete application configuration.
     ///

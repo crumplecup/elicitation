@@ -79,7 +79,7 @@ pub fn verify_length_overflow<const MAX_LEN: usize>(
 #[cfg(creusot)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_empty_utf8() -> Result<Utf8Bytes<10>, ValidationError> {
-    let bytes = [0u8; 10];
+    let bytes = [0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8];
     Utf8Bytes::new(bytes, 0)
 }
 

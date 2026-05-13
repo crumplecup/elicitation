@@ -60,6 +60,8 @@ mod enums;
 mod geometry;
 mod node;
 mod node_id;
+pub mod sql;
+mod status_bar;
 mod structs;
 mod tree_update;
 
@@ -69,8 +71,9 @@ pub use enums::{
     VerticalOffset,
 };
 pub use geometry::{Affine, Point, Rect, Size, Vec2};
-pub use node::NodeJson;
+pub use node::{NodeJson, node_label};
 pub use node_id::{NodeId, TreeId};
+pub use status_bar::{ColorTheme, KeyBinding, StatusBarDescriptor};
 pub use structs::{Color, CustomAction, TextDecoration, TextPosition, TextSelection, Tree};
 pub use tree_update::{NodeEntry, TreeUpdateJson};
 

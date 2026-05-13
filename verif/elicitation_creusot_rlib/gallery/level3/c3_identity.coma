@@ -1,0 +1,26 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 79 0 79 39 *)
+
+let%span slevel3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 77 11 77 27
+let%span slevel3'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 78 10 78 31
+let%span slevel3'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 69 4 72 5
+
+use creusot.prelude.Any
+
+type t_GState = Active | Inactive
+
+predicate c3_invariant [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 68 0 68 39] (s: t_GState) =
+  [%#slevel3'1] match s with
+    | Active -> true
+    | Inactive -> true
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c3_identity [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level3.rs" 79 0 79 39]
+  (s: t_GState) (return (x: t_GState)) = {[@stop_split] [@expl:c3_identity requires] [%#slevel3] c3_invariant s}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- s ] s1 | s1 = return {_ret} ] ] [ & _ret: t_GState = Any.any_l () | & s: t_GState = s ])
+  [ return (result: t_GState) -> {[@stop_split] [@expl:c3_identity ensures] [%#slevel3'0] c3_invariant result}
+    (! return {result}) ]

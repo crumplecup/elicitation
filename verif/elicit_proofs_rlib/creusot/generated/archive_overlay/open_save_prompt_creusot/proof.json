@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_open_save_prompt": { "prover": "cvc5", "time": 0.015 },
+      "vc_open_save_prompt_creusot": { "prover": "cvc5", "time": 0.013 }
+    }
+  }
+}

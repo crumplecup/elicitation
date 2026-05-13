@@ -145,7 +145,7 @@ impl EmitRewriter {
                         // Emit: { println!(...); return Ok(()); }
                         let inner: TokenStream = rewritten
                             .into_iter()
-                            .chain(quote::quote! { ; return Ok(()) }.into_iter())
+                            .chain(quote::quote! { ; return Ok(()) })
                             .collect();
                         let group = Group::new(Delimiter::Brace, inner);
                         output.push(TokenTree::Group(group));
@@ -451,9 +451,6 @@ fn find_workspace_root(manifest_dir: &str) -> Option<std::path::PathBuf> {
         {
             return Some(dir);
         }
-        match dir.parent() {
-            Some(parent) => dir = parent.to_path_buf(),
-            None => return None,
-        }
+        dir = dir.parent()?.to_path_buf();
     }
 }

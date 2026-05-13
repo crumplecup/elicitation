@@ -1,0 +1,37 @@
+[package]
+name = "elicit_gis"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Geospatial contract interface — Props, traits, and types for GIS domain boundaries"
+keywords = ["gis", "contracts", "crs", "geospatial", "elicitation"]
+categories = ["science", "rust-patterns"]
+
+[dependencies]
+elicitation = { workspace = true }
+elicitation_derive.workspace = true
+rmcp.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+schemars.workspace = true
+derive_more.workspace = true
+futures.workspace = true
+tracing.workspace = true
+strum = { workspace = true, features = ["derive"] }
+proc-macro2.workspace = true
+quote.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

@@ -8,12 +8,14 @@
 ## Why ndarray is "Similar but Also Widely Used"
 
 **Similar to nalgebra:**
+
 - Natural JSON serialization (arrays → nested JSON)
 - Synchronous operations (no async)
 - Concrete methods on types (not trait-heavy)
 - Clear taxonomy (creation → indexing → operations → manipulation)
 
 **Different from nalgebra:**
+
 - **General N-D arrays** (not just 2D matrices) — up to 6 static dimensions (Ix0-Ix6) + dynamic (IxDyn)
 - **Broadcasting semantics** — element-wise ops across different shapes (like NumPy)
 - **Parallel operations** — rayon integration for data parallelism
@@ -21,6 +23,7 @@
 - **NumPy compatibility** — familiar API for Python users
 
 **Wider adoption:**
+
 - Foundation for scientific computing ecosystem (ndarray-linalg, ndarray-stats, ndarray-rand)
 - Used by: polars, image processing, ML libraries, scientific simulations
 - NumPy mental model attracts Python → Rust migrations
@@ -43,6 +46,7 @@ where
 ```
 
 **Type aliases:**
+
 ```rust
 type Array<A, D> = ArrayBase<OwnedRepr<A>, D>;        // Owned
 type ArrayView<'a, A, D> = ArrayBase<ViewRepr<&'a A>, D>; // Borrowed (lifetime!)
@@ -70,6 +74,7 @@ type ArcArray<A, D> = ArrayBase<ArcArray<A>, D>;      // Shared
 Tools that both execute at runtime AND emit code via `CustomEmit`:
 
 #### Array Creation (60)
+
 - **From data** (15): `array_from_vec`, `array_from_shape_vec`, `array_from_elem`, `array_from_fn`, etc.
 - **Ranges** (10): `array_range`, `array_linspace`, `array_logspace`, `array_geomspace`, etc.
 - **Special values** (10): `array_zeros`, `array_ones`, `array_eye`, `array_full`, etc.
@@ -78,12 +83,14 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Type conversion** (5): `array_from_diag`, `array_from_shape_fn`, etc.
 
 #### Indexing & Slicing (50)
+
 - **Element access** (10): `array_get`, `array_index`, `array_get_mut`, `array_uget` (unchecked), etc.
 - **Slicing** (20): `array_slice`, `array_slice_mut`, `slice_axis`, `slice_collapse`, `slice_each_axis`, etc.
 - **Views** (10): `array_view`, `array_view_mut`, `into_slice`, `as_slice_memory_order`, etc.
 - **Iteration** (10): `array_iter`, `iter_mut`, `indexed_iter`, `axis_iter`, `outer_iter`, etc.
 
 #### Arithmetic Operations (50)
+
 - **Element-wise binary** (15): `array_add`, `array_sub`, `array_mul`, `array_div`, `array_rem`, `array_bitand`, etc.
 - **Element-wise unary** (10): `array_neg`, `array_abs`, `array_recip`, `array_mapv`, `array_mapv_inplace`, etc.
 - **Scalar ops** (10): `array_add_scalar`, `array_mul_scalar`, `array_pow_scalar`, etc.
@@ -91,22 +98,26 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Logical** (5): `array_and`, `array_or`, `array_not`, `array_xor`, etc.
 
 #### Broadcasting (30)
+
 - **Auto broadcast** (15): `broadcast_add`, `broadcast_mul`, `broadcast_to`, `broadcast_to_shape`, etc.
 - **Manual broadcast** (10): `insert_axis`, `broadcast_axis`, `remove_axis`, `expand_dims`, etc.
 - **Shape ops** (5): `broadcast_with`, `broadcast_iter`, etc.
 
 #### Aggregations (40)
+
 - **Full reductions** (15): `sum`, `mean`, `var`, `std`, `min`, `max`, `product`, `all`, `any`, etc.
 - **Axis reductions** (15): `sum_axis`, `mean_axis`, `var_axis`, `min_axis`, `max_axis`, etc.
 - **Cumulative** (10): `accumulate_axis_inplace`, `scan_axis`, etc.
 
 #### Linear Algebra (40)
+
 - **Matrix ops** (15): `dot`, `matrix_mul`, `outer`, `inner`, `kron`, `vdot`, etc.
 - **Transpose/reshape** (10): `transpose`, `t`, `reversed_axes`, `permuted_axes`, `swap_axes`, etc.
 - **Norms** (10): `norm`, `norm_l1`, `norm_l2`, `norm_linf`, `norm_axis`, etc.
 - **Decompositions** (5): References to ndarray-linalg (SVD, QR, etc. — separate shadow crate)
 
 #### Manipulation (60)
+
 - **Concatenation** (10): `concatenate`, `stack`, `append`, `append_axis`, etc.
 - **Splitting** (10): `split_at`, `split_axis`, `split_complex`, etc.
 - **Reshape** (15): `reshape`, `into_shape`, `reshape_with_order`, `into_dyn`, `into_dimensionality`, etc.
@@ -115,11 +126,13 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Cloning** (5): `clone`, `to_owned`, `into_shared`, `into_owned`, etc.
 
 #### Element-wise Functions (40)
+
 - **Math** (20): `map`, `mapv`, `mapv_inplace`, `zip_mut_with`, `fold`, `fold_axis`, etc.
 - **Apply** (10): `map_axis`, `map_axis_mut`, `accumulate_axis_inplace`, etc.
 - **Zip** (10): `zip`, `azip`, `par_azip` (parallel), `zip_mut_with`, etc.
 
 #### I/O and Serialization (30)
+
 - **CSV** (10): `read_csv`, `write_csv`, `from_csv_string`, `to_csv_string`, etc.
 - **Binary** (10): `serialize`, `deserialize`, `to_bytes`, `from_bytes`, etc.
 - **Display** (10): `to_string`, `fmt_table`, `display_shape`, etc.
@@ -129,6 +142,7 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 Code generation for generic dimensions, parallel operations, and complex patterns:
 
 #### Generic Dimension Code (30)
+
 - `emit_array_type` — `Array<T, Ix2>`, `ArrayD<f64>`, generic `Array<T, D>`
 - `emit_function_generic_dim` — Functions with `D: Dimension` parameter
 - `emit_fixed_dim_function` — Functions for specific Ix1, Ix2, etc.
@@ -137,6 +151,7 @@ Code generation for generic dimensions, parallel operations, and complex pattern
 - And 25 more for dimension-generic patterns
 
 #### Parallel Operation Code (20)
+
 - `emit_par_map_inplace` — Parallel element-wise modification
 - `emit_par_azip` — Parallel zip macro invocations
 - `emit_par_chunks` — Parallel chunk processing
@@ -144,12 +159,14 @@ Code generation for generic dimensions, parallel operations, and complex pattern
 - And 16 more for parallel patterns
 
 #### Broadcasting Code (15)
+
 - `emit_broadcast_binary_op` — Generate broadcasting arithmetic
 - `emit_explicit_broadcast` — Manual broadcast with shape checks
 - `emit_broadcast_assign` — Broadcasted assignment
 - And 12 more for broadcast patterns
 
 #### Complete Assembly (15)
+
 - `emit_module_ndarray` — Complete ndarray module
 - `emit_struct_with_arrays` — Structs containing array fields
 - `emit_impl_block_array_ops` — Impl blocks with array operations
@@ -169,6 +186,7 @@ UUID-keyed handles for persistent arrays and workflows:
 | **ParallelRegistry** | `parallel_map`, `parallel_reduce`, `parallel_zip` | 5 |
 
 **Why handles?**
+
 - Long-lived arrays in agent workflows
 - Chained transformations without full serialization
 - Shared arrays across multiple operations (ArcArray)
@@ -872,11 +890,13 @@ async fn view_create_slice(p: ViewSliceParams) -> Result<CallToolResult, ErrorDa
 ## Relationship to ndarray-linalg
 
 **ndarray-linalg** is a separate crate providing advanced linear algebra (LAPACK/OpenBLAS bindings):
+
 - SVD, QR, LU, Cholesky decompositions
 - Eigenvalue/eigenvector computations
 - Matrix inverse, determinant, rank
 
 **Strategy:**
+
 - **elicit_ndarray** focuses on core array operations (this plan)
 - **elicit_ndarray_linalg** would be a separate shadow crate (future plan)
 - Reference ndarray-linalg in Phase 3 tools, but defer advanced decompositions
@@ -971,6 +991,7 @@ async fn array_svd(p: SvdParams) -> Result<CallToolResult, ErrorData> {
 | **Key feature** | Geometric types + decompositions | Broadcasting + NumPy compatibility |
 
 Both are "straightforward" because:
+
 - Natural JSON serialization
 - Synchronous operations
 - Concrete methods (not trait-heavy)

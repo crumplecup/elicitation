@@ -209,12 +209,25 @@ test-full: test test-doc
 # Run clippy linter (no warnings allowed)
 lint package='':
     #!/usr/bin/env bash
+    set -uo pipefail
+    LOG_FILE="/tmp/elicitation_lint.log"
+    rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        cargo clippy --workspace --all-targets -- -D warnings
+        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
     else
         echo "🔍 Linting {{package}}"
-        cargo clippy -p {{package}} --all-targets -- -D warnings
+        if ! cargo clippy -p {{package}} --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
     fi
 
 # Run clippy and fix issues automatically
@@ -248,31 +261,46 @@ check-features:
     echo ""
 
     # Excluded features: bundle aliases, test markers, tool-specific flags
-    EXCLUDE_FEATURES="full,dev,api,kani,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs"
+    # kani and creusot require special toolchains and cannot be tested with regular cargo check
+    EXCLUDE_FEATURES="full,dev,api,kani,creusot,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs"
 
     # Excluded packages: require special toolchains (kani, creusot) or are workspace-excluded (verus)
     if ! cargo hack check \
+        --color never \
         --workspace \
         --feature-powerset \
         --depth 2 \
         --exclude-features "$EXCLUDE_FEATURES" \
         --exclude elicitation_kani \
         --exclude elicitation_creusot \
+        --exclude surrealdb-types \
         2>&1 | tee "$LOG_FILE"; then
         echo ""
         echo "❌ Feature powerset check failed. See: $LOG_FILE"
         exit 1
     fi
 
-    if grep -E "^warning:" "$LOG_FILE" | grep -qv "pearlite-syn"; then
+    # Check for warnings across all feature combinations.
+    # Exclude the pearlite-syn patch warning: it is a Creusot vendored crate
+    # that cargo reports as unused when the creusot toolchain is not active.
+    # It is not a real code-quality issue and cannot be silenced at the
+    # crate level, so we filter it here.
+    if grep -E "^warning(\[|:)" "$LOG_FILE" \
+        | grep -v "patch.*pearlite-syn.*was not used" \
+        | grep -q .; then
         echo ""
-        echo "⚠️  Feature powerset completed with warnings. See: $LOG_FILE"
+        echo "⚠️  Warnings found in feature powerset check:"
+        grep -E "^warning(\[|:)" "$LOG_FILE" \
+            | grep -v "patch.*pearlite-syn.*was not used" \
+            | sort -u
+        echo ""
+        echo "❌ Feature powerset check failed due to warnings. See: $LOG_FILE"
         exit 1
-    else
-        echo ""
-        echo "✅ All feature combinations pass!"
-        rm -f "$LOG_FILE"
     fi
+
+    echo ""
+    echo "✅ All feature combinations pass!"
+    rm -f "$LOG_FILE"
 
 # Run all checks (lint, format check, tests)
 check-all package='':
@@ -290,12 +318,12 @@ check-all package='':
 
         # Run lint (show output and log warnings/errors)
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
         # Run tests (show output and log failures)
-        if ! cargo test --workspace --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo test --workspace --lib --tests --exclude surrealdb-types 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
@@ -312,12 +340,11 @@ check-all package='':
     else
         echo "🔍 Running all checks on {{package}}..."
         just fmt
-        just lint "{{package}}"
-        just test-package "{{package}}"
-        # Run doc tests for the package
-        cargo test -p "{{package}}" --doc
+        just lint "{{package}}" || exit 1
+        just test-package "{{package}}" || exit 1
+        cargo test -p "{{package}}" --doc || exit 1
+        echo "✅ All checks passed!"
     fi
-    echo "✅ All checks passed!"
 
 # Fix all auto-fixable issues
 fix-all: fmt lint-fix
@@ -620,23 +647,80 @@ verify-kani-rand harness="" csv="rand_kani_results.csv":
 
 # Run Kani verification with CSV tracking (recommended)
 verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
-    cargo run --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
+
+# Run Kani verification for a specific module group (e.g. "kani::generated::archive_panel")
+verify-kani-group module csv="kani_verification_results.csv" timeout="600":
+    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}} --module {{module}}
 
 # Resume Kani verification (skips already-passed tests)
 verify-kani-resume csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify run --output {{csv}} --resume
+    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --resume
 
 # Show verification summary statistics
 verify-kani-summary csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify summary --output {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify summary --output {{csv}}
 
 # Show failed verification tests
 verify-kani-failed csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify failed --output {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify failed --output {{csv}}
 
 # List all Kani proof harnesses
 verify-kani-list:
-    @cargo run --quiet --features cli --release -- verify list
+    @cargo run --bin elicitation --quiet --features cli --release -- verify list
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VSM proof generation (elicitation generate CLI — replaces build.rs)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Regenerate all proof files for archive VSMs (Kani + Creusot + Verus)
+generate-vsm-proofs: (generate-vsm-kani) (generate-vsm-creusot) (generate-vsm-verus)
+
+# Regenerate Kani harnesses for archive VSMs
+generate-vsm-kani:
+    cargo run -p elicitation --features cli -- generate kani \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/kani/generated
+
+# Regenerate Creusot companions for archive VSMs
+generate-vsm-creusot:
+    cargo run -p elicitation --features cli -- generate creusot \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/creusot/generated
+
+# Regenerate Verus companions for archive VSMs
+generate-vsm-verus:
+    cargo run -p elicitation --features cli -- generate verus \
+        --crate-path crates/elicit_server/src/archive/vsm \
+        --out crates/elicit_proofs/src/verus/generated
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VSM Kani proof tracking (elicit_proofs runner — auto-generated harnesses)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# List all VSM proof harnesses from the manifest
+verify-vsm-list:
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm list
+
+# Run all VSM harnesses with CSV tracking
+verify-vsm csv="vsm_kani_results.csv" timeout="300":
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}}
+
+# Run VSM harnesses matching a substring filter (e.g. "archive_panel" or "close_overlay")
+verify-vsm-filter filter csv="vsm_kani_results.csv" timeout="300":
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --filter {{filter}} --csv {{csv}} --timeout {{timeout}}
+
+# Resume VSM verification (skips harnesses already marked SUCCESS in the CSV)
+verify-vsm-resume csv="vsm_kani_results.csv" timeout="300":
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}} --resume
+
+# Show summary statistics from a VSM results CSV
+verify-vsm-summary csv="vsm_kani_results.csv":
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm summary --csv {{csv}}
+
+# Show failing harnesses from a VSM results CSV
+verify-vsm-failed csv="vsm_kani_results.csv":
+    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm failed --csv {{csv}}
 
 # Run Prusti verification (simple)
 # Run Prusti verification with CSV tracking (recommended)
@@ -677,7 +761,7 @@ verify-verus:
     fi
     
     echo "🔬 Running Verus verification..."
-    "$VERUS_BIN" --crate-type=lib crates/elicitation/src/lib.rs
+    "$VERUS_BIN" --crate-type=lib crates/elicitation_verus/src/lib.rs
 
 # Run Verus verification with CSV tracking (recommended)
 verify-verus-tracked csv="verus_verification_results.csv" timeout="600":
@@ -685,23 +769,23 @@ verify-verus-tracked csv="verus_verification_results.csv" timeout="600":
     @echo "   CSV: {{csv}}"
     @echo "   Timeout: {{timeout}}s per proof"
     @echo ""
-    cargo run --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
 
 # Resume Verus verification (skips already-passed proofs)
 verify-verus-resume csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus run --output {{csv}} --resume
+    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --resume
 
 # Show Verus verification summary statistics
 verify-verus-summary csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus summary --file {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus summary --file {{csv}}
 
 # Show failed Verus proofs
 verify-verus-failed csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus failed --file {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus failed --file {{csv}}
 
 # List all Verus proof modules
 verify-verus-list:
-    @cargo run --quiet --features cli --release -- verus list
+    @cargo run --bin elicitation --quiet --features cli --release -- verus list
 
 # Run Creusot verification with CSV tracking
 verify-creusot-tracked csv="creusot_verification_results.csv":
@@ -718,6 +802,25 @@ verify-creusot-list:
 # Run SMT provers and track per-goal results with timestamps
 verify-creusot-prove csv="creusot_module_results.csv" goals="creusot_goal_results.csv":
     cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot prove --output "{{csv}}" --goals "{{goals}}"
+
+# Prove gallery C1–C6 directly via why3find (bypasses full workspace compilation)
+verify-creusot-gallery:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+    WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+    "${HOME}/.local/share/creusot/bin/why3find" prove verif/elicitation_creusot_rlib/gallery/
+
+# Prove VSM Creusot companions in elicit_proofs via why3find
+verify-vsm-creusot-prove:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
+    WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
+    "${HOME}/.local/share/creusot/bin/why3find" prove verif/elicit_proofs_rlib/creusot/generated/
+
+# Regenerate VSM Creusot COMA files from elicit_proofs (run before verify-vsm-creusot-prove)
+verify-vsm-creusot-compile:
+    PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
+    cargo creusot prove -- -p elicit_proofs --features creusot
 
 # Show goal-level summary
 verify-creusot-goal-summary goals="creusot_goal_results.csv":

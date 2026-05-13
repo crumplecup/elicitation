@@ -7,6 +7,7 @@ members = [
   # Verification
   "crates/elicitation_creusot",
   "crates/elicitation_kani",
+  "crates/elicit_proofs",
   "crates/elicitation_rand",
   # Third-party integrations
   "crates/elicit_accesskit",
@@ -24,13 +25,45 @@ members = [
   "crates/elicit_std",
   "crates/elicit_time",
   "crates/elicit_tokio",
+  "crates/elicit_tower",
+  "crates/elicit_axum",
   "crates/elicit_ui",
+  "crates/elicit_geo_types",
+  "crates/elicit_geo",
   "crates/elicit_url",
   "crates/elicit_uuid",
+  "crates/elicit_uom",
+  "crates/elicit_leptos",
+  "crates/elicit_db",
+  "crates/elicit_wkt",
+  "crates/elicit_wkb",
+  "crates/elicit_geojson",
+  "crates/elicit_georaster",
+  "crates/elicit_rstar",
+  "crates/elicit_proj",
+  "crates/elicit_gis",
+  "crates/elicit_winit",
+  "crates/elicit_wgpu",
+  "crates/elicit_bevy",
+  "crates/elicit_redb",
+  "crates/elicit_csv",
+  "crates/elicit_toml",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
-exclude = ["crates/elicitation_verus"]
+exclude = [
+  "crates/elicitation_verus",
+  # polars-arrow pins chrono <=0.4.41 which conflicts with the workspace chrono 0.4.43.
+  # elicit_polars can be checked independently: cargo check --manifest-path crates/elicit_polars/Cargo.toml
+  "crates/elicit_polars",
+  # surrealdb-core pins i_overlay ^4.0 which conflicts with geo 0.33 (needs i_overlay ^4.5).
+  # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
+  "crates/elicit_surrealdb",
+  # vendored copy of surrealdb-types (patched to allow geo 0.33). Exclude from
+  # workspace membership so `--workspace --all-targets` does not lint its test
+  # targets (which contain third-party unwrap() calls we cannot change).
+  "vendor/surrealdb-types-3.0.5",
+]
 resolver = "2"
 
 [workspace.package]
@@ -46,6 +79,10 @@ readme = "README.md"
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(feature, values("verify-kani", "verify-creusot", "verify-verus", "verify-all"))',
+  'cfg(kani)',
+  'cfg(creusot)',
+  'cfg(verus)',
+  'cfg(prusti)',
 ] }
 
 [workspace.dependencies]
@@ -54,6 +91,7 @@ elicitation = { path = "crates/elicitation", version = "0.10.0" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.10.0" }
 elicitation_macros = { path = "crates/elicitation_macros", version = "0.10.0" }
 elicitation_kani = { path = "crates/elicitation_kani", version = "0.10.0" }
+elicit_proofs = { path = "crates/elicit_proofs", version = "0.10.0" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.10.0" }
 elicit_accesskit = { path = "crates/elicit_accesskit", version = "0.10.0" }
 elicit_chrono = { path = "crates/elicit_chrono", version = "0.10.0" }
@@ -69,12 +107,33 @@ elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.10.0" }
 elicit_std = { path = "crates/elicit_std", version = "0.10.0" }
 elicit_time = { path = "crates/elicit_time", version = "0.10.0" }
 elicit_tokio = { path = "crates/elicit_tokio", version = "0.10.0" }
+elicit_tower = { path = "crates/elicit_tower", version = "0.10.0" }
+elicit_axum = { path = "crates/elicit_axum", version = "0.10.0" }
 elicit_ui = { path = "crates/elicit_ui", version = "0.10.0" }
+elicit_geo_types = { path = "crates/elicit_geo_types", version = "0.10.0" }
+elicit_geo = { path = "crates/elicit_geo", version = "0.10.0" }
 elicit_url = { path = "crates/elicit_url", version = "0.10.0" }
 elicit_uuid = { path = "crates/elicit_uuid", version = "0.10.0" }
+elicit_uom = { path = "crates/elicit_uom", version = "0.10.0" }
+elicit_leptos = { path = "crates/elicit_leptos", version = "0.10.0" }
+elicit_db = { path = "crates/elicit_db", version = "0.10.0" }
+elicit_wkt = { path = "crates/elicit_wkt", version = "0.10.0" }
+elicit_wkb = { path = "crates/elicit_wkb", version = "0.10.0" }
+elicit_geojson = { path = "crates/elicit_geojson", version = "0.10.0" }
+elicit_georaster = { path = "crates/elicit_georaster", version = "0.10.0" }
+elicit_rstar = { path = "crates/elicit_rstar", version = "0.10.0" }
+elicit_proj = { path = "crates/elicit_proj", version = "0.10.0" }
+elicit_gis = { path = "crates/elicit_gis", version = "0.10.0" }
+elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
+elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
+elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
+elicit_redb = { path = "crates/elicit_redb", version = "0.10.0" }
+elicit_csv = { path = "crates/elicit_csv", version = "0.10.0" }
+elicit_toml = { path = "crates/elicit_toml", version = "0.10.0" }
+elicit_server = { path = "crates/elicit_server", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
-rmcp = { version = "1.3", features = [
+rmcp = { version = "1.5", features = [
   "client",
   "transport-io",
   "schemars",
@@ -97,6 +156,7 @@ derive_more = { version = "2", features = [
   "as_ref",
 ] }
 anyhow = "1.0"
+libc = "0"
 
 # ── Derive utilities ──────────────────────────────────────────────────────────
 derive-getters = "0.5"
@@ -111,6 +171,9 @@ proc-macro2 = "1"
 heck = "0.5"
 prettyplease = "0.2"
 toml = "1"
+toml_edit = { version = "0.25", features = ["default"] }
+toml_datetime = { version = "1.1", features = ["serde"] }
+walkdir = "2"
 
 # ── Tracing ───────────────────────────────────────────────────────────────────
 tracing = "0.1"
@@ -135,14 +198,36 @@ async-trait = "0.1"
 # ── UI ────────────────────────────────────────────────────────────────────────
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
 egui = { version = "0.34", features = ["serde"] }
+egui-winit = { version = "0.34" }
+egui-wgpu = { version = "0.34", features = ["winit"] }
 ratatui = { version = "0.30", default-features = false, features = ["serde"] }
-crossterm = { version = "0.29", default-features = false }
+crossterm = { version = "0.29", default-features = false, features = [
+  "event-stream",
+] }
 eframe = { version = "0.34", default-features = false, features = [
   "default_fonts",
   "glow",
 ] }
 
 # ── Database ──────────────────────────────────────────────────────────────────
+redb = "4"
+# surrealdb-types 3.x pins geo = "^0.32" but our workspace uses geo 0.33.
+# We vendor the crate and change that pin to 0.33 to unify the dep graph.
+# The [patch.crates-io] table below ensures surrealdb-core also resolves to
+# this vendored copy (and therefore geo 0.33) rather than the upstream one.
+surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
+surrealdb = { version = "3.0.5", features = [
+  "protocol-ws",
+  "protocol-http",
+  "rustls",
+  "kv-mem",
+  "kv-rocksdb",
+  "kv-surrealkv",
+  "jwks",
+  "http",
+  "scripting",
+] }
+rust_decimal = "1"
 sqlx = { version = "0.8", features = [
   "runtime-tokio",
   "tls-native-tls",
@@ -151,12 +236,16 @@ sqlx = { version = "0.8", features = [
   "sqlite",
   "mysql",
   "macros",
+  "uuid",
+  "chrono",
 ] }
+dotenvy = "0.15"
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 clap = { version = "4", features = ["derive", "string"] }
-csv = "1.3"
+csv = "1.4"
 shellexpand = "3.1"
+indicatif = "0.18"
 
 # ── DateTime ──────────────────────────────────────────────────────────────────
 chrono = { version = "0.4", features = ["serde"] }
@@ -169,7 +258,7 @@ time = { version = "0.3", features = [
 jiff = { version = "0.2", features = ["serde"] }
 
 # ── UUID / Encoding ───────────────────────────────────────────────────────────
-uuid = { version = "1.0", features = ["v4", "serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
 hex = "0.4"
 
 # ── Random ────────────────────────────────────────────────────────────────────
@@ -178,16 +267,40 @@ rand_chacha = "0.10"
 
 # ── Network / HTTP ────────────────────────────────────────────────────────────
 url = { version = "2.5", features = ["serde"] }
-http = "1.0"
-bytes = "1.0"
+http = "1"
+http-body = "1"
+axum = { version = "0.8", features = ["macros", "ws", "multipart", "form"] }
+axum-core = "0.5"
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.6", features = ["full"] }
+bytes = "1"
 reqwest = { version = "0.13", features = ["json", "cookies", "stream"] }
+leptos = { version = "0.8", features = ["ssr"] }
+leptos_axum = "0.8"
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
 
 # ── Regex ─────────────────────────────────────────────────────────────────────
 regex = "1.12"
 
 # ── Spatial ───────────────────────────────────────────────────────────────────
-geo = "0.32"
+geo = "0.33"
 geo-types = "0.7"
+rstar = { version = "0.12", features = ["serde"] }
+georaster = { version = "0.2", default-features = false }
+proj = "0.31"
+geojson = { version = "1", features = ["geo-types"] }
+winit = { version = "0.30", features = ["serde"] }
+wgpu = { version = "29", default-features = false, features = [
+  "wgsl",
+  "serde",
+] }
+bevy = { version = "0.18", default-features = false }
+tiff = "0.9.1"
+
+# ── Well-Known Text ───────────────────────────────────────────────────────────
+wkt = { version = "0.14", features = ["geo-types"] }
+wkb = "0.9"
 
 # ── CSS / Color / Layout ──────────────────────────────────────────────────────
 cssparser = "0.37"
@@ -195,19 +308,21 @@ palette = "0.7"
 taffy = "0.10"
 
 # ── Verification ──────────────────────────────────────────────────────────────
-creusot-std = "0.10"
+creusot-std = { version = "0.10", features = ["nightly"] }
 kani-verifier = { version = "0.67" }
 # prusti-contracts lives on prusti-verification branch
 
 # ── Utility ───────────────────────────────────────────────────────────────────
-paste = "1.0"
+paste = "1"
+strum = { version = "0.28", features = ["derive"] }
 inventory = "0.3"
 dirs = "6"
 # Spec annotations (runtime-no-check: specs are purely documentation/static-analysis hooks;
 # runtime validation is handled by Result-returning constructors)
-anodized = { version = "0.3", features = ["runtime-no-check"] }
+anodized = { version = "0.4", features = ["runtime-no-check"] }
 
 # ── Dev dependencies ──────────────────────────────────────────────────────────
+tempfile = "3"
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 criterion = { version = "0.8", features = ["html_reports"] }
@@ -225,3 +340,5 @@ strip = true
 [patch.crates-io]
 creusot-std = { path = "vendor/creusot-std" }
 pearlite-syn = { path = "vendor/pearlite-syn" }
+
+

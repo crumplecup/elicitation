@@ -525,12 +525,12 @@ pub fn timeout(secs: Option<F64Positive>) -> Duration {
     Duration::from_secs_f64(secs.map(|t| t.get()).unwrap_or(30.0))
 }
 
-fn parse_url_inner(s: &str) -> Result<(url::Url, Established<UrlValid>), CallToolResult> {
+fn parse_url_inner(s: &str) -> Result<(url::Url, Established<UrlValid>), Box<CallToolResult>> {
     match url::Url::parse(s) {
         Ok(u) => Ok((u, Established::assert())),
-        Err(e) => Err(CallToolResult::error(vec![Content::text(format!(
-            "UrlValid not established: '{s}' — {e}"
-        ))])),
+        Err(e) => Err(Box::new(CallToolResult::error(vec![Content::text(
+            format!("UrlValid not established: '{s}' — {e}"),
+        )]))),
     }
 }
 
@@ -557,7 +557,7 @@ pub async fn do_fetch(
     extra_headers: HeaderMap,
     timeout_dur: Duration,
 ) -> Result<(FetchResult, Established<FetchSucceeded>), CallToolResult> {
-    let (parsed_url, url_proof) = parse_url_inner(url_str)?;
+    let (parsed_url, url_proof) = parse_url_inner(url_str).map_err(|e| *e)?;
 
     let resp = client
         .get(parsed_url.as_str())
@@ -606,7 +606,7 @@ pub async fn do_post(
     extra_headers: HeaderMap,
     timeout_dur: Duration,
 ) -> Result<(FetchResult, Established<FetchSucceeded>), CallToolResult> {
-    let (parsed_url, url_proof) = parse_url_inner(url_str)?;
+    let (parsed_url, url_proof) = parse_url_inner(url_str).map_err(|e| *e)?;
 
     let resp = client
         .post(parsed_url.as_str())
@@ -1186,8 +1186,10 @@ impl elicitation::emit_code::ToCodeLiteral for ContentType {
 // ── CustomEmit impls ──────────────────────────────────────────────────────────
 
 /// ZST for custom emit of `wf_fetch_json`.
+#[cfg(not(kani))]
 pub(crate) struct FetchJsonEmit;
 
+#[cfg(not(kani))]
 impl elicitation::emit_code::CustomEmit<FetchJsonParams> for FetchJsonEmit {
     fn emit_code(params: &FetchJsonParams) -> elicitation::proc_macro2::TokenStream {
         let url = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.url);

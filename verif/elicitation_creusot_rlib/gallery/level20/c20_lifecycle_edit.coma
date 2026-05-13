@@ -1,0 +1,216 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 336 0 336 64 *)
+
+let%span slevel20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 337 13 337 22
+let%span slevel20'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 338 13 338 38
+let%span slevel20'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 339 13 339 36
+let%span slevel20'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 340 4 340 22
+let%span slevel20'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 336 26 336 30
+let%span slevel20'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 336 40 336 43
+let%span slevel20'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 332 11 332 26
+let%span slevel20'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 333 11 333 25
+let%span slevel20'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 336 56 336 64
+let%span slevel20'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 334 10 334 33
+let%span slevel20'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 335 10 335 34
+let%span slevel20'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 186 20 186 28
+let%span slevel20'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 184 10 184 33
+let%span slevel20'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 185 10 185 30
+let%span slevel20'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 250 23 250 24
+let%span slevel20'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 250 36 250 40
+let%span slevel20'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 246 11 246 29
+let%span slevel20'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 247 11 247 26
+let%span slevel20'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 250 53 250 61
+let%span slevel20'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 248 10 248 33
+let%span slevel20'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 249 10 249 34
+let%span slevel20'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 264 22 264 23
+let%span slevel20'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 264 35 264 38
+let%span slevel20'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 259 11 259 29
+let%span slevel20'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 260 11 260 30
+let%span slevel20'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 261 11 261 25
+let%span slevel20'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 264 51 264 59
+let%span slevel20'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 262 10 262 33
+let%span slevel20'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 263 10 263 33
+let%span slevel20'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 279 22 279 23
+let%span slevel20'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 275 11 275 29
+let%span slevel20'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 276 11 276 29
+let%span slevel20'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 279 38 279 46
+let%span slevel20'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 277 10 277 33
+let%span slevel20'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 278 10 278 34
+let%span slevel20'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 123 8 134 9
+let%span slevel20'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 156 16 156 73
+let%span slevel20'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 151 16 151 62
+let%span slevel20'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 174 8 177 9
+let%span slevel20'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 77 16 77 32
+
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_Option_String = None | Some t_String
+
+type t_C20EditState = { tag: t_String }
+
+type t_Option_C20EditState = None'0 | Some'0 t_C20EditState
+
+type t_C20State = Idle | Editing t_String bool t_Option_String t_Option_String | Browsing t_String t_Option_C20EditState
+
+predicate inv_String (_1: t_String)
+
+predicate inv_Option_String (_1: t_Option_String)
+
+axiom inv_axiom [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
+    = match x with
+      | None -> true
+      | Some f0 -> inv_String f0
+      end
+
+predicate inv_C20EditState (_1: t_C20EditState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C20EditState [inv_C20EditState x]. inv_C20EditState x = inv_String x.tag
+
+predicate inv_Option_C20EditState (_1: t_Option_C20EditState)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_Option_C20EditState [inv_Option_C20EditState x]. inv_Option_C20EditState x
+    = match x with
+      | None'0 -> true
+      | Some'0 f0 -> inv_C20EditState f0
+      end
+
+predicate inv_C20State (_1: t_C20State)
+
+axiom inv_axiom'2 [@rewrite]: forall x: t_C20State [inv_C20State x]. inv_C20State x
+    = match x with
+      | Idle -> true
+      | Editing query running result error -> inv_String query /\ inv_Option_String result /\ inv_Option_String error
+      | Browsing data edit_state -> inv_String data /\ inv_Option_C20EditState edit_state
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c20_edit_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 76 0 76 52] (e: t_C20EditState) =
+  [%#slevel20'38] Seq.length (view_String e.tag) > 0
+
+predicate c20_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 121 0 121 43] (s: t_C20State) =
+  [%#slevel20'34] match s with
+    | Idle -> true
+    | Editing query running result error -> Seq.length (view_String query) > 0
+    /\ (running
+      -> match result with
+        | None -> true
+        | Some _ -> false
+        end)
+    /\ (running
+      -> match error with
+        | None -> true
+        | Some _ -> false
+        end)
+    /\ match result with
+        | Some r -> Seq.length (view_String r) > 0
+        | None -> true
+        end
+    /\ match error with
+      | Some e -> Seq.length (view_String e) > 0
+      | None -> true
+      end
+    | Browsing data edit_state -> Seq.length (view_String data) > 0
+    /\ match edit_state with
+      | Some'0 es -> c20_edit_consistent es
+      | None'0 -> true
+      end
+    end
+
+predicate c20_is_idle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 150 0 150 40] (s: t_C20State) =
+  [%#slevel20'36] match s with
+    | Idle -> true
+    | _ -> false
+    end
+
+let rec c20_new (return (x: t_C20State)) = any
+  [ return (result: t_C20State) ->
+  {[@stop_split] [@expl:c20_new ensures] ([@stop_split] [@expl:c20_new result type invariant] [%#slevel20'10] inv_C20State result)
+    /\ ([@stop_split] [@expl:c20_new ensures #0] [%#slevel20'11] c20_consistent result)
+    /\ ([@stop_split] [@expl:c20_new ensures #1] [%#slevel20'12] c20_is_idle result)}
+    (! return {result}) ]
+
+predicate c20_is_browsing [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 155 0 155 44] (s: t_C20State) =
+  [%#slevel20'35] match s with
+    | Browsing _ _ -> true
+    | _ -> false
+    end
+
+let rec c20_open_browse (s: t_C20State) (data: t_String) (return (x: t_C20State)) =
+  {[@stop_split] [@expl:c20_open_browse requires] ([@stop_split] [@expl:c20_open_browse 's' type invariant] [%#slevel20'13] inv_C20State s)
+  /\ ([@stop_split] [@expl:c20_open_browse 'data' type invariant] [%#slevel20'14] inv_String data)
+  /\ ([@stop_split] [@expl:c20_open_browse requires #0] [%#slevel20'15] c20_consistent s)
+  /\ ([@stop_split] [@expl:c20_open_browse requires #1] [%#slevel20'16] Seq.length (view_String data) > 0)}
+  any
+  [ return (result: t_C20State) ->
+  {[@stop_split] [@expl:c20_open_browse ensures] ([@stop_split] [@expl:c20_open_browse result type invariant] [%#slevel20'17] inv_C20State result)
+    /\ ([@stop_split] [@expl:c20_open_browse ensures #0] [%#slevel20'18] c20_consistent result)
+    /\ ([@stop_split] [@expl:c20_open_browse ensures #1] [%#slevel20'19] c20_is_browsing result)}
+    (! return {result}) ]
+
+predicate c20_is_editing [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 172 0 172 43] (s: t_C20State) =
+  [%#slevel20'37] match s with
+    | Browsing _ edit_state -> match edit_state with
+      | Some'0 _ -> true
+      | None'0 -> false
+      end
+    | _ -> false
+    end
+
+let rec c20_begin_edit (s: t_C20State) (tag'0: t_String) (return (x: t_C20State)) =
+  {[@stop_split] [@expl:c20_begin_edit requires] ([@stop_split] [@expl:c20_begin_edit 's' type invariant] [%#slevel20'20] inv_C20State s)
+  /\ ([@stop_split] [@expl:c20_begin_edit 'tag' type invariant] [%#slevel20'21] inv_String tag'0)
+  /\ ([@stop_split] [@expl:c20_begin_edit requires #0] [%#slevel20'22] c20_consistent s)
+  /\ ([@stop_split] [@expl:c20_begin_edit requires #1] [%#slevel20'23] c20_is_browsing s)
+  /\ ([@stop_split] [@expl:c20_begin_edit requires #2] [%#slevel20'24] Seq.length (view_String tag'0) > 0)}
+  any
+  [ return (result: t_C20State) ->
+  {[@stop_split] [@expl:c20_begin_edit ensures] ([@stop_split] [@expl:c20_begin_edit result type invariant] [%#slevel20'25] inv_C20State result)
+    /\ ([@stop_split] [@expl:c20_begin_edit ensures #0] [%#slevel20'26] c20_consistent result)
+    /\ ([@stop_split] [@expl:c20_begin_edit ensures #1] [%#slevel20'27] c20_is_editing result)}
+    (! return {result}) ]
+
+let rec c20_abort_edit (s: t_C20State) (return (x: t_C20State)) =
+  {[@stop_split] [@expl:c20_abort_edit requires] ([@stop_split] [@expl:c20_abort_edit 's' type invariant] [%#slevel20'28] inv_C20State s)
+  /\ ([@stop_split] [@expl:c20_abort_edit requires #0] [%#slevel20'29] c20_consistent s)
+  /\ ([@stop_split] [@expl:c20_abort_edit requires #1] [%#slevel20'30] c20_is_editing s)}
+  any
+  [ return (result: t_C20State) ->
+  {[@stop_split] [@expl:c20_abort_edit ensures] ([@stop_split] [@expl:c20_abort_edit result type invariant] [%#slevel20'31] inv_C20State result)
+    /\ ([@stop_split] [@expl:c20_abort_edit ensures #0] [%#slevel20'32] c20_consistent result)
+    /\ ([@stop_split] [@expl:c20_abort_edit ensures #1] [%#slevel20'33] c20_is_browsing result)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c20_lifecycle_edit
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level20.rs" 336 0 336 64] (data: t_String)
+  (tag'0: t_String) (return (x: t_C20State)) =
+  {[@stop_split] [@expl:c20_lifecycle_edit requires] ([@stop_split] [@expl:c20_lifecycle_edit 'data' type invariant] [%#slevel20'3] inv_String data)
+  /\ ([@stop_split] [@expl:c20_lifecycle_edit 'tag' type invariant] [%#slevel20'4] inv_String tag'0)
+  /\ ([@stop_split] [@expl:c20_lifecycle_edit requires #0] [%#slevel20'5] Seq.length (view_String data) > 0)
+  /\ ([@stop_split] [@expl:c20_lifecycle_edit requires #1] [%#slevel20'6] Seq.length (view_String tag'0) > 0)}
+  (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c20_new [%#slevel20] (fun (_x: t_C20State) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c20_open_browse [%#slevel20'0] {s0} {data} (fun (_x: t_C20State) -> [ &s1 <- _x ] s2'0)
+    | s2'0 = c20_begin_edit [%#slevel20'1] {s1} {tag'0} (fun (_x: t_C20State) -> [ &s2 <- _x ] s3)
+    | s3 = c20_abort_edit [%#slevel20'2] {s2} (fun (_x: t_C20State) -> [ &_ret <- _x ] s4)
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C20State = Any.any_l ()
+  | & data: t_String = data
+  | & tag'0: t_String = tag'0
+  | & s0: t_C20State = Any.any_l ()
+  | & s1: t_C20State = Any.any_l ()
+  | & s2: t_C20State = Any.any_l () ])
+  [ return (result: t_C20State) ->
+  {[@stop_split] [@expl:c20_lifecycle_edit ensures] ([@stop_split] [@expl:c20_lifecycle_edit result type invariant] [%#slevel20'7] inv_C20State result)
+    /\ ([@stop_split] [@expl:c20_lifecycle_edit ensures #0] [%#slevel20'8] c20_consistent result)
+    /\ ([@stop_split] [@expl:c20_lifecycle_edit ensures #1] [%#slevel20'9] c20_is_browsing result)}
+    (! return {result}) ]

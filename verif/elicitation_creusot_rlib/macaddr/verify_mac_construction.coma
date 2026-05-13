@@ -1,13 +1,13 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 22 0 22 58 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 563 15 563 21
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 556 18 556 46
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 557 18 557 65
-let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 558 18 558 67
-let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 559 18 559 66
-let%span sextern_specs'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 560 18 560 63
-let%span sextern_specs'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 561 18 561 182
-let%span sextern_specs'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 562 18 562 159
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 587 15 587 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 580 18 580 46
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 581 18 581 65
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 582 18 582 67
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 583 18 583 66
+let%span sextern_specs'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 584 18 584 63
+let%span sextern_specs'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 585 18 585 182
+let%span sextern_specs'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 586 18 586 159
 let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 56 20 56 29
 let%span sarray'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
 let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 23 4 23 24

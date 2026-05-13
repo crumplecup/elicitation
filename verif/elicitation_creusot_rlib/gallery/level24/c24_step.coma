@@ -1,0 +1,43 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 179 0 179 62 *)
+
+let%span slevel24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 181 16 181 17
+let%span slevel24'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 181 8 181 17
+let%span slevel24'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 183 37 183 38
+let%span slevel24'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 183 29 183 38
+let%span slevel24'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 174 11 174 21
+let%span slevel24'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 175 10 178 1
+
+use creusot.int.UInt64
+use creusot.int.Int32
+use creusot.prelude.Any
+use int.Int
+
+type t_C24Node = { remaining_depth: UInt64.t; value: Int32.t }
+
+type t_C24Result_C24Node = DepthExceeded | Ok UInt64.t t_C24Node
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c24_step [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 179 0 179 62]
+  (depth: UInt64.t) (leaf: Int32.t) (return (x: t_C24Result_C24Node)) =
+  {[@stop_split] [@expl:c24_step requires] [%#slevel24'3] UInt64.t'int depth > 0}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = UInt64.sub [%#slevel24'0] {depth} {[%#slevel24] (1: UInt64.t)} (fun (_x: UInt64.t) -> [ &_7 <- _x ] s1)
+    | s1 = UInt64.sub [%#slevel24'2] {depth} {[%#slevel24'1] (1: UInt64.t)} (fun (_x: UInt64.t) -> [ &_10 <- _x ] s2)
+    | s2 = [ &_9 <- { remaining_depth = _10; value = leaf } ] s3
+    | s3 = [ &_ret <- Ok _7 _9 ] s4
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C24Result_C24Node = Any.any_l ()
+  | & depth: UInt64.t = depth
+  | & leaf: Int32.t = leaf
+  | & _7: UInt64.t = Any.any_l ()
+  | & _9: t_C24Node = Any.any_l ()
+  | & _10: UInt64.t = Any.any_l () ])
+  [ return (result: t_C24Result_C24Node) -> {[@stop_split] [@expl:c24_step ensures] [%#slevel24'4] match result with
+      | Ok d _ -> UInt64.t'int d = UInt64.t'int depth - 1
+      | DepthExceeded -> false
+      end}
+    (! return {result}) ]

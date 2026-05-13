@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c18_connection_error": { "prover": "cvc5", "time": 0.022 }
+    }
+  }
+}

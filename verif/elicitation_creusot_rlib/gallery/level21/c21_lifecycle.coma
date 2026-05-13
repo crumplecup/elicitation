@@ -1,0 +1,208 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 184 0 184 54 *)
+
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span slevel21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 185 13 185 22
+let%span slevel21'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 186 13 186 34
+let%span slevel21'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 187 13 187 32
+let%span slevel21'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 188 13 188 30
+let%span slevel21'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 189 4 189 17
+let%span slevel21'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 184 21 184 28
+let%span slevel21'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 180 11 180 29
+let%span slevel21'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 181 11 181 81
+let%span slevel21'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 184 46 184 54
+let%span slevel21'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 182 10 182 33
+let%span slevel21'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 183 10 183 31
+let%span slevel21'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 112 20 112 28
+let%span slevel21'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 110 10 110 33
+let%span slevel21'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 111 10 111 31
+let%span slevel21'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 16 124 18
+let%span slevel21'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 30 124 37
+let%span slevel21'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 120 11 120 29
+let%span slevel21'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 121 11 121 81
+let%span slevel21'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 124 55 124 63
+let%span slevel21'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 122 10 122 33
+let%span slevel21'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 123 10 123 32
+let%span slevel21'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 23 135 24
+let%span slevel21'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 131 11 131 29
+let%span slevel21'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 132 11 132 28
+let%span slevel21'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 135 39 135 47
+let%span slevel21'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 133 10 133 33
+let%span slevel21'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 134 10 134 32
+let%span slevel21'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 21 155 22
+let%span slevel21'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 151 11 151 29
+let%span slevel21'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 152 11 152 28
+let%span slevel21'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 37 155 45
+let%span slevel21'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 153 10 153 33
+let%span slevel21'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 154 10 154 32
+let%span slevel21'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 169 17 169 18
+let%span slevel21'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 166 11 166 29
+let%span slevel21'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 169 33 169 41
+let%span slevel21'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 167 10 167 33
+let%span slevel21'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 168 10 168 31
+let%span slevel21'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 87 8 93 9
+let%span slevel21'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 99 16 99 63
+let%span slevel21'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 104 16 104 71
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_Vec_String_Global
+
+type t_C21State = Empty | Loaded t_Vec_String_Global UInt64.t
+
+type t_String
+
+predicate inv_String (_1: t_String)
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec'0] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_C21State (_1: t_C21State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C21State [inv_C21State x]. inv_C21State x
+    = match x with
+      | Empty -> true
+      | Loaded entries cursor -> inv_Vec_String_Global entries
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c21_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 85 0 85 43] (s: t_C21State) =
+  [%#slevel21'37] match s with
+    | Empty -> true
+    | Loaded entries cursor -> Seq.length (view_Vec_String_Global entries) > 0
+    /\ UInt64.t'int cursor < Seq.length (view_Vec_String_Global entries)
+    /\ (forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global entries)
+      -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)
+    end
+
+predicate c21_is_empty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 98 0 98 41] (s: t_C21State) =
+  [%#slevel21'38] match s with
+    | Empty -> true
+    | _ -> false
+    end
+
+let rec c21_new (return (x: t_C21State)) = any
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_new ensures] ([@stop_split] [@expl:c21_new result type invariant] [%#slevel21'10] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_new ensures #0] [%#slevel21'11] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_new ensures #1] [%#slevel21'12] c21_is_empty result)}
+    (! return {result}) ]
+
+predicate c21_is_loaded [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 103 0 103 42] (s: t_C21State) =
+  [%#slevel21'39] match s with
+    | Loaded _ _ -> true
+    | _ -> false
+    end
+
+let rec c21_load (_s: t_C21State) (entries: t_Vec_String_Global) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_load requires] ([@stop_split] [@expl:c21_load '_s' type invariant] [%#slevel21'13] inv_C21State _s)
+  /\ ([@stop_split] [@expl:c21_load 'entries' type invariant] [%#slevel21'14] inv_Vec_String_Global entries)
+  /\ ([@stop_split] [@expl:c21_load requires #0] [%#slevel21'15] Seq.length (view_Vec_String_Global entries) > 0)
+  /\ ([@stop_split] [@expl:c21_load requires #1] [%#slevel21'16] forall i: int. 0 <= i
+      /\ i < Seq.length (view_Vec_String_Global entries)
+    -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)}
+  any
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_load ensures] ([@stop_split] [@expl:c21_load result type invariant] [%#slevel21'17] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_load ensures #0] [%#slevel21'18] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_load ensures #1] [%#slevel21'19] c21_is_loaded result)}
+    (! return {result}) ]
+
+let rec c21_cursor_down (s: t_C21State) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_cursor_down requires] ([@stop_split] [@expl:c21_cursor_down 's' type invariant] [%#slevel21'20] inv_C21State s)
+  /\ ([@stop_split] [@expl:c21_cursor_down requires #0] [%#slevel21'21] c21_consistent s)
+  /\ ([@stop_split] [@expl:c21_cursor_down requires #1] [%#slevel21'22] c21_is_loaded s)}
+  any
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_cursor_down ensures] ([@stop_split] [@expl:c21_cursor_down result type invariant] [%#slevel21'23] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_cursor_down ensures #0] [%#slevel21'24] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_cursor_down ensures #1] [%#slevel21'25] c21_is_loaded result)}
+    (! return {result}) ]
+
+let rec c21_cursor_up (s: t_C21State) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_cursor_up requires] ([@stop_split] [@expl:c21_cursor_up 's' type invariant] [%#slevel21'26] inv_C21State s)
+  /\ ([@stop_split] [@expl:c21_cursor_up requires #0] [%#slevel21'27] c21_consistent s)
+  /\ ([@stop_split] [@expl:c21_cursor_up requires #1] [%#slevel21'28] c21_is_loaded s)}
+  any
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_cursor_up ensures] ([@stop_split] [@expl:c21_cursor_up result type invariant] [%#slevel21'29] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_cursor_up ensures #0] [%#slevel21'30] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_cursor_up ensures #1] [%#slevel21'31] c21_is_loaded result)}
+    (! return {result}) ]
+
+let rec c21_clear (s: t_C21State) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_clear requires] ([@stop_split] [@expl:c21_clear 's' type invariant] [%#slevel21'32] inv_C21State s)
+  /\ ([@stop_split] [@expl:c21_clear requires] [%#slevel21'33] c21_consistent s)}
+  any
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_clear ensures] ([@stop_split] [@expl:c21_clear result type invariant] [%#slevel21'34] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_clear ensures #0] [%#slevel21'35] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_clear ensures #1] [%#slevel21'36] c21_is_empty result)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c21_lifecycle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 184 0 184 54]
+  (entries: t_Vec_String_Global) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_lifecycle requires] ([@stop_split] [@expl:c21_lifecycle 'entries' type invariant] [%#slevel21'4] inv_Vec_String_Global entries)
+  /\ ([@stop_split] [@expl:c21_lifecycle requires #0] [%#slevel21'5] Seq.length (view_Vec_String_Global entries) > 0)
+  /\ ([@stop_split] [@expl:c21_lifecycle requires #1] [%#slevel21'6] forall i: int. 0 <= i
+      /\ i < Seq.length (view_Vec_String_Global entries)
+    -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)}
+  (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c21_new [%#slevel21] (fun (_x: t_C21State) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c21_load [%#slevel21'0] {s0} {entries} (fun (_x: t_C21State) -> [ &s1 <- _x ] s2'0)
+    | s2'0 = c21_cursor_down [%#slevel21'1] {s1} (fun (_x: t_C21State) -> [ &s2 <- _x ] s3'0)
+    | s3'0 = c21_cursor_up [%#slevel21'2] {s2} (fun (_x: t_C21State) -> [ &s3 <- _x ] s4)
+    | s4 = c21_clear [%#slevel21'3] {s3} (fun (_x: t_C21State) -> [ &_ret <- _x ] s5)
+    | s5 = return {_ret} ] ]
+  [ & _ret: t_C21State = Any.any_l ()
+  | & entries: t_Vec_String_Global = entries
+  | & s0: t_C21State = Any.any_l ()
+  | & s1: t_C21State = Any.any_l ()
+  | & s2: t_C21State = Any.any_l ()
+  | & s3: t_C21State = Any.any_l () ])
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_lifecycle ensures] ([@stop_split] [@expl:c21_lifecycle result type invariant] [%#slevel21'7] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_lifecycle ensures #0] [%#slevel21'8] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_lifecycle ensures #1] [%#slevel21'9] c21_is_empty result)}
+    (! return {result}) ]

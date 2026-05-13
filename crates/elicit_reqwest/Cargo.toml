@@ -52,7 +52,9 @@ quote = { workspace = true }
 
 [features]
 emit = ["elicitation/emit"]
-prompt-tree = ["elicitation/prompt-tree"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true

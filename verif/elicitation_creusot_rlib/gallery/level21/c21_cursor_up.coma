@@ -1,0 +1,144 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 0 155 45 *)
+
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span snum = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 325 20 326 51
+let%span snum'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 329 26 329 83
+let%span snum'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/num.rs" 330 26 330 83
+let%span slevel21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 158 42 158 43
+let%span slevel21'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 158 20 158 44
+let%span slevel21'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 21 155 22
+let%span slevel21'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 151 11 151 29
+let%span slevel21'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 152 11 152 28
+let%span slevel21'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 37 155 45
+let%span slevel21'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 153 10 153 33
+let%span slevel21'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 154 10 154 32
+let%span slevel21'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 87 8 93 9
+let%span slevel21'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 104 16 104 71
+
+use creusot.int.UInt64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_Vec_String_Global
+
+type t_C21State = Empty | Loaded t_Vec_String_Global UInt64.t
+
+let rec elim_Loaded (_x: t_C21State) (return (entries: t_Vec_String_Global) (cursor: UInt64.t)) = any
+  [ _k (entries: t_Vec_String_Global) (cursor: UInt64.t) -> {Loaded entries cursor = _x} (! return {entries} {cursor})
+  | _chk -> (! {[@expl:elim Loaded] match _x with
+      | Loaded _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+constant const_MIN: UInt64.t = (0: UInt64.t)
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+let rec saturating_sub (self_: UInt64.t) (rhs: UInt64.t) (return (x: UInt64.t)) = any
+  [ return (result: UInt64.t) ->
+  {[@stop_split] [@expl:saturating_sub ensures] ([@stop_split] [@expl:saturating_sub ensures #0] [%#snum] UInt64.t'int self_
+            - UInt64.t'int rhs
+          >= UInt64.t'int const_MIN
+        /\ UInt64.t'int self_ - UInt64.t'int rhs <= UInt64.t'int const_MAX
+      -> UInt64.t'int result = UInt64.t'int self_ - UInt64.t'int rhs)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #1] [%#snum'0] UInt64.t'int self_ - UInt64.t'int rhs
+        < UInt64.t'int const_MIN -> UInt64.t'int result = UInt64.t'int const_MIN)
+    /\ ([@stop_split] [@expl:saturating_sub ensures #2] [%#snum'1] UInt64.t'int self_ - UInt64.t'int rhs
+      > UInt64.t'int const_MAX -> UInt64.t'int result = UInt64.t'int const_MAX)}
+    (! return {result}) ]
+
+type t_String
+
+predicate inv_String (_1: t_String)
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec'0] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_C21State (_1: t_C21State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C21State [inv_C21State x]. inv_C21State x
+    = match x with
+      | Empty -> true
+      | Loaded entries cursor -> inv_Vec_String_Global entries
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c21_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 85 0 85 43] (s: t_C21State) =
+  [%#slevel21'7] match s with
+    | Empty -> true
+    | Loaded entries cursor -> Seq.length (view_Vec_String_Global entries) > 0
+    /\ UInt64.t'int cursor < Seq.length (view_Vec_String_Global entries)
+    /\ (forall i: int. 0 <= i /\ i < Seq.length (view_Vec_String_Global entries)
+      -> Seq.length (view_String (Seq.get (view_Vec_String_Global entries) i)) > 0)
+    end
+
+predicate c21_is_loaded [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 103 0 103 42] (s: t_C21State) =
+  [%#slevel21'8] match s with
+    | Loaded _ _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c21_cursor_up [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level21.rs" 155 0 155 45]
+  (s: t_C21State) (return (x: t_C21State)) =
+  {[@stop_split] [@expl:c21_cursor_up requires] ([@stop_split] [@expl:c21_cursor_up 's' type invariant] [%#slevel21'1] inv_C21State s)
+  /\ ([@stop_split] [@expl:c21_cursor_up requires #0] [%#slevel21'2] c21_consistent s)
+  /\ ([@stop_split] [@expl:c21_cursor_up requires #1] [%#slevel21'3] c21_is_loaded s)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {s = Empty} (! bb1) | br1 (x0: t_Vec_String_Global) (x1: UInt64.t) -> {s = Loaded x0 x1} (! bb3) ]
+  | bb1 = s0 [ s0 = [ &other <- s ] s1 | s1 = [ &_ret <- other ] s2 | s2 = return {_ret} ]
+  | bb3 = s0
+    [ s0 = elim_Loaded {s} (fun (rentries: t_Vec_String_Global) (rcursor: UInt64.t) -> [ &entries <- rentries ] s1)
+    | s1 = elim_Loaded {s} (fun (rentries: t_Vec_String_Global) (rcursor: UInt64.t) -> [ &cursor <- rcursor ] s2)
+    | s2 = saturating_sub [%#slevel21'0] {cursor} {[%#slevel21] (1: UInt64.t)} (fun (_x: UInt64.t) -> [ &_11 <- _x ] s3)
+    | s3 = [ &_ret <- Loaded entries _11 ] s4
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C21State = Any.any_l ()
+  | & s: t_C21State = s
+  | & entries: t_Vec_String_Global = Any.any_l ()
+  | & cursor: UInt64.t = Any.any_l ()
+  | & _11: UInt64.t = Any.any_l ()
+  | & other: t_C21State = Any.any_l () ])
+  [ return (result: t_C21State) ->
+  {[@stop_split] [@expl:c21_cursor_up ensures] ([@stop_split] [@expl:c21_cursor_up result type invariant] [%#slevel21'4] inv_C21State result)
+    /\ ([@stop_split] [@expl:c21_cursor_up ensures #0] [%#slevel21'5] c21_consistent result)
+    /\ ([@stop_split] [@expl:c21_cursor_up ensures #1] [%#slevel21'6] c21_is_loaded result)}
+    (! return {result}) ]

@@ -182,6 +182,13 @@ pub struct NodeJson {
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub is_touch_transparent: bool,
 
+    /// Whether this node is selected (`Some(true)`), not selected (`Some(false)`),
+    /// or selection doesn't apply (`None`).
+    ///
+    /// Maps to `accesskit::Node::is_selected` / `set_selected` / `clear_selected`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_selected: Option<bool>,
+
     // ── Enum state properties ────────────────────────────────────────────────
     /// Whether the input value is invalid, and why.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -465,6 +472,7 @@ impl NodeJson {
             is_line_breaking_object: false,
             is_visited: false,
             is_touch_transparent: false,
+            is_selected: None,
             invalid: None,
             toggled: None,
             orientation: None,
@@ -537,6 +545,12 @@ impl NodeJson {
     /// Sets the description.
     pub fn with_description(mut self, v: String) -> Self {
         self.description = Some(v);
+        self
+    }
+
+    /// Sets the CSS class name.
+    pub fn with_class_name(mut self, v: String) -> Self {
+        self.class_name = Some(v);
         self
     }
 
@@ -619,6 +633,15 @@ impl NodeJson {
         self.invalid = Some(v);
         self
     }
+
+    /// Sets the selected state.
+    ///
+    /// `Some(true)` = selected, `Some(false)` = explicitly not selected,
+    /// `None` = selection not applicable (the default).
+    pub fn with_selected(mut self, v: bool) -> Self {
+        self.is_selected = Some(v);
+        self
+    }
 }
 
 // ── From<&accesskit::Node> ────────────────────────────────────────────────────
@@ -691,6 +714,7 @@ impl From<&accesskit::Node> for NodeJson {
             is_line_breaking_object: n.is_line_breaking_object(),
             is_visited: n.is_visited(),
             is_touch_transparent: n.is_touch_transparent(),
+            is_selected: n.is_selected(),
             invalid: n.invalid().map(Invalid),
             toggled: n.toggled().map(Toggled),
             orientation: n.orientation().map(Orientation),
@@ -863,6 +887,9 @@ impl From<NodeJson> for accesskit::Node {
         }
         if j.is_touch_transparent {
             n.set_touch_transparent();
+        }
+        if let Some(v) = j.is_selected {
+            n.set_selected(v);
         }
 
         // Enum state
@@ -1073,4 +1100,12 @@ impl From<NodeJson> for accesskit::Node {
 
         n
     }
+}
+
+/// Return the display text of an AccessKit node — label first, then value.
+///
+/// Bridges should call this instead of accessing `.label()` / `.value()` directly
+/// so that the priority rule (label before value) is consistent across renderers.
+pub fn node_label(node: &accesskit::Node) -> &str {
+    node.label().or_else(|| node.value()).unwrap_or("")
 }

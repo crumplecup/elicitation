@@ -1,0 +1,155 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 141 0 141 57 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 881 18 881 41
+let%span slevel22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 142 13 142 22
+let%span slevel22'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 143 13 143 42
+let%span slevel22'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 144 13 144 27
+let%span slevel22'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 145 18 145 31
+let%span slevel22'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 148 18 148 34
+let%span slevel22'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 141 21 141 25
+let%span slevel22'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 137 11 137 26
+let%span slevel22'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 138 11 138 20
+let%span slevel22'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 141 49 141 57
+let%span slevel22'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 139 10 139 33
+let%span slevel22'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 140 10 140 30
+let%span slevel22'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 98 20 98 28
+let%span slevel22'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 96 10 96 33
+let%span slevel22'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 97 10 97 30
+let%span slevel22'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 109 21 109 23
+let%span slevel22'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 109 35 109 39
+let%span slevel22'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 105 11 105 26
+let%span slevel22'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 106 11 106 20
+let%span slevel22'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 109 63 109 71
+let%span slevel22'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 107 10 107 33
+let%span slevel22'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 108 10 108 33
+let%span slevel22'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 119 18 119 19
+let%span slevel22'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 116 11 116 29
+let%span slevel22'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 119 34 119 42
+let%span slevel22'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 117 10 117 33
+let%span slevel22'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 118 10 118 30
+let%span slevel22'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 73 8 76 9
+let%span slevel22'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 61 8 65 9
+let%span slevel22'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 84 8 87 9
+let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
+
+use creusot.int.Int32
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C22Profile = { name: t_String; port: Int32.t }
+
+type t_C22State = Idle | Editing t_C22Profile
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C22Profile (_1: t_C22Profile)
+
+axiom inv_axiom [@rewrite]: forall x: t_C22Profile [inv_C22Profile x]. inv_C22Profile x = inv_String x.name
+
+predicate invariant_Box_C22Profile_Global (self: t_C22Profile) = [%#sboxed] inv_C22Profile self
+
+predicate inv_Box_C22Profile_Global [@inline:trivial] (_1: t_C22Profile) = invariant_Box_C22Profile_Global _1
+
+meta "rewrite_def" predicate inv_Box_C22Profile_Global
+
+predicate inv_C22State (_1: t_C22State)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C22State [inv_C22State x]. inv_C22State x
+    = match x with
+      | Idle -> true
+      | Editing profile -> inv_Box_C22Profile_Global profile
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c22_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 59 0 59 43] (s: t_C22State) =
+  [%#slevel22'26] match s with
+    | Idle -> true
+    | Editing profile -> Seq.length (view_String profile.name) > 0 /\ Int32.to_int profile.port > 0
+    end
+
+predicate c22_is_idle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 71 0 71 40] (s: t_C22State) =
+  [%#slevel22'25] match s with
+    | Idle -> true
+    | _ -> false
+    end
+
+let rec c22_new (return (x: t_C22State)) = any
+  [ return (result: t_C22State) ->
+  {[@stop_split] [@expl:c22_new ensures] ([@stop_split] [@expl:c22_new result type invariant] [%#slevel22'10] inv_C22State result)
+    /\ ([@stop_split] [@expl:c22_new ensures #0] [%#slevel22'11] c22_consistent result)
+    /\ ([@stop_split] [@expl:c22_new ensures #1] [%#slevel22'12] c22_is_idle result)}
+    (! return {result}) ]
+
+predicate c22_is_editing [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 82 0 82 43] (s: t_C22State) =
+  [%#slevel22'27] match s with
+    | Editing _ -> true
+    | _ -> false
+    end
+
+let rec c22_open_edit (_s: t_C22State) (name'0: t_String) (port'0: Int32.t) (return (x: t_C22State)) =
+  {[@stop_split] [@expl:c22_open_edit requires] ([@stop_split] [@expl:c22_open_edit '_s' type invariant] [%#slevel22'13] inv_C22State _s)
+  /\ ([@stop_split] [@expl:c22_open_edit 'name' type invariant] [%#slevel22'14] inv_String name'0)
+  /\ ([@stop_split] [@expl:c22_open_edit requires #0] [%#slevel22'15] Seq.length (view_String name'0) > 0)
+  /\ ([@stop_split] [@expl:c22_open_edit requires #1] [%#slevel22'16] Int32.to_int port'0 > 0)}
+  any
+  [ return (result: t_C22State) ->
+  {[@stop_split] [@expl:c22_open_edit ensures] ([@stop_split] [@expl:c22_open_edit result type invariant] [%#slevel22'17] inv_C22State result)
+    /\ ([@stop_split] [@expl:c22_open_edit ensures #0] [%#slevel22'18] c22_consistent result)
+    /\ ([@stop_split] [@expl:c22_open_edit ensures #1] [%#slevel22'19] c22_is_editing result)}
+    (! return {result}) ]
+
+let rec c22_cancel (s: t_C22State) (return (x: t_C22State)) =
+  {[@stop_split] [@expl:c22_cancel requires] ([@stop_split] [@expl:c22_cancel 's' type invariant] [%#slevel22'20] inv_C22State s)
+  /\ ([@stop_split] [@expl:c22_cancel requires] [%#slevel22'21] c22_is_editing s)}
+  any
+  [ return (result: t_C22State) ->
+  {[@stop_split] [@expl:c22_cancel ensures] ([@stop_split] [@expl:c22_cancel result type invariant] [%#slevel22'22] inv_C22State result)
+    /\ ([@stop_split] [@expl:c22_cancel ensures #0] [%#slevel22'23] c22_consistent result)
+    /\ ([@stop_split] [@expl:c22_cancel ensures #1] [%#slevel22'24] c22_is_idle result)}
+    (! return {result}) ]
+
+let rec new (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_String result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs] view_String result = (Seq.empty: Seq.seq Char.t))}
+    (! return {result}) ]
+
+predicate resolve_String (_1: t_String)
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c22_lifecycle [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level22.rs" 141 0 141 57]
+  (name'0: t_String) (port'0: Int32.t) (return (x: t_C22State)) =
+  {[@stop_split] [@expl:c22_lifecycle requires] ([@stop_split] [@expl:c22_lifecycle 'name' type invariant] [%#slevel22'4] inv_String name'0)
+  /\ ([@stop_split] [@expl:c22_lifecycle requires #0] [%#slevel22'5] Seq.length (view_String name'0) > 0)
+  /\ ([@stop_split] [@expl:c22_lifecycle requires #1] [%#slevel22'6] Int32.to_int port'0 > 0)}
+  (! bb0
+  [ bb0 = s0'0
+    [ s0'0 = c22_new [%#slevel22] (fun (_x: t_C22State) -> [ &s0 <- _x ] s1'0)
+    | s1'0 = c22_open_edit [%#slevel22'0] {s0} {name'0} {port'0} (fun (_x: t_C22State) -> [ &s1 <- _x ] s2'0)
+    | s2'0 = c22_cancel [%#slevel22'1] {s1} (fun (_x: t_C22State) -> [ &s2 <- _x ] s3)
+    | s3 = new [%#slevel22'2] (fun (_x: t_String) -> [ &s3_name <- _x ] s4)
+    | s4 = s5 [ _ck -> (! {[@expl:type invariant] inv_String s3_name} any) ]
+    | s5 = -{resolve_String s3_name}- s6
+    | s6 = {[@expl:assertion] [%#slevel22'3] c22_is_idle s2} s7
+    | s7 = [ &_ret <- s2 ] s8
+    | s8 = return {_ret} ] ]
+  [ & _ret: t_C22State = Any.any_l ()
+  | & name'0: t_String = name'0
+  | & port'0: Int32.t = port'0
+  | & s0: t_C22State = Any.any_l ()
+  | & s1: t_C22State = Any.any_l ()
+  | & s2: t_C22State = Any.any_l ()
+  | & s3_name: t_String = Any.any_l () ])
+  [ return (result: t_C22State) ->
+  {[@stop_split] [@expl:c22_lifecycle ensures] ([@stop_split] [@expl:c22_lifecycle result type invariant] [%#slevel22'7] inv_C22State result)
+    /\ ([@stop_split] [@expl:c22_lifecycle ensures #0] [%#slevel22'8] c22_consistent result)
+    /\ ([@stop_split] [@expl:c22_lifecycle ensures #1] [%#slevel22'9] c22_is_idle result)}
+    (! return {result}) ]

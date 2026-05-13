@@ -1,0 +1,31 @@
+[package]
+name = "elicit_wgpu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description = "Elicitation-enabled wgpu code-generation tools for GPU descriptor construction"
+keywords = ["mcp", "wgpu", "gpu", "rendering", "elicitation"]
+categories = ["graphics", "rendering", "development-tools"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+
+[dependencies]
+elicitation = { workspace = true, features = ["wgpu-types"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+wgpu = { workspace = true }
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+derive_more = { workspace = true, features = ["display", "error"] }
+
+[dev-dependencies]
+tokio.workspace = true
+serde_json.workspace = true

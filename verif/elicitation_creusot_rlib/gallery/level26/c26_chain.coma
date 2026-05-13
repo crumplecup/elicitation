@@ -1,0 +1,61 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 217 0 217 45 *)
+
+let%span slevel26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 218 4 218 19
+let%span slevel26'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 217 17 217 22
+let%span slevel26'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 215 11 215 33
+let%span slevel26'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 217 37 217 45
+let%span slevel26'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 216 10 216 33
+let%span slevel26'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 16 196 21
+let%span slevel26'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 194 11 194 33
+let%span slevel26'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 196 36 196 44
+let%span slevel26'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 195 10 195 33
+let%span slevel26'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 167 8 170 9
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C26State = Idle | Active UInt32.t t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C26State (_1: t_C26State)
+
+axiom inv_axiom [@rewrite]: forall x: t_C26State [inv_C26State x]. inv_C26State x
+    = match x with
+      | Idle -> true
+      | Active count label' -> inv_String label'
+      end
+
+predicate c26_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 165 0 165 43] (s: t_C26State) =
+  [%#slevel26'8] match s with
+    | Idle -> true
+    | Active count _ -> UInt32.t'int count > 0
+    end
+
+let rec c26_step (state: t_C26State) (return (x: t_C26State)) =
+  {[@stop_split] [@expl:c26_step requires] ([@stop_split] [@expl:c26_step 'state' type invariant] [%#slevel26'4] inv_C26State state)
+  /\ ([@stop_split] [@expl:c26_step requires] [%#slevel26'5] c26_consistent state)}
+  any
+  [ return (result: t_C26State) ->
+  {[@stop_split] [@expl:c26_step ensures] ([@stop_split] [@expl:c26_step result type invariant] [%#slevel26'6] inv_C26State result)
+    /\ ([@stop_split] [@expl:c26_step ensures] [%#slevel26'7] c26_consistent result)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c26_chain [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 217 0 217 45]
+  (state: t_C26State) (return (x: t_C26State)) =
+  {[@stop_split] [@expl:c26_chain requires] ([@stop_split] [@expl:c26_chain 'state' type invariant] [%#slevel26'0] inv_C26State state)
+  /\ ([@stop_split] [@expl:c26_chain requires] [%#slevel26'1] c26_consistent state)}
+  (! bb0
+  [ bb0 = s0 [ s0 = c26_step [%#slevel26] {state} (fun (_x: t_C26State) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
+  [ & _ret: t_C26State = Any.any_l () | & state: t_C26State = state ])
+  [ return (result: t_C26State) ->
+  {[@stop_split] [@expl:c26_chain ensures] ([@stop_split] [@expl:c26_chain result type invariant] [%#slevel26'2] inv_C26State result)
+    /\ ([@stop_split] [@expl:c26_chain ensures] [%#slevel26'3] c26_consistent result)}
+    (! return {result}) ]

@@ -1,0 +1,53 @@
+[package]
+name = "elicit_polars"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled polars shadow crate — MCP tools for DataFrame, Expr, pipeline, and SQL"
+keywords = ["mcp", "polars", "dataframe", "elicitation"]
+categories = ["data-structures", "science"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["polars-types", "emit"] }
+elicit_db = { path = "../elicit_db" }
+derive_more = { workspace = true }
+
+polars = { version = "0.53", features = [
+    "lazy",
+    "serde",
+    "serde-lazy",
+    "csv",
+    "parquet",
+    "json",
+    "ipc",
+    "dtype-full",
+    "strings",
+    "temporal",
+    "sql",
+    "semi_anti_join",
+] }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+futures = { workspace = true }
+quote = { workspace = true }
+
+[dev-dependencies]
+serde_json.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

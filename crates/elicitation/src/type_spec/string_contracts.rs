@@ -60,3 +60,22 @@ inventory::submit!(TypeSpecInventoryKey::new(
     std::any::TypeId::of::<StringNonEmpty>
 ));
 impl crate::ElicitComplete for StringNonEmpty {}
+
+impl crate::ElicitSpec for crate::verification::types::StringDefault {
+    fn type_spec() -> crate::TypeSpec {
+        crate::TypeSpecBuilder::default()
+            .type_name("StringDefault".to_string())
+            .summary("An unconstrained string value.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(crate::TypeSpecInventoryKey::new(
+    "StringDefault",
+    crate::verification::types::StringDefault::type_spec,
+    std::any::TypeId::of::<crate::verification::types::StringDefault>
+));
+
+impl crate::ElicitComplete for crate::verification::types::StringDefault {}

@@ -37,6 +37,8 @@
 
 mod contracts;
 mod errors;
+mod gaap;
+pub mod journal;
 mod types;
 mod typestate;
 
@@ -44,5 +46,9 @@ pub use contracts::{
     AccountsDistinct, AmountPositive, BalancedEntries, SufficientFunds, ValidTransfer,
 };
 pub use errors::{CommitError, RejectionReason, ValidationError};
+pub use journal::{
+    AccountSaved, BalancedAndPosted, EntryBalanced, EntryClosed, EntryDrafted, EntryPosted,
+    EntrySaved, NetIncomeComputed, PostedAndSaved, ReadyToPost,
+};
 pub use types::{AccountId, Amount, TransferId};
 pub use typestate::{Committed, Pending, Rejected, Transfer, Validated};

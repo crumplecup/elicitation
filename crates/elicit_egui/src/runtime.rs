@@ -9,7 +9,7 @@
 //! [`Context`]: egui::Context
 //! [`UiNode`]: crate::UiNode
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 use egui::Color32;
@@ -38,7 +38,7 @@ use crate::style_tools::StyleJson;
 /// Each session has an independent [`egui::Context`] identified by a [`Uuid`].
 #[derive(Debug)]
 pub struct EguiRuntimeContext {
-    sessions: Mutex<HashMap<Uuid, egui::Context>>,
+    sessions: Mutex<BTreeMap<Uuid, egui::Context>>,
 }
 
 impl PluginContext for EguiRuntimeContext {}
@@ -47,7 +47,7 @@ impl EguiRuntimeContext {
     /// Create a new runtime context with no active sessions.
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
-            sessions: Mutex::new(HashMap::new()),
+            sessions: Mutex::new(BTreeMap::new()),
         })
     }
 }
@@ -55,7 +55,7 @@ impl EguiRuntimeContext {
 impl Default for EguiRuntimeContext {
     fn default() -> Self {
         Self {
-            sessions: Mutex::new(HashMap::new()),
+            sessions: Mutex::new(BTreeMap::new()),
         }
     }
 }

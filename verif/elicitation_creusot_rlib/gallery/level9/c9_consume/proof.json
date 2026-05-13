@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c9_consume": { "prover": "cvc5", "time": 0.017 } }
+  }
+}

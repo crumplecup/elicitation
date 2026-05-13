@@ -61,15 +61,21 @@ impl Elicitation for EguiStroke {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("EguiStroke")
+        let mut ts = <f32 as crate::Elicitation>::kani_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::kani_proof());
+        ts
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("EguiStroke")
+        let mut ts = <f32 as crate::Elicitation>::verus_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::verus_proof());
+        ts
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("EguiStroke")
+        let mut ts = <f32 as crate::Elicitation>::creusot_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::creusot_proof());
+        ts
     }
 }
 
@@ -100,7 +106,6 @@ impl ElicitIntrospect for EguiStroke {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for EguiStroke {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

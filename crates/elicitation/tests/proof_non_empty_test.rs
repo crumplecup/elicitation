@@ -274,6 +274,159 @@ mod uuid_tests {
 }
 
 // ============================================================================
+// WKT
+// ============================================================================
+
+#[cfg(feature = "georaster-types")]
+mod georaster_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn georaster_proofs_non_empty() {
+        assert_proofs_non_empty::<georaster::Coordinate>("georaster::Coordinate");
+        assert_proofs_non_empty::<georaster::geotiff::RasterValue>(
+            "georaster::geotiff::RasterValue",
+        );
+        assert_proofs_non_empty::<georaster::geotiff::ImageInfo>("georaster::geotiff::ImageInfo");
+        assert_proofs_non_empty::<tiff::ColorType>("tiff::ColorType");
+        assert_proofs_non_empty::<tiff::tags::PhotometricInterpretation>(
+            "tiff::tags::PhotometricInterpretation",
+        );
+        assert_proofs_non_empty::<tiff::tags::PlanarConfiguration>(
+            "tiff::tags::PlanarConfiguration",
+        );
+    }
+}
+
+// ============================================================================
+// GeoJSON
+// ============================================================================
+
+#[cfg(feature = "rstar-types")]
+mod rstar_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn rstar_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::RstarAabb>("RstarAabb");
+        assert_proofs_non_empty::<elicitation::RstarRectangle>("RstarRectangle");
+        assert_proofs_non_empty::<elicitation::RstarLine>("RstarLine");
+    }
+}
+
+// ============================================================================
+// proj
+// ============================================================================
+
+#[cfg(feature = "proj-types")]
+mod proj_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn proj_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::ProjArea>("proj::Area");
+    }
+}
+
+// ============================================================================
+// GeoJSON
+// ============================================================================
+
+#[cfg(feature = "geojson-types")]
+mod geojson_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn geojson_proofs_non_empty() {
+        assert_proofs_non_empty::<geojson::GeoJson>("geojson::GeoJson");
+        assert_proofs_non_empty::<geojson::Geometry>("geojson::Geometry");
+        assert_proofs_non_empty::<geojson::GeometryValue>("geojson::GeometryValue");
+        assert_proofs_non_empty::<geojson::Feature>("geojson::Feature");
+        assert_proofs_non_empty::<geojson::FeatureCollection>("geojson::FeatureCollection");
+        assert_proofs_non_empty::<geojson::feature::Id>("geojson::feature::Id");
+    }
+}
+
+// ============================================================================
+// WKT
+// ============================================================================
+
+#[cfg(feature = "wkt-types")]
+mod wkt_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wkt_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WktCoord>("WktCoord");
+        assert_proofs_non_empty::<elicitation::WktPoint>("WktPoint");
+        assert_proofs_non_empty::<elicitation::WktLineString>("WktLineString");
+        assert_proofs_non_empty::<elicitation::WktPolygon>("WktPolygon");
+        assert_proofs_non_empty::<elicitation::WktMultiPoint>("WktMultiPoint");
+        assert_proofs_non_empty::<elicitation::WktMultiLineString>("WktMultiLineString");
+        assert_proofs_non_empty::<elicitation::WktMultiPolygon>("WktMultiPolygon");
+        assert_proofs_non_empty::<elicitation::WktGeometryCollection>("WktGeometryCollection");
+        assert_proofs_non_empty::<elicitation::WktGeom>("WktGeom");
+        assert_proofs_non_empty::<elicitation::WktString>("WktString");
+    }
+}
+
+// ============================================================================
+// WKB
+// ============================================================================
+
+#[cfg(feature = "wkb-types")]
+mod wkb_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wkb_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WkbEndianness>("WkbEndianness");
+        assert_proofs_non_empty::<elicitation::WkbDimension>("WkbDimension");
+        assert_proofs_non_empty::<elicitation::WkbGeometryType>("WkbGeometryType");
+        assert_proofs_non_empty::<elicitation::WkbBytes>("WkbBytes");
+        assert_proofs_non_empty::<elicitation::WkbWriteOptions>("WkbWriteOptions");
+    }
+}
+
+// winit
+#[cfg(feature = "winit-types")]
+mod winit_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn winit_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WinitPhysicalSize>("WinitPhysicalSize");
+        assert_proofs_non_empty::<elicitation::WinitLogicalSize>("WinitLogicalSize");
+        assert_proofs_non_empty::<elicitation::WinitLogicalPosition>("WinitLogicalPosition");
+        assert_proofs_non_empty::<elicitation::WinitWindowAttributes>("WinitWindowAttributes");
+        assert_proofs_non_empty::<elicitation::WinitCursorIconSelect>("WinitCursorIconSelect");
+        assert_proofs_non_empty::<elicitation::WinitKeyCodeSelect>("WinitKeyCodeSelect");
+        assert_proofs_non_empty::<elicitation::WinitElementStateSelect>("WinitElementStateSelect");
+        assert_proofs_non_empty::<elicitation::WinitMouseButtonSelect>("WinitMouseButtonSelect");
+        assert_proofs_non_empty::<elicitation::WinitTouchPhaseSelect>("WinitTouchPhaseSelect");
+        assert_proofs_non_empty::<elicitation::WinitThemeSelect>("WinitThemeSelect");
+        assert_proofs_non_empty::<elicitation::WinitWindowLevelSelect>("WinitWindowLevelSelect");
+    }
+}
+
+// wgpu
+#[cfg(feature = "wgpu-types")]
+mod wgpu_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wgpu_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WgpuExtent3d>("WgpuExtent3d");
+        assert_proofs_non_empty::<elicitation::WgpuColor>("WgpuColor");
+        assert_proofs_non_empty::<elicitation::WgpuOrigin3d>("WgpuOrigin3d");
+        assert_proofs_non_empty::<elicitation::WgpuTextureFormat>("WgpuTextureFormat");
+        assert_proofs_non_empty::<elicitation::WgpuPresentMode>("WgpuPresentMode");
+        assert_proofs_non_empty::<elicitation::WgpuPowerPreference>("WgpuPowerPreference");
+        assert_proofs_non_empty::<elicitation::WgpuBackend>("WgpuBackend");
+    }
+}
+
+// ============================================================================
 // Unit / trivial types
 // ============================================================================
 
@@ -286,7 +439,7 @@ fn unit_proofs_non_empty() {
 // Derived unit-variant enums (regression: previously produced empty proofs)
 // ============================================================================
 
-use elicitation::{Elicit, Prompt, Select};
+use elicitation::Elicit;
 
 /// Unit-variant enum with two states — the TicTacToe `Player` case.
 #[derive(
@@ -542,5 +695,55 @@ mod atomic_proofs {
         assert_elicit_complete::<AtomicU32>();
         assert_elicit_complete::<AtomicU64>();
         assert_elicit_complete::<AtomicUsize>();
+    }
+}
+
+// ============================================================================
+// Derived struct harness content — non-vacuous constructibility proof
+// ============================================================================
+
+mod kani_struct_harness_tests {
+    use elicitation::Elicitation;
+    use elicitation_derive::Elicit;
+    use schemars::JsonSchema;
+    use serde::{Deserialize, Serialize};
+
+    // A minimal data struct with two primitive fields.
+    #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+    #[cfg_attr(kani, derive(kani::Arbitrary))]
+    struct TestPoint {
+        x: f64,
+        y: f64,
+    }
+
+    // A zero-field marker struct — tautology is correct here.
+    #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+    struct TestMarker;
+
+    #[test]
+    fn data_struct_kani_harness_uses_kani_any() {
+        let proof = TestPoint::kani_proof().to_string();
+        assert!(
+            proof.contains("kani") && proof.contains("any"),
+            "data struct kani_proof() should use kani::any(), got:\n{proof}"
+        );
+        assert!(
+            proof.contains("TestPoint"),
+            "data struct kani_proof() should reference the type name, got:\n{proof}"
+        );
+        assert!(
+            !proof.contains("assert ! (established") && !proof.contains("assert!(established"),
+            "data struct kani_proof() must not be a tautology, got:\n{proof}"
+        );
+    }
+
+    #[test]
+    fn marker_struct_kani_harness_is_tautology() {
+        // Marker structs have no fields — assert!(true) is semantically correct.
+        let proof = TestMarker::kani_proof().to_string();
+        assert!(
+            !proof.is_empty(),
+            "marker struct kani_proof() must not be empty"
+        );
     }
 }

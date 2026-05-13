@@ -43,8 +43,10 @@
 //! ```
 
 // Re-export verification framework from main crate
+pub use elicitation::verification::Contract;
+#[cfg(not(creusot))]
+pub use elicitation::verification::WithContract;
 pub use elicitation::verification::contracts;
-pub use elicitation::verification::{Contract, WithContract};
 
 // Proof modules (organized by type category)
 #[cfg(kani)]
@@ -128,8 +130,40 @@ mod ratatui_types;
 #[cfg(all(kani, feature = "geo-types"))]
 mod geo_types;
 
+#[cfg(all(kani, feature = "georaster-types"))]
+mod georaster_types;
+
+#[cfg(all(kani, feature = "geojson-types"))]
+mod geojson_types;
+
+#[cfg(all(kani, feature = "rstar-types"))]
+mod rstar_types;
+
+#[cfg(all(kani, feature = "proj-types"))]
+mod proj_types;
+
+#[cfg(all(kani, feature = "wkt-types"))]
+mod wkt_types;
+
+#[cfg(all(kani, feature = "wkb-types"))]
+mod wkb_types;
+
+#[cfg(all(kani, feature = "winit-types"))]
+mod winit_types;
+
+#[cfg(all(kani, feature = "wgpu-types"))]
+mod wgpu_types;
+
 #[cfg(all(kani, feature = "palette"))]
 mod palette_types;
 
 #[cfg(all(kani, feature = "ui-types"))]
 mod ui_types;
+
+// Vec trust-boundary empirical investigation
+#[cfg(kani)]
+mod vec_boundary;
+
+// Synthetic diagnostic theories for BTreeMap/HashMap drop-glue in enums
+#[cfg(kani)]
+mod diag;

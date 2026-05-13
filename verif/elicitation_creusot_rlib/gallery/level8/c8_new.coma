@@ -1,0 +1,37 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 81 0 81 28 *)
+
+let%span slevel8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 84 26 84 27
+let%span slevel8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 79 11 79 15
+let%span slevel8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 80 10 80 32
+let%span slevel8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 62 8 62 57
+let%span slevel8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 37 4 40 5
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C8ConnState = Disconnected | Connected
+
+type t_C8Machine = { state: t_C8ConnState; transition_count: Int64.t }
+
+predicate c8_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 36 0 36 43] (s: t_C8ConnState) =
+  [%#slevel8'3] match s with
+    | Disconnected -> true
+    | Connected -> true
+    end
+
+predicate c8_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 60 0 60 43] (m: t_C8Machine) =
+  [%#slevel8'2] c8_state_ok m.state /\ Int64.to_int m.transition_count >= 0
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c8_new [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level8.rs" 81 0 81 28]
+  (return (x: t_C8Machine)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_3 <- Disconnected ] s1
+    | s1 = [ &_ret <- { state = _3; transition_count = ([%#slevel8] (0: Int64.t)) } ] s2
+    | s2 = return {_ret} ] ] [ & _ret: t_C8Machine = Any.any_l () | & _3: t_C8ConnState = Any.any_l () ])
+  [ return (result: t_C8Machine) -> {[@stop_split] [@expl:c8_new ensures] [%#slevel8'1] c8_consistent result}
+    (! return {result}) ]

@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c2_increment": {
+        "tactic": "compute_specified",
+        "children": [ { "prover": "cvc5", "time": 0.011 } ]
+      }
+    }
+  }
+}

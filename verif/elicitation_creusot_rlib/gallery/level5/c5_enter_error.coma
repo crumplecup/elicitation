@@ -1,0 +1,50 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 64 0 64 47 *)
+
+let%span slevel5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 64 22 64 25
+let%span slevel5'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 62 11 62 25
+let%span slevel5'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 64 38 64 47
+let%span slevel5'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 63 10 63 32
+let%span slevel5'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 43 8 46 9
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_ConnState = Connected | Error t_String
+
+predicate inv_String (_1: t_String)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate inv_ConnState (_1: t_ConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_ConnState [inv_ConnState x]. inv_ConnState x
+    = match x with
+      | Connected -> true
+      | Error f0 -> inv_String f0
+      end
+
+predicate c5_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 41 0 41 43] (s: t_ConnState) =
+  [%#slevel5'3] match s with
+    | Connected -> true
+    | Error msg -> Seq.length (view_String msg) > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c5_enter_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level5.rs" 64 0 64 47]
+  (msg: t_String) (return (x: t_ConnState)) =
+  {[@stop_split] [@expl:c5_enter_error requires] ([@stop_split] [@expl:c5_enter_error 'msg' type invariant] [%#slevel5] inv_String msg)
+  /\ ([@stop_split] [@expl:c5_enter_error requires] [%#slevel5'0] Seq.length (view_String msg) > 0)}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- Error msg ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_ConnState = Any.any_l () | & msg: t_String = msg ])
+  [ return (result: t_ConnState) ->
+  {[@stop_split] [@expl:c5_enter_error ensures] ([@stop_split] [@expl:c5_enter_error result type invariant] [%#slevel5'1] inv_ConnState result)
+    /\ ([@stop_split] [@expl:c5_enter_error ensures] [%#slevel5'2] c5_consistent result)}
+    (! return {result}) ]

@@ -23,6 +23,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
+use elicit_ui::ColorTheme;
 use elicitation::elicit_tool;
 
 /// Crossterm terminal type alias.
@@ -45,9 +46,11 @@ fn json_result(value: &impl serde::Serialize) -> CallToolResult {
 }
 
 /// Parse a terminal ID from a string parameter.
-fn parse_terminal_id(id: &str) -> Result<Uuid, CallToolResult> {
+fn parse_terminal_id(id: &str) -> Result<Uuid, Box<CallToolResult>> {
     Uuid::parse_str(id).map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!("invalid terminal_id: {e}"))])
+        Box::new(CallToolResult::error(vec![Content::text(format!(
+            "invalid terminal_id: {e}"
+        ))]))
     })
 }
 
@@ -128,7 +131,7 @@ pub struct TerminalDestroyParams {
 async fn terminal_destroy(p: TerminalDestroyParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -172,7 +175,7 @@ pub struct TerminalClearParams {
 async fn terminal_clear(p: TerminalClearParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -216,7 +219,7 @@ pub struct TerminalSizeParams {
 async fn terminal_size(p: TerminalSizeParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<ratatui::layout::Size, String> = (|| {
         let mut guard = terminals()
@@ -257,7 +260,7 @@ pub struct TerminalHideCursorParams {
 async fn terminal_hide_cursor(p: TerminalHideCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -299,7 +302,7 @@ pub struct TerminalShowCursorParams {
 async fn terminal_show_cursor(p: TerminalShowCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -345,7 +348,7 @@ pub struct TerminalSetCursorParams {
 async fn terminal_set_cursor(p: TerminalSetCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -391,7 +394,7 @@ pub struct TerminalDrawParams {
 async fn terminal_draw(p: TerminalDrawParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -452,7 +455,49 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                 }
             }
         }
+        TuiNode::StatusBar { chips, theme } => render_status_bar(frame, area, chips, *theme),
     }
+}
+
+/// Render a Zellij-style status bar into a single-line area.
+///
+/// Each chip pair `(key, action)` is rendered as a styled key label followed
+/// by the action description.  Colors are chosen by `theme`.
+fn render_status_bar(frame: &mut Frame, area: Rect, chips: &[(String, String)], theme: ColorTheme) {
+    use ratatui::style::{Color, Modifier, Style};
+    use ratatui::text::{Line, Span};
+    use ratatui::widgets::Paragraph;
+
+    let (key_bg, key_fg, action_fg, bar_bg) = match theme {
+        ColorTheme::Dark => (Color::Cyan, Color::Black, Color::Gray, Color::DarkGray),
+        ColorTheme::Light => (Color::Blue, Color::White, Color::DarkGray, Color::Gray),
+        ColorTheme::HighContrast => (Color::Yellow, Color::Black, Color::White, Color::Black),
+        ColorTheme::Solarized => (
+            Color::Rgb(38, 139, 210),
+            Color::White,
+            Color::Rgb(147, 161, 161),
+            Color::Rgb(0, 43, 54),
+        ),
+    };
+
+    let mut spans: Vec<Span<'static>> = vec![Span::styled(" ", Style::default().bg(bar_bg))];
+    for (key, action) in chips {
+        spans.push(Span::styled(
+            format!(" {key} "),
+            Style::default()
+                .bg(key_bg)
+                .fg(key_fg)
+                .add_modifier(Modifier::BOLD),
+        ));
+        spans.push(Span::styled(
+            format!(" {action}  "),
+            Style::default().fg(action_fg).bg(bar_bg),
+        ));
+    }
+
+    let line = Line::from(spans);
+    let bar = Paragraph::new(line).style(Style::default().bg(bar_bg));
+    frame.render_widget(bar, area);
 }
 
 /// Render a single `WidgetJson` into a frame area.

@@ -1,0 +1,39 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 139 0 139 38 *)
+
+let%span slevel9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 140 18 140 19
+let%span slevel9'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 140 24 140 25
+let%span slevel9'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 140 30 140 31
+let%span slevel9'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 136 11 136 15
+let%span slevel9'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 137 10 137 34
+let%span slevel9'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 138 10 138 40
+let%span slevel9'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 124 16 124 51
+let%span slevel9'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 131 16 131 46
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_C9Triple = { a: Int64.t; b: Int64.t; c: Int64.t }
+
+predicate c9_triple_holds [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 123 0 123 44] (t: t_C9Triple) =
+  [%#slevel9'5] Int64.to_int t.a >= 0 /\ Int64.to_int t.b >= 0 /\ Int64.to_int t.c >= 0
+
+predicate c9_triple_b_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 130 0 130 50] (t: t_C9Triple) =
+  [%#slevel9'6] Int64.to_int t.b < 9223372036854775807
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c9_triple_produce
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level9.rs" 139 0 139 38]
+  (return (x: t_C9Triple)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_ret <- { a = ([%#slevel9] (1: Int64.t));
+                        b = ([%#slevel9'0] (2: Int64.t));
+                        c = ([%#slevel9'1] (3: Int64.t)) } ] s1
+    | s1 = return {_ret} ] ] [ & _ret: t_C9Triple = Any.any_l () ])
+  [ return (result: t_C9Triple) ->
+  {[@stop_split] [@expl:c9_triple_produce ensures] ([@stop_split] [@expl:c9_triple_produce ensures #0] [%#slevel9'3] c9_triple_holds result)
+    /\ ([@stop_split] [@expl:c9_triple_produce ensures #1] [%#slevel9'4] c9_triple_b_below_max result)}
+    (! return {result}) ]

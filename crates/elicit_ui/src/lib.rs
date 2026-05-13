@@ -1,75 +1,47 @@
-//! `elicit_ui` — typestate-based verified UI system.
+//! `elicit_ui` — WCAG-enforced accessible UI system using AccessKit as the IR.
 //!
 //! Provides a formally verifiable UI construction system using:
 //!
 //! 1. **AccessKit universal IR** — all UI represented as accessibility trees
-//! 2. **Typestate state machine** — `Pending → Verified → Rendered`
-//! 3. **Proof-carrying contracts** — WCAG compliance enforced at compile time
-//! 4. **Multiple frontends** — render to egui, leptos, ratatui from single IR
+//! 2. **Typestate state machine** — `Pending → Verified`
+//! 3. **Proof-carrying contracts** — WCAG compliance enforced by construction
+//! 4. **Multiple frontends** — bridge to egui, leptos, ratatui from single IR
 //!
 //! # Architecture
 //!
 //! ```text
-//! Domain Types → Typestate → Contracts → AccessKit Tree → Frontend
-//! (Button, Label) → (Pending) → (verify_aa) → (tree)  → (egui/leptos/ratatui)
+//! WCAG factory traits
+//!        ↓
+//! AccessKitUiBackend  (monomorphic — one concrete impl)
+//!        ↓
+//! AccessKit IR  (TreeUpdate — the validated output)
+//!        ↓
+//! Frontend bridges  (egui / leptos / ratatui — concrete modules)
 //! ```
 //!
 //! # State Machine
 //!
 //! - `Layout<Pending>` — awaiting verification
 //! - `Layout<Verified>` — verified against WCAG Level AA constraints
-//! - `Layout<Rendered>` — rendered to a specific frontend
 //!
 //! # Propositions (WCAG Compliance)
 //!
-//! - `HasLabel<T>` — element has non-empty accessible label
-//! - `ValidRole<T>` — element has valid ARIA role
-//! - `MinTargetSize<T>` — interactive element ≥44x44 (Level AAA touch targets)
-//! - `NoOverflow<T>` — element fits within viewport
-//! - `KeyboardAccessible<T>` — element keyboard-navigable
-//! - `AccessibleAA<T>` — composite (all Level AA criteria)
-//!
-//! # Example
-//!
-//! ```rust,no_run
-//! use elicit_ui::{Layout, Viewport};
-//! use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
-//!
-//! // Create a button using AccessKit
-//! let button_id = NodeId::from(1u64);
-//! let root_id = NodeId::from(0u64);
-//!
-//! let mut button = Node::new(Role::Button);
-//! button.set_label("Submit");
-//! button.set_bounds(accesskit::Rect {
-//!     x0: 0.0, y0: 0.0, x1: 100.0, y1: 50.0,
-//! });
-//!
-//! let mut root = Node::new(Role::Window);
-//! root.set_children(vec![button_id]);
-//!
-//! let update = TreeUpdate {
-//!     nodes: vec![(root_id, root), (button_id, button)],
-//!     tree: Some(Tree::new(root_id)),
-//!     tree_id: TreeId::ROOT,
-//!     focus: root_id,
-//! };
-//!
-//! // Create layout from AccessKit tree
-//! let layout = Layout::from_update(update);
-//!
-//! // Verify WCAG Level AA compliance
-//! let verified = layout.verify_aa(Viewport::new(1920, 1080))?;
-//!
-//! // Render to frontend via RenderBackend
-//! // let backend = elicit_egui::EguiBackend::new(&egui_ctx);
-//! // let (rendered, stats) = verified.render(&backend);
-//! # Ok::<(), elicit_ui::VerificationReport>(())
-//! ```
+//! - `HasLabel` — element has non-empty accessible label
+//! - `ValidRole` — element has valid ARIA role
+//! - `MinTargetSize` — interactive element ≥44x44 (Level AAA touch targets)
+//! - `NoOverflow` — element fits within viewport
+//! - `KeyboardAccessible` — element keyboard-navigable
+//! - `AccessibleAA` — composite (all Level AA criteria)
+//! - `SufficientContrast` — color pair meets 4.5:1 ratio (WCAG 1.4.3)
+//! - `FocusVisible` — visible focus indicator (WCAG 2.4.11)
+//! - `AltTextProvided` — text alternative for non-text content (WCAG 1.1.1)
+//! - `StructuredContent` — structure is programmatically determinable (WCAG 1.3.1)
+//! - `RenderComplete` — UI tree successfully rendered
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod accesskit_backend;
 mod builder;
 mod color_contrast;
 pub mod constraints;
@@ -77,12 +49,26 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
-mod render_backend;
+pub mod palette;
+pub mod palettes;
+pub(crate) mod proof_credentials;
+/// Per-role proof tokens for the [`UiNodeBridge`] chain of custody.
+///
+/// Each `XxxNodeValid` type is issued by `dispatch_role` after the WCAG
+/// tree has been verified, and is required as a parameter to the
+/// corresponding `bridge_xxx` method.
+pub mod node_roles {
+    pub use crate::contracts::node_roles::*;
+}
 mod spatial;
+pub mod traits;
 mod types;
 mod typestate;
+mod ui_types;
 mod validators;
+mod wcag_types;
 
+pub use accesskit_backend::AccessKitUiBackend;
 pub use builder::LayoutBuilder;
 pub use color_contrast::{
     ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize, contrast_ratio,
@@ -95,15 +81,205 @@ pub use constraints::{
     TerminalAccessible, TerminalBreakpoint, TerminalBreakpointSet, TerminalNoOverflow, TextSpacing,
     ValidRoleConstraint, Violation, WcagLevel,
 };
+pub use contracts::NodeRoleProof;
 pub use contracts::{
-    AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
+    // ── Legacy aliases (API back-compat) ──────────────────────────────────
+    AccessibleAA,
+    AltTextProvided,
+    FocusVisible,
+    HasLabel,
+    // ── UI pipeline ───────────────────────────────────────────────────────
+    IrSourced,
+    KeyboardAccessible,
+    MinTargetSize,
+    NoOverflow,
+    RenderComplete,
+    RolePreserved,
+    StructuredContent,
+    SufficientContrast,
+    ValidRole,
+    WcagAbbreviationsExpanded,
+    WcagAccessibleAuthentication,
+    WcagAccessibleAuthenticationEnhanced,
+    WcagAllFunctionalityKeyboard,
+    WcagAudioControlAvailable,
+    WcagAudioDescriptionOrMediaAlt,
+    WcagAudioDescriptionPrerecorded,
+    WcagAudioOnlyAlternativeProvided,
+    WcagAudioOnlyLiveAlternative,
+    WcagAutoUpdatePausable,
+    WcagBypassBlocksMechanism,
+    WcagCaptchaMultipleModalities,
+    WcagCaptionsLiveProvided,
+    WcagCaptionsSynchronized,
+    WcagChangesOnRequest,
+    WcagCharacterShortcutsDisableable,
+    WcagCharacterShortcutsFocusOnly,
+    WcagCharacterShortcutsRemappable,
+    WcagColorNotSoleConveyor,
+    WcagComponentPurposeIdentifiable,
+    WcagConcurrentInputMechanisms,
+    WcagConsistentHelpLocated,
+    WcagContentReflowable,
+    WcagContextSensitiveHelp,
+    WcagContrastEnhancedLargeText,
+    WcagContrastEnhancedNormalText,
+    WcagContrastMinimumLargeText,
+    WcagContrastMinimumLogotypeExcepted,
+    WcagContrastMinimumNormalText,
+    WcagDecorativeImageAltEmpty,
+    WcagDraggingAlternative,
+    WcagErrorIdentificationDescriptive,
+    WcagErrorPreventionAll,
+    WcagErrorPreventionChecked,
+    WcagErrorPreventionConfirmed,
+    WcagErrorPreventionLegal,
+    WcagErrorPreventionReversible,
+    WcagErrorSuggestionProvided,
+    WcagExtendedAudioDescription,
+    WcagFlashAreaBelowThreshold,
+    WcagFocusAppearanceEnhancedArea,
+    WcagFocusAppearanceEnhancedContrast,
+    WcagFocusAppearanceMinimumArea,
+    WcagFocusAppearanceMinimumContrast,
+    WcagFocusIndicatorContrast,
+    WcagFocusNoContextChange,
+    WcagFocusOrderLogical,
+    WcagFocusVisibleKeyboard,
+    WcagFormLabelsProgrammatic,
+    WcagHeadingStructureProgrammatic,
+    WcagHeadingsDescriptive,
+    WcagHoverContentDismissible,
+    WcagHoverContentHoverable,
+    WcagHoverContentPersistent,
+    WcagIdentificationConsistent,
+    WcagImagesOfTextAvoided,
+    WcagImagesOfTextCustomizable,
+    WcagImagesOfTextNoException,
+    WcagInfoAndRelationshipsProgrammatic,
+    WcagInputNoContextChange,
+    WcagInputPurposeIdentifiable,
+    WcagInterruptionsPostponable,
+    WcagKeyboardEscapeFromComponent,
+    WcagKeyboardNoTimingPath,
+    WcagKeyboardNotTrapped,
+    // ── Principle 2: Operable ─────────────────────────────────────────────
+    WcagKeyboardOperable,
+    WcagLabelInNameMatch,
+    WcagLabelsDescriptive,
+    WcagLabelsOrInstructionsPresent,
+    WcagLetterSpacingAdjustable,
+    // ── Aggregate seams ───────────────────────────────────────────────────
+    WcagLevelAAAValid,
+    WcagLevelAAValid,
+    // ── Aggregate seams ───────────────────────────────────────────────────
+    WcagLevelAValid,
+    WcagLineHeightAdjustable,
+    WcagLinkPurposeFromContext,
+    WcagLinkPurposeLinkOnly,
+    WcagListStructureProgrammatic,
+    WcagLocationInNavigationSet,
+    WcagLowBackgroundAudio,
+    WcagMeaningfulSequencePreservable,
+    WcagMediaAlternativePrerecorded,
+    WcagMotionActuationAlternative,
+    WcagMotionActuationDisableable,
+    WcagMultiplePathsToContent,
+    WcagNamePresent,
+    WcagNameRoleValueProgrammatic,
+    WcagNavigationConsistent,
+    WcagNoHorizontalScrollVerticalText,
+    WcagNoThreeFlashAbsolute,
+    WcagNoTimingRequired,
+    WcagNonTextContentAltDescriptive,
+    WcagNonTextContentAltNonEmpty,
+    // ── Principle 1: Perceivable ──────────────────────────────────────────
+    WcagNonTextContentAltPresent,
+    WcagNonTextContrastMinimum,
+    WcagOperableValid,
+    WcagOrientationNotRestricted,
+    // ── Principle 3: Understandable ───────────────────────────────────────
+    WcagPageLanguageIdentified,
+    WcagPageTitleDescriptive,
+    WcagPageTitled,
+    WcagParagraphSpacingAdjustable,
+    // ── Principle 4: Robust ───────────────────────────────────────────────
+    WcagParsingValid,
+    WcagPartLanguageIdentified,
+    WcagPauseStopHideAvailable,
+    // ── Principle-level conformance seams ────────────────────────────────────
+    WcagPerceivedValid,
+    WcagPointerCancellationAbortable,
+    WcagPointerCancellationReversible,
+    WcagPointerCancellationUpEvent,
+    WcagPointerGesturesSimpleAlternative,
+    WcagPronunciationAvailable,
+    WcagReadingLevelSupplemented,
+    WcagReauthWithoutDataLoss,
+    WcagReducedMotionRespected,
+    WcagRedundantEntryMinimized,
+    WcagRobustValid,
+    WcagRoleProgrammatic,
+    WcagSectionHeadingsPresent,
+    WcagSensoryNotExclusive,
+    WcagSignLanguagePrerecorded,
+    WcagStatusMessagesLiveRegion,
+    WcagStatusMessagesProgrammatic,
+    WcagTableHeadersProgrammatic,
+    WcagTargetSizeEnhanced,
+    WcagTargetSizeEnhancedHeight,
+    WcagTargetSizeEnhancedWidth,
+    WcagTargetSizeMinimum,
+    WcagTargetSizeMinimumHeight,
+    WcagTargetSizeMinimumSpaced,
+    WcagTargetSizeMinimumWidth,
+    WcagTextResizable,
+    WcagTextSpacingAdjustable,
+    WcagThreeFlashBelowThreshold,
+    WcagTimeoutWarningProvided,
+    WcagTimingAdjustTenX,
+    WcagTimingAdjustable,
+    WcagTimingExtendWarning,
+    WcagTimingTurnOffAvailable,
+    WcagUnderstandableValid,
+    WcagUnusualWordsDefined,
+    WcagValueStatesProgrammatic,
+    WcagVerified,
+    WcagVideoOnlyAlternativeProvided,
+    WcagVisualPresentationCustomizable,
+    WcagWordSpacingAdjustable,
 };
 pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
-pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
+pub use elicit_accesskit::ColorTheme;
+pub use errors::{
+    UiError, UiErrorKind, UiResult, VerificationError, VerificationErrorKind, VerificationReport,
+};
 pub use layout_engine::LayoutEngineError;
 #[cfg(feature = "layout-engine")]
 pub use layout_engine::{LayoutMode, TaffyBridge};
-pub use render_backend::RenderBackend;
+pub use palette::{
+    ContrastReport, ContrastSuggestion, NonTextPair, NormalTextPair, Palette, PaletteBuildError,
+    PaletteBuilder, PaletteColors, SemanticRole, suggest_compliant,
+};
 pub use spatial::{BoundingBox, LayoutContext};
+pub use traits::{
+    UiBackend, UiEventBridge, UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager,
+    UiNodeBridge, UiRenderBackend, UiRenderer, UiTreeRenderer, WcagBackend, WcagContrastFactory,
+    WcagElementMeta, WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory,
+    WcagLanguageFactory, WcagMediaFactory, WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory,
+    WcagRobustFactory, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory,
+    WcagUnderstandableFactory,
+};
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};
+pub use ui_types::{
+    ContainerId, ContrastViolation, VerifiedTree, WidgetA11y, WidgetId, WidgetInfo,
+};
+pub use wcag_types::{
+    CaptionedMedia, ContrastDescriptor, ContrastPair, ErrorDescriptor, ErrorField, FocusDescriptor,
+    FocusIndicator, KeyboardDescriptor, KeyboardPath, LabelDescriptor, LabeledElement,
+    LanguageDescriptor, LanguagePage, LevelAaEvidence, MediaDescriptor, OperableEvidence,
+    OperableInterface, PerceivedEvidence, PerceivedSection, PointerTarget, RobustEvidence,
+    RobustWidget, StructureDescriptor, StructuredElement, TargetDescriptor, TimedElement,
+    TimingDescriptor, UnderstandableEvidence, UnderstandableInterface,
+};

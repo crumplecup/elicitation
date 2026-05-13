@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c17_begin_kv": { "prover": "cvc5", "time": 0.012 },
+      "vc_c17_disconnect": { "prover": "cvc5", "time": 0.01 },
+      "vc_c17_finish_kv": { "prover": "cvc5", "time": 0.01 },
+      "vc_c17_full_lifecycle_kv": { "prover": "cvc5", "time": 0.016 },
+      "vc_c17_new": { "prover": "cvc5", "time": 0.011 }
+    }
+  }
+}

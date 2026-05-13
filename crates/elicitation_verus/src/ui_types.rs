@@ -146,10 +146,10 @@ pub fn verify_empty_report(report_is_empty: bool) -> (result: bool)
 
 /// Level A is a subset of Level AA is a subset of Level AAA.
 /// If a layout passes AAA, it passes AA and A.
-pub fn verify_level_subset(passes_aaa: bool, passes_aa: bool, passes_a: bool) -> (result: bool)
+pub fn verify_level_subset(passes_aaa: bool, _passes_aa: bool, passes_a: bool) -> (result: bool)
     requires
-        passes_aaa ==> passes_aa,
-        passes_aa ==> passes_a,
+        passes_aaa ==> _passes_aa,
+        _passes_aa ==> passes_a,
     ensures result == (passes_aaa ==> passes_a),
 {
     !passes_aaa || passes_a
@@ -299,8 +299,8 @@ pub fn verify_builder_all_containers(all_valid: bool) -> (result: bool)
 
 /// NodeId uniqueness: counter is monotonically increasing.
 /// After allocating ids 1..N, all are distinct.
-pub fn verify_builder_id_uniqueness(n: u32) -> (result: bool)
-    requires n > 0,
+pub fn verify_builder_id_uniqueness(_n: u32) -> (result: bool)
+    requires _n > 0,
     ensures result == true,
 {
     // Ids allocated are 1, 2, ..., n — all distinct since counter increments

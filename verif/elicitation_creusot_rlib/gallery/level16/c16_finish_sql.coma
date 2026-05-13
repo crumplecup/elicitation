@@ -1,0 +1,121 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 243 0 243 75 *)
+
+let%span slevel16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 243 22 243 23
+let%span slevel16'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 243 39 243 43
+let%span slevel16'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 238 11 238 29
+let%span slevel16'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 239 11 239 32
+let%span slevel16'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 240 11 240 37
+let%span slevel16'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 243 63 243 75
+let%span slevel16'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 241 10 241 33
+let%span slevel16'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 242 10 242 39
+let%span slevel16'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 147 8 155 9
+let%span slevel16'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 166 16 166 79
+let%span slevel16'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 99 16 99 48
+let%span slevel16'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 171 16 171 81
+
+use creusot.int.Int32
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_C16Descriptor = { name: t_String; port: Int32.t }
+
+type t_C16ConnState =
+  | Disconnected
+  | Connecting t_String t_String
+  | SqlConnected t_C16Descriptor
+  | KvConnected t_String
+  | Reconnecting t_C16Descriptor
+  | ConnectionError t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C16Descriptor (_1: t_C16Descriptor)
+
+axiom inv_axiom [@rewrite]: forall x: t_C16Descriptor [inv_C16Descriptor x]. inv_C16Descriptor x = inv_String x.name
+
+predicate inv_C16ConnState (_1: t_C16ConnState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C16ConnState [inv_C16ConnState x]. inv_C16ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend_tag -> inv_String profile_name /\ inv_String backend_tag
+      | SqlConnected desc -> inv_C16Descriptor desc
+      | KvConnected path -> inv_String path
+      | Reconnecting desc -> inv_C16Descriptor desc
+      | ConnectionError message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C16Descriptor (_1: t_C16Descriptor)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C16Descriptor [resolve_C16Descriptor x]. resolve_C16Descriptor x
+    = resolve_String x.name
+
+predicate resolve_C16ConnState (_1: t_C16ConnState)
+
+axiom resolve_axiom'0 [@rewrite]: forall x: t_C16ConnState [resolve_C16ConnState x]. resolve_C16ConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting x0 x1 -> resolve_String x0 /\ resolve_String x1
+      | SqlConnected x0 -> resolve_C16Descriptor x0
+      | KvConnected x0 -> resolve_String x0
+      | Reconnecting x0 -> resolve_C16Descriptor x0
+      | ConnectionError x0 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c16_desc_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 98 0 98 53] (d: t_C16Descriptor) =
+  [%#slevel16'9] Seq.length (view_String d.name) > 0 /\ Int32.to_int d.port > 0
+
+predicate c16_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 145 0 145 47] (s: t_C16ConnState) =
+  [%#slevel16'7] match s with
+    | Disconnected -> true
+    | Connecting profile_name backend_tag -> Seq.length (view_String profile_name) > 0
+    /\ Seq.length (view_String backend_tag) > 0
+    | SqlConnected desc -> c16_desc_consistent desc
+    | KvConnected path -> Seq.length (view_String path) > 0
+    | Reconnecting desc -> c16_desc_consistent desc
+    | ConnectionError message -> Seq.length (view_String message) > 0
+    end
+
+predicate c16_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 165 0 165 50] (s: t_C16ConnState) =
+  [%#slevel16'8] match s with
+    | Connecting _ _ -> true
+    | _ -> false
+    end
+
+predicate c16_is_sql_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 170 0 170 53] (s: t_C16ConnState) =
+  [%#slevel16'10] match s with
+    | SqlConnected _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c16_finish_sql [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level16.rs" 243 0 243 75]
+  (s: t_C16ConnState) (desc: t_C16Descriptor) (return (x: t_C16ConnState)) =
+  {[@stop_split] [@expl:c16_finish_sql requires] ([@stop_split] [@expl:c16_finish_sql 's' type invariant] [%#slevel16] inv_C16ConnState s)
+  /\ ([@stop_split] [@expl:c16_finish_sql 'desc' type invariant] [%#slevel16'0] inv_C16Descriptor desc)
+  /\ ([@stop_split] [@expl:c16_finish_sql requires #0] [%#slevel16'1] c16_consistent s)
+  /\ ([@stop_split] [@expl:c16_finish_sql requires #1] [%#slevel16'2] c16_is_connecting s)
+  /\ ([@stop_split] [@expl:c16_finish_sql requires #2] [%#slevel16'3] c16_desc_consistent desc)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C16ConnState s} any) ]
+    | s1 = -{resolve_C16ConnState s}- s2
+    | s2 = [ &_ret <- SqlConnected desc ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_C16ConnState = Any.any_l () | & s: t_C16ConnState = s | & desc: t_C16Descriptor = desc ])
+  [ return (result: t_C16ConnState) ->
+  {[@stop_split] [@expl:c16_finish_sql ensures] ([@stop_split] [@expl:c16_finish_sql result type invariant] [%#slevel16'4] inv_C16ConnState result)
+    /\ ([@stop_split] [@expl:c16_finish_sql ensures #0] [%#slevel16'5] c16_consistent result)
+    /\ ([@stop_split] [@expl:c16_finish_sql ensures #1] [%#slevel16'6] c16_is_sql_connected result)}
+    (! return {result}) ]

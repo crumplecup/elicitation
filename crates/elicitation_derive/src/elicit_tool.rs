@@ -338,6 +338,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 .collect();
 
             let emit_block = quote! {
+                #[allow(unexpected_cfgs)]
+                #[cfg(not(kani))]
                 impl elicitation::emit_code::EmitCode for #params_ty {
                     fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
                         #(#field_bindings)*
@@ -349,6 +351,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                     }
                 }
 
+                #[allow(unexpected_cfgs)]
+                #[cfg(not(kani))]
                 elicitation::register_emit!(#name, #params_ty);
             };
 
@@ -363,6 +367,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 })
                 .collect();
             let emit_block = quote! {
+                #[allow(unexpected_cfgs)]
+                #[cfg(not(kani))]
                 impl elicitation::emit_code::EmitCode for #params_ty {
                     fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
                         <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::emit_code(self)
@@ -373,6 +379,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                     }
                 }
 
+                #[allow(unexpected_cfgs)]
+                #[cfg(not(kani))]
                 elicitation::register_emit!(#name, #params_ty);
             };
 

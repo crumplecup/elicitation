@@ -7,7 +7,7 @@ use crate::constraints::{
 };
 use crate::{VerificationReport, Viewport, validators};
 use accesskit::{Node, NodeId, TreeUpdate};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::marker::PhantomData;
 
 /// Typestate marker: Layout awaiting verification.
@@ -18,7 +18,7 @@ pub struct Pending;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Verified;
 
-/// Typestate marker: Layout rendered to a specific frontend.
+/// Typestate marker: Layout has been rendered to output.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Rendered;
 
@@ -26,11 +26,11 @@ pub struct Rendered;
 ///
 /// State transitions:
 /// - `Layout<Pending>` — awaiting verification
-/// - `Layout<Verified>` — verified against WCAG Level AA
-/// - `Layout<Rendered>` — rendered to frontend
+/// - `Layout<Verified>` — verified against WCAG Level AA; call [`Layout::into_verified_tree`]
+///   to obtain a [`crate::VerifiedTree`] for a frontend bridge
 #[derive(Debug, Clone)]
 pub struct Layout<State> {
-    nodes: HashMap<NodeId, Node>,
+    nodes: BTreeMap<NodeId, Node>,
     root: NodeId,
     viewport: Option<Viewport>,
     report: Option<VerificationReport>,
@@ -40,7 +40,7 @@ pub struct Layout<State> {
 impl Layout<Pending> {
     /// Create a new pending layout from an AccessKit TreeUpdate.
     pub fn from_update(update: TreeUpdate) -> Self {
-        let nodes: HashMap<NodeId, Node> = update.nodes.into_iter().collect();
+        let nodes: BTreeMap<NodeId, Node> = update.nodes.into_iter().collect();
         let root = update.focus;
 
         Self {
@@ -266,43 +266,40 @@ impl Layout<Verified> {
     }
 
     /// Get a reference to the node map.
-    pub fn nodes(&self) -> &HashMap<NodeId, Node> {
+    pub fn nodes(&self) -> &BTreeMap<NodeId, Node> {
         &self.nodes
     }
 
-    /// Render the verified layout through a [`RenderBackend`].
+    /// Extract a [`VerifiedTree`] snapshot for rendering.
     ///
-    /// This is the generic render path. Frontend crates provide their
-    /// own `RenderBackend` implementation (e.g., `EguiBackend`,
-    /// `RatatuiBackend`).
-    #[tracing::instrument(skip(self, backend), fields(root = ?self.root))]
-    pub fn render<B: crate::RenderBackend>(
-        self,
-        backend: &B,
-    ) -> (Layout<Rendered>, crate::RenderStats) {
-        tracing::debug!("Rendering layout via backend");
-
-        let stats = backend.render_tree(&self.nodes, self.root);
-
-        let layout = Layout {
+    /// Converts the typestate layout into a plain data snapshot that
+    /// can be passed to any frontend bridge.
+    pub fn into_verified_tree(self) -> crate::VerifiedTree {
+        crate::VerifiedTree {
             nodes: self.nodes,
             root: self.root,
-            viewport: self.viewport,
-            report: self.report,
-            _state: PhantomData,
-        };
+            viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
+        }
+    }
 
-        (layout, stats)
+    /// Render this layout using any [`UiNodeBridge`] frontend.
+    ///
+    /// Returns the [`VerifiedTree`] (for further inspection or diffing) and
+    /// [`RenderStats`] from the DFS render pass.
+    ///
+    /// # Errors
+    ///
+    /// Propagates any error returned by the bridge's render implementation.
+    pub fn render<B: crate::traits::UiNodeBridge>(
+        self,
+        backend: &B,
+    ) -> crate::UiResult<(crate::VerifiedTree, crate::RenderStats)> {
+        use crate::traits::UiTreeRenderer;
+        let tree = self.into_verified_tree();
+        let (_widget, stats, _proof) = backend.render(&tree)?;
+        Ok((tree, stats))
     }
 }
-
-impl Layout<Rendered> {
-    /// Get the root node ID.
-    pub fn root(&self) -> NodeId {
-        self.root
-    }
-}
-
 /// Pre-built constraint profiles for common verification scenarios.
 ///
 /// Each profile maps to a specific set of constraints from the constraint system.

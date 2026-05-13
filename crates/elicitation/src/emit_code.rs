@@ -265,6 +265,21 @@ impl EmitCode for RawFragment {
     }
 }
 
+/// Parse a Rust expression string into a token stream for literal emission.
+///
+/// This is used by derive-generated `ToCodeLiteral` impls for proxy fields that
+/// store authored Rust expressions as strings but must emit them back as live
+/// syntax rather than string literals.
+pub fn parse_expr_tokens<S>(src: S, context: &str) -> TokenStream
+where
+    S: AsRef<str>,
+{
+    let src = src.as_ref();
+    let expr = syn::parse_str::<syn::Expr>(src)
+        .unwrap_or_else(|error| panic!("invalid {context} expression `{src}`: {error}"));
+    quote::quote! { #expr }
+}
+
 /// A Cargo dependency descriptor with pinned version.
 ///
 /// Each `EmitCode` impl that calls into a workspace crate returns `CrateDep`
@@ -919,6 +934,26 @@ impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
     }
 }
 
+impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::BTreeMap<String, V> {
+    fn type_tokens() -> TokenStream {
+        let v = <V as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::collections::BTreeMap<::std::string::String, #v> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let entries: Vec<_> = self
+            .iter()
+            .map(|(k, v)| {
+                let v_ts = v.to_code_literal();
+                quote::quote! { (#k.to_string(), #v_ts) }
+            })
+            .collect();
+        quote::quote! {
+            [#(#entries),*].into_iter().collect::<::std::collections::BTreeMap<_, _>>()
+        }
+    }
+}
+
 impl<T: ToCodeLiteral> ToCodeLiteral for Box<T> {
     fn type_tokens() -> TokenStream {
         let inner = <T as ToCodeLiteral>::type_tokens();
@@ -942,6 +977,42 @@ impl<A: ToCodeLiteral, B: ToCodeLiteral> ToCodeLiteral for (A, B) {
         let a = self.0.to_code_literal();
         let b = self.1.to_code_literal();
         quote::quote! { (#a, #b) }
+    }
+}
+
+impl<A: ToCodeLiteral, B: ToCodeLiteral, C: ToCodeLiteral> ToCodeLiteral for (A, B, C) {
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        let c = <C as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b, #c) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        let c = self.2.to_code_literal();
+        quote::quote! { (#a, #b, #c) }
+    }
+}
+
+impl<A: ToCodeLiteral, B: ToCodeLiteral, C: ToCodeLiteral, D: ToCodeLiteral> ToCodeLiteral
+    for (A, B, C, D)
+{
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        let c = <C as ToCodeLiteral>::type_tokens();
+        let d = <D as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b, #c, #d) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        let c = self.2.to_code_literal();
+        let d = self.3.to_code_literal();
+        quote::quote! { (#a, #b, #c, #d) }
     }
 }
 

@@ -1,0 +1,69 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 171 0 171 45 *)
+
+let%span slevel11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 171 31 171 45
+let%span slevel11'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 169 10 169 33
+let%span slevel11'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 170 10 170 37
+let%span slevel11'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 146 8 151 9
+let%span slevel11'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 121 8 124 9
+let%span slevel11'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 83 8 86 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_String
+
+type t_MiniPanelState = Empty | Grid t_MiniDisplayMode Int64.t | Detail t_MiniDisplayMode | Error t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty -> true
+      | Grid mode row_count -> true
+      | Detail mode -> true
+      | Error message -> inv_String message
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c11_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 144 0 144 49] (s: t_MiniPanelState) =
+  [%#slevel11'2] match s with
+    | Empty -> true
+    | Grid _ row_count -> Int64.to_int row_count > 0
+    | Detail _ -> true
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c11_is_read [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 81 0 81 47] (m: t_MiniDisplayMode) =
+  [%#slevel11'4] match m with
+    | Read -> true
+    | Edit -> false
+    end
+
+predicate c11_detail_is_read [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 119 0 119 53] (s: t_MiniPanelState) =
+  [%#slevel11'3] match s with
+    | Detail mode -> c11_is_read mode
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c11_mk_detail_read
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 171 0 171 45]
+  (return (x: t_MiniPanelState)) = (! bb0
+  [ bb0 = s0 [ s0 = [ &_3 <- Read ] s1 | s1 = [ &_ret <- Detail _3 ] s2 | s2 = return {_ret} ] ]
+  [ & _ret: t_MiniPanelState = Any.any_l () | & _3: t_MiniDisplayMode = Any.any_l () ])
+  [ return (result: t_MiniPanelState) ->
+  {[@stop_split] [@expl:c11_mk_detail_read ensures] ([@stop_split] [@expl:c11_mk_detail_read result type invariant] [%#slevel11] inv_MiniPanelState result)
+    /\ ([@stop_split] [@expl:c11_mk_detail_read ensures #0] [%#slevel11'0] c11_consistent result)
+    /\ ([@stop_split] [@expl:c11_mk_detail_read ensures #1] [%#slevel11'1] c11_detail_is_read result)}
+    (! return {result}) ]

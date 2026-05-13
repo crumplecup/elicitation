@@ -339,6 +339,15 @@ macro_rules! impl_elicitation_for_reqwest_newtype {
         }
 
         impl elicitation::ElicitComplete for $Type {}
+
+        impl elicitation::ElicitPromptTree for $Type {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: $desc.to_string(),
+                    type_name: $tn.to_string(),
+                }
+            }
+        }
     };
 }
 

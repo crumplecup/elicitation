@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c18_begin_sql": { "prover": "cvc5", "time": 0.021 } }
+  }
+}

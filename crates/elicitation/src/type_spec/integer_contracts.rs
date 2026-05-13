@@ -396,3 +396,198 @@ impl_integer_contract_spec!(
         ("positive", "Value must be strictly greater than zero.", "value > 0"),
     ],
 );
+
+// ── Integer default wrappers ──────────────────────────────────────────────────
+
+macro_rules! impl_integer_default_spec {
+    (
+        type    = $ty:ty,
+        name    = $name:literal,
+        base    = $base:literal,
+        summary = $summary:literal $(,)?
+    ) => {
+        impl ElicitSpec for $ty {
+            fn type_spec() -> TypeSpec {
+                let related = SpecCategoryBuilder::default()
+                    .name("related".to_string())
+                    .entries(vec![
+                        SpecEntryBuilder::default()
+                            .label("base_type".to_string())
+                            .description(
+                                concat!(
+                                    "Wraps `",
+                                    $base,
+                                    "`. Use describe_type(\"",
+                                    $base,
+                                    "\") for full range information."
+                                )
+                                .to_string(),
+                            )
+                            .build()
+                            .expect("valid entry"),
+                    ])
+                    .build()
+                    .expect("valid related");
+                TypeSpecBuilder::default()
+                    .type_name($name.to_string())
+                    .summary($summary.to_string())
+                    .categories(vec![related])
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+
+        inventory::submit!(TypeSpecInventoryKey::new(
+            $name,
+            <$ty as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$ty>
+        ));
+        impl crate::ElicitComplete for $ty {}
+    };
+}
+
+use crate::verification::types::{
+    I8Default, I16Default, I32Default, I64Default, I128Default, IsizeDefault, U8Default,
+    U16Default, U32Default, U64Default, U128Default, UsizeDefault,
+};
+
+impl_integer_default_spec!(
+    type    = I8Default,
+    name    = "I8Default",
+    base    = "i8",
+    summary = "An unconstrained 8-bit signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = I16Default,
+    name    = "I16Default",
+    base    = "i16",
+    summary = "An unconstrained 16-bit signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = I32Default,
+    name    = "I32Default",
+    base    = "i32",
+    summary = "An unconstrained 32-bit signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = I64Default,
+    name    = "I64Default",
+    base    = "i64",
+    summary = "An unconstrained 64-bit signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = I128Default,
+    name    = "I128Default",
+    base    = "i128",
+    summary = "An unconstrained 128-bit signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = IsizeDefault,
+    name    = "IsizeDefault",
+    base    = "isize",
+    summary = "An unconstrained pointer-sized signed integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = U8Default,
+    name    = "U8Default",
+    base    = "u8",
+    summary = "An unconstrained 8-bit unsigned integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = U16Default,
+    name    = "U16Default",
+    base    = "u16",
+    summary = "An unconstrained 16-bit unsigned integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = U32Default,
+    name    = "U32Default",
+    base    = "u32",
+    summary = "An unconstrained 32-bit unsigned integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = U64Default,
+    name    = "U64Default",
+    base    = "u64",
+    summary = "An unconstrained 64-bit unsigned integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = U128Default,
+    name    = "U128Default",
+    base    = "u128",
+    summary = "An unconstrained 128-bit unsigned integer wrapper.",
+);
+impl_integer_default_spec!(
+    type    = UsizeDefault,
+    name    = "UsizeDefault",
+    base    = "usize",
+    summary = "An unconstrained pointer-sized unsigned integer wrapper.",
+);
+
+// ── Integer Range types (const-generic) ──────────────────────────────────────
+
+use crate::verification::types::{
+    I8Range, I16Range, I32Range, I64Range, I128Range, IsizeRange, U8Range, U16Range, U32Range,
+    U64Range, U128Range, UsizeRange,
+};
+
+macro_rules! impl_range_spec {
+    ($ty:ident, $prim:ty, $name:literal, $summary:literal) => {
+        impl<const MIN: $prim, const MAX: $prim> ElicitSpec for $ty<MIN, MAX> {
+            fn type_spec() -> TypeSpec {
+                let requires = SpecCategoryBuilder::default()
+                    .name("requires".to_string())
+                    .entries(vec![
+                        SpecEntryBuilder::default()
+                            .label("range".to_string())
+                            .description(format!("Value must be in range [{}, {}]", MIN, MAX))
+                            .expression(Some(format!("value >= {} && value <= {}", MIN, MAX)))
+                            .build()
+                            .expect("valid entry"),
+                    ])
+                    .build()
+                    .expect("valid requires");
+                TypeSpecBuilder::default()
+                    .type_name(format!("{}<{},{}>", $name, MIN, MAX))
+                    .summary(format!($summary, MIN, MAX))
+                    .categories(vec![requires])
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl<const MIN: $prim, const MAX: $prim> crate::ElicitComplete for $ty<MIN, MAX> {}
+    };
+}
+
+impl_range_spec!(I8Range, i8, "I8Range", "An i8 value in range [{}..{}].");
+impl_range_spec!(I16Range, i16, "I16Range", "An i16 value in range [{}..{}].");
+impl_range_spec!(I32Range, i32, "I32Range", "An i32 value in range [{}..{}].");
+impl_range_spec!(I64Range, i64, "I64Range", "An i64 value in range [{}..{}].");
+impl_range_spec!(
+    I128Range,
+    i128,
+    "I128Range",
+    "An i128 value in range [{}..{}]."
+);
+impl_range_spec!(
+    IsizeRange,
+    isize,
+    "IsizeRange",
+    "An isize value in range [{}..{}]."
+);
+impl_range_spec!(U8Range, u8, "U8Range", "A u8 value in range [{}..{}].");
+impl_range_spec!(U16Range, u16, "U16Range", "A u16 value in range [{}..{}].");
+impl_range_spec!(U32Range, u32, "U32Range", "A u32 value in range [{}..{}].");
+impl_range_spec!(U64Range, u64, "U64Range", "A u64 value in range [{}..{}].");
+impl_range_spec!(
+    U128Range,
+    u128,
+    "U128Range",
+    "A u128 value in range [{}..{}]."
+);
+impl_range_spec!(
+    UsizeRange,
+    usize,
+    "UsizeRange",
+    "A usize value in range [{}..{}]."
+);

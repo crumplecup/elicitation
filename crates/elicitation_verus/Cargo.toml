@@ -24,9 +24,9 @@ verify = true
 
 [dependencies]
 elicitation = { version = "0.10.0" }
-verus_builtin = "0.0.0-2026-04-05-0114"
-verus_builtin_macros = "0.0.0-2026-04-05-0114"
-vstd = "0.0.0-2026-04-05-0114"
+verus_builtin = "0.0.0-2026-04-12-0118"
+verus_builtin_macros = "0.0.0-2026-04-12-1118"
+vstd = "0.0.0-2026-04-12-0118"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

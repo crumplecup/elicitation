@@ -1,0 +1,22 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c9_increment": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5", "time": 0.013 },
+              {
+                "tactic": "split_vc",
+                "children": [ { "prover": "cvc5", "time": 0.013 } ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

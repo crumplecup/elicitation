@@ -100,9 +100,7 @@ pub mod verification;
 
 pub mod type_graph;
 
-#[cfg(feature = "prompt-tree")]
 pub mod prompt_tree;
-#[cfg(feature = "prompt-tree")]
 pub use prompt_tree::{
     AssembledPrompt, ElicitPromptTree, PromptKind, PromptTree, collect_assembled_prompts,
 };
@@ -113,6 +111,7 @@ pub mod cli;
 pub mod contracts;
 
 pub mod emit_code;
+pub mod kani_compose;
 pub mod mcp;
 mod paradigm;
 mod primitives;
@@ -188,9 +187,15 @@ pub use server::ElicitServer;
 
 // Core traits
 pub use elicitation_style::StyleMarker;
+#[cfg(not(creusot))]
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
     Prompt, TypeMetadata, VariantMetadata,
+};
+#[cfg(creusot)]
+pub use traits::{
+    ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails, Prompt,
+    TypeMetadata, VariantMetadata,
 };
 
 // Type graph visualization — registry always available; builder/renderers gated on `graph`
@@ -210,8 +215,14 @@ pub use type_spec::{
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
-    And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
+    And, Established, FormalMethod, Implies, InVariant, Is, KaniVariantConstruction,
+    KaniVariantState, Prop, ProvableFrom, Refines, VerifiedStateMachine, VerifiedTransition, both,
+    downcast, fst, snd,
 };
+
+// Compositional depth-bounded construction for Kani proofs
+#[cfg(kani)]
+pub use kani_compose::KaniCompose;
 
 // Completion marker — enforces all elicitation obligations at compile time
 pub use complete::ElicitComplete;
@@ -263,15 +274,23 @@ pub use proc_macro2;
 pub use quote;
 
 // Re-export derive macros with user-friendly names
-pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
+pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool, formal_method};
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;
+// VerifiedStateMachine derive macro (coexists with the trait of the same name)
+pub use elicitation_derive::VerifiedStateMachine;
+// KaniVariantState derive macro
+pub use elicitation_derive::KaniVariantState;
+// KaniCompose derive macro (trait lives at elicitation::kani_compose::KaniCompose)
+pub use elicitation_derive::KaniCompose;
 // ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
 pub use elicitation_derive::ToCodeLiteral;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
 pub use verification::Contract;
+#[cfg(kani)]
+pub use verification::kani::kani_vec;
 
 pub use verification::types::{
     ArcNonNull,
@@ -592,9 +611,212 @@ pub use primitives::ratatui_types::{
 // geo-types (feature-gated on geo-types)
 #[cfg(feature = "geo-types")]
 pub use primitives::geo_types::{
-    GeoCoord, GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
+    GeoCoord, GeoCoordStyle, GeoGeometry, GeoGeometryCollection, GeoGeometryCollectionStyle,
+    GeoGeometryStyle, GeoLine, GeoLineString, GeoLineStringStyle, GeoLineStyle, GeoMultiLineString,
+    GeoMultiLineStringStyle, GeoMultiPoint, GeoMultiPointStyle, GeoMultiPolygon,
+    GeoMultiPolygonStyle, GeoPoint, GeoPointStyle, GeoPolygon, GeoPolygonStyle, GeoRect,
+    GeoRectStyle, GeoTriangle, GeoTriangleStyle,
 };
+
+// georaster types (feature-gated on georaster-types)
+#[cfg(feature = "georaster-types")]
+pub use primitives::georaster_types::{
+    GeoRasterCoordinateStyle, GeoRasterImageInfoStyle, GeoRasterRasterValueStyle,
+    TiffColorTypeStyle, TiffPhotometricInterpretationStyle, TiffPlanarConfigurationStyle,
+};
+
+// proj types (feature-gated on proj-types)
+#[cfg(feature = "proj-types")]
+pub use primitives::proj_types::{ProjArea, ProjAreaStyle};
+
+// rstar types (feature-gated on rstar-types)
+#[cfg(feature = "rstar-types")]
+pub use primitives::rstar_types::{
+    RstarAabb, RstarAabbStyle, RstarLine, RstarLineStyle, RstarRectangle, RstarRectangleStyle,
+};
+
+// geojson types (feature-gated on geojson-types)
+#[cfg(feature = "geojson-types")]
+pub use primitives::geojson_types::{
+    GeoJsonFeatureCollectionStyle, GeoJsonFeatureStyle, GeoJsonGeometryStyle,
+    GeoJsonGeometryValueStyle, GeoJsonIdStyle, GeoJsonStyle,
+};
+
+// wkt types (feature-gated on wkt-types)
+#[cfg(feature = "wkt-types")]
+pub use primitives::wkt_types::{
+    WktCoord, WktCoordStyle, WktGeom, WktGeomStyle, WktGeometryCollection,
+    WktGeometryCollectionStyle, WktLineString, WktLineStringStyle, WktMultiLineString,
+    WktMultiLineStringStyle, WktMultiPoint, WktMultiPointStyle, WktMultiPolygon,
+    WktMultiPolygonStyle, WktPoint, WktPointStyle, WktPolygon, WktPolygonStyle, WktString,
+    WktStringStyle,
+};
+
+// wkb types (feature-gated on wkb-types)
+#[cfg(feature = "wkb-types")]
+pub use primitives::wkb_types::{
+    WkbBytes, WkbBytesStyle, WkbDimension, WkbDimensionStyle, WkbEndianness, WkbEndiannessStyle,
+    WkbGeometryType, WkbGeometryTypeStyle, WkbWriteOptions, WkbWriteOptionsStyle,
+};
+
+// winit windowing / input types (feature-gated on winit-types)
+#[cfg(feature = "winit-types")]
+pub use primitives::winit_types::{
+    WinitCursorIconSelect, WinitElementStateSelect, WinitKeyCodeSelect, WinitLogicalPosition,
+    WinitLogicalSize, WinitMouseButtonSelect, WinitPhysicalSize, WinitThemeSelect,
+    WinitTouchPhaseSelect, WinitWindowAttributes, WinitWindowLevelSelect,
+};
+
+// wgpu GPU descriptor types (feature-gated on wgpu-types)
+#[cfg(feature = "wgpu-types")]
+pub use primitives::wgpu_types::{
+    WgpuAddressMode, WgpuBackend, WgpuBlendFactor, WgpuBlendOperation, WgpuBufferUsages, WgpuColor,
+    WgpuColorWrites, WgpuCompareFunctionSelect, WgpuCompositeAlphaMode, WgpuExtent3d, WgpuFace,
+    WgpuFilterMode, WgpuFrontFace, WgpuIndexFormat, WgpuOrigin3d, WgpuPolygonMode,
+    WgpuPowerPreference, WgpuPresentMode, WgpuPrimitiveTopology, WgpuSamplerBorderColor,
+    WgpuShaderStages, WgpuStencilOperation, WgpuTextureDimension, WgpuTextureFormat,
+    WgpuTextureUsages, WgpuTextureViewDimension, WgpuVertexFormat, WgpuVertexStepMode,
+};
+
+// egui + winit integration descriptor types (feature-gated on egui-winit-types)
+#[cfg(feature = "egui-winit-types")]
+pub use primitives::{EguiWinitDescriptor, EguiWinitRenderer, EguiWinitTheme};
+
+#[cfg(feature = "geo")]
+pub mod geo_algorithms;
+#[cfg(feature = "geo")]
+pub use geo_algorithms::*;
 
 // palette (feature-gated on palette)
 #[cfg(feature = "palette")]
 pub use primitives::palette_types::{PaletteSrgb, PaletteSrgbStyle};
+
+// tower + tower-http (feature-gated on tower-types)
+#[cfg(feature = "tower-types")]
+pub use primitives::tower_types::{
+    TowerAndThenHandle, TowerAndThenLayer, TowerBalance, TowerBalanceHandle,
+    TowerBoxCloneServiceConfig, TowerBoxCloneServiceHandle, TowerBoxServiceConfig,
+    TowerBoxServiceHandle, TowerBufferHandle, TowerBufferLayer, TowerCatchPanicLayer, TowerClosed,
+    TowerCompressionLayer, TowerConcurrencyLimitHandle, TowerConcurrencyLimitLayer, TowerCorsLayer,
+    TowerDecompressionLayer, TowerElapsed, TowerExponentialBackoffMaker, TowerFilterHandle,
+    TowerFilterLayer, TowerHttpServiceHandle, TowerHttpTimeoutLayer, TowerLayerKind,
+    TowerLayerKindStyle, TowerLoadShedHandle, TowerLoadShedLayer, TowerMapErrHandle,
+    TowerMapErrLayer, TowerMapRequestHandle, TowerMapRequestLayer, TowerMapResponseHandle,
+    TowerMapResponseLayer, TowerMapResultHandle, TowerMapResultLayer, TowerNormalizePathLayer,
+    TowerOverloaded, TowerPeakEwma, TowerPeakEwmaHandle, TowerPendingRequests,
+    TowerPendingRequestsHandle, TowerPropagateHeaderLayer, TowerRate, TowerRateLimitHandle,
+    TowerRateLimitLayer, TowerRetryHandle, TowerRetryLayer, TowerServiceBuilder,
+    TowerServiceBuilderHandle, TowerServiceBuilderStyle, TowerServiceError,
+    TowerSetRequestHeaderLayer, TowerSetResponseHeaderLayer, TowerSetSensitiveRequestHeadersLayer,
+    TowerSetSensitiveResponseHeadersLayer, TowerSetStatusLayer, TowerSpawnReadyLayer, TowerSteer,
+    TowerSteerHandle, TowerThenHandle, TowerThenLayer, TowerTimeoutHandle, TowerTimeoutLayer,
+    TowerTpsBudget, TowerTraceLayer, TowerValidateRequestHeaderLayer,
+};
+
+// axum descriptor types (feature-gated on axum-types)
+#[cfg(feature = "axum-types")]
+pub use primitives::axum_types::{
+    AxumDbSlot, AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
+    AxumResponseDescriptor, AxumResponseKind, AxumRouteEntry, AxumRouterDescriptor,
+    AxumServeDescriptor,
+};
+
+// polars descriptor types (feature-gated on polars-types)
+#[cfg(feature = "polars-types")]
+pub use primitives::{
+    PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
+};
+
+// uom descriptor types (feature-gated on uom-types)
+#[cfg(feature = "uom-types")]
+pub use primitives::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
+
+// leptos descriptor types (feature-gated on leptos-types)
+#[cfg(feature = "leptos-types")]
+pub use primitives::{
+    LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode,
+    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosDisplayMode, LeptosHtmlTag,
+    LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
+    LeptosViewNode,
+};
+
+// Bevy game-engine types (feature-gated on bevy-types)
+#[cfg(feature = "bevy-types")]
+pub use primitives::bevy_types::{
+    affine::{BevyAffine2, BevyAffine3A, BevyDAffine2, BevyDAffine3},
+    animation::BevyRepeatAnimation,
+    atmosphere::{BevyAtmosphere, BevyFalloff, BevyPhaseFunction, BevyScatteringTerm},
+    audio::{BevyPlaybackMode, BevyPlaybackSettings, BevyVolume},
+    camera::{BevyOrthographicProjection, BevyPerspectiveProjection, BevyScalingMode},
+    color::BevyColor,
+    input::{
+        BevyButtonState, BevyGamepadAxis, BevyGamepadButton, BevyKeyCode, BevyMouseButton,
+        BevyTouchPhase,
+    },
+    mat::BevyMat3A,
+    pbr::{
+        BevyAmbientLight, BevyDirectionalLight, BevyPointLight, BevySpotLight, BevyStandardMaterial,
+    },
+    picking::{BevyPickable, BevyPickingInteraction},
+    quat::{BevyDQuat, BevyQuat},
+    ray::{BevyDir2, BevyDir3, BevyDir3A, BevyLine2d, BevyLine3d, BevyRay2d, BevyRay3d},
+    render_enums::{BevyAlphaMode, BevyTonemapping},
+    shapes::{
+        BevyAnnulus, BevyArc2d, BevyCircularSector, BevyCircularSegment, BevyCone,
+        BevyConicalFrustum, BevyCuboid, BevyCylinder, BevyEllipse, BevyPlane2d, BevyPlane3d,
+        BevyRectangle, BevyRegularPolygon, BevyRhombus, BevySegment2d, BevyTetrahedron, BevyTorus,
+        BevyTriangle2d,
+    },
+    sprite::{BevyAnchor, BevySpriteConfig, BevySpriteScalingMode},
+    text::{BevyFontSmoothing, BevyJustify, BevyLineBreak, BevyTextFont, BevyTextLayout},
+    time::BevyTimer,
+    transform::{BevyGlobalTransform, BevyTransform},
+    ui::{
+        BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyBorderRadius, BevyBoxSizing,
+        BevyDisplay, BevyFlexDirection, BevyFlexWrap, BevyJustifyContent, BevyJustifyItems,
+        BevyJustifySelf, BevyOverflowAxis, BevyOverflowClipBox, BevyPositionType, BevyUiRect,
+        BevyVal,
+    },
+    vec::BevyVec3A,
+    window::{
+        BevyMonitorSelection, BevyPresentMode, BevyWindowLevel, BevyWindowMode,
+        BevyWindowResolution, BevyWindowTheme,
+    },
+};
+
+// Bevy render types only present when wgpu-types feature is absent (avoids duplicate impls)
+#[cfg(all(feature = "bevy-types", not(feature = "wgpu-types")))]
+pub use primitives::bevy_types::render_enums::{BevyFace, BevyFrontFace, BevyPrimitiveTopology};
+
+// SurrealDB types (feature-gated on surreal-types)
+#[cfg(feature = "surreal-types")]
+pub use primitives::surreal_types::{
+    Datetime as SurrealDatetime, DatetimeStyle as SurrealDatetimeStyle,
+    Duration as SurrealDuration, DurationStyle as SurrealDurationStyle,
+    Geometry as SurrealGeometry, GeometryKind, GeometryKindStyle,
+    GeometryStyle as SurrealGeometryStyle, Kind as SurrealKind, KindStyle as SurrealKindStyle,
+    Number as SurrealNumber, NumberStyle as SurrealNumberStyle, PatchOp as SurrealPatchOp,
+    PatchOpStyle as SurrealPatchOpStyle, RecordId as SurrealRecordId,
+    RecordIdStyle as SurrealRecordIdStyle, Table as SurrealTable, TableStyle as SurrealTableStyle,
+    Value as SurrealValue, ValueStyle as SurrealValueStyle,
+};
+
+// redb types (feature-gated on redb-types)
+#[cfg(feature = "redb-types")]
+pub use primitives::redb_types::{
+    CacheStats as RedbCacheStats, DatabaseStats as RedbDatabaseStats, Durability as RedbDurability,
+    TableStats as RedbTableStats, TypeName as RedbTypeName,
+};
+
+// csv types (feature-gated on csv-types)
+#[cfg(feature = "csv-types")]
+pub use primitives::csv_types::{
+    CsvByteRecord, CsvErrorKind, CsvPosition, CsvQuoteStyle, CsvStringRecord, CsvTerminator,
+    CsvTrim,
+};
+
+// toml types (feature-gated on toml-types)
+#[cfg(feature = "toml-types")]
+pub use primitives::toml_types::{
+    TomlDate, TomlDatetime, TomlDeError, TomlOffset, TomlSerError, TomlTime, TomlValue,
+};

@@ -1,0 +1,60 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 182 0 182 45 *)
+
+let%span slevel26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 182 17 182 22
+let%span slevel26'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 180 11 180 33
+let%span slevel26'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 182 37 182 45
+let%span slevel26'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 181 10 181 33
+let%span slevel26'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 167 8 170 9
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_C26State = Idle | Active UInt32.t t_String
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C26State (_1: t_C26State)
+
+axiom inv_axiom [@rewrite]: forall x: t_C26State [inv_C26State x]. inv_C26State x
+    = match x with
+      | Idle -> true
+      | Active count label' -> inv_String label'
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C26State (_1: t_C26State)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C26State [resolve_C26State x]. resolve_C26State x
+    = match x with
+      | Idle -> true
+      | Active x0 x1 -> resolve_String x1
+      end
+
+predicate c26_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 165 0 165 43] (s: t_C26State) =
+  [%#slevel26'3] match s with
+    | Idle -> true
+    | Active count _ -> UInt32.t'int count > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c26_clean [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level26.rs" 182 0 182 45]
+  (state: t_C26State) (return (x: t_C26State)) =
+  {[@stop_split] [@expl:c26_clean requires] ([@stop_split] [@expl:c26_clean 'state' type invariant] [%#slevel26] inv_C26State state)
+  /\ ([@stop_split] [@expl:c26_clean requires] [%#slevel26'0] c26_consistent state)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C26State state} any) ]
+    | s1 = -{resolve_C26State state}- s2
+    | s2 = [ &_ret <- Idle ] s3
+    | s3 = return {_ret} ] ] [ & _ret: t_C26State = Any.any_l () | & state: t_C26State = state ])
+  [ return (result: t_C26State) ->
+  {[@stop_split] [@expl:c26_clean ensures] ([@stop_split] [@expl:c26_clean result type invariant] [%#slevel26'1] inv_C26State result)
+    /\ ([@stop_split] [@expl:c26_clean ensures] [%#slevel26'2] c26_consistent result)}
+    (! return {result}) ]

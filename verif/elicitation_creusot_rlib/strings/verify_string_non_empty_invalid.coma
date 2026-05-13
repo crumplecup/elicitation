@@ -1,10 +1,10 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 27 0 27 96 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 857 18 857 41
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 871 15 871 20
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 868 18 868 87
-let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 869 18 869 93
-let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 870 18 870 114
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 881 18 881 41
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 913 15 913 20
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 910 18 910 87
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 911 18 911 93
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 912 18 912 114
 let%span sstrings = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 28 24 28 37
 let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 28 4 28 38
 let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 25 11 25 15

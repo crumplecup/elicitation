@@ -20,7 +20,7 @@ use std::sync::{Arc, RwLock};
 ///
 /// - `ElicitClient` - Client-side communication via `Peer<RoleClient>`
 /// - `ElicitServer` - Server-side communication via `Peer<RoleServer>`
-pub trait ElicitCommunicator: Clone + Send + Sync {
+pub trait ElicitCommunicator: Clone + Send + Sync + 'static {
     /// Send a prompt and receive a text response.
     ///
     /// The implementation handles the details of formatting the prompt,

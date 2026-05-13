@@ -1,0 +1,86 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 67 0 67 41 *)
+
+let%span slevel27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 68 8 68 9
+let%span slevel27'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 68 4 68 9
+let%span slevel27'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 65 11 65 22
+let%span slevel27'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 66 10 66 28
+let%span sord = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 162 41 162 91
+let%span sord'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 168 41 168 88
+let%span sord'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 174 41 174 88
+let%span sord'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 180 41 180 91
+let%span sord'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 186 41 186 72
+let%span sord'4 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 192 42 192 59
+let%span sord'5 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 193 42 193 59
+let%span sord'6 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 194 41 194 58
+let%span sord'7 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 200 42 200 72
+let%span sord'8 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 201 41 201 74
+let%span sord'9 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 207 42 207 75
+let%span sord'10 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 208 41 208 71
+let%span sord'11 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 214 41 214 86
+let%span sord'12 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 296 16 302 17
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+
+type t_Ordering = Less | Equal | Greater
+
+function cmp_log_u32 (self: UInt32.t) (o: UInt32.t) : t_Ordering = [%#sord'12] if UInt32.lt self o then
+    Less
+  else
+    if self = o then Equal else Greater
+
+
+function eq_cmp_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom eq_cmp_u32_spec: forall x: UInt32.t, y: UInt32.t. [%#sord'11] (x = y) = (cmp_log_u32 x y = Equal)
+
+function antisym2_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom antisym2_u32_spec: forall x: UInt32.t, y: UInt32.t. ([%#sord'9] cmp_log_u32 x y = Greater)
+    -> ([%#sord'10] cmp_log_u32 y x = Less)
+
+function antisym1_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom antisym1_u32_spec: forall x: UInt32.t, y: UInt32.t. ([%#sord'7] cmp_log_u32 x y = Less)
+    -> ([%#sord'8] cmp_log_u32 y x = Greater)
+
+function trans_u32 (x: UInt32.t) (y: UInt32.t) (z: UInt32.t) (o: t_Ordering) : ()
+
+axiom trans_u32_spec: forall x: UInt32.t, y: UInt32.t, z: UInt32.t, o: t_Ordering. ([%#sord'4] cmp_log_u32 x y = o)
+    -> ([%#sord'5] cmp_log_u32 y z = o) -> ([%#sord'6] cmp_log_u32 x z = o)
+
+function refl_u32 (x: UInt32.t) : ()
+
+axiom refl_u32_spec: forall x: UInt32.t. [%#sord'3] cmp_log_u32 x x = Equal
+
+function cmp_gt_log_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom cmp_gt_log_u32_spec: forall x: UInt32.t, y: UInt32.t. [%#sord'2] UInt32.gt x y = (cmp_log_u32 x y = Greater)
+
+function cmp_ge_log_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom cmp_ge_log_u32_spec: forall x: UInt32.t, y: UInt32.t. [%#sord'1] UInt32.ge x y = (cmp_log_u32 x y <> Less)
+
+function cmp_lt_log_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom cmp_lt_log_u32_spec: forall x: UInt32.t, y: UInt32.t. [%#sord'0] UInt32.lt x y = (cmp_log_u32 x y = Less)
+
+function cmp_le_log_u32 (x: UInt32.t) (y: UInt32.t) : ()
+
+axiom cmp_le_log_u32_spec: forall x: UInt32.t, y: UInt32.t. [%#sord] UInt32.le x y = (cmp_log_u32 x y <> Greater)
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c27a_increment_pure
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 67 0 67 41] (x: UInt32.t)
+  (return (x'0: UInt32.t)) =
+  {[@stop_split] [@expl:c27a_increment_pure requires] [%#slevel27'1] UInt32.lt x (1000: UInt32.t)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = UInt32.add [%#slevel27'0] {x} {[%#slevel27] (1: UInt32.t)} (fun (_x: UInt32.t) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: UInt32.t = Any.any_l () | & x: UInt32.t = x ])
+  [ return (result: UInt32.t) -> {[@stop_split] [@expl:c27a_increment_pure ensures] [%#slevel27'2] result
+    = UInt32.add x (1: UInt32.t)}
+    (! return {result}) ]

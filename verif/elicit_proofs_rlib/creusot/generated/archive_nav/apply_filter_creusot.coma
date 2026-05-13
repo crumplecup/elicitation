@@ -1,0 +1,672 @@
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 0 124 165 *)
+
+let%span sarchive_nav = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 168 124 202
+let%span sarchive_nav'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 28 124 33
+let%span sarchive_nav'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 52 124 57
+let%span sarchive_nav'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 94 124 100
+let%span sarchive_nav'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 122 11 122 41
+let%span sarchive_nav'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 113 124 165
+let%span sarchive_nav'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 123 10 123 43
+let%span sarchive_nav'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 118 20 118 25
+let%span sarchive_nav'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 118 44 118 49
+let%span sarchive_nav'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 118 86 118 92
+let%span sarchive_nav'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 116 15 116 45
+let%span sarchive_nav'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 117 14 117 47
+let%span sarchive_nav'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 22 16 22 108
+let%span snav = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/nav.rs" 266 0 270 57
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.int.Int64
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_Vec_SchemaWithExpand_Global
+
+type t_String
+
+type t_ArchiveNavState =
+  | NavUnloaded
+  | NavLoading
+  | NavReady t_Vec_SchemaWithExpand_Global UInt64.t t_String bool bool
+  | NavFiltered t_Vec_SchemaWithExpand_Global t_String UInt64.t
+
+type t_Established_ArchiveNavConsistent
+
+type tup2_ArchiveNavState_Established_ArchiveNavConsistent = {
+  f0: t_ArchiveNavState;
+  f1: t_Established_ArchiveNavConsistent }
+
+type t_Vec_TableDescriptor_Global
+
+type t_Vec_FunctionDescriptor_Global
+
+type t_Vec_SequenceDescriptor_Global
+
+type t_Vec_EnumDescriptor_Global
+
+type t_Vec_DomainDescriptor_Global
+
+type t_Vec_CompositeTypeDescriptor_Global
+
+type t_Vec_TriggerDescriptor_Global
+
+type t_SchemaEntry = {
+  name: t_String;
+  owner: t_String;
+  tables: t_Vec_TableDescriptor_Global;
+  functions: t_Vec_FunctionDescriptor_Global;
+  sequences: t_Vec_SequenceDescriptor_Global;
+  enums: t_Vec_EnumDescriptor_Global;
+  domains: t_Vec_DomainDescriptor_Global;
+  composites: t_Vec_CompositeTypeDescriptor_Global;
+  triggers: t_Vec_TriggerDescriptor_Global }
+
+type t_SchemaWithExpand = {
+  entry: t_SchemaEntry;
+  expanded: bool;
+  functions_expanded: bool;
+  sequences_expanded: bool;
+  types_expanded: bool;
+  triggers_expanded: bool }
+
+predicate inv_String (_1: t_String)
+
+type t_Vec_ColumnDescriptor_Global
+
+type t_Option_i64 = None | Some Int64.t
+
+type t_TableType = Table | View | MaterializedView | Unknown
+
+type t_TableDescriptor = {
+  schema: t_String;
+  table_name: t_String;
+  columns: t_Vec_ColumnDescriptor_Global;
+  estimated_rows: t_Option_i64;
+  table_type: t_TableType }
+
+type t_Option_String = None'0 | Some'0 t_String
+
+type t_ColumnDescriptor = {
+  name'0: t_String;
+  sql_type'0: t_String;
+  nullable'0: bool;
+  is_primary_key'0: bool;
+  is_foreign_key'0: bool;
+  default_value'0: t_Option_String;
+  is_spatial'0: bool }
+
+predicate inv_Option_String (_1: t_Option_String)
+
+axiom inv_axiom [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
+    = match x with
+      | None'0 -> true
+      | Some'0 f0'0 -> inv_String f0'0
+      end
+
+predicate inv_ColumnDescriptor (_1: t_ColumnDescriptor)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_ColumnDescriptor [inv_ColumnDescriptor x]. inv_ColumnDescriptor x
+    = (inv_String x.name'0 /\ inv_String x.sql_type'0 /\ inv_Option_String x.default_value'0)
+
+predicate invariant_ref_ColumnDescriptor [@inline:trivial] (self: t_ColumnDescriptor) =
+  [%#sinvariant] inv_ColumnDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_ColumnDescriptor
+
+predicate inv_ref_ColumnDescriptor [@inline:trivial] (_1: t_ColumnDescriptor) = invariant_ref_ColumnDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_ColumnDescriptor
+
+predicate invariant_Seq_ColumnDescriptor [@inline:trivial] (self: Seq.seq t_ColumnDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_ColumnDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_ColumnDescriptor
+
+predicate inv_Seq_ColumnDescriptor [@inline:trivial] (_1: Seq.seq t_ColumnDescriptor) =
+  invariant_Seq_ColumnDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_ColumnDescriptor
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) : Seq.seq t_ColumnDescriptor
+
+axiom view_Vec_ColumnDescriptor_Global_spec:
+  forall self: t_Vec_ColumnDescriptor_Global. [%#svec'0] Seq.length (view_Vec_ColumnDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_ColumnDescriptor_Global (self: t_Vec_ColumnDescriptor_Global) =
+  [%#svec] inv_Seq_ColumnDescriptor (view_Vec_ColumnDescriptor_Global self)
+
+predicate inv_Vec_ColumnDescriptor_Global (_1: t_Vec_ColumnDescriptor_Global)
+
+axiom inv_axiom'1:
+  forall x: t_Vec_ColumnDescriptor_Global [inv_Vec_ColumnDescriptor_Global x]. inv_Vec_ColumnDescriptor_Global x
+    -> invariant_Vec_ColumnDescriptor_Global x
+
+predicate inv_TableDescriptor (_1: t_TableDescriptor)
+
+axiom inv_axiom'2 [@rewrite]: forall x: t_TableDescriptor [inv_TableDescriptor x]. inv_TableDescriptor x
+    = (inv_String x.schema /\ inv_String x.table_name /\ inv_Vec_ColumnDescriptor_Global x.columns)
+
+predicate invariant_ref_TableDescriptor [@inline:trivial] (self: t_TableDescriptor) =
+  [%#sinvariant] inv_TableDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_TableDescriptor
+
+predicate inv_ref_TableDescriptor [@inline:trivial] (_1: t_TableDescriptor) = invariant_ref_TableDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_TableDescriptor
+
+predicate invariant_Seq_TableDescriptor [@inline:trivial] (self: Seq.seq t_TableDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_TableDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_TableDescriptor
+
+predicate inv_Seq_TableDescriptor [@inline:trivial] (_1: Seq.seq t_TableDescriptor) = invariant_Seq_TableDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_TableDescriptor
+
+function view_Vec_TableDescriptor_Global (self: t_Vec_TableDescriptor_Global) : Seq.seq t_TableDescriptor
+
+axiom view_Vec_TableDescriptor_Global_spec:
+  forall self: t_Vec_TableDescriptor_Global. [%#svec'0] Seq.length (view_Vec_TableDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_TableDescriptor_Global (self: t_Vec_TableDescriptor_Global) =
+  [%#svec] inv_Seq_TableDescriptor (view_Vec_TableDescriptor_Global self)
+
+predicate inv_Vec_TableDescriptor_Global (_1: t_Vec_TableDescriptor_Global)
+
+axiom inv_axiom'3:
+  forall x: t_Vec_TableDescriptor_Global [inv_Vec_TableDescriptor_Global x]. inv_Vec_TableDescriptor_Global x
+    -> invariant_Vec_TableDescriptor_Global x
+
+type t_FunctionVolatility = Immutable | Stable | Volatile
+
+type t_FunctionDescriptor = {
+  oid'1: Int64.t;
+  schema'1: t_String;
+  name'1: t_String;
+  arguments'1: t_String;
+  return_type'1: t_String;
+  language'1: t_String;
+  volatility'1: t_FunctionVolatility;
+  is_procedure'1: bool;
+  body_preview'1: t_String }
+
+predicate inv_FunctionDescriptor (_1: t_FunctionDescriptor)
+
+axiom inv_axiom'4 [@rewrite]: forall x: t_FunctionDescriptor [inv_FunctionDescriptor x]. inv_FunctionDescriptor x
+    = (inv_String x.schema'1
+    /\ inv_String x.name'1
+    /\ inv_String x.arguments'1 /\ inv_String x.return_type'1 /\ inv_String x.language'1 /\ inv_String x.body_preview'1)
+
+predicate invariant_ref_FunctionDescriptor [@inline:trivial] (self: t_FunctionDescriptor) =
+  [%#sinvariant] inv_FunctionDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_FunctionDescriptor
+
+predicate inv_ref_FunctionDescriptor [@inline:trivial] (_1: t_FunctionDescriptor) = invariant_ref_FunctionDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_FunctionDescriptor
+
+predicate invariant_Seq_FunctionDescriptor [@inline:trivial] (self: Seq.seq t_FunctionDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_FunctionDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_FunctionDescriptor
+
+predicate inv_Seq_FunctionDescriptor [@inline:trivial] (_1: Seq.seq t_FunctionDescriptor) =
+  invariant_Seq_FunctionDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_FunctionDescriptor
+
+function view_Vec_FunctionDescriptor_Global (self: t_Vec_FunctionDescriptor_Global) : Seq.seq t_FunctionDescriptor
+
+axiom view_Vec_FunctionDescriptor_Global_spec:
+  forall self: t_Vec_FunctionDescriptor_Global. [%#svec'0] Seq.length (view_Vec_FunctionDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_FunctionDescriptor_Global (self: t_Vec_FunctionDescriptor_Global) =
+  [%#svec] inv_Seq_FunctionDescriptor (view_Vec_FunctionDescriptor_Global self)
+
+predicate inv_Vec_FunctionDescriptor_Global (_1: t_Vec_FunctionDescriptor_Global)
+
+axiom inv_axiom'5:
+  forall x: t_Vec_FunctionDescriptor_Global [inv_Vec_FunctionDescriptor_Global x]. inv_Vec_FunctionDescriptor_Global x
+    -> invariant_Vec_FunctionDescriptor_Global x
+
+type t_SequenceDescriptor = {
+  schema'2: t_String;
+  name'2: t_String;
+  current_value'2: t_Option_i64;
+  start_value'2: Int64.t;
+  increment_by'2: Int64.t;
+  min_value'2: Int64.t;
+  max_value'2: Int64.t;
+  cycle'2: bool;
+  owned_by'2: t_Option_String }
+
+predicate inv_SequenceDescriptor (_1: t_SequenceDescriptor)
+
+axiom inv_axiom'6 [@rewrite]: forall x: t_SequenceDescriptor [inv_SequenceDescriptor x]. inv_SequenceDescriptor x
+    = (inv_String x.schema'2 /\ inv_String x.name'2 /\ inv_Option_String x.owned_by'2)
+
+predicate invariant_ref_SequenceDescriptor [@inline:trivial] (self: t_SequenceDescriptor) =
+  [%#sinvariant] inv_SequenceDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_SequenceDescriptor
+
+predicate inv_ref_SequenceDescriptor [@inline:trivial] (_1: t_SequenceDescriptor) = invariant_ref_SequenceDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_SequenceDescriptor
+
+predicate invariant_Seq_SequenceDescriptor [@inline:trivial] (self: Seq.seq t_SequenceDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_SequenceDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_SequenceDescriptor
+
+predicate inv_Seq_SequenceDescriptor [@inline:trivial] (_1: Seq.seq t_SequenceDescriptor) =
+  invariant_Seq_SequenceDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_SequenceDescriptor
+
+function view_Vec_SequenceDescriptor_Global (self: t_Vec_SequenceDescriptor_Global) : Seq.seq t_SequenceDescriptor
+
+axiom view_Vec_SequenceDescriptor_Global_spec:
+  forall self: t_Vec_SequenceDescriptor_Global. [%#svec'0] Seq.length (view_Vec_SequenceDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_SequenceDescriptor_Global (self: t_Vec_SequenceDescriptor_Global) =
+  [%#svec] inv_Seq_SequenceDescriptor (view_Vec_SequenceDescriptor_Global self)
+
+predicate inv_Vec_SequenceDescriptor_Global (_1: t_Vec_SequenceDescriptor_Global)
+
+axiom inv_axiom'7:
+  forall x: t_Vec_SequenceDescriptor_Global [inv_Vec_SequenceDescriptor_Global x]. inv_Vec_SequenceDescriptor_Global x
+    -> invariant_Vec_SequenceDescriptor_Global x
+
+type t_Vec_String_Global
+
+type t_EnumDescriptor = { schema'3: t_String; name'3: t_String; labels'3: t_Vec_String_Global }
+
+predicate invariant_ref_String [@inline:trivial] (self: t_String) = [%#sinvariant] inv_String self
+
+meta "rewrite_def" predicate invariant_ref_String
+
+predicate inv_ref_String [@inline:trivial] (_1: t_String) = invariant_ref_String _1
+
+meta "rewrite_def" predicate inv_ref_String
+
+predicate invariant_Seq_String [@inline:trivial] (self: Seq.seq t_String) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_String (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_String
+
+predicate inv_Seq_String [@inline:trivial] (_1: Seq.seq t_String) = invariant_Seq_String _1
+
+meta "rewrite_def" predicate inv_Seq_String
+
+function view_Vec_String_Global (self: t_Vec_String_Global) : Seq.seq t_String
+
+axiom view_Vec_String_Global_spec: forall self: t_Vec_String_Global. [%#svec'0] Seq.length (view_Vec_String_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_String_Global (self: t_Vec_String_Global) =
+  [%#svec] inv_Seq_String (view_Vec_String_Global self)
+
+predicate inv_Vec_String_Global (_1: t_Vec_String_Global)
+
+axiom inv_axiom'8: forall x: t_Vec_String_Global [inv_Vec_String_Global x]. inv_Vec_String_Global x
+    -> invariant_Vec_String_Global x
+
+predicate inv_EnumDescriptor (_1: t_EnumDescriptor)
+
+axiom inv_axiom'9 [@rewrite]: forall x: t_EnumDescriptor [inv_EnumDescriptor x]. inv_EnumDescriptor x
+    = (inv_String x.schema'3 /\ inv_String x.name'3 /\ inv_Vec_String_Global x.labels'3)
+
+predicate invariant_ref_EnumDescriptor [@inline:trivial] (self: t_EnumDescriptor) =
+  [%#sinvariant] inv_EnumDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_EnumDescriptor
+
+predicate inv_ref_EnumDescriptor [@inline:trivial] (_1: t_EnumDescriptor) = invariant_ref_EnumDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_EnumDescriptor
+
+predicate invariant_Seq_EnumDescriptor [@inline:trivial] (self: Seq.seq t_EnumDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_EnumDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_EnumDescriptor
+
+predicate inv_Seq_EnumDescriptor [@inline:trivial] (_1: Seq.seq t_EnumDescriptor) = invariant_Seq_EnumDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_EnumDescriptor
+
+function view_Vec_EnumDescriptor_Global (self: t_Vec_EnumDescriptor_Global) : Seq.seq t_EnumDescriptor
+
+axiom view_Vec_EnumDescriptor_Global_spec:
+  forall self: t_Vec_EnumDescriptor_Global. [%#svec'0] Seq.length (view_Vec_EnumDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_EnumDescriptor_Global (self: t_Vec_EnumDescriptor_Global) =
+  [%#svec] inv_Seq_EnumDescriptor (view_Vec_EnumDescriptor_Global self)
+
+predicate inv_Vec_EnumDescriptor_Global (_1: t_Vec_EnumDescriptor_Global)
+
+axiom inv_axiom'10:
+  forall x: t_Vec_EnumDescriptor_Global [inv_Vec_EnumDescriptor_Global x]. inv_Vec_EnumDescriptor_Global x
+    -> invariant_Vec_EnumDescriptor_Global x
+
+type t_DomainDescriptor = {
+  schema'4: t_String;
+  name'4: t_String;
+  base_type'4: t_String;
+  not_null'4: bool;
+  default_expr'4: t_Option_String;
+  check_constraints'4: t_Vec_String_Global }
+
+predicate inv_DomainDescriptor (_1: t_DomainDescriptor)
+
+axiom inv_axiom'11 [@rewrite]: forall x: t_DomainDescriptor [inv_DomainDescriptor x]. inv_DomainDescriptor x
+    = (inv_String x.schema'4
+    /\ inv_String x.name'4
+    /\ inv_String x.base_type'4 /\ inv_Option_String x.default_expr'4 /\ inv_Vec_String_Global x.check_constraints'4)
+
+predicate invariant_ref_DomainDescriptor [@inline:trivial] (self: t_DomainDescriptor) =
+  [%#sinvariant] inv_DomainDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_DomainDescriptor
+
+predicate inv_ref_DomainDescriptor [@inline:trivial] (_1: t_DomainDescriptor) = invariant_ref_DomainDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_DomainDescriptor
+
+predicate invariant_Seq_DomainDescriptor [@inline:trivial] (self: Seq.seq t_DomainDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_DomainDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_DomainDescriptor
+
+predicate inv_Seq_DomainDescriptor [@inline:trivial] (_1: Seq.seq t_DomainDescriptor) =
+  invariant_Seq_DomainDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_DomainDescriptor
+
+function view_Vec_DomainDescriptor_Global (self: t_Vec_DomainDescriptor_Global) : Seq.seq t_DomainDescriptor
+
+axiom view_Vec_DomainDescriptor_Global_spec:
+  forall self: t_Vec_DomainDescriptor_Global. [%#svec'0] Seq.length (view_Vec_DomainDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_DomainDescriptor_Global (self: t_Vec_DomainDescriptor_Global) =
+  [%#svec] inv_Seq_DomainDescriptor (view_Vec_DomainDescriptor_Global self)
+
+predicate inv_Vec_DomainDescriptor_Global (_1: t_Vec_DomainDescriptor_Global)
+
+axiom inv_axiom'12:
+  forall x: t_Vec_DomainDescriptor_Global [inv_Vec_DomainDescriptor_Global x]. inv_Vec_DomainDescriptor_Global x
+    -> invariant_Vec_DomainDescriptor_Global x
+
+type t_Vec_CompositeTypeAttribute_Global
+
+type t_CompositeTypeDescriptor = {
+  schema'5: t_String;
+  name'5: t_String;
+  attributes'5: t_Vec_CompositeTypeAttribute_Global }
+
+type t_CompositeTypeAttribute = { name'6: t_String; type_name'6: t_String }
+
+predicate inv_CompositeTypeAttribute (_1: t_CompositeTypeAttribute)
+
+axiom inv_axiom'13 [@rewrite]:
+  forall x: t_CompositeTypeAttribute [inv_CompositeTypeAttribute x]. inv_CompositeTypeAttribute x
+    = (inv_String x.name'6 /\ inv_String x.type_name'6)
+
+predicate invariant_ref_CompositeTypeAttribute [@inline:trivial] (self: t_CompositeTypeAttribute) =
+  [%#sinvariant] inv_CompositeTypeAttribute self
+
+meta "rewrite_def" predicate invariant_ref_CompositeTypeAttribute
+
+predicate inv_ref_CompositeTypeAttribute [@inline:trivial] (_1: t_CompositeTypeAttribute) =
+  invariant_ref_CompositeTypeAttribute _1
+
+meta "rewrite_def" predicate inv_ref_CompositeTypeAttribute
+
+predicate invariant_Seq_CompositeTypeAttribute [@inline:trivial] (self: Seq.seq t_CompositeTypeAttribute) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_CompositeTypeAttribute (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_CompositeTypeAttribute
+
+predicate inv_Seq_CompositeTypeAttribute [@inline:trivial] (_1: Seq.seq t_CompositeTypeAttribute) =
+  invariant_Seq_CompositeTypeAttribute _1
+
+meta "rewrite_def" predicate inv_Seq_CompositeTypeAttribute
+
+function view_Vec_CompositeTypeAttribute_Global (self: t_Vec_CompositeTypeAttribute_Global) : Seq.seq t_CompositeTypeAttribute
+
+axiom view_Vec_CompositeTypeAttribute_Global_spec:
+  forall self: t_Vec_CompositeTypeAttribute_Global. [%#svec'0] Seq.length (view_Vec_CompositeTypeAttribute_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_CompositeTypeAttribute_Global (self: t_Vec_CompositeTypeAttribute_Global) =
+  [%#svec] inv_Seq_CompositeTypeAttribute (view_Vec_CompositeTypeAttribute_Global self)
+
+predicate inv_Vec_CompositeTypeAttribute_Global (_1: t_Vec_CompositeTypeAttribute_Global)
+
+axiom inv_axiom'14:
+  forall x: t_Vec_CompositeTypeAttribute_Global [inv_Vec_CompositeTypeAttribute_Global x]. inv_Vec_CompositeTypeAttribute_Global x
+    -> invariant_Vec_CompositeTypeAttribute_Global x
+
+predicate inv_CompositeTypeDescriptor (_1: t_CompositeTypeDescriptor)
+
+axiom inv_axiom'15 [@rewrite]:
+  forall x: t_CompositeTypeDescriptor [inv_CompositeTypeDescriptor x]. inv_CompositeTypeDescriptor x
+    = (inv_String x.schema'5 /\ inv_String x.name'5 /\ inv_Vec_CompositeTypeAttribute_Global x.attributes'5)
+
+predicate invariant_ref_CompositeTypeDescriptor [@inline:trivial] (self: t_CompositeTypeDescriptor) =
+  [%#sinvariant] inv_CompositeTypeDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_CompositeTypeDescriptor
+
+predicate inv_ref_CompositeTypeDescriptor [@inline:trivial] (_1: t_CompositeTypeDescriptor) =
+  invariant_ref_CompositeTypeDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_CompositeTypeDescriptor
+
+predicate invariant_Seq_CompositeTypeDescriptor [@inline:trivial] (self: Seq.seq t_CompositeTypeDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_CompositeTypeDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_CompositeTypeDescriptor
+
+predicate inv_Seq_CompositeTypeDescriptor [@inline:trivial] (_1: Seq.seq t_CompositeTypeDescriptor) =
+  invariant_Seq_CompositeTypeDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_CompositeTypeDescriptor
+
+function view_Vec_CompositeTypeDescriptor_Global (self: t_Vec_CompositeTypeDescriptor_Global) : Seq.seq t_CompositeTypeDescriptor
+
+axiom view_Vec_CompositeTypeDescriptor_Global_spec:
+  forall self: t_Vec_CompositeTypeDescriptor_Global. [%#svec'0] Seq.length (view_Vec_CompositeTypeDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_CompositeTypeDescriptor_Global (self: t_Vec_CompositeTypeDescriptor_Global) =
+  [%#svec] inv_Seq_CompositeTypeDescriptor (view_Vec_CompositeTypeDescriptor_Global self)
+
+predicate inv_Vec_CompositeTypeDescriptor_Global (_1: t_Vec_CompositeTypeDescriptor_Global)
+
+axiom inv_axiom'16:
+  forall x: t_Vec_CompositeTypeDescriptor_Global [inv_Vec_CompositeTypeDescriptor_Global x]. inv_Vec_CompositeTypeDescriptor_Global x
+    -> invariant_Vec_CompositeTypeDescriptor_Global x
+
+type t_TriggerEvents = { on_insert: bool; on_update: bool; on_delete: bool; on_truncate: bool }
+
+type t_TriggerDescriptor = {
+  schema'7: t_String;
+  table'7: t_String;
+  name'7: t_String;
+  timing'7: t_String;
+  events'7: t_TriggerEvents;
+  row_level'7: bool;
+  function''7: t_String;
+  enabled'7: bool }
+
+predicate inv_TriggerDescriptor (_1: t_TriggerDescriptor)
+
+axiom inv_axiom'17 [@rewrite]: forall x: t_TriggerDescriptor [inv_TriggerDescriptor x]. inv_TriggerDescriptor x
+    = (inv_String x.schema'7
+    /\ inv_String x.table'7 /\ inv_String x.name'7 /\ inv_String x.timing'7 /\ inv_String x.function''7)
+
+predicate invariant_ref_TriggerDescriptor [@inline:trivial] (self: t_TriggerDescriptor) =
+  [%#sinvariant] inv_TriggerDescriptor self
+
+meta "rewrite_def" predicate invariant_ref_TriggerDescriptor
+
+predicate inv_ref_TriggerDescriptor [@inline:trivial] (_1: t_TriggerDescriptor) = invariant_ref_TriggerDescriptor _1
+
+meta "rewrite_def" predicate inv_ref_TriggerDescriptor
+
+predicate invariant_Seq_TriggerDescriptor [@inline:trivial] (self: Seq.seq t_TriggerDescriptor) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_TriggerDescriptor (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_TriggerDescriptor
+
+predicate inv_Seq_TriggerDescriptor [@inline:trivial] (_1: Seq.seq t_TriggerDescriptor) =
+  invariant_Seq_TriggerDescriptor _1
+
+meta "rewrite_def" predicate inv_Seq_TriggerDescriptor
+
+function view_Vec_TriggerDescriptor_Global (self: t_Vec_TriggerDescriptor_Global) : Seq.seq t_TriggerDescriptor
+
+axiom view_Vec_TriggerDescriptor_Global_spec:
+  forall self: t_Vec_TriggerDescriptor_Global. [%#svec'0] Seq.length (view_Vec_TriggerDescriptor_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_TriggerDescriptor_Global (self: t_Vec_TriggerDescriptor_Global) =
+  [%#svec] inv_Seq_TriggerDescriptor (view_Vec_TriggerDescriptor_Global self)
+
+predicate inv_Vec_TriggerDescriptor_Global (_1: t_Vec_TriggerDescriptor_Global)
+
+axiom inv_axiom'18:
+  forall x: t_Vec_TriggerDescriptor_Global [inv_Vec_TriggerDescriptor_Global x]. inv_Vec_TriggerDescriptor_Global x
+    -> invariant_Vec_TriggerDescriptor_Global x
+
+predicate inv_SchemaEntry (_1: t_SchemaEntry)
+
+axiom inv_axiom'19 [@rewrite]: forall x: t_SchemaEntry [inv_SchemaEntry x]. inv_SchemaEntry x
+    = (inv_String x.name
+    /\ inv_String x.owner
+    /\ inv_Vec_TableDescriptor_Global x.tables
+    /\ inv_Vec_FunctionDescriptor_Global x.functions
+    /\ inv_Vec_SequenceDescriptor_Global x.sequences
+    /\ inv_Vec_EnumDescriptor_Global x.enums
+    /\ inv_Vec_DomainDescriptor_Global x.domains
+    /\ inv_Vec_CompositeTypeDescriptor_Global x.composites /\ inv_Vec_TriggerDescriptor_Global x.triggers)
+
+predicate inv_SchemaWithExpand (_1: t_SchemaWithExpand)
+
+axiom inv_axiom'20 [@rewrite]: forall x: t_SchemaWithExpand [inv_SchemaWithExpand x]. inv_SchemaWithExpand x
+    = inv_SchemaEntry x.entry
+
+predicate invariant_ref_SchemaWithExpand [@inline:trivial] (self: t_SchemaWithExpand) =
+  [%#sinvariant] inv_SchemaWithExpand self
+
+meta "rewrite_def" predicate invariant_ref_SchemaWithExpand
+
+predicate inv_ref_SchemaWithExpand [@inline:trivial] (_1: t_SchemaWithExpand) = invariant_ref_SchemaWithExpand _1
+
+meta "rewrite_def" predicate inv_ref_SchemaWithExpand
+
+predicate invariant_Seq_SchemaWithExpand [@inline:trivial] (self: Seq.seq t_SchemaWithExpand) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_SchemaWithExpand (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_SchemaWithExpand
+
+predicate inv_Seq_SchemaWithExpand [@inline:trivial] (_1: Seq.seq t_SchemaWithExpand) =
+  invariant_Seq_SchemaWithExpand _1
+
+meta "rewrite_def" predicate inv_Seq_SchemaWithExpand
+
+function view_Vec_SchemaWithExpand_Global (self: t_Vec_SchemaWithExpand_Global) : Seq.seq t_SchemaWithExpand
+
+axiom view_Vec_SchemaWithExpand_Global_spec:
+  forall self: t_Vec_SchemaWithExpand_Global. [%#svec'0] Seq.length (view_Vec_SchemaWithExpand_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_SchemaWithExpand_Global (self: t_Vec_SchemaWithExpand_Global) =
+  [%#svec] inv_Seq_SchemaWithExpand (view_Vec_SchemaWithExpand_Global self)
+
+predicate inv_Vec_SchemaWithExpand_Global (_1: t_Vec_SchemaWithExpand_Global)
+
+axiom inv_axiom'21:
+  forall x: t_Vec_SchemaWithExpand_Global [inv_Vec_SchemaWithExpand_Global x]. inv_Vec_SchemaWithExpand_Global x
+    -> invariant_Vec_SchemaWithExpand_Global x
+
+predicate inv_ArchiveNavState (_1: t_ArchiveNavState)
+
+axiom inv_axiom'22 [@rewrite]: forall x: t_ArchiveNavState [inv_ArchiveNavState x]. inv_ArchiveNavState x
+    = match x with
+      | NavUnloaded -> true
+      | NavLoading -> true
+      | NavReady schemas cursor filter filter_active show_help -> inv_Vec_SchemaWithExpand_Global schemas
+      /\ inv_String filter
+      | NavFiltered schemas filter cursor -> inv_Vec_SchemaWithExpand_Global schemas /\ inv_String filter
+      end
+
+predicate inv_Established_ArchiveNavConsistent (_1: t_Established_ArchiveNavConsistent)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate archive_nav_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 21 0 21 62] (state: t_ArchiveNavState) =
+  [%#sarchive_nav'11] match state with
+    | NavFiltered _ filter _ -> Seq.length (view_String filter) > 0
+    | _ -> true
+    end
+
+predicate inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent [@inline:trivial] (_1: tup2_ArchiveNavState_Established_ArchiveNavConsistent) =
+  inv_ArchiveNavState _1.f0 /\ inv_Established_ArchiveNavConsistent _1.f1
+
+meta "rewrite_def" predicate inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent
+
+let rec apply_filter (state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (filter: t_String)
+  (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
+  {[@stop_split] [@expl:apply_filter requires] ([@stop_split] [@expl:apply_filter 'state' type invariant] [%#sarchive_nav'6] inv_ArchiveNavState state)
+  /\ ([@stop_split] [@expl:apply_filter 'proof' type invariant] [%#sarchive_nav'7] inv_Established_ArchiveNavConsistent proof)
+  /\ ([@stop_split] [@expl:apply_filter 'filter' type invariant] [%#sarchive_nav'8] inv_String filter)
+  /\ ([@stop_split] [@expl:apply_filter requires] [%#sarchive_nav'9] archive_nav_consistent state)}
+  any
+  [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
+  {[@stop_split] [@expl:apply_filter ensures] ([@stop_split] [@expl:apply_filter result type invariant] [%#snav] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
+    /\ ([@stop_split] [@expl:apply_filter ensures] [%#sarchive_nav'10] archive_nav_consistent result.f0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec apply_filter_creusot
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_nav.rs" 124 0 124 165]
+  (state: t_ArchiveNavState) (proof: t_Established_ArchiveNavConsistent) (filter: t_String)
+  (return (x: tup2_ArchiveNavState_Established_ArchiveNavConsistent)) =
+  {[@stop_split] [@expl:apply_filter_creusot requires] ([@stop_split] [@expl:apply_filter_creusot 'state' type invariant] [%#sarchive_nav'0] inv_ArchiveNavState state)
+  /\ ([@stop_split] [@expl:apply_filter_creusot 'proof' type invariant] [%#sarchive_nav'1] inv_Established_ArchiveNavConsistent proof)
+  /\ ([@stop_split] [@expl:apply_filter_creusot 'filter' type invariant] [%#sarchive_nav'2] inv_String filter)
+  /\ ([@stop_split] [@expl:apply_filter_creusot requires] [%#sarchive_nav'3] archive_nav_consistent state)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = apply_filter [%#sarchive_nav] {state} {proof} {filter}
+        (fun (_x: tup2_ArchiveNavState_Established_ArchiveNavConsistent) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: tup2_ArchiveNavState_Established_ArchiveNavConsistent = Any.any_l ()
+  | & state: t_ArchiveNavState = state
+  | & proof: t_Established_ArchiveNavConsistent = proof
+  | & filter: t_String = filter ])
+  [ return (result: tup2_ArchiveNavState_Established_ArchiveNavConsistent) ->
+  {[@stop_split] [@expl:apply_filter_creusot ensures] ([@stop_split] [@expl:apply_filter_creusot result type invariant] [%#sarchive_nav'4] inv_tup2_ArchiveNavState_Established_ArchiveNavConsistent result)
+    /\ ([@stop_split] [@expl:apply_filter_creusot ensures] [%#sarchive_nav'5] archive_nav_consistent result.f0)}
+    (! return {result}) ]

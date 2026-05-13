@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c25_activate": { "prover": "cvc5", "time": 0.008 },
+      "vc_c25_activate_harness": { "prover": "cvc5", "time": 0.009 }
+    }
+  }
+}

@@ -19,6 +19,11 @@ use std::time::Instant;
     Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Getters, Default, Serialize, Deserialize,
 )]
 pub struct ProofHarness {
+    /// Cargo package that contains the harness (e.g., "elicitation_kani").
+    ///
+    /// Defaults to `"elicitation_kani"` when constructed with [`ProofHarness::new`].
+    /// Use [`ProofHarness::in_package`] for harnesses in other crates.
+    package: String,
     /// Module name (e.g., "ipaddr_bytes")
     module: String,
     /// Harness function name (e.g., "verify_ipv4_10_network_is_private")
@@ -26,9 +31,23 @@ pub struct ProofHarness {
 }
 
 impl ProofHarness {
-    /// Create a new proof harness identifier.
+    /// Create a new proof harness identifier in the default `elicitation_kani` package.
     pub fn new(module: impl Into<String>, name: impl Into<String>) -> Self {
         Self {
+            package: "elicitation_kani".into(),
+            module: module.into(),
+            name: name.into(),
+        }
+    }
+
+    /// Create a proof harness identifier in a specific Cargo package.
+    pub fn in_package(
+        package: impl Into<String>,
+        module: impl Into<String>,
+        name: impl Into<String>,
+    ) -> Self {
+        Self {
+            package: package.into(),
             module: module.into(),
             name: name.into(),
         }
@@ -654,6 +673,57 @@ impl ProofHarness {
             Self::new("geo_types", "verify_geo_rect_well_formed"),
             Self::new("geo_types", "verify_geo_line_from_roundtrip"),
             Self::new("geo_types", "verify_geo_line_wrapper_fields"),
+            Self::new("geo_types", "verify_geo_point_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_point_wrapper_fields"),
+            Self::new("geo_types", "verify_geo_triangle_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_triangle_wrapper_fields"),
+            Self::new("geo_types", "verify_geo_line_string_length_preserved"),
+            Self::new("geo_types", "verify_geo_multi_point_length_preserved"),
+            Self::new("geo_types", "verify_geo_geometry_point_variant"),
+            Self::new("geo_types", "verify_geo_geometry_rect_variant"),
+            // wkt_types: WKT wrapper proofs
+            Self::new("wkt_types", "verify_wkt_string_trusted"),
+            Self::new("wkt_types", "verify_wkt_coord_from_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_coord_wrapper_fields"),
+            Self::new("wkt_types", "verify_wkt_point_empty_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_geom_point_variant"),
+            // wkb_types: WKB wrapper proofs
+            Self::new("wkb_types", "verify_wkb_endianness_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_dimension_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_geometry_type_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_write_options_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_bytes_known_point_metadata"),
+            // georaster_types: GeoTIFF reader/value proofs
+            Self::new(
+                "georaster_types",
+                "verify_georaster_coordinate_new_semantics",
+            ),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_planar_configuration_chunky",
+            ),
+            Self::new("georaster_types", "verify_georaster_color_type_rgb_bits"),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_raster_value_rgb8_variant",
+            ),
+            Self::new("georaster_types", "verify_georaster_image_info_fields"),
+            // geojson_types: GeoJSON document/value proofs
+            Self::new("geojson_types", "verify_geojson_value_point_type_name"),
+            Self::new("geojson_types", "verify_geojson_geometry_new_point"),
+            Self::new("geojson_types", "verify_geojson_feature_property_access"),
+            Self::new("geojson_types", "verify_geojson_feature_collection_len"),
+            Self::new("geojson_types", "verify_geojson_id_string_variant"),
+            // rstar_types: RTree wrapper proofs
+            Self::new("rstar_types", "verify_rstar_aabb_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_envelope_bounds"),
+            Self::new("rstar_types", "verify_rstar_line_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_line_envelope_bounds"),
+            // proj_types: ProjArea wrapper proofs
+            Self::new("proj_types", "verify_proj_area_new_fields"),
+            Self::new("proj_types", "verify_proj_area_roundtrip"),
+            Self::new("proj_types", "verify_proj_area_antimeridian"),
             // palette_types: color struct proofs
             Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),
@@ -688,6 +758,19 @@ impl ProofHarness {
             Self::new("ui_types", "verify_profile_monotonicity"),
             Self::new("ui_types", "verify_typestate_markers_zero_sized"),
             Self::new("ui_types", "verify_typestate_markers_eq"),
+            // winit_types: DPI/size/position wrapper proofs
+            Self::new("winit_types", "verify_winit_physical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_position_fields"),
+            Self::new("winit_types", "verify_winit_physical_size_zero"),
+            // wgpu_types: GPU struct wrapper proofs
+            Self::new("wgpu_types", "verify_wgpu_extent3d_fields"),
+            Self::new("wgpu_types", "verify_wgpu_extent3d_zero"),
+            Self::new("wgpu_types", "verify_wgpu_color_fields"),
+            Self::new("wgpu_types", "verify_wgpu_origin3d_fields"),
+            // VSM harnesses (archive_connection, archive_nav, archive_overlay, archive_panel)
+            // are tracked by the `elicit_proofs` VSM runner — use `just verify-vsm-list` and
+            // `just verify-vsm` instead of the static list here.
         ]
     }
 
@@ -704,7 +787,7 @@ impl ProofHarness {
                 "cargo",
                 "kani",
                 "-p",
-                "elicitation_kani",
+                &self.package,
                 "--lib",
                 "--all-features",
                 "--harness",
@@ -828,7 +911,8 @@ pub fn handle(action: &VerifyAction) -> Result<()> {
             output,
             timeout,
             resume,
-        } => run_all(output, *timeout, *resume),
+            module,
+        } => run_all(output, *timeout, *resume, module.as_deref()),
         VerifyAction::Summary { file } => show_summary(file),
         VerifyAction::Failed { file } => show_failed(file),
     }
@@ -849,16 +933,24 @@ fn list_harnesses() -> Result<()> {
 
 /// Run all proofs and save results to CSV.
 #[tracing::instrument]
-fn run_all(output: &Path, timeout: u64, resume: bool) -> Result<()> {
+fn run_all(output: &Path, timeout: u64, resume: bool, module: Option<&str>) -> Result<()> {
     tracing::info!(
         output = %output.display(),
         timeout,
         resume,
-        "Running all proofs"
+        module,
+        "Running proofs"
     );
 
     let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
-    let harnesses = ProofHarness::all();
+    let all = ProofHarness::all();
+    let harnesses: Vec<_> = if let Some(prefix) = module {
+        all.into_iter()
+            .filter(|h| h.module().starts_with(prefix))
+            .collect()
+    } else {
+        all
+    };
     let mut summary = Summary::default();
 
     println!("🔬 Kani Verification Tracking");

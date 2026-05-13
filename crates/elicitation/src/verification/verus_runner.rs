@@ -335,6 +335,55 @@ impl VerusProof {
             Self::new("geo_types", "verify_geo_line_roundtrip"),
             Self::new("geo_types", "verify_geo_line_concrete"),
             Self::new("geo_types", "verify_geo_line_degenerate"),
+            Self::new("geo_types", "verify_geo_point_roundtrip"),
+            Self::new("geo_types", "verify_geo_point_concrete"),
+            Self::new("geo_types", "verify_geo_triangle_roundtrip"),
+            Self::new("geo_types", "verify_geo_triangle_concrete"),
+            Self::new("geo_types", "verify_geo_geometry_point_variant"),
+            Self::new("geo_types", "verify_geo_geometry_rect_variant"),
+            // wkt_types: shadow struct proofs
+            Self::new("wkt_types", "verify_wkt_coord_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_coord_concrete"),
+            Self::new("wkt_types", "verify_wkt_point_empty"),
+            Self::new("wkt_types", "verify_wkt_geom_point_variant"),
+            Self::new("wkt_types", "verify_wkt_string_trusted"),
+            // wkb_types: shadow struct proofs
+            Self::new("wkb_types", "verify_wkb_endianness_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_dimension_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_geometry_type_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_write_options_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_bytes_known_point"),
+            // georaster_types: shadow struct proofs
+            Self::new(
+                "georaster_types",
+                "verify_georaster_coordinate_new_semantics",
+            ),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_planar_configuration_chunky",
+            ),
+            Self::new("georaster_types", "verify_georaster_color_type_rgb_bits"),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_raster_value_rgb8_variant",
+            ),
+            Self::new("georaster_types", "verify_georaster_image_info_fields"),
+            // geojson_types: shadow struct proofs
+            Self::new("geojson_types", "verify_geojson_value_point_type_name"),
+            Self::new("geojson_types", "verify_geojson_geometry_new_point"),
+            Self::new("geojson_types", "verify_geojson_feature_property_access"),
+            Self::new("geojson_types", "verify_geojson_feature_collection_len"),
+            Self::new("geojson_types", "verify_geojson_id_string_variant"),
+            // rstar_types: shadow struct proofs
+            Self::new("rstar_types", "verify_rstar_aabb_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_envelope_bounds"),
+            Self::new("rstar_types", "verify_rstar_line_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_line_envelope_bounds"),
+            // proj_types: shadow struct proofs
+            Self::new("proj_types", "verify_proj_area_new_fields"),
+            Self::new("proj_types", "verify_proj_area_roundtrip"),
+            Self::new("proj_types", "verify_proj_area_antimeridian"),
             // palette_types: shadow struct proofs
             Self::new("palette_types", "verify_palette_srgb_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_concrete"),
@@ -452,6 +501,15 @@ impl VerusProof {
             Self::new("ui_types", "verify_profile_aa_count"),
             Self::new("ui_types", "verify_profile_aaa_count"),
             Self::new("ui_types", "verify_profile_monotonicity"),
+            // winit_types: DPI/size/position shadow proofs
+            Self::new("winit_types", "verify_winit_physical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_position_fields"),
+            Self::new("winit_types", "verify_winit_physical_size_zero"),
+            // wgpu_types: GPU struct wrapper shadow proofs
+            Self::new("wgpu_types", "verify_wgpu_extent3d_fields"),
+            Self::new("wgpu_types", "verify_wgpu_extent3d_zero"),
+            Self::new("wgpu_types", "verify_wgpu_origin3d_fields"),
         ]
     }
 }

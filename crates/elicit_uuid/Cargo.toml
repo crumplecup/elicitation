@@ -26,9 +26,6 @@ futures.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
 
-[features]
-prompt-tree = ["elicitation/prompt-tree"]
-
 [dev-dependencies]
 serde_json.workspace = true
 

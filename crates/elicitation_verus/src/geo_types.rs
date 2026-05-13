@@ -174,4 +174,130 @@ pub fn verify_geo_line_degenerate(x: f64, y: f64) -> (result: ShadowGeoLine)
     make_geo_line(x, y, x, y)
 }
 
+// ---- Shadow struct: Point (coord: ShadowGeoCoord) ----
+
+pub struct ShadowGeoPoint {
+    pub coord: ShadowGeoCoord,
+}
+
+/// Construct a ShadowGeoPoint from x, y.
+pub fn make_geo_point(x: f64, y: f64) -> (result: ShadowGeoPoint)
+    ensures
+        result.coord.x == x,
+        result.coord.y == y,
+{
+    ShadowGeoPoint { coord: make_geo_coord(x, y) }
+}
+
+/// Prove Point roundtrip: construct → read coord fields → reconstruct preserves both dimensions.
+pub fn verify_geo_point_roundtrip(x: f64, y: f64) -> (result: ShadowGeoPoint)
+    ensures
+        result.coord.x == x,
+        result.coord.y == y,
+{
+    let original = make_geo_point(x, y);
+    make_geo_point(original.coord.x, original.coord.y)
+}
+
+/// Prove Point concrete construction with known values.
+pub fn verify_geo_point_concrete() -> (result: ShadowGeoPoint)
+    ensures
+        result.coord.x == 3.0f64,
+        result.coord.y == 4.0f64,
+{
+    make_geo_point(3.0, 4.0)
+}
+
+// ---- Shadow struct: Triangle (v1, v2, v3: ShadowGeoCoord) ----
+
+pub struct ShadowGeoTriangle {
+    pub v1: ShadowGeoCoord,
+    pub v2: ShadowGeoCoord,
+    pub v3: ShadowGeoCoord,
+}
+
+/// Construct a ShadowGeoTriangle from three vertex coordinate pairs.
+pub fn make_geo_triangle(
+    x1: f64, y1: f64,
+    x2: f64, y2: f64,
+    x3: f64, y3: f64,
+) -> (result: ShadowGeoTriangle)
+    ensures
+        result.v1.x == x1,
+        result.v1.y == y1,
+        result.v2.x == x2,
+        result.v2.y == y2,
+        result.v3.x == x3,
+        result.v3.y == y3,
+{
+    ShadowGeoTriangle {
+        v1: make_geo_coord(x1, y1),
+        v2: make_geo_coord(x2, y2),
+        v3: make_geo_coord(x3, y3),
+    }
+}
+
+/// Prove Triangle roundtrip: construct → read fields → reconstruct preserves all vertices.
+pub fn verify_geo_triangle_roundtrip(
+    x1: f64, y1: f64,
+    x2: f64, y2: f64,
+    x3: f64, y3: f64,
+) -> (result: ShadowGeoTriangle)
+    ensures
+        result.v1.x == x1,
+        result.v1.y == y1,
+        result.v2.x == x2,
+        result.v2.y == y2,
+        result.v3.x == x3,
+        result.v3.y == y3,
+{
+    let original = make_geo_triangle(x1, y1, x2, y2, x3, y3);
+    make_geo_triangle(
+        original.v1.x, original.v1.y,
+        original.v2.x, original.v2.y,
+        original.v3.x, original.v3.y,
+    )
+}
+
+/// Prove Triangle concrete construction with known values.
+pub fn verify_geo_triangle_concrete() -> (result: ShadowGeoTriangle)
+    ensures
+        result.v1.x == 0.0f64,
+        result.v2.x == 1.0f64,
+        result.v3.x == 0.5f64,
+{
+    make_geo_triangle(0.0, 0.0, 1.0, 0.0, 0.5, 1.0)
+}
+
+// ---- Shadow enum: Geometry variant discriminant uniqueness ----
+
+pub enum ShadowGeoGeometryVariant {
+    Point,
+    Line,
+    LineString,
+    Polygon,
+    MultiPoint,
+    MultiLineString,
+    MultiPolygon,
+    Rect,
+    Triangle,
+    GeometryCollection,
+}
+
+/// Prove the Point variant can be constructed and identified.
+pub fn verify_geo_geometry_point_variant() -> (result: ShadowGeoGeometryVariant)
+    ensures
+        matches!(result, ShadowGeoGeometryVariant::Point),
+{
+    ShadowGeoGeometryVariant::Point
+}
+
+/// Prove the Rect variant can be constructed and identified.
+pub fn verify_geo_geometry_rect_variant() -> (result: ShadowGeoGeometryVariant)
+    ensures
+        matches!(result, ShadowGeoGeometryVariant::Rect),
+{
+    ShadowGeoGeometryVariant::Rect
+}
+
 } // verus!

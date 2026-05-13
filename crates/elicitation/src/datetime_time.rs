@@ -262,14 +262,14 @@ impl Generator for InstantGenerator {
 // Instant Elicitation
 // ============================================================================
 
-#[cfg_attr(not(kani), elicitation_macros::instrumented_impl)]
+#[cfg_attr(not(kani), elicitation_derive::instrumented_impl)]
 impl Prompt for Instant {
     fn prompt() -> Option<&'static str> {
         Some("Specify how to create an instant (now vs offset):")
     }
 }
 
-#[cfg_attr(not(kani), elicitation_macros::instrumented_impl)]
+#[cfg_attr(not(kani), elicitation_derive::instrumented_impl)]
 impl Elicitation for Instant {
     type Style = InstantStyle;
 

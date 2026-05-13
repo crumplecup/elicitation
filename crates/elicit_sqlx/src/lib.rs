@@ -7,6 +7,7 @@
 #![warn(missing_docs)]
 
 mod args;
+pub mod backend;
 mod column;
 mod context;
 pub mod drivers;
@@ -19,7 +20,10 @@ mod row;
 mod type_info;
 pub mod workflow;
 
-pub use args::{ToSqlxArgs, ToSqlxArgsFactory};
+pub use args::ToSqlxArgs;
+#[cfg(not(creusot))]
+pub use args::ToSqlxArgsFactory;
+pub use backend::SqlxDbBackend;
 pub use column::AnyColumn;
 pub use context::{SqlxContext, connect};
 pub use drivers::{SqlxMySqlPlugin, SqlxPgPlugin, SqlxSqlitePlugin};

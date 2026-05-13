@@ -1,8 +1,8 @@
 //! Snapshot-style tests for Mermaid and DOT renderers.
+#![cfg(feature = "graph")]
 
 use elicitation::{
-    DotRenderer, Elicit, GraphRenderer, MermaidDirection, MermaidRenderer, Prompt, Select,
-    TypeGraph,
+    DotRenderer, Elicit, GraphRenderer, MermaidDirection, MermaidRenderer, TypeGraph,
 };
 
 // --- Simple stable type for snapshot tests ---

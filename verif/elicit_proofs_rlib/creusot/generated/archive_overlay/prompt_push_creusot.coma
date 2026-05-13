@@ -1,0 +1,163 @@
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 0 112 174 *)
+
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
+let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span sarchive_overlay = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 177 112 206
+let%span sarchive_overlay'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 27 112 32
+let%span sarchive_overlay'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 55 112 60
+let%span sarchive_overlay'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 110 11 110 45
+let%span sarchive_overlay'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 114 112 174
+let%span sarchive_overlay'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 111 10 111 47
+let%span sarchive_overlay'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 106 19 106 24
+let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 106 47 106 52
+let%span sarchive_overlay'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 104 15 104 49
+let%span sarchive_overlay'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 105 14 105 51
+let%span sarchive_overlay'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 22 16 22 206
+let%span soverlay = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/overlay.rs" 207 0 211 65
+
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.Int64
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+type t_Vec_ExportFormat_Global
+
+type t_String
+
+type t_Vec_SavedQuery_Global
+
+type t_ArchiveOverlayState =
+  | OverlayNone
+  | HelpOpen
+  | ExportPickerOpen UInt64.t t_Vec_ExportFormat_Global
+  | SavePromptOpen t_String
+  | SavedBrowserOpen t_Vec_SavedQuery_Global UInt64.t
+
+type t_Established_ArchiveOverlayConsistent
+
+type tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = {
+  f0: t_ArchiveOverlayState;
+  f1: t_Established_ArchiveOverlayConsistent }
+
+predicate inv_String (_1: t_String)
+
+type t_DateTime_Utc
+
+type t_SavedQuery = {
+  id: Int64.t;
+  name: t_String;
+  sql: t_String;
+  created_at: t_DateTime_Utc;
+  updated_at: t_DateTime_Utc }
+
+predicate inv_DateTime_Utc (_1: t_DateTime_Utc)
+
+predicate inv_SavedQuery (_1: t_SavedQuery)
+
+axiom inv_axiom [@rewrite]: forall x: t_SavedQuery [inv_SavedQuery x]. inv_SavedQuery x
+    = (inv_String x.name /\ inv_String x.sql /\ inv_DateTime_Utc x.created_at /\ inv_DateTime_Utc x.updated_at)
+
+predicate invariant_ref_SavedQuery [@inline:trivial] (self: t_SavedQuery) = [%#sinvariant] inv_SavedQuery self
+
+meta "rewrite_def" predicate invariant_ref_SavedQuery
+
+predicate inv_ref_SavedQuery [@inline:trivial] (_1: t_SavedQuery) = invariant_ref_SavedQuery _1
+
+meta "rewrite_def" predicate inv_ref_SavedQuery
+
+predicate invariant_Seq_SavedQuery [@inline:trivial] (self: Seq.seq t_SavedQuery) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_SavedQuery (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_SavedQuery
+
+predicate inv_Seq_SavedQuery [@inline:trivial] (_1: Seq.seq t_SavedQuery) = invariant_Seq_SavedQuery _1
+
+meta "rewrite_def" predicate inv_Seq_SavedQuery
+
+constant const_MAX: UInt64.t = (18446744073709551615: UInt64.t)
+
+function view_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) : Seq.seq t_SavedQuery
+
+axiom view_Vec_SavedQuery_Global_spec:
+  forall self: t_Vec_SavedQuery_Global. [%#svec] Seq.length (view_Vec_SavedQuery_Global self) <= UInt64.t'int const_MAX
+
+predicate invariant_Vec_SavedQuery_Global (self: t_Vec_SavedQuery_Global) =
+  [%#svec'0] inv_Seq_SavedQuery (view_Vec_SavedQuery_Global self)
+
+predicate inv_Vec_SavedQuery_Global (_1: t_Vec_SavedQuery_Global)
+
+axiom inv_axiom'0: forall x: t_Vec_SavedQuery_Global [inv_Vec_SavedQuery_Global x]. inv_Vec_SavedQuery_Global x
+    -> invariant_Vec_SavedQuery_Global x
+
+predicate inv_ArchiveOverlayState (_1: t_ArchiveOverlayState)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_ArchiveOverlayState [inv_ArchiveOverlayState x]. inv_ArchiveOverlayState x
+    = match x with
+      | OverlayNone -> true
+      | HelpOpen -> true
+      | ExportPickerOpen idx formats -> true
+      | SavePromptOpen text -> inv_String text
+      | SavedBrowserOpen entries idx -> inv_Vec_SavedQuery_Global entries
+      end
+
+predicate inv_Established_ArchiveOverlayConsistent (_1: t_Established_ArchiveOverlayConsistent)
+
+type t_ExportFormat = Csv | Json | Ndjson | Tsv
+
+function view_Vec_ExportFormat_Global (self: t_Vec_ExportFormat_Global) : Seq.seq t_ExportFormat
+
+axiom view_Vec_ExportFormat_Global_spec:
+  forall self: t_Vec_ExportFormat_Global. [%#svec] Seq.length (view_Vec_ExportFormat_Global self)
+    <= UInt64.t'int const_MAX
+
+predicate archive_overlay_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 21 0 21 70] (state: t_ArchiveOverlayState) =
+  [%#sarchive_overlay'9] match state with
+    | ExportPickerOpen idx formats -> UInt64.t'int idx <= Seq.length (view_Vec_ExportFormat_Global formats)
+    | SavedBrowserOpen entries idx -> UInt64.t'int idx <= Seq.length (view_Vec_SavedQuery_Global entries)
+    | _ -> true
+    end
+
+predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent [@inline:trivial] (_1: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) =
+  inv_ArchiveOverlayState _1.f0 /\ inv_Established_ArchiveOverlayConsistent _1.f1
+
+meta "rewrite_def" predicate inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent
+
+let rec prompt_push (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent) (ch: Char.t)
+  (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
+  {[@stop_split] [@expl:prompt_push requires] ([@stop_split] [@expl:prompt_push 'state' type invariant] [%#sarchive_overlay'5] inv_ArchiveOverlayState state)
+  /\ ([@stop_split] [@expl:prompt_push 'proof' type invariant] [%#sarchive_overlay'6] inv_Established_ArchiveOverlayConsistent proof)
+  /\ ([@stop_split] [@expl:prompt_push requires] [%#sarchive_overlay'7] archive_overlay_consistent state)}
+  any
+  [ return (result: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) ->
+  {[@stop_split] [@expl:prompt_push ensures] ([@stop_split] [@expl:prompt_push result type invariant] [%#soverlay] inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent result)
+    /\ ([@stop_split] [@expl:prompt_push ensures] [%#sarchive_overlay'8] archive_overlay_consistent result.f0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec prompt_push_creusot
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 112 0 112 174]
+  (state: t_ArchiveOverlayState) (proof: t_Established_ArchiveOverlayConsistent) (ch: Char.t)
+  (return (x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent)) =
+  {[@stop_split] [@expl:prompt_push_creusot requires] ([@stop_split] [@expl:prompt_push_creusot 'state' type invariant] [%#sarchive_overlay'0] inv_ArchiveOverlayState state)
+  /\ ([@stop_split] [@expl:prompt_push_creusot 'proof' type invariant] [%#sarchive_overlay'1] inv_Established_ArchiveOverlayConsistent proof)
+  /\ ([@stop_split] [@expl:prompt_push_creusot requires] [%#sarchive_overlay'2] archive_overlay_consistent state)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = prompt_push [%#sarchive_overlay] {state} {proof} {ch}
+        (fun (_x: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent = Any.any_l ()
+  | & state: t_ArchiveOverlayState = state
+  | & proof: t_Established_ArchiveOverlayConsistent = proof
+  | & ch: Char.t = ch ])
+  [ return (result: tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent) ->
+  {[@stop_split] [@expl:prompt_push_creusot ensures] ([@stop_split] [@expl:prompt_push_creusot result type invariant] [%#sarchive_overlay'3] inv_tup2_ArchiveOverlayState_Established_ArchiveOverlayConsistent result)
+    /\ ([@stop_split] [@expl:prompt_push_creusot ensures] [%#sarchive_overlay'4] archive_overlay_consistent result.f0)}
+    (! return {result}) ]

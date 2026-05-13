@@ -58,12 +58,19 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod archive;
 mod fetch_and_parse;
+pub mod gaap;
 pub mod ledger;
 mod secure_fetch;
 
 mod emit_plugin;
 
+#[cfg(not(kani))]
+pub use archive::ArchiveQueryPlugin;
+pub use archive::{
+    ArchiveBrowsePlugin, ArchiveDbBackend, ArchiveDisplayPlugin, ArchiveSpatialPlugin,
+};
 pub use fetch_and_parse::{FetchAndParsePlugin, http_get};
 pub use secure_fetch::SecureFetchPlugin;
 

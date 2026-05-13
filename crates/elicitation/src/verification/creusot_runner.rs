@@ -102,8 +102,16 @@ impl CreusotModule {
             Self::with_feature("egui_types", "egui-types"),
             Self::with_feature("ratatui_types", "ratatui-types"),
             Self::with_feature("geo_types", "geo-types"),
+            Self::with_feature("georaster_types", "georaster-types"),
+            Self::with_feature("geojson_types", "geojson-types"),
+            Self::with_feature("rstar_types", "rstar-types"),
+            Self::with_feature("proj_types", "proj-types"),
+            Self::with_feature("wkt_types", "wkt-types"),
+            Self::with_feature("wkb_types", "wkb-types"),
             Self::with_feature("palette_types", "palette"),
             Self::with_feature("ui_types", "ui-types"),
+            Self::with_feature("winit_types", "winit-types"),
+            Self::with_feature("wgpu_types", "wgpu-types"),
         ]
     }
 
@@ -137,6 +145,8 @@ pub enum CompilationStatus {
     Failed,
     /// Module skipped (platform or feature unavailable)
     Skipped,
+    /// Module contains only `#[trusted]` items — no VCs generated, nothing to prove
+    Trusted,
 }
 
 /// Result of running a Creusot module compilation check.
@@ -173,7 +183,10 @@ impl CreusotModuleResult {
 
     /// Check if compilation succeeded.
     pub fn is_success(&self) -> bool {
-        self.status == CompilationStatus::Success
+        matches!(
+            self.status,
+            CompilationStatus::Success | CompilationStatus::Trusted
+        )
     }
 }
 
@@ -244,14 +257,16 @@ pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult>
     // `cargo creusot` invokes the Creusot toolchain rather than plain rustc,
     // which is required to actually check the #[logic] and #[requires] contracts.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot")
-        .arg("--")
-        .arg("-p")
-        .arg("elicitation_creusot");
+    // Pass -p before `--` so cargo-creusot routes it through args.package,
+    // limiting compilation to elicitation_creusot and its deps only.
+    // Using `--` here would put -p into cargo_flags, causing cargo-creusot
+    // to fall back to compiling ALL workspace members (including async crates
+    // that trigger ICEs in the creusot compiler).
+    cmd.arg("creusot").arg("-p").arg("elicitation_creusot");
 
-    // Add feature flag if needed
+    // Feature flags must go after `--` (they are forwarded to cargo check).
     if let Some(feature) = module.feature() {
-        cmd.arg("--features").arg(feature);
+        cmd.arg("--").arg("--features").arg(feature);
     }
 
     // cargo creusot sets RUSTC=creusot-rustc but does not set LD_LIBRARY_PATH,
@@ -360,6 +375,13 @@ pub fn run_all_modules(output_csv: &Path, resume: bool) -> Result<CreusotSummary
                         println!("⏭️  SKIPPED");
                         skipped += 1;
                     }
+                    CompilationStatus::Trusted => {
+                        println!(
+                            "🔒 TRUSTED ({}s) — all #[trusted], no VCs",
+                            result.time_seconds()
+                        );
+                        skipped += 1;
+                    }
                 }
 
                 writer
@@ -432,7 +454,7 @@ pub fn show_summary(csv_path: &Path) -> Result<()> {
         match result.status() {
             CompilationStatus::Success => passed += 1,
             CompilationStatus::Failed => failed += 1,
-            CompilationStatus::Skipped => skipped += 1,
+            CompilationStatus::Skipped | CompilationStatus::Trusted => skipped += 1,
         }
     }
 
@@ -654,16 +676,20 @@ pub fn run_creusot_module_prove(
         ));
     }
 
-    // `cargo creusot prove` inserts `prove` before `--`
+    // `cargo creusot prove <pattern> -- <cargo-flags>`
+    // The prove subcommand takes patterns positionally and cargo flags after `--`.
+    // `-p` must go after `--`; placing it before `prove` now errors.
     let mut cmd = Command::new("cargo");
     cmd.arg("creusot")
         .arg("prove")
+        .arg(module.name())
         .arg("--")
         .arg("-p")
         .arg("elicitation_creusot");
 
     if let Some(feature) = module.feature() {
-        cmd.arg("--features").arg(feature);
+        cmd.arg("--features")
+            .arg(format!("elicitation_creusot/{feature}"));
     }
 
     // Inject nightly toolchain lib dir so creusot-rustc can load its shared libraries.
@@ -677,16 +703,25 @@ pub fn run_creusot_module_prove(
         cmd.env("LD_LIBRARY_PATH", new_path);
     }
 
-    // Add opam bin directory to PATH so why3find is available.
+    // Add the creusot data bin directory to PATH so why3find is available.
+    // cargo-creusot installs why3find to ~/.local/share/creusot/bin (the
+    // data_dir set by creusot-setup), not to the opam switch bin.
     let home = std::env::var("HOME").unwrap_or_default();
-    let opam_bin = format!("{home}/.opam/default/bin");
+    let creusot_bin = format!("{home}/.local/share/creusot/bin");
     let existing_path = std::env::var("PATH").unwrap_or_default();
     let new_path = if existing_path.is_empty() {
-        opam_bin
+        creusot_bin
     } else {
-        format!("{opam_bin}:{existing_path}")
+        format!("{creusot_bin}:{existing_path}")
     };
     cmd.env("PATH", new_path);
+    // DUNE_DIR_LOCATIONS and WHY3CONFIG are required by why3find to locate
+    // the creusot package and prover configuration.
+    cmd.env(
+        "DUNE_DIR_LOCATIONS",
+        format!("why3find:lib:{home}/.local/share/creusot/share/why3find"),
+    );
+    cmd.env("WHY3CONFIG", format!("{home}/.config/creusot/why3.conf"));
 
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
@@ -702,6 +737,9 @@ pub fn run_creusot_module_prove(
 
     let (status, error_message) = if output.status.success() {
         (CompilationStatus::Success, String::new())
+    } else if stderr.contains("No files to prove") {
+        // All functions in this module are `#[trusted]` — Creusot generates no VCs.
+        (CompilationStatus::Trusted, String::new())
     } else {
         (
             CompilationStatus::Failed,
@@ -805,6 +843,13 @@ pub fn run_all_modules_prove(
                     }
                     CompilationStatus::Skipped => {
                         println!("⏭️  SKIPPED");
+                        skipped += 1;
+                    }
+                    CompilationStatus::Trusted => {
+                        println!(
+                            "🔒 TRUSTED ({}s) — all #[trusted], no VCs",
+                            result.time_seconds()
+                        );
                         skipped += 1;
                     }
                 }

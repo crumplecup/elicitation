@@ -19,12 +19,14 @@
 ### Pattern 1: Runtime Tools (JSON Boundary)
 
 **What crosses JSON:**
+
 - Router handles (UUID registry)
 - Extractors with serializable data (Path, Query, Json)
 - Response builders with serializable params
 - Configuration structs (CorsLayer settings, TimeoutLayer duration)
 
 **Example:**
+
 ```rust
 #[elicit_tool(plugin = "axum_router", name = "create")]
 async fn router_create() -> Result<CallToolResult, ErrorData> {
@@ -38,12 +40,14 @@ async fn router_create() -> Result<CallToolResult, ErrorData> {
 ### Pattern 2: Fragment Tools (Code Generation)
 
 **What becomes fragments:**
+
 - Handler function definitions (take closures)
 - Middleware function definitions (take closures)
 - Route registration code
 - Complete service assembly
 
 **Example:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -61,6 +65,7 @@ async fn emit_handler(p: EmitHandlerParams) -> Result<CallToolResult, ErrorData>
 ### Pattern 3: Factory Pattern (Trait Methods)
 
 **Traits to expose:**
+
 - `Handler<T, S>` - blanket impl for functions
 - `FromRequest<S>` / `FromRequestParts<S>` - extractor trait
 - `IntoResponse` - response conversion trait
@@ -68,6 +73,7 @@ async fn emit_handler(p: EmitHandlerParams) -> Result<CallToolResult, ErrorData>
 - `Layer<S>` - Tower layer trait
 
 **Example:**
+
 ```rust
 // Wrapper trait with blanket impl
 pub trait FromRequestJson<S>: Sized {
@@ -101,6 +107,7 @@ pub trait FromRequestJsonTools<S>: Sized {
 **Patterns:** Factory (Service, Layer traits) + Runtime (middleware config)
 
 **Harvest:**
+
 - `Service<Request>` trait via factory pattern
 - `Layer<S>` trait via factory pattern
 - 25+ tower-http middleware layers:
@@ -114,6 +121,7 @@ pub trait FromRequestJsonTools<S>: Sized {
 **Patterns:** Factory (all three traits)
 
 **Harvest:**
+
 - `FromRequest<S>` / `FromRequestParts<S>` via factory
 - `IntoResponse` / `IntoResponseParts` via factory
 - `FromRef<T>` via factory
@@ -126,6 +134,7 @@ pub trait FromRequestJsonTools<S>: Sized {
 **Patterns:** Runtime (router handles) + Fragment (handler/route emission) + Factory (Handler trait)
 
 **Harvest:**
+
 - Router/MethodRouter (runtime handles + fragment emission)
 - 20+ extractors (Path, Query, Json, Form, Multipart, WebSocket, etc.)
 - Response types (Html, Redirect, SSE, AppendHeaders)
@@ -138,6 +147,7 @@ pub trait FromRequestJsonTools<S>: Sized {
 **Patterns:** Fragment only
 
 **Harvest:**
+
 - `handler_fn` - emit handler function
 - `route_def` - emit route registration
 - `middleware_fn` - emit middleware function
@@ -152,6 +162,7 @@ pub trait FromRequestJsonTools<S>: Sized {
 ### 1.1 Service Trait (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 // Erase the generic Future by using JSON round-trip
 pub trait ServiceJson<Req>: Clone + Send + Sync + 'static {
@@ -188,6 +199,7 @@ pub trait ServiceJsonTools<Req>: Clone + Send + Sync + 'static {
 ```
 
 **Runtime tools** (stateful service registry):
+
 ```rust
 pub struct TowerServicePlugin {
     services: Arc<Mutex<HashMap<Uuid, Box<dyn ServiceJson<Request>>>>>,
@@ -210,6 +222,7 @@ async fn service_call(
 ### 1.2 Layer Trait (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 pub trait LayerJson<S>: Clone + Send + Sync + 'static {
     type Service: ServiceJson<Request>;
@@ -240,6 +253,7 @@ pub trait LayerJsonTools<S>: Clone + Send + Sync + 'static {
 **Runtime configuration tools** (each layer has builder):
 
 #### CompressionLayer
+
 ```rust
 elicit_newtype!(pub struct CompressionLayer(tower_http::compression::CompressionLayer));
 
@@ -260,6 +274,7 @@ pub enum CompressionLevel {
 ```
 
 #### CorsLayer
+
 ```rust
 #[reflect_methods]
 impl CorsLayer {
@@ -286,6 +301,7 @@ pub enum AllowOrigin {
 ```
 
 **Fragment tools** (emit layer application code):
+
 ```rust
 #[elicit_tool(
     plugin = "tower_fragments",
@@ -301,6 +317,7 @@ async fn emit_cors_layer(p: EmitCorsParams) -> Result<CallToolResult, ErrorData>
 ```
 
 **All 25+ middleware:**
+
 - CompressionLayer / DecompressionLayer
 - CorsLayer
 - TraceLayer (tracing spans)
@@ -327,6 +344,7 @@ async fn emit_cors_layer(p: EmitCorsParams) -> Result<CallToolResult, ErrorData>
 ### 2.1 FromRequest Trait (Factory Pattern)
 
 **Wrapper traits:**
+
 ```rust
 // FromRequest<S> → FromRequestJson<S>
 pub trait FromRequestJson<S>: Sized {
@@ -361,6 +379,7 @@ pub trait FromRequestPartsJson<S>: Sized {
 ### 2.2 IntoResponse Trait (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 pub trait IntoResponseJson {
     fn into_response_json(&self) -> Result<String, String>;
@@ -416,6 +435,7 @@ pub trait FromRefJsonTools<T> {
 ### 3.1 Router Runtime Tools
 
 **UUID registry pattern:**
+
 ```rust
 pub struct AxumRouterPlugin {
     routers: Arc<Mutex<HashMap<Uuid, Router>>>,
@@ -475,6 +495,7 @@ async fn router_with_state(...) -> Result<CallToolResult, ErrorData> {
 ### 3.2 Router Fragment Tools
 
 **Emit route registration code:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -509,6 +530,7 @@ async fn emit_nest_def(p: EmitNestParams) -> Result<CallToolResult, ErrorData> {
 ### 3.3 MethodRouter (Runtime + Fragment)
 
 **Runtime tools:**
+
 ```rust
 #[elicit_tool(plugin = "axum_method_router", name = "get")]
 async fn method_router_get(
@@ -525,6 +547,7 @@ async fn method_router_get(
 ```
 
 **Fragment tools:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -549,11 +572,13 @@ async fn emit_method_chain(p: EmitMethodChainParams) -> Result<CallToolResult, E
 ### 4.1 Extractor Runtime Tools
 
 Each extractor gets:
+
 - Constructor tool
 - Accessor tools (getters)
 - Validation tools
 
 **Example: Path extractor**
+
 ```rust
 #[elicit_tool(plugin = "axum_extract", name = "path_string")]
 async fn extract_path_string(p: ExtractPathParams) -> Result<CallToolResult, ErrorData> {
@@ -564,6 +589,7 @@ async fn extract_path_string(p: ExtractPathParams) -> Result<CallToolResult, Err
 ```
 
 **All 20+ extractors:**
+
 - State<T> - application state
 - Extension<T> - request extensions
 - Path<T> - path parameters
@@ -588,6 +614,7 @@ async fn extract_path_string(p: ExtractPathParams) -> Result<CallToolResult, Err
 ### 4.2 Extractor Fragment Tools
 
 **Emit extractor in handler signature:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -617,6 +644,7 @@ async fn emit_extractor_param(p: EmitExtractorParams) -> Result<CallToolResult, 
 ### 5.1 Response Runtime Tools
 
 **Json Response:**
+
 ```rust
 #[elicit_tool(plugin = "axum_response", name = "json")]
 async fn response_json(p: JsonResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -630,6 +658,7 @@ async fn response_json(p: JsonResponseParams) -> Result<CallToolResult, ErrorDat
 ```
 
 **Html Response:**
+
 ```rust
 #[elicit_tool(plugin = "axum_response", name = "html")]
 async fn response_html(p: HtmlResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -641,6 +670,7 @@ async fn response_html(p: HtmlResponseParams) -> Result<CallToolResult, ErrorDat
 ```
 
 **Redirect:**
+
 ```rust
 #[elicit_tool(plugin = "axum_response", name = "redirect")]
 async fn response_redirect(p: RedirectParams) -> Result<CallToolResult, ErrorData> {
@@ -658,6 +688,7 @@ async fn response_redirect(p: RedirectParams) -> Result<CallToolResult, ErrorDat
 ```
 
 **SSE (Server-Sent Events):**
+
 ```rust
 #[elicit_tool(plugin = "axum_response", name = "sse_event")]
 async fn sse_event(p: SseEventParams) -> Result<CallToolResult, ErrorData> {
@@ -674,6 +705,7 @@ async fn sse_event(p: SseEventParams) -> Result<CallToolResult, ErrorData> {
 ### 5.2 Response Fragment Tools
 
 **Emit response in handler body:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -707,6 +739,7 @@ async fn emit_return_html(p: EmitReturnHtmlParams) -> Result<CallToolResult, Err
 ### 6.1 Handler Trait (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 pub trait HandlerJson<T, S>: Clone + Send + Sync + 'static {
     fn call_handler_json(&self, req_json: &str, state_json: &str) -> Result<String, String>;
@@ -732,6 +765,7 @@ pub trait HandlerJsonTools<T, S>: Clone + Send + Sync + 'static {
 ### 6.2 Handler Fragment Tools (Complete)
 
 **Emit full handler function:**
+
 ```rust
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct EmitHandlerParams {
@@ -775,6 +809,7 @@ async fn emit_handler_fn(p: EmitHandlerParams) -> Result<CallToolResult, ErrorDa
 ```
 
 **Example agent workflow:**
+
 ```text
 1. emit_handler_fn({
      name: "create_user",
@@ -798,6 +833,7 @@ async fn emit_handler_fn(p: EmitHandlerParams) -> Result<CallToolResult, ErrorDa
 ### 7.1 Middleware Fragment Tools
 
 **from_fn middleware:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -835,6 +871,7 @@ async fn emit_middleware_fn(p: EmitMiddlewareParams) -> Result<CallToolResult, E
 ```
 
 **from_extractor middleware:**
+
 ```rust
 #[elicit_tool(
     plugin = "axum_fragments",
@@ -852,6 +889,7 @@ async fn emit_middleware_from_extractor(p: EmitFromExtractorParams) -> Result<Ca
 ### 7.2 Middleware Factory Tools
 
 **Wrap middleware functions as trait:**
+
 ```rust
 pub trait MiddlewareJson {
     fn apply_middleware_json(&self, req_json: &str, next_id: Uuid) -> Result<String, String>;
@@ -868,6 +906,7 @@ pub trait MiddlewareJson {
 ### 8.1 Service Scaffold Tool
 
 **Emit complete main.rs + Cargo.toml:**
+
 ```rust
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct AssembleServiceParams {
@@ -955,6 +994,7 @@ async fn main() {{
 ```
 
 **Example output:**
+
 ```rust
 // Generated main.rs
 use axum::{
@@ -1007,6 +1047,7 @@ async fn list_users(State(state): State<AppState>) -> Result<Json<Vec<User>>, Ap
 ### 9.1 Status Codes
 
 **Elicit enum:**
+
 ```rust
 #[derive(Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum StatusCode {
@@ -1059,6 +1100,7 @@ pub enum StatusCode {
 ### 9.2 Headers
 
 **Header names enum:**
+
 ```rust
 #[derive(Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum HeaderName {

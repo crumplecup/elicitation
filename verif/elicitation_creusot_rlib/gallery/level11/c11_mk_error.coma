@@ -1,0 +1,57 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 189 0 189 54 *)
+
+let%span slevel11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 189 20 189 27
+let%span slevel11'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 187 11 187 29
+let%span slevel11'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 189 40 189 54
+let%span slevel11'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 188 10 188 33
+let%span slevel11'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 146 8 151 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_String
+
+type t_MiniPanelState = Empty | Grid t_MiniDisplayMode Int64.t | Detail t_MiniDisplayMode | Error t_String
+
+predicate inv_String (_1: t_String)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty -> true
+      | Grid mode row_count -> true
+      | Detail mode -> true
+      | Error message -> inv_String message
+      end
+
+predicate c11_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 144 0 144 49] (s: t_MiniPanelState) =
+  [%#slevel11'3] match s with
+    | Empty -> true
+    | Grid _ row_count -> Int64.to_int row_count > 0
+    | Detail _ -> true
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c11_mk_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level11.rs" 189 0 189 54]
+  (message: t_String) (return (x: t_MiniPanelState)) =
+  {[@stop_split] [@expl:c11_mk_error requires] ([@stop_split] [@expl:c11_mk_error 'message' type invariant] [%#slevel11] inv_String message)
+  /\ ([@stop_split] [@expl:c11_mk_error requires] [%#slevel11'0] Seq.length (view_String message) > 0)}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- Error message ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_MiniPanelState = Any.any_l () | & message: t_String = message ])
+  [ return (result: t_MiniPanelState) ->
+  {[@stop_split] [@expl:c11_mk_error ensures] ([@stop_split] [@expl:c11_mk_error result type invariant] [%#slevel11'1] inv_MiniPanelState result)
+    /\ ([@stop_split] [@expl:c11_mk_error ensures] [%#slevel11'2] c11_consistent result)}
+    (! return {result}) ]

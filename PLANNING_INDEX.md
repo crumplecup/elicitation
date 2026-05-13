@@ -81,6 +81,146 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### archive — Feature Parity with pgAdmin / DBeaver
+
+**Document:** [ARCHIVE_PARITY_PLAN.md](ARCHIVE_PARITY_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Roadmap to bring the `archive` pgAdmin-style database browser
+from MVP to full feature parity with pgAdmin 4, DBeaver CE, TablePlus, and
+DataGrip.  Six phases: interactive data browsing (data grid, SQL editor, live
+refresh, object search), rich object inspection (DDL, FK relationships,
+constraints, column stats, EXPLAIN), power-user features (row editing, query
+history, saved queries, export, multi-connection), Postgres-specific object
+types (functions, triggers, sequences, enums, extensions), monitoring /
+administration dashboard, and ERD diagram generation.
+
+**Architecture principle:** All actions flow through `Established<P>` proof
+chains via `ArchiveDbBackend` traits. All three frontends (ratatui, browser,
+egui) consume the same `ArchiveNavModel` + descriptor types via the
+AccessKit IR layer.
+
+**Phases:**
+
+- **Phase 1 — Interactive data browsing:** data grid, SQL editor, live refresh, object search
+- **Phase 2 — Rich object inspection:** DDL viewer, FK descriptors, constraints, column stats, EXPLAIN
+- **Phase 3 — Power-user:** row edit, query history, saved queries, CSV/JSON export, multi-connection
+- **Phase 4 — Advanced PG object types:** functions, triggers, sequences, enums, extensions
+- **Phase 5 — Monitoring & admin:** live activity, role matrix, backup status, server settings
+- **Phase 6 — ERD diagram:** petgraph-based layout, SVG export, interactive egui/browser render
+
+---
+
+### elicit_geo_types Shadow Crate
+
+**Document:** [ELICIT_GEO_TYPES_PLAN.md](ELICIT_GEO_TYPES_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Complete the geo-types elicitation vocabulary (3 of 12 types done) and ship
+the `elicit_geo_types` shadow crate. The remaining 9 types (`Point`, `Triangle`, `LineString`,
+`Polygon`, `MultiPoint`, `MultiLineString`, `MultiPolygon`, `GeometryCollection`, `Geometry`
+enum) all compose cleanly from existing primitives: variable-length types delegate to
+`Vec<T>::elicit()`, `Polygon` is a two-field Survey, `Geometry` is a Select over variants.
+
+**Key Insight:** `Vec<T: Elicitation>` already has a full bool-gated loop impl — `LineString`,
+`MultiPoint`, etc. are essentially free once their inner types are elicitable. No registry
+pattern needed; pure value-type composition throughout.
+
+**Coverage:**
+
+- **Phase 2 (elicitation):** 9 new primitives in `crates/elicitation/src/primitives/geo_types/`
+- **Phase 4 (shadow crate):** `elicit_newtype!` + `reflect_methods` for all 12 types
+- **Phase 5 (MCP tools):** ~32 tools across 4 plugins (primitives, shapes, collections, geometry)
+- **Phase 6 (verification):** Kani roundtrip harnesses, Creusot trusted constructors, Verus structural proofs
+
+**Foundation for:** `elicit_geo` (algorithms), `elicit_geojson`, `elicit_wkt`, `elicit_wkb`,
+`elicit_georaster`, `elicit_rstar` — all depend on this vocabulary.
+
+---
+
+### elicit_geojson Shadow Crate
+
+**Document:** [ELICIT_GEOJSON_PLAN.md](ELICIT_GEOJSON_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Faithful shadow of the `geojson` crate’s actual document/value API:
+`GeoJson`, `Geometry`, `Value`, `Feature`, `FeatureCollection`, and
+`feature::Id`, plus explicit `geo-types` conversion tools. This is a document-format
+vocabulary, not a custom layout/export framework.
+
+**Key Insight:** GeoJSON should sit beside `geo_types`, `wkt`, and `wkb` as a
+serialization/document alphabet. The shadow crate should mirror upstream parse,
+display, constructor, property, and conversion behavior rather than inventing a
+parallel model.
+
+**Coverage:**
+
+- **Phase 2 (elicitation):** feature-gated support for upstream GeoJSON document/value types
+- **Phase 3 (shadow crate):** `elicit_geojson` wrappers + upstream-shaped workflow plugins
+- **Phase 4 (verification):** Kani / Creusot / Verus wrapper proofs and runner wiring
+
+---
+
+### elicit_georaster Shadow Crate
+
+**Document:** [ELICIT_GEORASTER_PLAN.md](ELICIT_GEORASTER_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Faithful shadow of the current `georaster` crate, which is centered on
+GeoTIFF/COG reading rather than a broad raster algebra model. The plan targets the
+real upstream surface: `Coordinate` re-export plus
+`geotiff::{GeoTiffReader, ImageInfo, Pixels, RasterValue}`.
+
+**Key Insight:** The earlier georaster plan overreached by inventing `Raster<T>`,
+`GeoTransform`, terrain analysis, and `ndarray` workflows that do not exist in the
+upstream crate. This integration should start with the actual reader/value API and
+defer aspirational raster processing abstractions.
+
+**Coverage:**
+
+- **Phase 2 (elicitation):** feature-gated support for upstream value types such as
+  `RasterValue` and `ImageInfo`
+- **Phase 3 (shadow crate):** `elicit_georaster` wrappers + reader/sampling MCP tools
+- **Phase 4 (verification):** Kani / Creusot / Verus proof wiring for the upstream-shaped surface
+
+---
+
+### Support Patterns Reference
+
+**Document:** [SUPPORT_PATTERNS.md](SUPPORT_PATTERNS.md)
+
+**Status:** ✅ Active Reference
+
+**Description:** Distilled implementation patterns for shadow crates: Trenchcoat
+(orphan-rule workaround via newtypes), Factory (generic type support via
+DynamicToolRegistry), StatefulPlugin (implicit state via UUID-keyed Arc<Mutex<>>
+maps), and a macro cheat-sheet for `#[elicit_tool]`, `elicit_newtype!`,
+`elicit_newtype_methods!`, and `#[reflect_methods]`.  Includes a decision tree,
+pattern interactions table, and common pitfalls.
+
+---
+
+### Kani Verification for VSMs
+
+**Document:** [KANI_FOR_VSMS.md](KANI_FOR_VSMS.md)
+
+**Status:** ✅ Active Reference
+
+**Description:** Operational guide for applying Kani model-checking to
+`VerifiedStateMachine` types. Explains why naïve `kani::any::<StateEnum>()`
+causes unbounded unwinding in CBMC, documents all approaches tried (and why
+they fail), and describes the per-variant harness solution in full detail.
+Covers `KaniVariantState`, `#[formal_method]` harness generation, `build.rs`
+manifest generation, the `elicit_proofs vsm` runner (including the critical
+`--lib` flag), real overflow bugs found by Kani, and step-by-step instructions
+for adding a new VSM to the proof suite.
+
+---
+
 ### Third-Party Crate Support Guide
 
 **Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)
@@ -99,37 +239,11 @@ pattern, and a copy-paste checklist. The `clap` integration is the canonical ref
 
 **Document:** [ELICIT_AXUM_PLAN.md](ELICIT_AXUM_PLAN.md)
 
-**Status:** 🔲 Planning
+**Status:** ✅ Complete
 
-**Description:** Complete harvesting of the axum web framework (Router, 20+ extractors,
-responses, handlers, middleware, Tower integration) as MCP tools for agent composition of
-web services. Three-crate architecture: `elicit_tower` (Service/Layer + 20+ middleware),
-`elicit_axum_core` (FromRequest/IntoResponse traits), `elicit_axum` (Router, handlers, serve).
-
-**Key Challenge:** Axum is trait-heavy with type-level composition - handlers inferred from
-function signatures, extractors composed via type parameters. Solution: dual representation
-with both **code generation tools** (emit Rust handlers/middleware) and **runtime tools**
-(manipulate pre-compiled components).
-
-**Coverage:**
-- **Routing:** Router, MethodRouter, MethodFilter, nesting, merging, fallbacks
-- **Extractors:** Path, Query, Json, Form, Multipart, WebSocket, State, 20+ built-ins
-- **Responses:** Json, Html, Redirect, SSE, AppendHeaders, tuple responses
-- **Handlers:** Handler trait, HandlerService, code generation builder
-- **Middleware:** from_fn, from_extractor, map_request/response, Next, builder
-- **Tower:** Service/Layer traits, 20+ tower-http middleware (CORS, compression, tracing, etc.)
-- **Server:** serve(), Listener trait, graceful shutdown, IncomingStream
-- **HTTP:** Full http crate re-exports (StatusCode, HeaderMap, Method, Uri)
-
-**Strategy:**
-- Three shadow crates with clear separation of concerns
-- Trait reflection for FromRequest/IntoResponse/Handler/Service/Layer
-- Workflow-based tool design (create service, add endpoint, apply middleware)
-- Code generation for handlers and middleware (agents emit Rust code)
-- Runtime composition of pre-compiled handlers
-- Kani/Creusot verification for composition contracts
-
-**Timeline:** 6 weeks, 11 phases, 400-500 MCP tools, ~20,000-25,000 LOC
+**Description:** Harvesting of the axum web framework (Router, extractors, responses,
+handlers, middleware, Tower integration) as MCP tools. Descriptor-registry + factory
+pattern. `elicit_tower` + `elicit_axum` both complete.
 
 ---
 
@@ -137,18 +251,74 @@ with both **code generation tools** (emit Rust handlers/middleware) and **runtim
 
 **Document:** [ELICIT_POLARS_PLAN.md](ELICIT_POLARS_PLAN.md)
 
-**Status:** 🔲 Planning
+**Status:** ✅ Complete
 
-**Description:** Pragmatic harvesting of polars DataFrame library (~70-80% of API is
-JSON-serializable). Four-plugin architecture: DataFrame operations (eager), LazyFrame
-query builder (lazy), Expr composition DSL, and SQL interface. Unlike closure-heavy
-libraries, polars was designed for serialization with full serde support.
+**Description:** 72 tools across 4 plugins (PolarsExprPlugin, PolarsDataFramePlugin,
+PolarsPipelinePlugin, PolarsSqlPlugin). Runtime Expr registry + dual-tracking, DataFrame
+runtime execution, pipeline descriptor + emit_main, SQLContext.
 
-**Key Advantage:** Polars' `Expr` type is a **serializable AST** - agents can build
+---
+
+### elicit_uom Shadow Crate
+
+**Document:** [ELICIT_UOM_PLAN.md](ELICIT_UOM_PLAN.md)
+
+**Status:** ✅ Complete
+
+**Description:** Units of Measurement (uom 0.38). Phase 3F.6 multi-parameter factory —
+18 registered quantities each with typed `HashMap<Uuid, uom::si::f64::Q>`. Shared
+QuantityBus enables cross-registration arithmetic (Length/Time→Velocity). ~55 tools.
+
+**Coverage:**
+
+- **UomQuantityPlugin (~40 tools):** 36 per-registration (18×new+emit), 5 query, 12 arithmetic, 1 convert
+- **UomCodePlugin (~15 tools):** 5 emit (conversion, calculation, formula, main, snippet) + 10 catalog
+- **Physics constants:** c, G, h, kB, NA, e, g, ε0
+- **Named formulas:** KineticEnergy, GravitationalPE, OhmsLaw, IdealGas, Momentum
+
+---
+
+### elicit_leptos Shadow Crate
+
+**Document:** [ELICIT_LEPTOS_PLAN.md](ELICIT_LEPTOS_PLAN.md)
+
+**Status:** ✅ Complete (84 tools, 2 plugins)
+
+**Description:** Leptos 0.8 reactive web framework. StatefulPlugin for server-side reactive
+primitives + DescriptorPlugin for code generation. ~75 tools.
+
+**Architecture:**
+
+- **`LeptosReactivePlugin`** (StatefulPlugin): `LeptosReactiveContext` holds an `Owner` scope,
+  `HashMap<Uuid, RwSignal<Value>>` signals, memos, actions. Uses `leptos ssr` feature — fully
+  server-side, no WASM. Tools: signal CRUD, memo derivation, context provide/use, actions.
+- **`LeptosCodePlugin`** (DescriptorPlugin): Pure code generation for all macro surfaces.
+  `LeptosComponentDescriptor`, `LeptosViewNode`, `LeptosRouteDescriptor`, `LeptosAppDescriptor`
+  descriptors feed into emit tools.
+
+**Coverage:**
+
+- **Reactive (~22 tools):** signals (8), memos (4), context (4), actions (4), owner (2)
+- **Components (~8 tools):** descriptor create/build/emit, `#[component]`, `#[island]`
+- **View (~12 tools):** parametric `element_emit`, Show, For, Suspense, Transition, ErrorBoundary, bindings, closures
+- **Server fns (~7 tools):** `#[server]`, Resource, Action, ServerAction, ActionForm
+- **Routing (~8 tools):** Router/Routes/Route descriptors, use_params, use_navigate
+- **Meta (~4 tools):** Title, Meta, Link, Stylesheet via leptos_meta
+- **Scaffolding (~8 tools):** App descriptor → emit_main_rs, emit_cargo_toml, emit_all
+- **Catalog (~6 tools):** HTML tags, leptos components, events, features, starter templates
+
+**Key decisions:**
+
+- One parametric `element_emit(tag, attrs, events, children)` replaces 140 per-element tools
+- `leptos features = ["ssr"]` — reactive_graph works server-side, no browser/WASM needed
+- Macros (`#[component]`, `view!`, `#[server]`, `#[island]`) are emit tools, not runtime wrappers
+- Closures (`on:click`, `class:active`, `{move || ...}`) follow closure-as-fragment pattern
+
 complex queries by composing JSON-serializable expressions. No code generation needed,
 just data structure composition.
 
 **Coverage:**
+
 - **DataFrame (eager):** 40+ operations - select, filter, join, group_by, I/O (CSV/Parquet/JSON/IPC)
 - **LazyFrame (lazy):** 25+ operations - scan, transform, optimize, collect, streaming
 - **Expr DSL:** 30+ tools - col, lit, binary ops, aggregations, string/temporal/list methods
@@ -156,6 +326,7 @@ just data structure composition.
 - **Data Types:** Full dtype system (numeric, temporal, nested, categorical)
 
 **What's Serializable:**
+
 - ✅ All DataFrame/LazyFrame operations (params are primitives/structs)
 - ✅ Expr is `#[derive(Serialize, Deserialize)]` - full AST composition
 - ✅ ~200 built-in functions (sum, mean, string ops, temporal ops)
@@ -163,11 +334,13 @@ just data structure composition.
 - ✅ I/O operations (file paths + option structs)
 
 **What's NOT (closures):**
+
 - ❌ `df.apply(|series| custom(series))` - ~20% of API
 - ❌ `expr.map(|col| custom(col))` - custom UDFs
 - ❌ Object columns (require trait impls)
 
 **Strategy:**
+
 - UUID-keyed registries for DataFrame/LazyFrame handles
 - Direct Expr serialization (agents build JSON ASTs)
 - SQL as high-level escape hatch for complex queries
@@ -195,6 +368,7 @@ Leptos), no trait-heavy API requiring factory pattern (unlike num-traits), no as
 are dual-mode (both runtime execution and code emission).
 
 **Coverage:**
+
 - **Matrix Operations (120 dual-mode):** Creation, arithmetic, transformations, slicing, properties, solvers, norms
 - **Vector Operations (80 dual-mode):** Creation, arithmetic, geometric (dot, cross, normalize), properties
 - **Geometric Types (80 dual-mode):** Rotations (2D/3D, quaternions, Euler angles), translations, isometries, similarities, transforms, projections
@@ -203,6 +377,7 @@ are dual-mode (both runtime execution and code emission).
 - **Runtime Handles (60):** UUID registries for persistent matrices, vectors, decompositions, transforms
 
 **Strategy:**
+
 - Single shadow crate: `elicit_nalgebra`
 - Dual-mode dominance: 350/480 tools (73%) with `emit = Auto` + CustomEmit
 - Natural JSON serialization: matrices → nested arrays, vectors → arrays, rotations → quaternions
@@ -231,6 +406,7 @@ N-dimensional arrays like NumPy rather than linear algebra. Wider adoption as th
 Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 
 **Coverage:**
+
 - **Array Creation (60 dual-mode):** From data, ranges, special values (zeros/ones/eye), random, iterators
 - **Indexing & Slicing (50 dual-mode):** Element access, slicing with s! macro, views, iteration
 - **Arithmetic (50 dual-mode):** Element-wise binary/unary ops, scalar ops, comparisons, logical
@@ -243,6 +419,7 @@ Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 - **Runtime Handles (40):** UUID registries for persistent arrays (ArcArray), views, iterators
 
 **Strategy:**
+
 - Single shadow crate: `elicit_ndarray`
 - Dual-mode dominance: 400/520 tools (77%) with `emit = Auto` + CustomEmit
 - Natural JSON serialization: arrays → nested arrays, shape metadata, row-major layout
@@ -253,6 +430,7 @@ Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 - NumPy compatibility: Familiar API for Python → Rust migrations
 
 **Comparison to nalgebra:**
+
 - nalgebra: Linear algebra focus, geometric types (rotations, quaternions), decompositions
 - ndarray: General N-D arrays, broadcasting, NumPy-style API, scientific computing foundation
 - Both "straightforward": Natural serialization, synchronous ops, concrete methods, clear taxonomy
@@ -278,11 +456,13 @@ OpenType features/variations, bidirectional text (RTL/LTR), Unicode line breakin
 Foundation for linebender ecosystem (xilem, masonry, vello).
 
 **Coverage:**
+
 - **Runtime Context Management (160 tools):** FontContext/LayoutContext creation, builder workflow (one-shot operations due to lifetimes), layout operations (break lines, align), line/run/glyph queries, font database inspection
 - **Dual-Mode Style Tools (180 tools):** 23 StyleProperty variants (font family, size, weight, style, variations, features, underline, strikethrough, line height, letter spacing, word spacing, locale, brush/color), text ranges, alignment types, line break rules, layout serialization (positioned glyphs with coordinates)
 - **Fragment Tools (40 tools):** Context construction code, builder code generation, layout computation code, complete assembly
 
 **Strategy:**
+
 - Single shadow crate: `elicit_parley`
 - Runtime-heavy: 160/380 tools (42%) due to stateful contexts + lifetime-bound builders
 - Dual-mode emphasis: 180/380 (47%) for style creation and layout serialization
@@ -291,6 +471,7 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - SimpleBrush: Fixed RGBA color type (avoids generic Brush trait complexity)
 
 **Typography Features:**
+
 - **Text Shaping:** HarfBuzz integration, glyph positioning, kerning, ligatures
 - **OpenType:** Font features (kern, liga, calt, etc.), variation axes (weight, width)
 - **Bidirectional:** RTL/LTR text, Arabic, Hebrew, Unicode normalization
@@ -298,6 +479,7 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - **Font Control:** Font family stacks, weight (100-900), style (normal/italic/oblique), stretch
 
 **Comparison to taffy:**
+
 - **Shared traits:** Stateful by design, CSS-like properties, synchronous operations, natural JSON serialization, visual domains
 - **Different domains:** Box layout (flexbox/grid) vs text layout (shaping/breaking)
 - **Output:** Box positions (x/y/width/height) vs glyph positions (x/y/advance/cluster)
@@ -305,11 +487,81 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - **Tool distribution:** taffy runtime 53%, parley runtime 42%; taffy dual-mode 35%, parley dual-mode 47%
 
 **Integration:**
+
 - xilem/masonry: AI-generated rich text layouts, typography exploration
 - vello: GPU-rendered text generation, vector text for design tools
 - Custom renderers: PDF generation, canvas rendering, game engine text, terminal UI
 
 **Timeline:** 6 phases, 380 MCP tools
+
+---
+
+### GAAP Ledger Integration
+
+**Document:** [GAAP_LEDGER_INTEGRATION.md](GAAP_LEDGER_INTEGRATION.md)
+
+**Status:** ✅ Complete (Phases 1-3, 5)
+
+**Description:** Applying Generally Accepted Accounting Principles (GAAP) to the typestate
+ledger system through proof-carrying propositions with formal spec references. Mirrors the
+WCAG constraint pattern from `elicit_ui` - where UI verification references WCAG standards,
+ledger verification will reference FASB ASC (Accounting Standards Codification).
+
+**Completed:** 9 GAAP proposition types (P0/P1/P2 priority levels), validation functions,
+comprehensive test suite (39 tests), research document. Phase 4 (Transfer integration)
+deferred - validation functions work independently and can be integrated when needed.
+
+**Key Deliverables:**
+
+- ✅ Research document: GAAP principles applicable to double-entry bookkeeping
+- ✅ `src/ledger/gaap.rs`: Proposition types with ASC references (887 lines)
+- ✅ Validation functions returning `Result<Established<P>, ValidationError>`
+- ⏸️ Integration with `Transfer<T>` typestate workflow (deferred)
+- ✅ Composite proof types demonstrated in tests
+- ⏸️ User guide (inline documentation is comprehensive)
+
+**Commit:** 2d64d721
+
+---
+
+### GAAP-Native Ledger Architecture
+
+**Document:** [GAAP_NATIVE_LEDGER.md](GAAP_NATIVE_LEDGER.md)
+
+**Status:** 📋 Planning - Ready for Review
+
+**Description:** Evolution from POC ledger to production-grade accounting system where
+**GAAP is the IR** (Intermediate Representation). Account types (Asset/Liability/Equity/
+Revenue/Expense) are primitive, not validation layers. Typesafe state machines constrain
+financial transactions to provable transitions. Building broad foundation for full
+accounting services: chart of accounts, financial statements, period closing, multi-entity,
+AI-assisted classification, audit trail.
+
+**Vision:**
+
+1. **GAAP as IR** - Account classes are foundational types, not post-hoc validation
+2. **Typesafe state machines** - `JournalEntry<Draft/Balanced/Posted/Closed>`
+3. **Double-entry by construction** - Builder pattern enforces balance before creation
+4. **Matching principle by design** - Revenue recognition types enforce temporal matching
+5. **AI-assisted accounting** - Classify transactions, suggest journal entries, match expenses
+6. **Audit-ready** - Every entry carries GAAP proof from construction through commit
+
+**Architecture:**
+
+- Chart of Accounts with GAAP account types (Asset/Liability/Equity/Revenue/Expense)
+- Journal Entry builder enforcing double-entry balance
+- Financial statements by projection (Balance Sheet, Income Statement, Cash Flow)
+- Period closing with retained earnings calculation
+- Multi-entity support with consolidation
+- AI-powered transaction classification (ASC 606 revenue recognition)
+- Complete audit trail with GAAP compliance metadata
+
+**Timeline:** 20 weeks (5 months), 10 phases
+
+**Migration:** Coexist with POC ledger (`ledger` vs `ledger2`), migrate incrementally,
+adapter pattern for `Transfer → JournalEntry` conversion
+
+**Next Step:** Architecture review and approval, then begin Phase 1 (GAAP Types foundation)
 
 ---
 
@@ -323,3 +575,124 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 the structural type graph, the prompt tree, the assembled-prompt flat view, and
 the AccessKit bridge. Explains how the three views interlock, which feature flag
 enables each, and when to reach for each API.
+
+---
+
+### elicit_db Interface Crate
+
+**Document:** [ELICIT_DB_PLAN.md](ELICIT_DB_PLAN.md)
+
+**Status:** 📋 Planning
+
+**Role:** Interface crate (like `elicit_ui`, not a shadow crate). Defines the domain
+boundary for database interactions — Props, typestate markers, and traits that both
+DB implementations and consumers (axum, leptos server fns, UI) program against.
+No DB driver dependency. No MCP tools. Pure contracts vocabulary.
+
+**Standards stack:**
+
+- ISO/IEC 9075 (SQL semantics — DDL/DML/constraints/views)
+- ANSI isolation model (Read Committed → Serializable, phenomena P0–P3)
+- PostgreSQL docs (MVCC, advisory locks, WAL — execution truth)
+- ISO/IEC 27001 (access control, audit, least privilege, encryption)
+- PostgreSQL wire protocol + IETF RFC 7159 (transport)
+- OpenTelemetry specification (observability)
+
+**Contract modules:** `iso_sql`, `isolation`, `postgres`, `information_schema`,
+`security`, `recovery`, `transport`, `observability`
+
+**Key types:**
+
+- Props: `TableCreated`, `ConstraintSatisfied`, `Serializable`, `AuditLogged`,
+  `MVCCSnapshotValid`, `AdvisoryLockHeld`, `WALReplayable`, `TraceEmitted`, etc.
+- Typestate: `Transaction<Open/Committed/RolledBack>`, `Query<Prepared/Executed>`
+- Traits: `DbConnection`, `DbTransaction`
+- Composites: `AcidCommitted`, `PgSafeWrite`
+
+**elicitation primitives** (`db-types` feature): `IsolationLevel`, `DbOperation`,
+`DbQueryDescriptor`, `DbSchemaDescriptor`, `DbMigrationDescriptor`
+
+**Deferred:** `elicit_sqlx` (MCP tools), ORM wrappers, migration tooling, connection pooling
+
+---
+
+### elicit_bevy Shadow Crate
+
+**Document:** [ELICIT_BEVY_PLAN.md](ELICIT_BEVY_PLAN.md)
+
+**Status:** 📋 Planning
+
+**Target:** Bevy 0.18.1 — complete API surface coverage
+
+**Description:** Full elicitation coverage for the Bevy game engine. Three layers:
+Phase 2 primitive types (math, color, transform, render enums, window, input, UI, time,
+audio, animation, PBR, sprite, text, camera, picking — ~170 types across 17 modules);
+Phase 3 shadow crate with 8 plugins (~130 MCP tools for ECS code-gen, app/plugin
+descriptor-registry, Query/Handle factory); Phases 4–6 Kani/Creusot/Verus proofs.
+
+**Mechanisms:** Select (56 types) · Survey (123 types) · Fragment (30 tools) · Factory (9 tools) · Descriptor-registry (14 tools)
+
+**Key 0.18 notes:** `RenderTarget` is now a required component (not a Camera field);
+lights/camera/mesh/shader are separate feature crates; `#[reflect(...)]` parentheses-only;
+`SimpleExecutor` removed; `ScatteringMedium` + `Atmosphere` are new 0.18 types.
+
+**Phases:**
+
+- **Phase 1** — Workspace: add bevy dep, create elicit_bevy skeleton
+- **Phase 2** — elicitation primitives: 17 module files under `primitives/bevy_types/`
+- **Phase 3A–3H** — Shadow crate: newtypes, 8 workflow plugins (~130 tools)
+- **Phase 4** — Kani proofs for math/transform/color/window types
+- **Phase 5** — Creusot proofs: post-conditions on Survey types
+- **Phase 6** — Verus proofs: invariants for config structs
+
+---
+
+### elicit_surrealdb Shadow Crate
+
+**Document:** [ELICIT_SURREALDB_PLAN.md](ELICIT_SURREALDB_PLAN.md)
+
+**Target:** SurrealDB 3.0.5 — complete API surface coverage
+
+**Description:** Full elicitation coverage for SurrealDB, a scalable multi-model
+document-graph database. Unlike Bevy, the primary agent output is **SurrealQL strings**
+(DDL/DML) and Rust SDK setup code. Five plugins (~95 tools) across three categories:
+fragment/descriptor DDL emitters (SurrealSchemaPlugin, SurrealCrudPlugin,
+SurrealConnectionPlugin) and stateful workflow plugins (SurrealSelectPlugin,
+SurrealTransactionPlugin). Phase 2 adds nine trenchcoat newtypes for value types
+(`DbValue`, `SurrealRecordId`, `SurrealNumber`, `SurrealGeometry`, `SurrealDatetime`,
+`SurrealDuration`, `SurrealKind`, `SurrealTable`, `SurrealPatchOp`) under the
+`surreal-types` feature.
+
+**Phases:**
+
+- **Phase 1** — Workspace: add surrealdb/surrealdb-types deps, create elicit_surrealdb skeleton
+- **Phase 2** — elicitation primitives: 9 type files under `primitives/surreal_types/`
+- **Phase 3A** — Shadow types: `types.rs`, `auth.rs`, `config.rs`
+- **Phase 3B** — `SurrealSchemaPlugin`: 32+ DDL tools (DEFINE/REMOVE)
+- **Phase 3C** — `SurrealCrudPlugin`: 28 DML + SDK snippet tools
+- **Phase 3D** — `SurrealConnectionPlugin`: 20 connection/auth tools
+- **Phase 3E** — `SurrealSelectPlugin`: 16 stateful SELECT builder tools
+- **Phase 3F** — `SurrealTransactionPlugin`: 9 stateful transaction block tools
+- **Phase 3G** — `trait_factories.rs`: SurrealValue factory
+- **Phase 4** — Kani proofs: 6 roundtrip harnesses for Phase 2 types
+
+### `elicitation generate` CLI Feature
+
+**File:** `ELICITATION_GENERATE_PLAN.md`
+
+Replaces the manual `build.rs` approach for generating formal verification proof
+files. The `elicitation generate` CLI subcommand uses **syn source scanning** to
+discover VSMs (`#[derive(VerifiedStateMachine)]`, `#[vsm(transitions = [...])]`) and
+their invariants (`#[derive(Prop)] #[prop(...)]`) without compiling the scanned crate.
+This eliminates the toolchain segregation problem: Verus cannot compile
+`elicit_server` (tokio/sqlx/axum), but the CLI reads source files and generates
+inline-stub Verus mirrors that only depend on `vstd`.
+
+**Phases:**
+
+- **Phase 1** — Scanner: syn-based `VsmDescriptor` extraction from any crate path
+- **Phase 2** — Kani generator: replaces `elicit_proofs/build.rs` Kani generation
+- **Phase 3** — Verus generator: `verus_inv_body` on `#[prop]`, inline type stubs,
+  `elicitation_verus/src/vsm/` output, no `elicit_server` dep in `elicitation_verus`
+- **Phase 4** — Creusot generator
+- **Phase 5** — Remove `elicit_proofs/build.rs` entirely

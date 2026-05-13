@@ -1,782 +1,274 @@
 # ELICIT_WGPU_PLAN.md
 
 ## Goal
-Add complete wgpu support to elicitation as GPU alphabet:
-1. **Core type integration** — wgpu types in `elicitation` with feature gating
-2. **Shadow crate** — `elicit_wgpu` with MCP tools for the entire wgpu API (~200+ operations)
+
+Add wgpu 29 support to elicitation as a GPU code-generation alphabet:
+
+1. **Core type integration** -- serializable wgpu descriptor/enum types in `elicitation` with feature gating
+2. **Shadow crate** -- `elicit_wgpu` with MCP tools for GPU code generation (~30 tools across 5 plugins)
+
+## Design Constraint: Code-Generation Only
+
+Unlike `elicit_rstar` or `elicit_proj`, wgpu GPU handles (`Device`, `Buffer`, `Texture`, `Queue`, etc.)
+hold live GPU resources -- they cannot be serialized, snapshotted, or stored in a `HashMap<Uuid, T>` registry.
+
+`elicit_wgpu` is **code-generation only**: every tool receives a descriptor (as JSON) and returns a
+Rust code string that, when compiled and run in a wgpu app, produces the described GPU resource or pipeline.
+
+Live execution of GPU commands is out of scope.
 
 ## Architecture Overview
 
-Following established patterns from elicit_chrono, elicit_tokio, elicit_url:
-- **Core**: Feature-gated wgpu types with Select enums and Elicitation impls
-- **Shadow crate**: 12 workflow plugins covering 125+ types and 203 methods
-- **GPU alphabet**: Foundation for windowing (winit) + rendering workflows
+Following the pattern from `elicit_winit` (code-gen only, no live state):
 
-## API Coverage
+- **elicitation Phase 2**: Serializable enums and descriptor structs as trenchcoat wrappers
+- **elicit_wgpu shadow crate**: 5 workflow plugins, each emitting Rust code strings
+- **Proof wiring**: Kani/Creusot/Verus coverage for Phase 2 types
 
-wgpu provides:
-- **GPU initialization**: Instance, Adapter, Device, Queue
-- **Resource management**: Buffer, Texture, Sampler
-- **Shader compilation**: WGSL, SPIR-V
-- **Pipeline configuration**: RenderPipeline, ComputePipeline
-- **Command encoding**: CommandEncoder, RenderPass, ComputePass
-- **Binding resources**: BindGroup, BindGroupLayout
-- **Surface presentation**: Surface, SwapChain
+## wgpu Version
 
-**Total API surface**: ~125 types, 203 methods → ~124 MCP tools across 12 plugins
+**Target: wgpu 29.0.1** (previous plan referenced 27 -- obsolete).
+
+Key API notes verified against 29.0.1:
+
+- `DeviceDescriptor` has fields: `label`, `required_features`, `required_limits`, `memory_hints`, `experimental_features`, `trace`
+- `SurfaceConfiguration` has `desired_maximum_frame_latency` and `alpha_mode` fields
+- `Face` is the cull-mode enum (not `CullMode`) -- variants `Back` and `Front`
+- `PolygonMode` has `Fill`, `Line`, `Point` variants
+- Serialized forms (verified with serde feature):
+  - `TextureFormat::Rgba8Unorm` -> `"rgba8unorm"` (lowercase)
+  - `PrimitiveTopology::TriangleList` -> `"triangle-list"` (kebab)
+  - `FrontFace::Ccw` -> `"ccw"`
+  - `FilterMode::Nearest` -> `"nearest"`
+  - `BufferUsages::UNIFORM` -> `"UNIFORM"` (uppercase)
+  - `ShaderStages::VERTEX` -> `"VERTEX"`
+  - `Extent3d` -> `{"width":N,"height":N,"depthOrArrayLayers":N}`
+  - `Color` -> `{"r":0.0,"g":0.0,"b":0.0,"a":1.0}`
+  - `Origin3d` -> `{"x":0,"y":0,"z":0}`
+  - `TextureSampleType::Float` -> `{"Float":{"filterable":true}}`
 
 ## Phase 1: Workspace Configuration
 
-### Files to modify:
+### Files to modify
+
 - `Cargo.toml` (workspace root)
 - `crates/elicitation/Cargo.toml`
 
-### Changes:
+### Changes
 
 **1.1 Add wgpu to workspace dependencies**:
+
 ```toml
-# GPU rendering
-wgpu = { version = "27.0", default-features = false, features = ["wgsl", "spirv"] }
+wgpu = { version = "29", default-features = false, features = ["wgsl", "serde"] }
 ```
 
-**1.2 Add elicit_wgpu member**:
+**1.2 Add `elicit_wgpu` workspace member** in root `Cargo.toml` members list.
+
+**1.3 Add `elicit_wgpu` workspace dependency entry**:
+
 ```toml
-  "crates/elicit_wgpu",
+elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 ```
 
-**1.3 Add elicit_wgpu workspace dependency**:
-```toml
-elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.9.1" }
+**1.4 Add `wgpu-types` feature to `elicitation`**:
+
+- Add optional dep: `wgpu = { workspace = true, optional = true }`
+- Add feature: `wgpu-types = ["dep:wgpu"]`
+- Add `"wgpu-types"` to the `full` feature bundle
+
+## Phase 2: Core Type Integration in `elicitation`
+
+### Files to create
+
+- `crates/elicitation/src/primitives/wgpu_types/` (directory, 4 files)
+- `crates/elicitation/src/type_spec/wgpu_specs.rs`
+- `crates/elicitation/tests/wgpu_types_test.rs`
+
+### Files to modify
+
+- `crates/elicitation/src/lib.rs`
+- `crates/elicitation/src/primitives/mod.rs`
+- `crates/elicitation/src/type_spec/mod.rs`
+
+### Target types (all have `serde` support in wgpu 29)
+
+**2.1 Pure enums** -- `select_trenchcoat!(T, as WgpuT, serde)`:
+
+- `TextureFormat` -> `WgpuTextureFormat`
+- `PresentMode` -> `WgpuPresentMode`
+- `PowerPreference` -> `WgpuPowerPreference`
+- `TextureDimension` -> `WgpuTextureDimension`
+- `TextureViewDimension` -> `WgpuTextureViewDimension`
+- `PrimitiveTopology` -> `WgpuPrimitiveTopology`
+- `FrontFace` -> `WgpuFrontFace`
+- `Face` -> `WgpuFace` (cull mode)
+- `PolygonMode` -> `WgpuPolygonMode`
+- `CompareFunction` -> `WgpuCompareFunction`
+- `BlendFactor` -> `WgpuBlendFactor`
+- `BlendOperation` -> `WgpuBlendOperation`
+- `IndexFormat` -> `WgpuIndexFormat`
+- `StencilOperation` -> `WgpuStencilOperation`
+- `VertexStepMode` -> `WgpuVertexStepMode`
+- `VertexFormat` -> `WgpuVertexFormat`
+- `AddressMode` -> `WgpuAddressMode`
+- `FilterMode` -> `WgpuFilterMode`
+- `SamplerBorderColor` -> `WgpuSamplerBorderColor`
+- `CompositeAlphaMode` -> `WgpuCompositeAlphaMode`
+- `Backend` -> `WgpuBackend`
+
+**2.2 Bitflag types** -- also `select_trenchcoat!(T, as WgpuT, serde)` since wgpu bitflags have serde:
+
+- `BufferUsages` -> `WgpuBufferUsages`
+- `TextureUsages` -> `WgpuTextureUsages`
+- `ShaderStages` -> `WgpuShaderStages`
+- `ColorWrites` -> `WgpuColorWrites`
+
+**2.3 Struct types** -- full `Elicitation` / `ElicitIntrospect` / `ElicitPromptTree` / `ToCodeLiteral` impls:
+
+- `Extent3d` -> `WgpuExtent3d`
+- `Color` -> `WgpuColor`
+- `Origin3d` -> `WgpuOrigin3d`
+
+### Module layout
+
+```
+crates/elicitation/src/primitives/wgpu_types/
+|-- mod.rs         # pub use all 27 types
+|-- enums.rs       # 21 pure enum select_trenchcoat wrappers
+|-- bitflags.rs    # 4 bitflag select_trenchcoat wrappers
+````-- structs.rs     # WgpuExtent3d, WgpuColor, WgpuOrigin3d
 ```
 
-**1.4 Add wgpu feature to elicitation**:
-- Add optional dependency: `wgpu = { workspace = true, optional = true }`
-- Add feature: `wgpu = ["dep:wgpu"]`
-- Update `full` feature to include `"wgpu"`
+### Type-spec
 
-## Phase 2: Core Type Integration
+`crates/elicitation/src/type_spec/wgpu_specs.rs` -- `ElicitSpec` + `ElicitComplete` registration for all 27 types.
 
-### Files to create/modify:
-- `crates/elicitation/src/wgpu_types.rs` (new)
-- `crates/elicitation/src/lib.rs` (modify)
+## Phase 3: `elicit_wgpu` Shadow Crate
 
-### Type Support Strategy:
+Code-gen only -- no snapshot registries, no `Arc<Mutex<HashMap<Uuid, T>>>`.
 
-**2.1 Simple Enums** (use `select_trenchcoat!` macro):
-
-77 TextureFormat variants:
-```rust
-select_trenchcoat!(wgpu::TextureFormat, as TextureFormatSelect, serde);
-```
-
-Other key enums:
-- PresentMode (Fifo, Mailbox, Immediate, FifoRelaxed)
-- PowerPreference (None, LowPower, HighPerformance)
-- Backend (Vulkan, Metal, Dx12, Gl, BrowserWebGpu, WebGpu)
-- CompareFunction (Never, Less, Equal, etc.)
-- PrimitiveTopology (PointList, LineList, TriangleList, etc.)
-- FrontFace (Ccw, Cw)
-- CullMode (Front, Back, None)
-- BlendOperation (Add, Subtract, ReverseSubtract, Min, Max)
-- TextureDimension (D1, D2, D3)
-- TextureViewDimension (D1, D2, D2Array, Cube, CubeArray, D3)
-- StencilOperation (~8 variants)
-- BindingType (~7 variants)
-
-**Total: ~15 enums with 100+ combined variants**
-
-**2.2 Bitflag Structs** (manual `Elicitation` impl):
-- Features (25+ flags)
-- ShaderStages (Vertex, Fragment, Compute)
-- TextureUsages (CopyDst, CopySrc, RenderAttachment, etc.)
-- BufferUsages (MapRead, MapWrite, CopySrc, CopyDst, Uniform, Storage, etc.)
-- ColorWrites (Red, Green, Blue, Alpha)
-
-**2.3 Complex Descriptors** (builder-style `Elicitation` impl):
-- DeviceDescriptor
-- BufferDescriptor
-- TextureDescriptor
-- SamplerDescriptor
-- BindGroupLayoutDescriptor
-- RenderPipelineDescriptor
-- ComputePipelineDescriptor
-- CommandEncoderDescriptor
-
-### Implementation Pattern:
-
-```rust
-// crates/elicitation/src/wgpu_types.rs
-#![cfg(feature = "wgpu")]
-
-use wgpu::{TextureFormat, PresentMode, PowerPreference};
-
-// Simple enums
-select_trenchcoat!(wgpu::TextureFormat, as TextureFormatSelect, serde);
-select_trenchcoat!(wgpu::PresentMode, as PresentModeSelect, serde);
-select_trenchcoat!(wgpu::PowerPreference, as PowerPreferenceSelect, serde);
-
-// Bitflags - custom Elicitation impl
-impl Elicitation for wgpu::Features {
-    type Error = String;
-    async fn elicit(ctx: &mut ElicitationContext) -> Result<Self, Self::Error> {
-        // Guided multi-select for feature flags
-    }
-}
-
-// Complex descriptors - builder pattern
-impl Elicitation for wgpu::DeviceDescriptor<'static> {
-    type Error = String;
-    async fn elicit(ctx: &mut ElicitationContext) -> Result<Self, Self::Error> {
-        // Step-by-step builder configuration
-    }
-}
-```
-
-**2.4 Export from lib.rs**:
-```rust
-#[cfg(feature = "wgpu")]
-pub mod wgpu_types;
-
-#[cfg(feature = "wgpu")]
-pub use wgpu_types::{
-    TextureFormatSelect, PresentModeSelect, PowerPreferenceSelect,
-    // ... all other exports
-};
-```
-
-## Phase 3: Create elicit_wgpu Shadow Crate
-
-### Directory Structure:
+### Directory structure
 
 ```
 crates/elicit_wgpu/
-├── Cargo.toml
-├── README.md
-├── src/
-│   ├── lib.rs
-│   ├── instance.rs         (Instance wrapper)
-│   ├── adapter.rs          (Adapter wrapper)
-│   ├── device.rs           (Device wrapper)
-│   ├── queue.rs            (Queue wrapper)
-│   ├── buffer.rs           (Buffer wrapper)
-│   ├── texture.rs          (Texture wrapper + TextureView)
-│   ├── sampler.rs          (Sampler wrapper)
-│   ├── shader.rs           (ShaderModule wrapper)
-│   ├── pipeline.rs         (RenderPipeline, ComputePipeline)
-│   ├── binding.rs          (BindGroup, BindGroupLayout)
-│   ├── command.rs          (CommandEncoder wrapper)
-│   ├── render_pass.rs      (RenderPass wrapper)
-│   ├── compute_pass.rs     (ComputePass wrapper)
-│   ├── surface.rs          (Surface wrapper)
-│   └── workflow/
-│       ├── mod.rs
-│       ├── init_plugin.rs          (~8 tools: Instance, Adapter, Device setup)
-│       ├── resources_plugin.rs     (~10 tools: Buffer, Texture, Sampler)
-│       ├── shader_plugin.rs        (~6 tools: ShaderModule, compilation)
-│       ├── pipeline_plugin.rs      (~12 tools: RenderPipeline, ComputePipeline)
-│       ├── binding_plugin.rs       (~8 tools: BindGroup, BindGroupLayout)
-│       ├── command_plugin.rs       (~15 tools: CommandEncoder operations)
-│       ├── render_pass_plugin.rs   (~25 tools: RenderPass methods)
-│       ├── compute_pass_plugin.rs  (~8 tools: ComputePass methods)
-│       ├── surface_plugin.rs       (~6 tools: Surface configuration)
-│       ├── queue_plugin.rs         (~4 tools: Queue submit, write)
-│       ├── enums_plugin.rs         (~10 tools: Enum selectors)
-│       └── workflow_plugin.rs      (~12 tools: High-level workflows)
-└── tests/
-    └── wgpu_test.rs
+|-- Cargo.toml
+|-- src/
+|   |-- lib.rs
+|   `-- workflow/
+|       |-- mod.rs
+|       |-- init_plugin.rs        # Instance/Adapter/Device/Surface setup code (~8 tools)
+|       |-- resource_plugin.rs    # Buffer/Texture/Sampler descriptor code (~8 tools)
+|       |-- pipeline_plugin.rs    # RenderPipeline/vertex layout/blend state code (~8 tools)
+|       |-- shader_plugin.rs      # WGSL boilerplate and shader module setup (~4 tools)
+|       `-- compute_plugin.rs     # ComputePipeline and bind group layout code (~4 tools)
+`-- tests/
+    `-- workflow_test.rs
 ```
 
-### Cargo.toml:
+### No direct dep:wgpu needed -- all types accessed via `elicitation::WgpuTextureFormat` etc
 
-```toml
-[package]
-name = "elicit_wgpu"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-authors.workspace = true
-homepage.workspace = true
-documentation.workspace = true
-readme = "README.md"
-description = "Elicitation-enabled wgpu wrappers with comprehensive MCP tools for GPU operations"
-keywords = ["mcp", "wgpu", "gpu", "graphics", "elicitation"]
-categories = ["graphics", "rendering", "development-tools"]
+### Plugin inventory (5 plugins, ~32 tools)
 
-[dependencies]
-elicitation = { workspace = true, features = ["wgpu"] }
-elicitation_derive.workspace = true
-elicitation_macros.workspace = true
-wgpu = { workspace = true }
-inventory.workspace = true
-rmcp.workspace = true
-schemars.workspace = true
-serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
-tracing.workspace = true
-uuid = { workspace = true }
-futures = { workspace = true }
+**WgpuInitPlugin** (`wgpu_init__*`, ~8 tools):
 
-# Code emission
-proc-macro2 = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
+- `wgpu_init__instance_descriptor` -- emit `InstanceDescriptor{backends: Backends::all()}`
+- `wgpu_init__instance_new` -- emit `wgpu::Instance::new(InstanceDescriptor{...})`
+- `wgpu_init__adapter_options` -- emit `RequestAdapterOptions{power_preference, ...}`
+- `wgpu_init__request_adapter` -- emit `instance.request_adapter(RequestAdapterOptions{...}).await`
+- `wgpu_init__device_descriptor` -- emit `DeviceDescriptor{required_features, required_limits, ...}`
+- `wgpu_init__request_device` -- emit `adapter.request_device(&DeviceDescriptor{...}, None).await`
+- `wgpu_init__surface_config` -- emit full `SurfaceConfiguration{...}` block
+- `wgpu_init__surface_configure` -- emit `surface.configure(&device, config)`
 
-[dev-dependencies]
-tokio = { workspace = true }
-pollster = "0.4"
+**WgpuResourcePlugin** (`wgpu_resource__*`, ~8 tools):
 
-[features]
-emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+- `wgpu_resource__buffer_descriptor` -- emit `BufferDescriptor{size, usage, ...}`
+- `wgpu_resource__create_buffer` -- emit `device.create_buffer(&BufferDescriptor{...})`
+- `wgpu_resource__texture_descriptor` -- emit `TextureDescriptor{size, format, usage, ...}`
+- `wgpu_resource__create_texture` -- emit `device.create_texture(&TextureDescriptor{...})`
+- `wgpu_resource__texture_view` -- emit `texture.create_view(&TextureViewDescriptor::default())`
+- `wgpu_resource__sampler_descriptor` -- emit `SamplerDescriptor{address_mode_*, filter, ...}`
+- `wgpu_resource__create_sampler` -- emit `device.create_sampler(&SamplerDescriptor{...})`
+- `wgpu_resource__write_buffer` -- emit `queue.write_buffer(&buffer, 0, bytemuck::cast_slice(data))`
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
-```
+**WgpuPipelinePlugin** (`wgpu_pipeline__*`, ~8 tools):
 
-### lib.rs structure:
+- `wgpu_pipeline__vertex_attribute` -- emit `VertexAttribute{format, offset, shader_location}`
+- `wgpu_pipeline__vertex_buffer_layout` -- emit `VertexBufferLayout{array_stride, step_mode, attributes: &[...]}`
+- `wgpu_pipeline__blend_component` -- emit `BlendComponent{src_factor, dst_factor, operation}`
+- `wgpu_pipeline__blend_state` -- emit `BlendState{color: BlendComponent{...}, alpha: BlendComponent{...}}`
+- `wgpu_pipeline__primitive_state` -- emit `PrimitiveState{topology, cull_mode, front_face, polygon_mode}`
+- `wgpu_pipeline__depth_stencil_state` -- emit `DepthStencilState{format, depth_write_enabled, depth_compare}`
+- `wgpu_pipeline__color_target_state` -- emit `ColorTargetState{format, blend, write_mask}`
+- `wgpu_pipeline__render_pipeline` -- emit full `RenderPipelineDescriptor{...}`
 
-```rust
-//! `elicit_wgpu` — comprehensive wgpu API exposure via MCP tools.
-//!
-//! Provides complete coverage of wgpu 27.0 API (~203 methods across 125+ types):
-//! - GPU initialization (Instance, Adapter, Device, Queue)
-//! - Resource management (Buffer, Texture, Sampler)
-//! - Shader compilation (WGSL, SPIR-V)
-//! - Pipeline configuration (Render, Compute)
-//! - Command encoding (CommandEncoder, RenderPass, ComputePass)
-//! - Binding resources (BindGroup, BindGroupLayout)
-//! - Surface presentation (Surface, SwapChain)
-//!
-//! # Plugin Organization (12 plugins, ~124 total tools)
-//!
-//! | Plugin | Tools | Coverage |
-//! |--------|-------|----------|
-//! | `WgpuInitPlugin` | 8 | Instance, Adapter, Device, Queue setup |
-//! | `WgpuResourcesPlugin` | 10 | Buffer, Texture, Sampler creation |
-//! | `WgpuShaderPlugin` | 6 | ShaderModule compilation |
-//! | `WgpuPipelinePlugin` | 12 | RenderPipeline, ComputePipeline |
-//! | `WgpuBindingPlugin` | 8 | BindGroup, BindGroupLayout |
-//! | `WgpuCommandPlugin` | 15 | CommandEncoder operations |
-//! | `WgpuRenderPassPlugin` | 25 | RenderPass draw calls |
-//! | `WgpuComputePassPlugin` | 8 | ComputePass dispatch |
-//! | `WgpuSurfacePlugin` | 6 | Surface configuration |
-//! | `WgpuQueuePlugin` | 4 | Queue submit, write |
-//! | `WgpuEnumsPlugin` | 10 | Enum/constant selectors |
-//! | `WgpuWorkflowPlugin` | 12 | High-level compositions |
+**WgpuShaderPlugin** (`wgpu_shader__*`, ~4 tools):
 
-#![forbid(unsafe_code)]
-#![warn(missing_docs)]
+- `wgpu_shader__module_descriptor` -- emit `ShaderModuleDescriptor{label, source: ShaderSource::Wgsl(code)}`
+- `wgpu_shader__vertex_entry` -- emit WGSL `@vertex` fn scaffold
+- `wgpu_shader__fragment_entry` -- emit WGSL `@fragment` fn scaffold
+- `wgpu_shader__compute_entry` -- emit WGSL `@compute @workgroup_size(x,y,z)` fn scaffold
 
-mod adapter;
-mod binding;
-mod buffer;
-mod command;
-mod compute_pass;
-mod device;
-mod instance;
-mod pipeline;
-mod queue;
-mod render_pass;
-mod sampler;
-mod shader;
-mod surface;
-mod texture;
-pub mod workflow;
+**WgpuComputePlugin** (`wgpu_compute__*`, ~4 tools):
 
-pub use adapter::Adapter;
-pub use binding::{BindGroup, BindGroupLayout};
-pub use buffer::Buffer;
-pub use command::CommandEncoder;
-pub use compute_pass::ComputePass;
-pub use device::Device;
-pub use instance::Instance;
-pub use pipeline::{ComputePipeline, RenderPipeline};
-pub use queue::Queue;
-pub use render_pass::RenderPass;
-pub use sampler::Sampler;
-pub use shader::ShaderModule;
-pub use surface::Surface;
-pub use texture::{Texture, TextureView};
-pub use workflow::{
-    WgpuBindingPlugin, WgpuCommandPlugin, WgpuComputePassPlugin,
-    WgpuEnumsPlugin, WgpuInitPlugin, WgpuPipelinePlugin,
-    WgpuQueuePlugin, WgpuRenderPassPlugin, WgpuResourcesPlugin,
-    WgpuShaderPlugin, WgpuSurfacePlugin, WgpuWorkflowPlugin,
-};
-```
+- `wgpu_compute__bind_group_layout_entry` -- emit `BindGroupLayoutEntry{binding, visibility, ty, count}`
+- `wgpu_compute__bind_group_layout` -- emit `device.create_bind_group_layout(&BindGroupLayoutDescriptor{...})`
+- `wgpu_compute__compute_pipeline` -- emit full `ComputePipelineDescriptor{layout, module, entry_point}`
+- `wgpu_compute__dispatch_workgroups` -- emit `compute_pass.dispatch_workgroups(x, y, z)`
 
-## Phase 4: Implement Core Type Wrappers
+### Proposition types
 
-### 4.1 Simple Wrappers (instance.rs, adapter.rs, etc.):
+- `WgpuInitialized` -- Instance + Device setup code generated
+- `WgpuResourceDescribed` -- Buffer or Texture descriptor code generated
+- `WgpuPipelineBuilt` -- RenderPipeline or ComputePipeline descriptor code generated
 
-Use `elicit_newtype!` for opaque handles:
+### Workflow test
 
-```rust
-// instance.rs
-use elicitation::{elicit_newtype, elicit_newtype_traits};
-use elicitation_derive::reflect_methods;
+`tests/workflow_test.rs` -- inventory smoke tests + `invoke_tool` calls covering at least one tool per plugin.
 
-elicit_newtype!(wgpu::Instance, as Instance, serde);
+## Phase 4: Proof Wiring
 
-#[reflect_methods]
-impl Instance {
-    #[instrument(skip(self))]
-    pub fn enumerate_adapters(&self) -> Vec<Adapter> {
-        self.0.enumerate_adapters(wgpu::Backends::all())
-            .into_iter()
-            .map(Adapter::from)
-            .collect()
-    }
-}
-```
+Following the pattern from `elicit_winit`:
 
-### 4.2 Resource Types (buffer.rs, texture.rs):
+**4.1 Kani harnesses** (`crates/elicitation_kani/src/wgpu_types.rs`):
 
-```rust
-// buffer.rs
-elicit_newtype!(wgpu::Buffer, as Buffer, serde);
+- Harness for `WgpuExtent3d` field invariants
+- Harness for `WgpuColor` channel encoding
+- Harness for `WgpuOrigin3d` field encoding
 
-#[reflect_methods]
-impl Buffer {
-    #[instrument(skip(self))]
-    pub fn size(&self) -> u64 {
-        self.0.size()
-    }
+**4.2 Creusot axioms** (`crates/elicitation_creusot/src/wgpu_types.rs`):
 
-    #[instrument(skip(self))]
-    pub fn usage(&self) -> String {
-        format!("{:?}", self.0.usage())
-    }
-}
-```
+- Trusted axioms for the same three struct types
 
-### 4.3 Command Encoding (render_pass.rs):
+**4.3 Verus shadow structs** (`crates/elicitation_verus/src/wgpu_types.rs`):
 
-```rust
-// render_pass.rs - special case: mutable lifetime-bound type
-// Cannot use Arc due to lifetime constraints
-// Solution: CommandEncoder owns RenderPass, tools operate on it
+- Shadow struct field proofs for `WgpuExtent3d`, `WgpuColor`, `WgpuOrigin3d`
 
-pub struct RenderPass<'a> {
-    inner: wgpu::RenderPass<'a>,
-    stats: RenderStats,
-}
+**4.4 Feature wiring**:
 
-impl<'a> RenderPass<'a> {
-    pub fn set_pipeline(&mut self, pipeline: &RenderPipeline) {
-        self.inner.set_pipeline(&pipeline.0);
-    }
+- `wgpu-types = ["elicitation/wgpu-types"]` feature in `elicitation_kani/Cargo.toml` and `elicitation_creusot/Cargo.toml`
+- `pub mod wgpu_types;` in `elicitation_verus/src/lib.rs`
 
-    pub fn draw(&mut self, vertices: Range<u32>, instances: Range<u32>) {
-        self.inner.draw(vertices, instances);
-        self.stats.draw_calls += 1;
-    }
-}
-```
+**4.5 Runner entries**:
 
-## Phase 5: Implement MCP Tools
+- `runner.rs` -- 3 Kani harness entries
+- `creusot_runner.rs` -- `wgpu-types` module entry
+- `verus_runner.rs` -- 3 Verus entries
 
-### 5.1 Init Plugin (workflow/init_plugin.rs):
+**4.6 `proof_non_empty_test`**:
 
-```rust
-use elicitation_derive::elicit_tool;
-use rmcp::{CallToolResult, Content, ErrorData};
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CreateInstanceParams {
-    pub backends: Vec<String>,
-}
-
-#[elicit_tool(
-    plugin = "wgpu_init",
-    name = "wgpu_init__create_instance",
-    description = "Create a wgpu Instance for GPU initialization. \
-                   Backends: 'vulkan', 'metal', 'dx12', 'gl', 'webgpu'.",
-    emit = Auto
-)]
-async fn init_create_instance(p: CreateInstanceParams) -> Result<CallToolResult, ErrorData> {
-    let backends = parse_backends(&p.backends)?;
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-        backends,
-        ..Default::default()
-    });
-
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created wgpu Instance with backends: {:?}", backends))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RequestAdapterParams {
-    pub power_preference: String,
-    pub force_fallback: Option<bool>,
-}
-
-#[elicit_tool(
-    plugin = "wgpu_init",
-    name = "wgpu_init__request_adapter",
-    description = "Request a GPU adapter. Power preference: 'low_power', 'high_performance', or 'none'.",
-    emit = Auto
-)]
-async fn init_request_adapter(p: RequestAdapterParams) -> Result<CallToolResult, ErrorData> {
-    // Emit code for adapter request
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Requested adapter with power: {}", p.power_preference))
-    ]))
-}
-
-// ... 6 more tools: request_device, get_limits, get_features, etc.
-```
-
-### 5.2 Resources Plugin (workflow/resources_plugin.rs):
-
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CreateBufferParams {
-    pub size: u64,
-    pub usage: Vec<String>,  // ["MAP_READ", "COPY_DST", etc.]
-    pub mapped_at_creation: Option<bool>,
-}
-
-#[elicit_tool(
-    plugin = "wgpu_resources",
-    name = "wgpu_resources__create_buffer",
-    description = "Create a GPU buffer. Usage flags: MAP_READ, MAP_WRITE, COPY_SRC, COPY_DST, UNIFORM, STORAGE, INDEX, VERTEX, INDIRECT.",
-    emit = Auto
-)]
-async fn resources_create_buffer(p: CreateBufferParams) -> Result<CallToolResult, ErrorData> {
-    let usage = parse_buffer_usage(&p.usage)?;
-
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created buffer: {} bytes, usage: {:?}", p.size, usage))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CreateTextureParams {
-    pub width: u32,
-    pub height: u32,
-    pub format: String,  // TextureFormat enum
-    pub usage: Vec<String>,
-    pub dimension: Option<String>,
-}
-
-#[elicit_tool(
-    plugin = "wgpu_resources",
-    name = "wgpu_resources__create_texture",
-    description = "Create a GPU texture. Format examples: 'Rgba8Unorm', 'Bgra8UnormSrgb', 'Depth32Float'.",
-    emit = Auto
-)]
-async fn resources_create_texture(p: CreateTextureParams) -> Result<CallToolResult, ErrorData> {
-    // Emit texture creation code
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created texture: {}x{}, format: {}", p.width, p.height, p.format))
-    ]))
-}
-
-// ... 8 more tools: create_sampler, write_buffer, copy_buffer_to_texture, etc.
-```
-
-### 5.3 Render Pass Plugin (workflow/render_pass_plugin.rs):
-
-Most complex plugin with ~25 tools:
-
-```rust
-#[elicit_tool(
-    plugin = "wgpu_render_pass",
-    name = "wgpu_render_pass__set_pipeline",
-    description = "Set the active render pipeline for subsequent draw calls.",
-    emit = Auto
-)]
-async fn render_pass_set_pipeline(p: SetPipelineParams) -> Result<CallToolResult, ErrorData> {
-    // Emit: render_pass.set_pipeline(&pipeline);
-    Ok(CallToolResult::success(vec![Content::text("Pipeline set")]))
-}
-
-#[elicit_tool(
-    plugin = "wgpu_render_pass",
-    name = "wgpu_render_pass__draw",
-    description = "Issue a draw call. Draws 'vertices' range with 'instances' range.",
-    emit = Auto
-)]
-async fn render_pass_draw(p: DrawParams) -> Result<CallToolResult, ErrorData> {
-    // Emit: render_pass.draw(vertices, instances);
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Draw: vertices {}..{}, instances {}..{}",
-            p.vertices_start, p.vertices_end, p.instances_start, p.instances_end))
-    ]))
-}
-
-// ... 23 more tools: draw_indexed, set_vertex_buffer, set_bind_group, set_viewport, etc.
-```
-
-### 5.4 Workflow Plugin (workflow/workflow_plugin.rs):
-
-High-level compositions:
-
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SetupTriangleParams {
-    pub width: u32,
-    pub height: u32,
-    pub shader_source: String,
-}
-
-#[elicit_tool(
-    plugin = "wgpu_workflow",
-    name = "wgpu_workflow__setup_triangle",
-    description = "Complete workflow: create instance, adapter, device, surface, and render a triangle.",
-    emit = Auto
-)]
-async fn workflow_setup_triangle(p: SetupTriangleParams) -> Result<CallToolResult, ErrorData> {
-    // Emit complete main() with triangle rendering
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Triangle setup: {}x{}", p.width, p.height))
-    ]))
-}
-
-// ... 11 more tools: setup_compute, configure_depth_stencil, create_render_pipeline_full, etc.
-```
-
-## Phase 6: Testing
-
-### File to create:
-- `crates/elicit_wgpu/tests/wgpu_test.rs`
-
-### Test Coverage:
-
-**Type wrappers and serialization**:
-```rust
-#[test]
-fn test_instance_creation() {
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::default());
-    let wrapped = Instance::from(instance);
-    // Test serialization, reflect methods, etc.
-}
-
-#[test]
-fn test_buffer_descriptor_serialization() {
-    let desc = BufferDescriptor {
-        size: 1024,
-        usage: vec!["UNIFORM".to_string(), "COPY_DST".to_string()],
-        mapped_at_creation: Some(false),
-    };
-
-    let json = serde_json::to_value(&desc).unwrap();
-    assert_eq!(json["size"], 1024);
-}
-```
-
-**Device creation and limits**:
-```rust
-#[tokio::test]
-async fn test_device_creation() {
-    let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::default());
-    let adapter = instance
-        .request_adapter(&wgpu::RequestAdapterOptions::default())
-        .await
-        .expect("Failed to find adapter");
-
-    let (device, queue) = adapter
-        .request_device(&wgpu::DeviceDescriptor::default(), None)
-        .await
-        .expect("Failed to create device");
-
-    assert!(device.limits().max_texture_dimension_2d > 0);
-}
-```
-
-**MCP tool registration**:
-```rust
-#[test]
-fn test_plugin_registration() {
-    // Verify all 12 plugins register correctly
-    // Test tool discovery via inventory
-}
-```
-
-## Phase 7: Documentation
-
-### File to create:
-- `crates/elicit_wgpu/README.md`
-
-### Content:
-
-```markdown
-# elicit_wgpu
-
-Comprehensive elicitation-enabled wrappers around [`wgpu`](https://docs.rs/wgpu) for GPU operations.
-
-## Purpose
-
-Provides the **GPU alphabet** — foundational MCP tools for:
-- Graphics rendering workflows (combine with winit for windowing)
-- Compute shader operations
-- Custom rendering pipelines
-- GPU-accelerated processing
-
-## API Coverage
-
-Exposes the complete wgpu 27.0 API (~203 methods across 125+ types) via 12 plugin namespaces:
-
-| Plugin | Tools | Coverage |
-|--------|-------|----------|
-| `wgpu_init` | 8 | Instance, Adapter, Device, Queue |
-| `wgpu_resources` | 10 | Buffer, Texture, Sampler |
-| `wgpu_shader` | 6 | ShaderModule, WGSL/SPIR-V |
-| `wgpu_pipeline` | 12 | RenderPipeline, ComputePipeline |
-| `wgpu_binding` | 8 | BindGroup, BindGroupLayout |
-| `wgpu_command` | 15 | CommandEncoder |
-| `wgpu_render_pass` | 25 | RenderPass draw calls |
-| `wgpu_compute_pass` | 8 | ComputePass dispatch |
-| `wgpu_surface` | 6 | Surface configuration |
-| `wgpu_queue` | 4 | Queue submit, write |
-| `wgpu_enums` | 10 | Enum/constant selectors |
-| `wgpu_workflow` | 12 | High-level workflows |
-
-**Total: ~124 MCP tools**
-
-## Usage
-
-```rust
-use elicit_wgpu::{Instance, Device, Queue};
-
-// MCP tools generate this code:
-let instance = wgpu::Instance::new(wgpu::InstanceDescriptor::default());
-let adapter = instance.request_adapter(&Default::default()).await?;
-let (device, queue) = adapter.request_device(&Default::default(), None).await?;
-```
-
-## Integration with Windowing
-
-Combine with `elicit_winit` for complete rendering stack:
-
-```rust
-// winit creates window + surface
-let window = winit::window::Window::new(&event_loop)?;
-
-// wgpu provides GPU operations
-let instance = wgpu::Instance::new(Default::default());
-let surface = instance.create_surface(&window)?;
-let (device, queue) = adapter.request_device(&Default::default(), None).await?;
-
-// Configure and render
-surface.configure(&device, &config);
-// ... rendering loop using wgpu tools
-```
-```
-
-## Verification Steps
-
-### After implementation:
-
-**elicit_wgpu shadow crate**:
-1. `cargo check -p elicit_wgpu`
-2. `cargo test -p elicit_wgpu`
-3. `cargo check -p elicitation --no-default-features --features wgpu`
-4. `cargo test -p elicit_wgpu --features emit`
-
-**Full workspace**:
-1. `cargo check --all-features`
-2. `cargo test --workspace --all-features`
-
-### Manual verification:
-
-**MCP tool functionality**:
-1. Launch MCP server with elicit_wgpu plugin
-2. Call `wgpu_init__create_instance` with backends param
-3. Call `wgpu_resources__create_buffer` with size/usage
-4. Verify JSON responses and emit mode code generation
-
-**Type integration**:
-1. Test `wgpu::TextureFormat` → `TextureFormatSelect` conversion
-2. Test `wgpu::Features` → bitflags Elicitation impl
-3. Verify serialization round-trip for all wrapper types
-
-## Critical Files
-
-### To create:
-- `crates/elicit_wgpu/Cargo.toml`
-- `crates/elicit_wgpu/README.md`
-- `crates/elicit_wgpu/src/lib.rs`
-- `crates/elicit_wgpu/src/instance.rs`
-- `crates/elicit_wgpu/src/adapter.rs`
-- `crates/elicit_wgpu/src/device.rs`
-- `crates/elicit_wgpu/src/queue.rs`
-- `crates/elicit_wgpu/src/buffer.rs`
-- `crates/elicit_wgpu/src/texture.rs`
-- `crates/elicit_wgpu/src/sampler.rs`
-- `crates/elicit_wgpu/src/shader.rs`
-- `crates/elicit_wgpu/src/pipeline.rs`
-- `crates/elicit_wgpu/src/binding.rs`
-- `crates/elicit_wgpu/src/command.rs`
-- `crates/elicit_wgpu/src/render_pass.rs`
-- `crates/elicit_wgpu/src/compute_pass.rs`
-- `crates/elicit_wgpu/src/surface.rs`
-- `crates/elicit_wgpu/src/workflow/mod.rs`
-- `crates/elicit_wgpu/src/workflow/init_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/resources_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/shader_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/pipeline_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/binding_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/command_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/render_pass_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/compute_pass_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/surface_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/queue_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/enums_plugin.rs`
-- `crates/elicit_wgpu/src/workflow/workflow_plugin.rs`
-- `crates/elicit_wgpu/tests/wgpu_test.rs`
-- `crates/elicitation/src/wgpu_types.rs`
-
-### To modify:
-- `Cargo.toml` — Add workspace members and dependencies
-- `crates/elicitation/Cargo.toml` — Add wgpu feature
-- `crates/elicitation/src/lib.rs` — Export wgpu types
+- Add `wgpu_tests` module covering all 27 Phase 2 types
 
 ## Implementation Order
 
-1. **Phase 1**: Workspace configuration (30 min)
-2. **Phase 2**: Core type integration in elicitation (2 hours)
-3. **Phase 3**: Create elicit_wgpu structure (1 hour)
-4. **Phase 4**: Implement type wrappers (4 hours)
-5. **Phase 5**: Implement MCP tools (~124 tools) (12-16 hours)
-6. **Phase 6**: Testing (1-2 hours)
-7. **Phase 7**: Documentation (1 hour)
+1. Phase 1: workspace wiring
+2. Phase 2: `elicitation` wgpu-types (enums + bitflags + structs + type-spec + test)
+3. Phase 3: `elicit_wgpu` scaffold + 5 plugins + workflow test
+4. Phase 4: proof wiring (Kani + Creusot + Verus + runners + non-empty test)
 
-**Total estimated time**: 21-26 hours
+## Key Constraints
 
-## Notes
-
-### Shadow Crate Design
-- **12 plugins**: Organized by functional area (init, resources, shaders, pipelines, etc.)
-- **~124 total tools**: Comprehensive coverage of wgpu 27.0 API
-- **Emit mode**: All tools support code generation
-- **Runtime state**: UUID registry pattern for Device/Queue/Resource handles
-- **Composable alphabet**: Low-level GPU operations compose into workflows
-
-### Use Cases
-- **Graphics rendering**: Combine with elicit_winit for native windowing
-- **Compute shaders**: GPU-accelerated processing
-- **Custom pipelines**: Build specialized renderers
-- **Learning tool**: Complete wgpu API exposure for experimentation
-
-### Technical Challenges
-1. **Lifetime constraints**: RenderPass/ComputePass borrow CommandEncoder mutably
-   - Solution: Encapsulate in typed wrappers, tools operate on state
-2. **Async device creation**: wgpu uses async for adapter/device requests
-   - Solution: MCP tools emit async code, runtime uses pollster for tests
-3. **Platform differences**: wgpu abstracts Vulkan/Metal/DX12/WebGPU
-   - Solution: Expose backend selection via enum tools, let wgpu handle rest
-4. **Shader compilation**: WGSL is text, SPIR-V is binary
-   - Solution: ShaderSource enum with both variants, validation in tools
-5. **Resource ownership**: Device owns all resources (buffers, textures, pipelines)
-   - Solution: UUID registry maps IDs → Arc'd resources for MCP tool access
-
-### Future Integration
-This shadow crate provides the GPU alphabet. Future frontend implementations:
-- **elicit_egui**: Projects elicit_ui contracts → egui widgets
-- **elicit_leptos**: Projects elicit_ui contracts → leptos components
-- **elicit_ratatui**: Projects elicit_ui contracts → terminal UI
-- **elicit_iced**: Projects elicit_ui contracts → iced widgets (maybe)
-
-These frontends may use wgpu internally (egui, iced) or not (leptos, ratatui).
+- **No `dep:wgpu` in proof crates or in `elicit_wgpu`** -- types accessed via `elicitation::Wgpu*`
+- **No live GPU state** -- all tools return `String` code snippets
+- **No `emit` feature needed** -- tools return `String` directly
+- **Orphan rule fix for params structs**: Any `#[elicit_tool]` params struct that embeds a wgpu wrapper type needs a local wrapper (same pattern as `WindowAttributesParams` in winit)

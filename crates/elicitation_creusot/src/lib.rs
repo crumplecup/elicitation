@@ -49,6 +49,13 @@ mod utf8;
 #[cfg(unix)]
 mod pathbytes;
 
+// Proof gallery: tests expressibility of Pearlite predicates for VSM invariants
+pub mod gallery;
+
+// Real VSM logic predicates and extern_spec contracts for elicit_server machines.
+#[cfg(feature = "vsm-proofs")]
+pub mod vsm;
+
 // Feature-gated module declarations
 #[cfg(feature = "uuid")]
 mod uuids;
@@ -103,6 +110,30 @@ mod ratatui_types;
 
 #[cfg(feature = "geo-types")]
 mod geo_types;
+
+#[cfg(feature = "georaster-types")]
+mod georaster_types;
+
+#[cfg(feature = "geojson-types")]
+mod geojson_types;
+
+#[cfg(feature = "rstar-types")]
+mod rstar_types;
+
+#[cfg(feature = "proj-types")]
+mod proj_types;
+
+#[cfg(feature = "wkt-types")]
+mod wkt_types;
+
+#[cfg(feature = "wkb-types")]
+mod wkb_types;
+
+#[cfg(feature = "winit-types")]
+mod winit_types;
+
+#[cfg(feature = "wgpu-types")]
+mod wgpu_types;
 
 #[cfg(feature = "palette")]
 mod palette_types;
@@ -518,8 +549,49 @@ pub use ratatui_types::{
 
 #[cfg(feature = "geo-types")]
 pub use geo_types::{
-    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_line_degenerate,
-    verify_geo_line_roundtrip, verify_geo_rect_roundtrip, verify_geo_rect_well_formed,
+    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_geometry_point_variant,
+    verify_geo_geometry_rect_variant, verify_geo_line_degenerate, verify_geo_line_roundtrip,
+    verify_geo_line_string_concrete, verify_geo_point_concrete, verify_geo_point_roundtrip,
+    verify_geo_rect_roundtrip, verify_geo_rect_well_formed, verify_geo_triangle_concrete,
+    verify_geo_triangle_roundtrip,
+};
+
+#[cfg(feature = "geojson-types")]
+pub use geojson_types::{
+    verify_geojson_feature_collection_len, verify_geojson_feature_property_access,
+    verify_geojson_geometry_new_point, verify_geojson_id_string_variant,
+    verify_geojson_value_point_type_name,
+};
+
+#[cfg(feature = "rstar-types")]
+pub use rstar_types::{
+    verify_rstar_aabb_roundtrip, verify_rstar_line_envelope_bounds, verify_rstar_line_roundtrip,
+    verify_rstar_rectangle_envelope_bounds, verify_rstar_rectangle_roundtrip,
+};
+
+#[cfg(feature = "proj-types")]
+pub use proj_types::{
+    verify_proj_area_antimeridian, verify_proj_area_new_fields, verify_proj_area_roundtrip,
+};
+
+#[cfg(feature = "georaster-types")]
+pub use georaster_types::{
+    verify_georaster_color_type_rgb_bits, verify_georaster_coordinate_new_semantics,
+    verify_georaster_image_info_fields, verify_georaster_planar_configuration_chunky,
+    verify_georaster_raster_value_rgb8_variant,
+};
+
+#[cfg(feature = "wkt-types")]
+pub use wkt_types::{
+    verify_wkt_coord_concrete, verify_wkt_coord_roundtrip, verify_wkt_geom_point_variant,
+    verify_wkt_point_empty, verify_wkt_string_trusted,
+};
+
+#[cfg(feature = "wkb-types")]
+pub use wkb_types::{
+    verify_wkb_bytes_known_point_metadata, verify_wkb_dimension_roundtrip,
+    verify_wkb_endianness_roundtrip, verify_wkb_geometry_type_roundtrip,
+    verify_wkb_write_options_roundtrip,
 };
 
 #[cfg(feature = "palette")]
@@ -592,4 +664,16 @@ pub use ui_types::{
     verify_typestate_zero_sized,
     verify_viewport_construction,
     verify_wcag_level_display,
+};
+
+#[cfg(feature = "winit-types")]
+pub use winit_types::{
+    verify_winit_logical_position_fields, verify_winit_logical_size_fields,
+    verify_winit_physical_size_fields, verify_winit_physical_size_zero,
+};
+
+#[cfg(feature = "wgpu-types")]
+pub use wgpu_types::{
+    verify_wgpu_color_fields, verify_wgpu_extent3d_fields, verify_wgpu_extent3d_zero,
+    verify_wgpu_origin3d_fields,
 };

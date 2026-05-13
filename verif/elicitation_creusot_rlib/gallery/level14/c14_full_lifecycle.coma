@@ -1,0 +1,253 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 0 254 85 *)
+
+let%span slevel14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 255 13 255 22
+let%span slevel14'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 256 13 256 32
+let%span slevel14'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 257 13 257 34
+let%span slevel14'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 258 13 258 31
+let%span slevel14'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 259 13 259 33
+let%span slevel14'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 260 13 260 28
+let%span slevel14'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 261 4 261 22
+let%span slevel14'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 26 254 30
+let%span slevel14'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 40 254 45
+let%span slevel14'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 55 254 62
+let%span slevel14'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 247 11 247 26
+let%span slevel14'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 248 11 248 27
+let%span slevel14'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 249 11 249 29
+let%span slevel14'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 75 254 85
+let%span slevel14'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 250 10 250 33
+let%span slevel14'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 251 10 251 38
+let%span slevel14'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 252 10 252 39
+let%span slevel14'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 253 10 253 34
+let%span slevel14'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 143 20 143 30
+let%span slevel14'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 139 10 139 33
+let%span slevel14'19 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 140 10 140 38
+let%span slevel14'20 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 141 10 141 39
+let%span slevel14'21 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 142 10 142 34
+let%span slevel14'22 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 161 17 161 18
+let%span slevel14'23 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 161 32 161 36
+let%span slevel14'24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 154 11 154 29
+let%span slevel14'25 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 155 11 155 28
+let%span slevel14'26 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 156 11 156 26
+let%span slevel14'27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 161 49 161 59
+let%span slevel14'28 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 157 10 157 33
+let%span slevel14'29 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 158 10 158 36
+let%span slevel14'30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 159 10 159 61
+let%span slevel14'31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 160 10 160 47
+let%span slevel14'32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 208 16 208 17
+let%span slevel14'33 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 208 31 208 38
+let%span slevel14'34 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 201 11 201 29
+let%span slevel14'35 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 202 11 202 28
+let%span slevel14'36 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 203 11 203 35
+let%span slevel14'37 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 204 11 204 29
+let%span slevel14'38 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 208 51 208 61
+let%span slevel14'39 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 205 10 205 33
+let%span slevel14'40 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 206 10 206 61
+let%span slevel14'41 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 207 10 207 51
+let%span slevel14'42 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 225 22 225 23
+let%span slevel14'43 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 219 11 219 29
+let%span slevel14'44 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 220 11 220 28
+let%span slevel14'45 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 225 40 225 50
+let%span slevel14'46 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 221 10 221 33
+let%span slevel14'47 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 222 10 222 38
+let%span slevel14'48 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 223 10 223 61
+let%span slevel14'49 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 224 10 224 47
+let%span slevel14'50 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 179 19 179 20
+let%span slevel14'51 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 172 11 172 29
+let%span slevel14'52 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 173 11 173 32
+let%span slevel14'53 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 174 11 174 28
+let%span slevel14'54 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 179 37 179 47
+let%span slevel14'55 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 175 10 175 33
+let%span slevel14'56 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 176 10 176 35
+let%span slevel14'57 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 177 10 177 61
+let%span slevel14'58 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 178 10 178 47
+let%span slevel14'59 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 82 8 85 52
+let%span slevel14'60 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 107 8 110 9
+let%span slevel14'61 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 92 16 92 47
+let%span slevel14'62 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 118 8 121 9
+let%span slevel14'63 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 98 16 98 42
+let%span slevel14'64 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 129 8 132 9
+let%span slevel14'65 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 57 8 62 9
+
+use creusot.int.Int64
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+type t_C14Machine = { state: t_MiniConnState; transition_count: Int64.t; error_count: Int64.t }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate inv_C14Machine (_1: t_C14Machine)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_C14Machine [inv_C14Machine x]. inv_C14Machine x = inv_MiniConnState x.state
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c14_state_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 55 0 55 46] (s: t_MiniConnState) =
+  [%#slevel14'65] match s with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c14_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 80 0 80 45] (m: t_C14Machine) =
+  [%#slevel14'59] c14_state_ok m.state
+  /\ Int64.to_int m.transition_count >= 0
+  /\ Int64.to_int m.error_count >= 0 /\ Int64.to_int m.error_count <= Int64.to_int m.transition_count
+
+predicate c14_is_disconnected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 105 0 105 50] (m: t_C14Machine) =
+  [%#slevel14'60] match m.state with
+    | Disconnected -> true
+    | _ -> false
+    end
+
+let rec c14_new (return (x: t_C14Machine)) = any
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_new ensures] ([@stop_split] [@expl:c14_new result type invariant] [%#slevel14'17] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_new ensures #0] [%#slevel14'18] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_new ensures #1] [%#slevel14'19] c14_is_disconnected result)
+    /\ ([@stop_split] [@expl:c14_new ensures #2] [%#slevel14'20] Int64.to_int result.transition_count = 0)
+    /\ ([@stop_split] [@expl:c14_new ensures #3] [%#slevel14'21] Int64.to_int result.error_count = 0)}
+    (! return {result}) ]
+
+constant const_MAX: Int64.t = (9223372036854775807: Int64.t)
+
+predicate c14_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 91 0 91 44] (m: t_C14Machine) =
+  [%#slevel14'61] Int64.to_int m.transition_count < Int64.to_int const_MAX
+
+predicate c14_is_connecting [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 116 0 116 48] (m: t_C14Machine) =
+  [%#slevel14'62] match m.state with
+    | Connecting _ -> true
+    | _ -> false
+    end
+
+let rec c14_begin (m: t_C14Machine) (name: t_String) (return (x: t_C14Machine)) =
+  {[@stop_split] [@expl:c14_begin requires] ([@stop_split] [@expl:c14_begin 'm' type invariant] [%#slevel14'22] inv_C14Machine m)
+  /\ ([@stop_split] [@expl:c14_begin 'name' type invariant] [%#slevel14'23] inv_String name)
+  /\ ([@stop_split] [@expl:c14_begin requires #0] [%#slevel14'24] c14_consistent m)
+  /\ ([@stop_split] [@expl:c14_begin requires #1] [%#slevel14'25] c14_below_max m)
+  /\ ([@stop_split] [@expl:c14_begin requires #2] [%#slevel14'26] Seq.length (view_String name) > 0)}
+  any
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_begin ensures] ([@stop_split] [@expl:c14_begin result type invariant] [%#slevel14'27] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_begin ensures #0] [%#slevel14'28] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_begin ensures #1] [%#slevel14'29] c14_is_connecting result)
+    /\ ([@stop_split] [@expl:c14_begin ensures #2] [%#slevel14'30] Int64.to_int result.transition_count
+      = Int64.to_int m.transition_count + 1)
+    /\ ([@stop_split] [@expl:c14_begin ensures #3] [%#slevel14'31] Int64.to_int result.error_count
+    = Int64.to_int m.error_count)}
+    (! return {result}) ]
+
+predicate c14_errors_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 97 0 97 51] (m: t_C14Machine) =
+  [%#slevel14'63] Int64.to_int m.error_count < Int64.to_int const_MAX
+
+let rec c14_fail (m: t_C14Machine) (message: t_String) (return (x: t_C14Machine)) =
+  {[@stop_split] [@expl:c14_fail requires] ([@stop_split] [@expl:c14_fail 'm' type invariant] [%#slevel14'32] inv_C14Machine m)
+  /\ ([@stop_split] [@expl:c14_fail 'message' type invariant] [%#slevel14'33] inv_String message)
+  /\ ([@stop_split] [@expl:c14_fail requires #0] [%#slevel14'34] c14_consistent m)
+  /\ ([@stop_split] [@expl:c14_fail requires #1] [%#slevel14'35] c14_below_max m)
+  /\ ([@stop_split] [@expl:c14_fail requires #2] [%#slevel14'36] c14_errors_below_max m)
+  /\ ([@stop_split] [@expl:c14_fail requires #3] [%#slevel14'37] Seq.length (view_String message) > 0)}
+  any
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_fail ensures] ([@stop_split] [@expl:c14_fail result type invariant] [%#slevel14'38] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_fail ensures #0] [%#slevel14'39] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_fail ensures #1] [%#slevel14'40] Int64.to_int result.transition_count
+      = Int64.to_int m.transition_count + 1)
+    /\ ([@stop_split] [@expl:c14_fail ensures #2] [%#slevel14'41] Int64.to_int result.error_count
+    = Int64.to_int m.error_count + 1)}
+    (! return {result}) ]
+
+let rec c14_disconnect (m: t_C14Machine) (return (x: t_C14Machine)) =
+  {[@stop_split] [@expl:c14_disconnect requires] ([@stop_split] [@expl:c14_disconnect 'm' type invariant] [%#slevel14'42] inv_C14Machine m)
+  /\ ([@stop_split] [@expl:c14_disconnect requires #0] [%#slevel14'43] c14_consistent m)
+  /\ ([@stop_split] [@expl:c14_disconnect requires #1] [%#slevel14'44] c14_below_max m)}
+  any
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_disconnect ensures] ([@stop_split] [@expl:c14_disconnect result type invariant] [%#slevel14'45] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_disconnect ensures #0] [%#slevel14'46] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_disconnect ensures #1] [%#slevel14'47] c14_is_disconnected result)
+    /\ ([@stop_split] [@expl:c14_disconnect ensures #2] [%#slevel14'48] Int64.to_int result.transition_count
+      = Int64.to_int m.transition_count + 1)
+    /\ ([@stop_split] [@expl:c14_disconnect ensures #3] [%#slevel14'49] Int64.to_int result.error_count
+    = Int64.to_int m.error_count)}
+    (! return {result}) ]
+
+predicate c14_is_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 127 0 127 47] (m: t_C14Machine) =
+  [%#slevel14'64] match m.state with
+    | Connected _ -> true
+    | _ -> false
+    end
+
+let rec c14_succeed (m: t_C14Machine) (return (x: t_C14Machine)) =
+  {[@stop_split] [@expl:c14_succeed requires] ([@stop_split] [@expl:c14_succeed 'm' type invariant] [%#slevel14'50] inv_C14Machine m)
+  /\ ([@stop_split] [@expl:c14_succeed requires #0] [%#slevel14'51] c14_consistent m)
+  /\ ([@stop_split] [@expl:c14_succeed requires #1] [%#slevel14'52] c14_is_connecting m)
+  /\ ([@stop_split] [@expl:c14_succeed requires #2] [%#slevel14'53] c14_below_max m)}
+  any
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_succeed ensures] ([@stop_split] [@expl:c14_succeed result type invariant] [%#slevel14'54] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_succeed ensures #0] [%#slevel14'55] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_succeed ensures #1] [%#slevel14'56] c14_is_connected result)
+    /\ ([@stop_split] [@expl:c14_succeed ensures #2] [%#slevel14'57] Int64.to_int result.transition_count
+      = Int64.to_int m.transition_count + 1)
+    /\ ([@stop_split] [@expl:c14_succeed ensures #3] [%#slevel14'58] Int64.to_int result.error_count
+    = Int64.to_int m.error_count)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c14_full_lifecycle
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level14.rs" 254 0 254 85] (name: t_String)
+  (name2: t_String) (message: t_String) (return (x: t_C14Machine)) =
+  {[@stop_split] [@expl:c14_full_lifecycle requires] ([@stop_split] [@expl:c14_full_lifecycle 'name' type invariant] [%#slevel14'6] inv_String name)
+  /\ ([@stop_split] [@expl:c14_full_lifecycle 'name2' type invariant] [%#slevel14'7] inv_String name2)
+  /\ ([@stop_split] [@expl:c14_full_lifecycle 'message' type invariant] [%#slevel14'8] inv_String message)
+  /\ ([@stop_split] [@expl:c14_full_lifecycle requires #0] [%#slevel14'9] Seq.length (view_String name) > 0)
+  /\ ([@stop_split] [@expl:c14_full_lifecycle requires #1] [%#slevel14'10] Seq.length (view_String name2) > 0)
+  /\ ([@stop_split] [@expl:c14_full_lifecycle requires #2] [%#slevel14'11] Seq.length (view_String message) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = c14_new [%#slevel14] (fun (_x: t_C14Machine) -> [ &m0 <- _x ] s1)
+    | s1 = c14_begin [%#slevel14'0] {m0} {name} (fun (_x: t_C14Machine) -> [ &m1 <- _x ] s2)
+    | s2 = c14_fail [%#slevel14'1] {m1} {message} (fun (_x: t_C14Machine) -> [ &m2 <- _x ] s3)
+    | s3 = c14_disconnect [%#slevel14'2] {m2} (fun (_x: t_C14Machine) -> [ &m3 <- _x ] s4)
+    | s4 = c14_begin [%#slevel14'3] {m3} {name2} (fun (_x: t_C14Machine) -> [ &m4 <- _x ] s5)
+    | s5 = c14_succeed [%#slevel14'4] {m4} (fun (_x: t_C14Machine) -> [ &m5 <- _x ] s6)
+    | s6 = c14_disconnect [%#slevel14'5] {m5} (fun (_x: t_C14Machine) -> [ &_ret <- _x ] s7)
+    | s7 = return {_ret} ] ]
+  [ & _ret: t_C14Machine = Any.any_l ()
+  | & name: t_String = name
+  | & name2: t_String = name2
+  | & message: t_String = message
+  | & m0: t_C14Machine = Any.any_l ()
+  | & m1: t_C14Machine = Any.any_l ()
+  | & m2: t_C14Machine = Any.any_l ()
+  | & m3: t_C14Machine = Any.any_l ()
+  | & m4: t_C14Machine = Any.any_l ()
+  | & m5: t_C14Machine = Any.any_l () ])
+  [ return (result: t_C14Machine) ->
+  {[@stop_split] [@expl:c14_full_lifecycle ensures] ([@stop_split] [@expl:c14_full_lifecycle result type invariant] [%#slevel14'12] inv_C14Machine result)
+    /\ ([@stop_split] [@expl:c14_full_lifecycle ensures #0] [%#slevel14'13] c14_consistent result)
+    /\ ([@stop_split] [@expl:c14_full_lifecycle ensures #1] [%#slevel14'14] c14_is_disconnected result)
+    /\ ([@stop_split] [@expl:c14_full_lifecycle ensures #2] [%#slevel14'15] Int64.to_int result.transition_count = 6)
+    /\ ([@stop_split] [@expl:c14_full_lifecycle ensures #3] [%#slevel14'16] Int64.to_int result.error_count = 1)}
+    (! return {result}) ]

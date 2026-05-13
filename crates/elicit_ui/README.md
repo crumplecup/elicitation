@@ -1,308 +1,390 @@
 # elicit_ui
 
-Typestate-based verified UI system using AccessKit as universal IR.
+Formally verified UI construction with compile-time WCAG 2.2 compliance
+guarantees, built on AccessKit as a universal intermediate representation.
 
 ## Overview
 
-`elicit_ui` provides a formally verifiable UI construction system that
-ensures WCAG compliance through typestate patterns, composable constraints,
-and proof-carrying contracts. Layouts are constructed as AccessKit trees,
-verified against spec-traceable constraints, and rendered through
-pluggable backends (egui, ratatui) from a single IR.
+`elicit_ui` models UI construction as a proof-carrying pipeline. Every
+interactive element is built through a factory trait that performs a WCAG
+runtime check and, on success, returns both the constructed element **and** a
+typed proof token — an `Established<P>` — that records what was verified.
+Proof tokens compose upward through section aggregates into a final
+`Established<WcagLevelAAValid>`, which is the only legal way to assert that a
+surface is WCAG 2.2 Level AA compliant.
+
+The compiler enforces this chain. There is no way to produce
+`Established<WcagLevelAAValid>` without assembling all the leaf proofs from
+which it is derived.
+
+---
 
 ## Architecture
 
 ```text
-                     ┌──────────────────────────────────────────┐
-                     │          Constraint System               │
-                     │  WCAG · Spatial · Terminal · Custom      │
-                     └────────────────┬─────────────────────────┘
-                                      │
-AccessKit Tree ──→ Layout<Pending> ──→│verify()──→ Layout<Verified>
-                                                        │
-                                      ┌─────────────────┤
-                                      ▼                 ▼
-                               EguiBackend        RatatuiBackend
-                              (elicit_egui)      (elicit_ratatui)
-                                      │                 │
-                                      ▼                 ▼
-                                Layout<Rendered>  Layout<Rendered>
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                     WCAG Factory Traits                         │
+  │  WcagContrastFactory · WcagLabelFactory · WcagFocusFactory      │
+  │  WcagKeyboardFactory · WcagTimingFactory · WcagTargetFactory     │
+  │  WcagStructureFactory · WcagMediaFactory · WcagLanguageFactory   │
+  │  WcagErrorFactory                                               │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │ each method returns (Element, Established<Leaf>)
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │               Section Aggregate Factories                        │
+  │   WcagPerceivedFactory   →  Established<WcagPerceivedValid>     │
+  │   WcagOperableFactory    →  Established<WcagOperableValid>      │
+  │   WcagUnderstandableFactory → Established<WcagUnderstandableValid>│
+  │   WcagRobustFactory      →  Established<WcagRobustValid>        │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │ assemble LevelAaEvidence
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                     WcagBackend supertrait                       │
+  │      build_level_aa(evidence) → Established<WcagLevelAAValid>   │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │
+               ┌───────────────┼───────────────┐
+               ▼               ▼               ▼
+         elicit_egui     elicit_ratatui   elicit_leptos
+       (AccessKit IR)   (Ratatui cells)  (Leptos SSR/WASM)
 ```
 
-### Key Components
+The reference implementation of all factory traits is `AccessKitUiBackend`,
+which builds AccessKit `Node` trees and issues proof tokens. Renderer crates
+receive proof tokens through the IR but cannot forge them.
 
-1. **AccessKit Universal IR** — all UI represented as accessibility trees
-2. **Typestate State Machine** — `Pending → Verified → Rendered`
-3. **Composable Constraint System** — spec-traceable, tiered (hard/structural/advisory)
-4. **Pluggable Backends** — `RenderBackend` trait for frontend-agnostic rendering
-5. **Terminal Breakpoints** — multi-size verification across standard terminal sizes
-6. **Color Contrast** — WCAG 1.4.3/1.4.6/1.4.11 contrast ratio verification
-7. **CSS Units** — type-safe CSS lengths, breakpoints, zoom invariance
-8. **Proof-Carrying Contracts** — formal verification via Kani, Verus, Creusot
+---
 
-## State Machine
+## Proof Architecture
 
-```text
-Layout<Pending>  ──verify_a()──→  Layout<Verified>  ──render()──→  Layout<Rendered>
-                 ──verify_aa()─→
-                 ──verify_aaa()→
-                 ──verify_custom()→
-```
+### Proposition types
 
-- `Layout<Pending>` — constructed from an AccessKit `TreeUpdate`, awaiting verification
-- `Layout<Verified>` — all constraints satisfied; exposes `nodes()` and `render()`
-- `Layout<Rendered>` — rendered through a `RenderBackend` (egui, ratatui, etc.)
-
-## Constraint System
-
-Constraints implement the `Constraint` trait, each anchored to a recognized standard:
+Every verifiable WCAG invariant has a corresponding Rust type — a
+*proposition* — that implements `elicitation::contracts::Prop`. These types
+are zero-cost phantoms that exist only at the type level.
 
 ```rust
-pub trait Constraint: Send + Sync {
-    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation>;
-    fn spec_ref(&self) -> SpecReference;
+pub struct WcagContrastMinimumNormalText;  // SC 1.4.3, normal text ≥ 4.5:1
+pub struct WcagFocusVisibleKeyboard;       // SC 2.4.7
+pub struct WcagLevelAAValid;               // the full Level AA composite
+```
+
+### Proof tokens
+
+`Established<P>` is the proof that proposition `P` holds. It is a zero-sized
+type that carries no runtime data — only type-level evidence.
+
+### The `ProvableFrom<C>` trait
+
+The credential-gated minting path is `Established::prove`:
+
+```rust
+impl Established<P> {
+    pub fn prove<C>(_: &C) -> Self  where P: ProvableFrom<C> { … }
 }
 ```
 
-Constraints are composed into a `ConstraintSet` with enforcement tiers:
+`ProvableFrom<C>` declares "credential `C` proves proposition `P`". The
+46 impls live in `elicit_ui::contracts::wcag_proofs`:
 
 ```rust
-let constraints = ConstraintSetBuilder::default()
-    .hard(HasLabelConstraint)        // must pass
-    .hard(NoOverflowConstraint)      // must pass
-    .advisory(GridAlignment { step: 8.0 })  // warning only
-    .build();
+impl ProvableFrom<NormalTextContrastVerified> for WcagContrastMinimumNormalText {}
+impl ProvableFrom<FocusVisibleVerified>       for WcagFocusVisibleKeyboard {}
+// … 44 more
 ```
 
-### WCAG Constraints
+### Credential types
 
-| Constraint | WCAG | Level | Description |
-|-----------|------|-------|-------------|
-| `HasLabelConstraint` | 4.1.2 | A | Non-empty accessible label |
-| `ValidRoleConstraint` | 4.1.2 | A | Valid ARIA role |
-| `KeyboardAccessibleConstraint` | 2.1.1 | A | Keyboard navigable |
-| `NoOverflowConstraint` | 1.4.10 | AA | Fits within viewport |
-| `MinTouchTargetConstraint` | 2.5.5 | AAA | ≥44×44 touch target |
-| `Reflow320` | 1.4.10 | AA | Content reflows at 320px |
-| `TextSpacing` | 1.4.12 | AA | Text spacing adjustments |
-| `ResizeText200` | 1.4.4 | AA | Text resizable to 200% |
-
-### Spatial Constraints
-
-| Constraint | Standard | Description |
-|-----------|----------|-------------|
-| `GridAlignment` | Material Design 3 | Position snaps to grid step |
-| `MinSpacing` | Design system | Minimum gap between elements |
-
-### Terminal Constraints
-
-| Constraint | Standard | Description |
-|-----------|----------|-------------|
-| `TerminalNoOverflow` | WCAG 1.4.10 | Fits cell viewport (cols×rows) |
-| `MinReadableSize` | ISO 9241-3 | Container ≥10 cols × 3 rows |
-
-### Constraint Profiles
-
-Pre-built profiles for common verification scenarios:
+Each credential is a `pub(crate)` ZST in `proof_credentials`. External code
+cannot construct one:
 
 ```rust
-let verified = layout.verify_with_profile(viewport, ConstraintProfile::WcagAA)?;
+// pub(crate) — only factory methods inside elicit_ui can build this
+pub(crate) struct NormalTextContrastVerified;
 ```
 
-| Profile | Constraints |
-|---------|-------------|
-| `WcagA` | HasLabel, ValidRole, KeyboardAccessible |
-| `WcagAA` | Level A + NoOverflow |
-| `WcagAAA` | Level AA + MinTouchTarget |
-
-### TerminalAccessible
-
-Convenience builder combining WCAG + terminal constraints:
+The factory method constructs the credential *after* performing the runtime
+check, then passes it to `prove`:
 
 ```rust
-let constraints = TerminalAccessible::default().to_constraint_set();
-// Includes: HasLabel, ValidRole, KeyboardAccessible, TerminalNoOverflow, MinReadableSize
-```
-
-## Terminal Breakpoint Verification
-
-Verify a layout across standard terminal sizes in one call:
-
-```rust
-let breakpoints = TerminalBreakpointSet::standard();
-let constraints = ConstraintSetBuilder::default()
-    .hard(TerminalNoOverflow)
-    .hard(MinReadableSize::default())
-    .build();
-
-let report = breakpoints.verify_all(root_id, &nodes, &constraints);
-println!("{}", report.summary());
-```
-
-Output:
-
-```text
-Terminal Breakpoint Report
-─────────────────────────────────────────
-micro         40×12  [expected-fail] 📝 expected-fail
-tiny          60×20  [advisory]      ⚠️ warning
-VT100         80×24  [required]      ✅ pass
-small        100×30  [required]      ✅ pass
-medium       120×40  [required]      ✅ pass
-large        160×50  [required]      ✅ pass
-ultrawide    200×60  [required]      ✅ pass
-─────────────────────────────────────────
-Result: PASS (5 pass, 0 fail, 1 warn, 1 expected-fail)
-```
-
-### Breakpoint Tiers
-
-| Tier | Meaning |
-|------|---------|
-| `Required` | Must pass — blocks validity |
-| `Advisory` | Warning only — informational |
-| `ExpectedFail` | Documents known limitations |
-
-## Rendering
-
-`elicit_ui` defines the `RenderBackend` trait; implementations live in
-companion crates:
-
-```rust
-pub trait RenderBackend {
-    fn render_tree(&self, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats;
+fn build_contrast_minimum(&self, input: ContrastDescriptor)
+    -> UiResult<(ContrastPair, Established<WcagContrastMinimumNormalText>)>
+{
+    let ratio = contrast_ratio(&input.foreground, &input.background);
+    if ratio < 4.5 {
+        return Err(UiError::new(UiErrorKind::InsufficientContrast(…)));
+    }
+    let pair = ContrastPair { … };
+    Ok((pair, Established::prove(&NormalTextContrastVerified)))
+    //                                  ^^^^^^^^^^^^^^^^^^^
+    //  credential constructed here, after the check, and nowhere else
 }
 ```
 
-| Backend | Crate | Description |
-|---------|-------|-------------|
-| `EguiBackend` | `elicit_egui` | Renders to egui widgets |
-| `RatatuiBackend` | `elicit_ratatui` | Renders to TuiNode trees |
+### Why this is a compile-time guarantee
+
+- `NormalTextContrastVerified` is `pub(crate)` — external crates cannot write
+  `Established::prove(&NormalTextContrastVerified)`.
+- `ProvableFrom<NormalTextContrastVerified>` is only implemented for
+  `WcagContrastMinimumNormalText` — no other proposition can be proved with
+  that credential.
+- `Established::assert()` remains `pub` as a general escape hatch, but any
+  call to `assert()` on a WCAG proposition is immediately visible in code
+  review and audit tooling as an explicit bypass.
+
+---
+
+## WCAG 2.2 Contract Parity
+
+### Leaf propositions (41)
+
+| Factory trait | Factory method | Proposition | WCAG SC | Level |
+|---|---|---|---|---|
+| `WcagContrastFactory` | `build_contrast_minimum` | `WcagContrastMinimumNormalText` | 1.4.3 | AA |
+| | `build_contrast_minimum_large` | `WcagContrastMinimumLargeText` | 1.4.3 | AA |
+| | `build_contrast_enhanced` | `WcagContrastEnhancedNormalText` | 1.4.6 | AAA |
+| | `build_contrast_enhanced_large` | `WcagContrastEnhancedLargeText` | 1.4.6 | AAA |
+| | `build_non_text_contrast` | `WcagNonTextContrastMinimum` | 1.4.11 | AA |
+| `WcagLabelFactory` | `build_labeled_element` | `WcagNamePresent` | 4.1.2 | A |
+| | `build_labeled_form_field` | `WcagFormLabelsProgrammatic` | 1.3.1 / 3.3.2 | A |
+| | `build_label_in_name` | `WcagLabelInNameMatch` | 2.5.3 | A |
+| `WcagFocusFactory` | `build_focus_visible` | `WcagFocusVisibleKeyboard` | 2.4.7 | AA |
+| | `build_focus_appearance_minimum` | `WcagFocusAppearanceMinimumArea` | 2.4.11 | AA |
+| | `build_focus_appearance_enhanced` | `WcagFocusAppearanceEnhancedArea` | 2.4.12 | AAA |
+| `WcagKeyboardFactory` | `build_keyboard_accessible` | `WcagKeyboardOperable` | 2.1.1 | A |
+| | `build_keyboard_escape` | `WcagKeyboardNotTrapped` | 2.1.2 | A |
+| | `build_remappable_shortcut` | `WcagCharacterShortcutsRemappable` | 2.1.4 | A |
+| `WcagTimingFactory` | `build_timed_element` | `WcagTimingAdjustable` | 2.2.1 | A |
+| `WcagTargetFactory` | `build_target_minimum` | `WcagTargetSizeMinimum` | 2.5.8 | AA |
+| | `build_target_enhanced` | `WcagTargetSizeEnhanced` | 2.5.5 | AAA |
+| | `build_pointer_gesture_alternative` | `WcagPointerGesturesSimpleAlternative` | 2.5.1 | A |
+| | `build_pointer_cancellation` | `WcagPointerCancellationUpEvent` | 2.5.2 | A |
+| `WcagStructureFactory` | `build_heading` | `WcagHeadingStructureProgrammatic` | 1.3.1 | A |
+| | `build_list` | `WcagListStructureProgrammatic` | 1.3.1 | A |
+| | `build_table` | `WcagTableHeadersProgrammatic` | 1.3.1 | A |
+| | `build_resizable_text` | `WcagTextResizable` | 1.4.4 | AA |
+| `WcagMediaFactory` | `build_captioned_media` | `WcagCaptionsSynchronized` | 1.2.2 | A |
+| | `build_audio_described_media` | `WcagAudioDescriptionPrerecorded` | 1.2.5 | AA |
+| `WcagLanguageFactory` | `build_language_page` | `WcagPageLanguageIdentified` | 3.1.1 | A |
+| | `build_language_element` | `WcagPartLanguageIdentified` | 3.1.2 | AA |
+| `WcagErrorFactory` | `build_identified_error` | `WcagErrorIdentificationDescriptive` | 3.3.1 | A |
+| | `build_labeled_field` | `WcagLabelsOrInstructionsPresent` | 3.3.2 | A |
+| | `build_error_suggestion` | `WcagErrorSuggestionProvided` | 3.3.3 | AA |
+| | `build_error_prevention` | `WcagErrorPreventionLegal` | 3.3.4 | AA |
+
+### Section propositions (5)
+
+Section factories accept *evidence bundles* — structs whose fields are
+`Established<LeafProposition>` tokens. They compose leaf proofs into a
+section-level proof and pass it upward.
+
+| Factory | Evidence bundle | Section proposition |
+|---|---|---|
+| `WcagPerceivedFactory` | `PerceivedEvidence` | `WcagPerceivedValid` |
+| `WcagOperableFactory` | `OperableEvidence` | `WcagOperableValid` |
+| `WcagUnderstandableFactory` | `UnderstandableEvidence` | `WcagUnderstandableValid` |
+| `WcagRobustFactory` | `RobustEvidence` | `WcagRobustValid` |
+| `WcagBackend` | `LevelAaEvidence` | `WcagLevelAAValid` |
+
+---
+
+## Proof Composition
+
+Proofs compose bottom-up. The compiler rejects any gap in the chain.
 
 ```rust
-// After verification, render to any backend:
-let (rendered, stats) = verified.render(&backend);
-```
+// 1. Leaf proofs — each factory method returns (Element, Established<LeafProp>)
+let (_, contrast_proof) = backend
+    .build_contrast_minimum(ContrastDescriptor { foreground, background })?;
+let (_, focus_proof) = backend
+    .build_focus_visible(FocusDescriptor { … })?;
 
-## Color Contrast
-
-WCAG contrast ratio verification with `palette`-based sRGB colors:
-
-```rust
-use elicit_ui::{SrgbColor, contrast_ratio, ContrastMinimum, ContrastEnhanced};
-
-let fg = SrgbColor::new(0.0, 0.0, 0.0);      // black
-let bg = SrgbColor::new(1.0, 1.0, 1.0);      // white
-let ratio = contrast_ratio(&fg, &bg);         // 21.0
-
-// Type-level contrast witnesses
-let _min: ContrastMinimum = ContrastMinimum::check(&fg, &bg, TextSize::Normal)?;   // 4.5:1
-let _enh: ContrastEnhanced = ContrastEnhanced::check(&fg, &bg, TextSize::Normal)?; // 7:1
-```
-
-## CSS Units
-
-Type-safe CSS length parsing and zoom invariance checking:
-
-```rust
-use elicit_ui::{CssLength, is_zoom_invariant};
-
-let length = CssLength::Em(1.5);
-assert!(is_zoom_invariant(&length));   // relative unit
-
-let px = CssLength::Px(16.0);
-assert!(!is_zoom_invariant(&px));      // absolute unit
-```
-
-## WCAG Propositions (Compile-Time)
-
-Type-level witnesses that carry proof of compliance:
-
-| Proposition | Description |
-|------------|-------------|
-| `HasLabel<T>` | Non-empty accessible label |
-| `ValidRole<T>` | Valid ARIA role |
-| `KeyboardAccessible<T>` | Keyboard navigable |
-| `NoOverflow<T>` | Fits within viewport |
-| `MinTargetSize<T>` | ≥44×44 touch target |
-| `AccessibleAA<T>` | Composite Level AA |
-
-## Usage
-
-### Basic Verification
-
-```rust
-use elicit_ui::{Layout, Viewport};
-use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
-
-let button_id = NodeId::from(1u64);
-let root_id = NodeId::from(0u64);
-
-let mut button = Node::new(Role::Button);
-button.set_label("Submit");
-button.set_bounds(accesskit::Rect {
-    x0: 0.0, y0: 0.0, x1: 100.0, y1: 50.0,
-});
-
-let mut root = Node::new(Role::Window);
-root.set_children(vec![button_id]);
-
-let update = TreeUpdate {
-    nodes: vec![(root_id, root), (button_id, button)],
-    tree: Some(Tree::new(root_id)),
-    tree_id: TreeId::ROOT,
-    focus: root_id,
+// 2. Assemble a section evidence bundle — all fields are required proof tokens
+let perceived_evidence = PerceivedEvidence {
+    contrast_normal:   contrast_proof,
+    non_text_contrast: non_text_proof,
+    focus_contrast:    focus_contrast_proof,
+    color_not_sole:    color_proof,
 };
 
-let layout = Layout::from_update(update);
-let verified = layout.verify_aa(Viewport::new(1920, 1080))?;
-assert_eq!(verified.report().error_count(), 0);
-# Ok::<(), elicit_ui::VerificationReport>(())
+// 3. Section factory consumes the bundle, produces a section proof
+let (_, perceived_proof) = backend.build_perceivable(perceived_evidence);
+
+// 4. Repeat for all four WCAG principles, then assemble the top-level bundle
+let level_aa_evidence = LevelAaEvidence {
+    perceived:      perceived_proof,
+    operable:       operable_proof,
+    understandable: understandable_proof,
+    robust:         robust_proof,
+};
+
+// 5. Mint the composite Level AA proof
+let level_aa_proof: Established<WcagLevelAAValid> =
+    backend.build_level_aa(level_aa_evidence);
 ```
 
-### Custom Constraints
+If any leaf is missing the evidence bundle struct literal will not compile —
+there is no API to skip a field.
+
+---
+
+## Trait Interface
+
+### Factory traits (leaf level)
 
 ```rust
-use elicit_ui::{Layout, Viewport, ConstraintSetBuilder, GridAlignment, MinSpacing};
+pub trait WcagContrastFactory: Send + Sync {
+    fn build_contrast_minimum(&self, input: ContrastDescriptor)
+        -> UiResult<(ContrastPair, Established<WcagContrastMinimumNormalText>)>;
 
-let constraints = ConstraintSetBuilder::default()
-    .hard(elicit_ui::HasLabelConstraint)
-    .hard(elicit_ui::NoOverflowConstraint)
-    .advisory(GridAlignment { step: 8.0 })
-    .advisory(MinSpacing { min_gap: 4.0 })
-    .build();
+    fn build_contrast_minimum_large(&self, input: ContrastDescriptor)
+        -> UiResult<(ContrastPair, Established<WcagContrastMinimumLargeText>)>;
 
-let verified = layout.verify_custom(viewport, &constraints)?;
+    fn build_contrast_enhanced(&self, input: ContrastDescriptor)
+        -> UiResult<(ContrastPair, Established<WcagContrastEnhancedNormalText>)>;
+
+    fn build_contrast_enhanced_large(&self, input: ContrastDescriptor)
+        -> UiResult<(ContrastPair, Established<WcagContrastEnhancedLargeText>)>;
+
+    fn build_non_text_contrast(&self, input: ContrastDescriptor)
+        -> UiResult<(ContrastPair, Established<WcagNonTextContrastMinimum>)>;
+}
+// … WcagLabelFactory, WcagFocusFactory, WcagKeyboardFactory,
+//   WcagTimingFactory, WcagTargetFactory, WcagStructureFactory,
+//   WcagMediaFactory, WcagLanguageFactory, WcagErrorFactory
 ```
 
-## Features
+### Section aggregate traits
 
-| Feature | Dependencies | Description |
-|---------|-------------|-------------|
-| `emit` | `proc-macro2`, `quote`, `elicitation/emit` | Code emission for formal verification |
-| `geo` | `geo`, `geo-types` | GeoRust spatial type support |
-| `css` | `cssparser` | CSS value parsing |
-| `color` | `palette` | sRGB color contrast verification |
-| `layout-engine` | `taffy` | Flexbox/grid layout computation |
+```rust
+pub trait WcagPerceivedFactory: Send + Sync {
+    fn build_perceivable(&self, evidence: PerceivedEvidence)
+        -> (PerceivedSection, Established<WcagPerceivedValid>);
+}
+```
+
+### Top-level supertrait
+
+```rust
+pub trait WcagBackend:
+    WcagContrastFactory + WcagLabelFactory + WcagFocusFactory
+    + WcagKeyboardFactory + WcagTimingFactory + WcagTargetFactory
+    + WcagStructureFactory + WcagMediaFactory + WcagLanguageFactory
+    + WcagErrorFactory + WcagPerceivedFactory + WcagOperableFactory
+    + WcagUnderstandableFactory + WcagRobustFactory
+    + Send + Sync
+{
+    fn build_level_aa(&self, evidence: LevelAaEvidence)
+        -> Established<WcagLevelAAValid>;
+}
+```
+
+`AccessKitUiBackend` implements `WcagBackend` and is the reference backend
+shipped with this crate. Other implementations must satisfy the same trait
+bounds — the factory signatures are the contract.
+
+---
+
+## Compile-Time Guarantee Summary
+
+| What is guaranteed | Mechanism |
+|---|---|
+| Contrast ratio was checked before proof minted | `NormalTextContrastVerified` is `pub(crate)` — only the factory body can construct it |
+| All WCAG SCs are covered before Level AA | `LevelAaEvidence` fields are `Established<…>` tokens — all must be present at the struct literal |
+| No renderer can skip the factory | Renderer crates receive proof tokens via the AccessKit IR; they cannot call `prove()` on WCAG types because they cannot construct any WCAG credential |
+| Section composition is total | Evidence bundle structs have no optional fields; every field is an `Established<…>` |
+| `assert()` bypasses are audit-visible | `assert()` is `pub` but stands out immediately in code review; `prove()` + credential is the type-safe path |
+
+---
+
+## Evidence Bundles
+
+Evidence bundles are the bridges between proof layers. Each field must be
+filled with a token minted by the corresponding factory method.
+
+```rust
+pub struct PerceivedEvidence {
+    /// Normal text meets SC 1.4.3 (≥ 4.5:1).
+    pub contrast_normal:   Established<WcagContrastMinimumNormalText>,
+    /// Non-text controls meet SC 1.4.11 (≥ 3:1).
+    pub non_text_contrast: Established<WcagNonTextContrastMinimum>,
+    /// Focus indicator meets SC 1.4.11 / 2.4.11 contrast.
+    pub focus_contrast:    Established<WcagFocusIndicatorContrast>,
+    /// Colour is not the sole means of conveying information (SC 1.4.1).
+    pub color_not_sole:    Established<WcagColorNotSoleConveyor>,
+}
+
+pub struct LevelAaEvidence {
+    pub perceived:      Established<WcagPerceivedValid>,
+    pub operable:       Established<WcagOperableValid>,
+    pub understandable: Established<WcagUnderstandableValid>,
+    pub robust:         Established<WcagRobustValid>,
+}
+```
+
+---
+
+## Implementing a Custom Backend
+
+To implement `WcagBackend` for a new rendering target:
+
+1. Implement all ten leaf factory traits (`WcagContrastFactory` through
+   `WcagErrorFactory`). Each method must perform its runtime check, then call
+   `Established::prove(&Credential)` only after the check passes.
+
+2. Implement the four section factories. These accept evidence bundles and
+   call `prove` with the evidence value as the credential.
+
+3. Implement `WcagBackend`. The `build_level_aa` default impl composes the
+   four section proofs into `Established<WcagLevelAAValid>` — override only
+   if the backend needs additional logic.
+
+> **Note for external backends:** Credentials are `pub(crate)` inside
+> `elicit_ui`. Implementations that live outside this crate can use
+> `Established::assert()` at the leaf level — which is an explicit, auditable
+> choice — or add their credential types and `ProvableFrom` impls inside
+> `elicit_ui` as a new backend module.
+
+---
 
 ## Formal Verification
 
-When `emit` is enabled, propositions can generate proofs for:
+The proof architecture is designed for downstream formal verification.
+Each proposition type implements `elicitation::contracts::Prop`, which
+exposes a `kani_proof()` method for generating verification harnesses.
 
-- **Kani** — bounded model checking
-- **Verus** — SMT-based verification
-- **Creusot** — deductive verification via Why3
+- **Kani** — bounded model checking on credential construction paths
+- **Creusot** — deductive verification that factory bodies satisfy their WCAG
+  postconditions before calling `prove`
+- **Verus** — SMT-based proofs of composition totality
 
-## Comparison to Ledger Pattern
+---
 
-| Aspect | Ledger | UI |
-|--------|--------|-----|
-| Domain | Money transfers | Interactive layouts |
-| States | Pending → Validated → Committed | Pending → Verified → Rendered |
-| Universal IR | SQL schema | AccessKit tree |
-| Propositions | AmountPositive, SufficientFunds | HasLabel, MinTargetSize |
-| Backends | SQLite, PostgreSQL, MySQL | egui, ratatui |
-| Invariant | Σ debits = Σ credits | All interactive elements accessible |
+## Crate Layout
+
+```
+src/
+├── lib.rs                      pub use surface
+├── accesskit_backend.rs        AccessKitUiBackend — reference WcagBackend impl
+├── proof_credentials.rs        41 pub(crate) ZST credential types
+├── contracts/
+│   ├── mod.rs
+│   ├── wcag_proofs.rs          46 ProvableFrom<C> for P impls
+│   ├── node_roles.rs           AccessKit role proofs
+│   └── ui.rs                   layout / navigation proofs
+├── traits/
+│   ├── wcag.rs                 14 factory traits + WcagBackend supertrait
+│   └── renderer.rs             UiNodeBridge, UiLayoutManager, UiNavigationManager
+├── wcag_types.rs               descriptor, element, evidence, section types
+├── typestate.rs                Layout<Pending>, Layout<Verified>
+├── constraints/                runtime WCAG constraint checking
+├── color_contrast.rs           WCAG contrast ratio arithmetic
+└── css_units.rs                CssLength, zoom invariance
+```
+
+---
 
 ## License
 

@@ -74,13 +74,13 @@ struct RemoveParams {
 }
 
 /// Construct an `http::HeaderMap` from a `HashMap<String, String>`.
-fn to_header_map(headers: &Headers) -> Result<http::HeaderMap, CallToolResult> {
+fn to_header_map(headers: &Headers) -> Result<http::HeaderMap, Box<CallToolResult>> {
     let mut map = http::HeaderMap::new();
     for (k, v) in headers {
         let name = HeaderName::from_bytes(k.as_bytes())
-            .map_err(|e| CallToolResult::error(vec![Content::text(e.to_string())]))?;
+            .map_err(|e| Box::new(CallToolResult::error(vec![Content::text(e.to_string())])))?;
         let value = HeaderValue::from_str(v)
-            .map_err(|e| CallToolResult::error(vec![Content::text(e.to_string())]))?;
+            .map_err(|e| Box::new(CallToolResult::error(vec![Content::text(e.to_string())])))?;
         map.insert(name, value);
     }
     Ok(map)
@@ -155,7 +155,7 @@ async fn hm_new(_p: EmptyParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_get(p: GetParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result = map
         .get(p.key.as_str())
@@ -174,7 +174,7 @@ async fn hm_get(p: GetParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_contains_key(p: HmContainsKeyParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     Ok(CallToolResult::success(vec![Content::text(
         map.contains_key(p.key.as_str()).to_string(),
@@ -190,7 +190,7 @@ async fn hm_contains_key(p: HmContainsKeyParams) -> Result<CallToolResult, Error
 async fn hm_insert(p: InsertParams) -> Result<CallToolResult, ErrorData> {
     let mut map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let name = match HeaderName::from_bytes(p.key.as_bytes()) {
         Ok(n) => n,
@@ -221,7 +221,7 @@ async fn hm_insert(p: InsertParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_append(p: HmAppendParams) -> Result<CallToolResult, ErrorData> {
     let mut map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let name = match HeaderName::from_bytes(p.key.as_bytes()) {
         Ok(n) => n,
@@ -245,7 +245,7 @@ async fn hm_append(p: HmAppendParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_remove(p: RemoveParams) -> Result<CallToolResult, ErrorData> {
     let mut map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let removed = map
         .remove(p.key.as_str())
@@ -268,7 +268,7 @@ async fn hm_remove(p: RemoveParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     Ok(CallToolResult::success(vec![Content::text(
         map.len().to_string(),
@@ -284,7 +284,7 @@ async fn hm_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_keys_len(p: HmKeysLenParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     Ok(CallToolResult::success(vec![Content::text(
         map.keys_len().to_string(),
@@ -300,7 +300,7 @@ async fn hm_keys_len(p: HmKeysLenParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_is_empty(p: HmIsEmptyParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     Ok(CallToolResult::success(vec![Content::text(
         map.is_empty().to_string(),
@@ -316,7 +316,7 @@ async fn hm_is_empty(p: HmIsEmptyParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_keys(p: HmKeysParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let keys: Vec<&str> = map.keys().map(|k| k.as_str()).collect();
     let json = serde_json::to_string(&keys).unwrap_or_else(|_| "[]".to_string());
@@ -332,7 +332,7 @@ async fn hm_keys(p: HmKeysParams) -> Result<CallToolResult, ErrorData> {
 async fn hm_values(p: HmValuesParams) -> Result<CallToolResult, ErrorData> {
     let map = match to_header_map(&p.headers) {
         Ok(m) => m,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let values: Vec<&str> = map.values().filter_map(|v| v.to_str().ok()).collect();
     let json = serde_json::to_string(&values).unwrap_or_else(|_| "[]".to_string());

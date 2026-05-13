@@ -21,7 +21,7 @@ pub use wcag::{
 
 use crate::{ElementId, Viewport};
 use accesskit::NodeId;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// External specification reference for constraint traceability.
 ///
@@ -207,7 +207,7 @@ pub enum Violation {
 #[derive(Debug, Clone)]
 pub struct ConstraintContext<'a> {
     /// All nodes in the AccessKit tree.
-    pub nodes: &'a HashMap<NodeId, accesskit::Node>,
+    pub nodes: &'a BTreeMap<NodeId, accesskit::Node>,
     /// Viewport dimensions.
     pub viewport: Viewport,
 }

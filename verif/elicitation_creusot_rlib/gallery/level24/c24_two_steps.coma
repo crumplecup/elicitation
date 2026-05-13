@@ -1,0 +1,71 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 225 0 225 89 *)
+
+let%span slevel24 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 226 13 226 34
+let%span slevel24'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 228 32 228 51
+let%span slevel24'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 219 11 219 22
+let%span slevel24'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 220 10 224 1
+let%span slevel24'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 174 11 174 21
+let%span slevel24'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 175 10 178 1
+
+use creusot.int.UInt64
+use creusot.int.Int32
+use creusot.prelude.Any
+use int.Int
+
+type t_C24Node = { remaining_depth: UInt64.t; value: Int32.t }
+
+type t_C24Result_C24Node = DepthExceeded | Ok UInt64.t t_C24Node
+
+let rec c24_step (depth: UInt64.t) (leaf: Int32.t) (return (x: t_C24Result_C24Node)) =
+  {[@stop_split] [@expl:c24_step requires] [%#slevel24'3] UInt64.t'int depth > 0}
+  any
+  [ return (result: t_C24Result_C24Node) -> {[@stop_split] [@expl:c24_step ensures] [%#slevel24'4] match result with
+      | Ok d _ -> UInt64.t'int d = UInt64.t'int depth - 1
+      | DepthExceeded -> false
+      end}
+    (! return {result}) ]
+
+let rec elim_Ok (_x: t_C24Result_C24Node) (return (f0: UInt64.t) (f1: t_C24Node)) = any
+  [ _k (f0: UInt64.t) (f1: t_C24Node) -> {Ok f0 f1 = _x} (! return {f0} {f1})
+  | _chk -> (! {[@expl:elim Ok] match _x with
+      | Ok _ _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+type tup2_C24Result_C24Node_C24Result_C24Node = { f0: t_C24Result_C24Node; f1: t_C24Result_C24Node }
+
+type tup2_ref_C24Result_C24Node_ref_C24Result_C24Node = { f0'0: t_C24Result_C24Node; f1'0: t_C24Result_C24Node }
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c24_two_steps [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level24.rs" 225 0 225 89]
+  (depth: UInt64.t) (leaf: Int32.t) (return (x: tup2_C24Result_C24Node_C24Result_C24Node)) =
+  {[@stop_split] [@expl:c24_two_steps requires] [%#slevel24'1] UInt64.t'int depth >= 2}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = c24_step [%#slevel24] {depth} {leaf} (fun (_x: t_C24Result_C24Node) -> [ &r1 <- _x ] s1)
+    | s1 = [ &_11 <- r1 ] s2
+    | s2 = any
+      [ br0 -> {_11 = DepthExceeded} (! bb4) | br1 (x0: UInt64.t) (x1: t_C24Node) -> {_11 = Ok x0 x1} (! bb5) ] ]
+  | bb5 = s0
+    [ s0 = elim_Ok {_11} (fun (r0: UInt64.t) (r1'0: t_C24Node) -> [ &d1 <- r0 ] s1)
+    | s1 = c24_step [%#slevel24'0] {d1} {leaf} (fun (_x: t_C24Result_C24Node) -> [ &r2 <- _x ] s2)
+    | s2 = bb7 ]
+  | bb4 = s0 [ s0 = [ &r2 <- DepthExceeded ] s1 | s1 = bb7 ]
+  | bb7 = s0 [ s0 = [ &_ret <- { f0 = r1; f1 = r2 } ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: tup2_C24Result_C24Node_C24Result_C24Node = Any.any_l ()
+  | & depth: UInt64.t = depth
+  | & leaf: Int32.t = leaf
+  | & r1: t_C24Result_C24Node = Any.any_l ()
+  | & r2: t_C24Result_C24Node = Any.any_l ()
+  | & _11: t_C24Result_C24Node = Any.any_l ()
+  | & d1: UInt64.t = Any.any_l () ])
+  [ return (result: tup2_C24Result_C24Node_C24Result_C24Node) ->
+  {[@stop_split] [@expl:c24_two_steps ensures] [%#slevel24'2] match { f0'0 = result.f0; f1'0 = result.f1 } with
+      | {f0'0 = Ok d1 _; f1'0 = Ok d2 _} -> UInt64.t'int d1 < UInt64.t'int depth /\ UInt64.t'int d2 < UInt64.t'int d1
+      | _ -> false
+      end}
+    (! return {result}) ]

@@ -28,7 +28,7 @@
 //! registry.register_type::<MyParser>("myapp").await;
 //! ```
 
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 
 // ── clap::CommandFactory ──────────────────────────────────────────────────────
 

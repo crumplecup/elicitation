@@ -43,6 +43,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
 
 [target.'cfg(kani)'.dependencies]
 kani-verifier = { workspace = true }
+chrono = { workspace = true }
+csv    = { workspace = true }
+serde  = { workspace = true }
 
 [package.metadata.docs.rs]
 all-features = true

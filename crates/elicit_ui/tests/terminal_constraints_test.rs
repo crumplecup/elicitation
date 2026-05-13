@@ -5,15 +5,15 @@ use elicit_ui::{
     ConstraintContext, ConstraintSetBuilder, MinReadableSize, TerminalAccessible,
     TerminalNoOverflow, Viewport,
 };
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Build a simple node map with a root and optional children.
 fn make_context(
     nodes: Vec<(NodeId, Node)>,
     viewport_cols: u32,
     viewport_rows: u32,
-) -> (HashMap<NodeId, Node>, Viewport) {
-    let map: HashMap<NodeId, Node> = nodes.into_iter().collect();
+) -> (BTreeMap<NodeId, Node>, Viewport) {
+    let map: BTreeMap<NodeId, Node> = nodes.into_iter().collect();
     let viewport = Viewport::new(viewport_cols, viewport_rows);
     (map, viewport)
 }

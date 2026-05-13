@@ -31,7 +31,7 @@
 //! - `myapp__to_json`   — serialise a `MyType` value to a compact JSON string
 //! - `myapp__from_json` — parse a JSON string into a `MyType` value
 
-use elicitation_macros::reflect_trait;
+use elicitation_derive::reflect_trait;
 
 // ── SerializeJson ─────────────────────────────────────────────────────────────
 

@@ -1,0 +1,38 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 55 0 55 46 *)
+
+let%span slevel2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 56 15 56 16
+let%span slevel2'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 56 4 56 16
+let%span slevel2'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 52 11 52 26
+let%span slevel2'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 53 11 53 27
+let%span slevel2'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 54 10 54 30
+let%span slevel2'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 33 16 33 28
+let%span slevel2'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 40 16 40 50
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use int.Int
+
+type t_Counter = { count: Int64.t }
+
+predicate c2_positive [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 32 0 32 39] (c: t_Counter) =
+  [%#slevel2'4] Int64.to_int c.count > 0
+
+predicate c2_below_max [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 39 0 39 40] (c: t_Counter) =
+  [%#slevel2'5] Int64.to_int c.count < 9223372036854775807
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c2_increment [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level2.rs" 55 0 55 46]
+  (c: t_Counter) (return (x: t_Counter)) =
+  {[@stop_split] [@expl:c2_increment requires] ([@stop_split] [@expl:c2_increment requires #0] [%#slevel2'1] c2_positive c)
+  /\ ([@stop_split] [@expl:c2_increment requires #1] [%#slevel2'2] c2_below_max c)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = Int64.add [%#slevel2'0] {c.count} {[%#slevel2] (1: Int64.t)}
+        (fun (_x: Int64.t) -> [ &c <- { count = _x } ] s1)
+    | s1 = [ &_ret <- c ] s2
+    | s2 = return {_ret} ] ] [ & _ret: t_Counter = Any.any_l () | & c: t_Counter = c ])
+  [ return (result: t_Counter) -> {[@stop_split] [@expl:c2_increment ensures] [%#slevel2'3] c2_positive result}
+    (! return {result}) ]

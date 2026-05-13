@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c20_reset": { "prover": "cvc5", "time": 0.013 } }
+  }
+}

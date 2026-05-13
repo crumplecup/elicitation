@@ -1,0 +1,152 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 0 234 66 *)
+
+let%span slevel12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 16 234 17
+let%span slevel12'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 230 11 230 29
+let%span slevel12'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 231 11 231 31
+let%span slevel12'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 232 11 232 25
+let%span slevel12'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 53 234 66
+let%span slevel12'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 233 10 233 33
+let%span slevel12'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 128 8 128 57
+let%span slevel12'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 160 8 163 9
+let%span slevel12'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 82 8 87 9
+let%span slevel12'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 97 8 102 9
+let%span slevel12'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 114 8 120 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_MiniConnState = Disconnected | Connecting t_String | Connected t_String | Error t_String
+
+type t_MiniDisplayMode = Read | Edit
+
+type t_MiniPanelState = Empty'0 | Grid'0 t_MiniDisplayMode Int64.t | Detail'0 t_MiniDisplayMode | Error'0 t_String
+
+type t_MiniComposite = { conn: t_MiniConnState; panel: t_MiniPanelState }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_MiniPanelState (_1: t_MiniPanelState)
+
+axiom inv_axiom [@rewrite]: forall x: t_MiniPanelState [inv_MiniPanelState x]. inv_MiniPanelState x
+    = match x with
+      | Empty'0 -> true
+      | Grid'0 mode row_count -> true
+      | Detail'0 mode -> true
+      | Error'0 message -> inv_String message
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_MiniPanelState (_1: t_MiniPanelState)
+
+axiom resolve_axiom [@rewrite]: forall x: t_MiniPanelState [resolve_MiniPanelState x]. resolve_MiniPanelState x
+    = match x with
+      | Empty'0 -> true
+      | Grid'0 x0 x1 -> true
+      | Detail'0 x0 -> true
+      | Error'0 x0 -> resolve_String x0
+      end
+
+let rec elim_Connected (_x: t_MiniConnState) (return (name: t_String)) = any
+  [ _k (name: t_String) -> {Connected name = _x} (! return {name})
+  | _chk -> (! {[@expl:elim Connected] match _x with
+      | Connected _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+predicate inv_MiniConnState (_1: t_MiniConnState)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_MiniConnState [inv_MiniConnState x]. inv_MiniConnState x
+    = match x with
+      | Disconnected -> true
+      | Connecting name -> inv_String name
+      | Connected name -> inv_String name
+      | Error message -> inv_String message
+      end
+
+predicate inv_MiniComposite (_1: t_MiniComposite)
+
+axiom inv_axiom'1 [@rewrite]: forall x: t_MiniComposite [inv_MiniComposite x]. inv_MiniComposite x
+    = (inv_MiniConnState x.conn /\ inv_MiniPanelState x.panel)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c12_conn_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 80 0 80 45] (s: t_MiniComposite) =
+  [%#slevel12'7] match s.conn with
+    | Disconnected -> true
+    | Connecting name -> Seq.length (view_String name) > 0
+    | Connected name -> Seq.length (view_String name) > 0
+    | Error message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_panel_ok [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 95 0 95 46] (s: t_MiniComposite) =
+  [%#slevel12'8] match s.panel with
+    | Empty'0 -> true
+    | Grid'0 _ row_count -> Int64.to_int row_count > 0
+    | Detail'0 _ -> true
+    | Error'0 message -> Seq.length (view_String message) > 0
+    end
+
+predicate c12_gated [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 112 0 112 43] (s: t_MiniComposite) =
+  [%#slevel12'9] match s.panel with
+    | Empty'0 -> true
+    | _ -> match s.conn with
+      | Connected _ -> true
+      | _ -> false
+      end
+    end
+
+predicate c12_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 126 0 126 48] (s: t_MiniComposite) =
+  [%#slevel12'5] c12_conn_ok s /\ c12_panel_ok s /\ c12_gated s
+
+predicate c12_is_connected [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 158 0 158 50] (s: t_MiniComposite) =
+  [%#slevel12'6] match s.conn with
+    | Connected _ -> true
+    | _ -> false
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c12_load [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level12.rs" 234 0 234 66]
+  (s: t_MiniComposite) (row_count: Int64.t) (return (x: t_MiniComposite)) =
+  {[@stop_split] [@expl:c12_load requires] ([@stop_split] [@expl:c12_load 's' type invariant] [%#slevel12] inv_MiniComposite s)
+  /\ ([@stop_split] [@expl:c12_load requires #0] [%#slevel12'0] c12_consistent s)
+  /\ ([@stop_split] [@expl:c12_load requires #1] [%#slevel12'1] c12_is_connected s)
+  /\ ([@stop_split] [@expl:c12_load requires #2] [%#slevel12'2] Int64.to_int row_count > 0)}
+  (! bb0
+  [ bb0 = any
+    [ br0 -> {s.conn = Disconnected} (! bb1)
+    | br1 (x0: t_String) -> {s.conn = Connecting x0} (! bb1)
+    | br2 (x0: t_String) -> {s.conn = Connected x0} (! bb2)
+    | br3 (x0: t_String) -> {s.conn = Error x0} (! bb1) ]
+  | bb1 = s0
+    [ s0 = [ &other <- s.conn ] s1 | s1 = [ &_ret <- { conn = other; panel = s.panel } ] s2 | s2 = return {_ret} ]
+  | bb2 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_MiniPanelState s.panel} any) ]
+    | s1 = -{resolve_MiniPanelState s.panel}- s2
+    | s2 = elim_Connected {s.conn} (fun (rname: t_String) -> [ &name <- rname ] s3)
+    | s3 = [ &_12 <- Connected name ] s4
+    | s4 = [ &_15 <- Read ] s5
+    | s5 = [ &_14 <- Grid'0 _15 row_count ] s6
+    | s6 = [ &_ret <- { conn = _12; panel = _14 } ] s7
+    | s7 = return {_ret} ] ]
+  [ & _ret: t_MiniComposite = Any.any_l ()
+  | & s: t_MiniComposite = s
+  | & row_count: Int64.t = row_count
+  | & name: t_String = Any.any_l ()
+  | & _12: t_MiniConnState = Any.any_l ()
+  | & _14: t_MiniPanelState = Any.any_l ()
+  | & _15: t_MiniDisplayMode = Any.any_l ()
+  | & other: t_MiniConnState = Any.any_l () ])
+  [ return (result: t_MiniComposite) ->
+  {[@stop_split] [@expl:c12_load ensures] ([@stop_split] [@expl:c12_load result type invariant] [%#slevel12'3] inv_MiniComposite result)
+    /\ ([@stop_split] [@expl:c12_load ensures] [%#slevel12'4] c12_consistent result)}
+    (! return {result}) ]

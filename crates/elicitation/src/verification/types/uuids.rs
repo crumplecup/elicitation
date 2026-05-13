@@ -9,7 +9,7 @@ use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "uuid")]
 use anodized::spec;
 #[cfg(all(feature = "uuid", not(kani)))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 #[cfg(feature = "uuid")]
 use uuid::Uuid;
 
@@ -257,6 +257,34 @@ mod tests {
         assert_eq!(non_nil.into_inner(), uuid);
     }
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+#[cfg(feature = "uuid")]
+macro_rules! impl_primitive_introspect_uuid {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+#[cfg(feature = "uuid")]
+impl_primitive_introspect_uuid!(
+    UuidV4     => "UuidV4",
+    UuidNonNil => "UuidNonNil",
+);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 

@@ -142,6 +142,9 @@ impl ContextualEntry {
             %prefix,
             "Contextual factory instantiated tools"
         );
-        Ok(Self { prefix, descriptors })
+        Ok(Self {
+            prefix,
+            descriptors,
+        })
     }
 }

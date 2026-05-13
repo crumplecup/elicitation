@@ -4,7 +4,7 @@ use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -1036,6 +1036,25 @@ mod emit_impls {
     impl_to_code_literal_float!(F64Positive);
     impl_to_code_literal_float!(F64NonNegative);
     impl_to_code_literal_float!(F64Finite);
+
+    // ── Default wrappers (unconstrained, new() returns Self not Result) ───────
+
+    macro_rules! impl_to_code_literal_float_default {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#v) }
+                }
+            }
+        };
+    }
+
+    impl_to_code_literal_float_default!(F32Default);
+    impl_to_code_literal_float_default!(F64Default);
 }
 
 // ── ElicitIntrospect impls ────────────────────────────────────────────────────
@@ -1066,4 +1085,6 @@ impl_primitive_introspect!(
     F64Positive => "F64Positive",
     F64NonNegative => "F64NonNegative",
     F64Finite => "F64Finite",
+    F32Default => "F32Default",
+    F64Default => "F64Default",
 );

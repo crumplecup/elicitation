@@ -172,3 +172,56 @@ impl VerificationReport {
         self.errors.len()
     }
 }
+
+// ── UI trait layer errors ─────────────────────────────────────────────────
+
+/// Error kinds for UI trait operations.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Display)]
+pub enum UiErrorKind {
+    /// Widget label is missing or empty.
+    #[display("Missing label: {}", _0)]
+    MissingLabel(String),
+    /// Interactive element below minimum touch target size.
+    #[display("Target too small: {}", _0)]
+    TargetTooSmall(String),
+    /// Color pair does not meet minimum contrast ratio.
+    #[display("Insufficient contrast: {}", _0)]
+    InsufficientContrast(String),
+    /// Widget not found in tree.
+    #[display("Widget not found: {}", _0)]
+    WidgetNotFound(String),
+    /// WCAG verification failed.
+    #[display("Verification failed: {}", _0)]
+    VerificationFailed(String),
+    /// Operation not supported by this backend.
+    #[display("Unsupported operation: {}", _0)]
+    Unsupported(String),
+}
+
+/// Error for UI trait operations with source location.
+#[derive(Debug, Clone, Display, Error)]
+#[display("{} at {}:{}", kind, file, line)]
+pub struct UiError {
+    /// The specific error kind.
+    pub kind: UiErrorKind,
+    /// Source file where error was created.
+    pub file: &'static str,
+    /// Line number where error was created.
+    pub line: u32,
+}
+
+impl UiError {
+    /// Create a new UI error at the call site.
+    #[track_caller]
+    pub fn new(kind: UiErrorKind) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            kind,
+            file: loc.file(),
+            line: loc.line(),
+        }
+    }
+}
+
+/// Result alias for UI trait operations.
+pub type UiResult<T> = Result<T, UiError>;

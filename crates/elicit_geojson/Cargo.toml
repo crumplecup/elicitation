@@ -1,0 +1,32 @@
+[package]
+name = "elicit_geojson"
+version.workspace = true
+edition.workspace = true
+description = "Elicitation shadow crate for the geojson document/value library"
+keywords = ["mcp", "geojson", "geometry", "spatial", "elicitation"]
+categories = ["science::geo", "development-tools"]
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+[dependencies]
+elicitation = { workspace = true, features = ["geojson-types", "emit"] }
+elicit_geo_types.workspace = true
+geo-types.workspace = true
+geojson.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+proc-macro2.workspace = true
+quote.workspace = true
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints]
+workspace = true

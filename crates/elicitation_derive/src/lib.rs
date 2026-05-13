@@ -85,16 +85,21 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
+mod derive_kani_compose;
 mod derive_prop;
 mod derive_to_code_literal;
+mod derive_vsm;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
+mod formal_method;
+mod kani_variants;
 mod method_reflection;
 mod rand_contract_parser;
 mod rand_generator_impl;
 mod struct_impl;
 mod tool_gen;
+mod trait_reflection;
 
 use proc_macro::TokenStream;
 
@@ -464,6 +469,34 @@ pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()
 }
 
+/// Mark a function as a contract-honoring formal method and generate
+/// backend verification harnesses.
+///
+/// # Syntax
+///
+/// ```rust,ignore
+/// use elicitation::formal_method;
+///
+/// #[formal_method(contracts = [InvariantHolds])]
+/// fn advance(state: MyState, proof: Established<InvariantHolds>)
+///     -> (MyState, Established<InvariantHolds>)
+/// {
+///     (state.next(), proof)
+/// }
+/// ```
+///
+/// The `contracts = [...]` argument is optional. The macro adds a doc
+/// annotation and emits a `#[cfg(kani)] #[kani::proof]` harness.
+/// Type enforcement is already provided by the [`FormalMethod`] blanket impl.
+///
+/// [`FormalMethod`]: elicitation::contracts::FormalMethod
+#[proc_macro_attribute]
+pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
+    formal_method::expand(args.into(), item.into())
+        .unwrap_or_else(|e| e.to_compile_error())
+        .into()
+}
+
 /// Derive the [`Prop`](elicitation::contracts::Prop) trait for a zero-cost typestate marker.
 ///
 /// Generates trivial but non-empty, uniquely-named proof harnesses
@@ -496,9 +529,114 @@ pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
 ///     assert!(established);
 /// }
 /// ```
-#[proc_macro_derive(Prop)]
+/// Derive `KaniCompose` for a struct or enum.
+///
+/// Generates a depth-bounded `impl KaniCompose for T` gated behind `#[cfg(kani)]`.
+/// Each depth method constructs `Self` using the `KaniCompose` impl of every field
+/// type, propagating the depth semantics through the type hierarchy automatically.
+///
+/// # Structs
+///
+/// All fields are built from `<FieldType as KaniCompose>::kani_depth{n}()`.
+/// The depth of collection fields (`Vec<T>`, `Option<T>`) propagates the
+/// compositional inductive proof: depth-0 is empty, depth-1 has one element,
+/// depth-2 has two elements.
+///
+/// # Enums
+///
+/// The base variant is selected in this priority order:
+/// 1. `#[default]` variant
+/// 2. First unit variant (no fields)
+/// 3. First variant overall
+///
+/// All three depths use the same base variant, with depth-aware field construction.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[derive(KaniCompose)]
+/// struct ExplainNode {
+///     node_type: String,
+///     children: Vec<ExplainNode>,
+///     plan_rows: i64,
+/// }
+/// // Generates:
+/// //   depth0: { node_type: String::new(), children: vec![], plan_rows: kani::any() }
+/// //   depth1: { ..., children: vec![ExplainNode::kani_depth0()] }
+/// //   depth2: { ..., children: vec![ExplainNode::kani_depth0(), ExplainNode::kani_depth0()] }
+///
+/// #[derive(KaniCompose)]
+/// enum Mode { ViewA, ViewB { label: String } }
+/// // All depths return Mode::ViewA (first unit variant).
+/// ```
+#[proc_macro_derive(KaniCompose)]
+pub fn derive_kani_compose(input: TokenStream) -> TokenStream {
+    derive_kani_compose::expand(input)
+}
+
+#[proc_macro_derive(Prop, attributes(prop))]
 pub fn derive_prop(input: TokenStream) -> TokenStream {
     derive_prop::expand(input)
+}
+
+/// Derive `VerifiedStateMachine` for a unit struct, inferring `State` and
+/// `Invariant` from naming conventions and wiring `transition_harnesses()` from
+/// a `#[vsm(transitions = [...])]` attribute.
+///
+/// # Naming conventions
+///
+/// Given `struct FooBarMachine`, the macro infers:
+/// - `type State = FooBarState`
+/// - `type Invariant = FooBarConsistent`
+///
+/// Override either with `#[vsm(state = MyState)]` or `#[vsm(invariant = MyInvariant)]`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[derive(VerifiedStateMachine)]
+/// #[vsm(transitions = [begin_connect_sql, disconnect, reconnect])]
+/// pub struct ArchiveConnectionMachine;
+/// ```
+#[proc_macro_derive(VerifiedStateMachine, attributes(vsm))]
+pub fn derive_verified_state_machine(input: TokenStream) -> TokenStream {
+    derive_vsm::expand(input)
+}
+
+/// Derive [`KaniVariantState`](elicitation::KaniVariantState) for a VSM state enum.
+///
+/// Generates a `kani_variant_constructions()` method returning one
+/// `(&'static str, &'static str)` pair per variant: the snake_case suffix and
+/// a concrete construction expression.  Used by `#[derive(VerifiedStateMachine)]`
+/// to emit per-variant Kani proof harnesses.
+///
+/// # Field construction rules
+///
+/// | Field type | Generated expression |
+/// |-----------|---------------------|
+/// | `Vec<T>` | `Vec::new()` |
+/// | `String` | `String::new()` |
+/// | `Option<T>` | `None` |
+/// | anything else | `kani::any()` |
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::KaniVariantState;
+///
+/// #[derive(KaniVariantState)]
+/// pub enum MyState {
+///     Idle,
+///     Running { name: String },
+///     Buffered { data: Vec<u8> },
+/// }
+/// // Generates: [("idle", "MyState :: Idle"),
+/// //             ("running", "MyState :: Running { name : :: std :: string :: String :: new () }"),
+/// //             ("buffered", "MyState :: Buffered { data : :: std :: vec :: Vec :: new () }")]
+/// ```
+#[proc_macro_derive(KaniVariantState)]
+pub fn derive_kani_variant_state(input: TokenStream) -> TokenStream {
+    kani_variants::expand(input)
 }
 
 ///
@@ -568,7 +706,320 @@ pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
 ///
 /// Recursive types work automatically via existing `Vec<T>` / `Option<T>`
 /// blanket impls.
-#[proc_macro_derive(ToCodeLiteral)]
+#[proc_macro_derive(ToCodeLiteral, attributes(to_code_literal, skip))]
 pub fn derive_to_code_literal(input: TokenStream) -> TokenStream {
     derive_to_code_literal::expand(input)
+}
+
+/// Attribute macro to add tracing instrumentation to impl blocks.
+///
+/// Apply to `impl` blocks to automatically instrument all public methods.
+///
+/// # Strategy
+///
+/// - **Constructors** (`new`, `from_*`, `try_*`): `#[instrument(ret, err)]`
+/// - **Accessors** (`get`, `into_inner`, `as_*`, `to_*`): `#[instrument(level = "trace", ret)]`
+/// - **Other methods**: `#[instrument(skip(self))]`
+///
+/// # Kani Compatibility
+///
+/// When compiling under Kani (formal verification), this macro becomes a no-op.
+/// Instrumentation is for runtime observability, not formal verification.
+#[proc_macro_attribute]
+pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    use quote::quote;
+    use syn::{ImplItem, ItemImpl, parse_macro_input};
+
+    let impl_block = parse_macro_input!(item as ItemImpl);
+
+    // Under Kani, return impl block unchanged (no instrumentation needed)
+    #[cfg(kani)]
+    {
+        return TokenStream::from(quote! { #impl_block });
+    }
+
+    #[cfg(not(kani))]
+    {
+        let mut impl_block = impl_block;
+
+        for item in &mut impl_block.items {
+            if let ImplItem::Fn(method) = item
+                && matches!(method.vis, syn::Visibility::Public(_))
+            {
+                let method_name = method.sig.ident.to_string();
+                let has_generics = !method.sig.generics.params.is_empty();
+
+                let instrument_attr = if instrumented_impl_is_constructor(&method_name) {
+                    if has_generics {
+                        let param_names: Vec<_> = method
+                            .sig
+                            .inputs
+                            .iter()
+                            .filter_map(|arg| {
+                                if let syn::FnArg::Typed(pat_type) = arg
+                                    && let syn::Pat::Ident(ident) = &*pat_type.pat
+                                {
+                                    return Some(ident.ident.clone());
+                                }
+                                None
+                            })
+                            .collect();
+                        quote! { #[tracing::instrument(skip(#(#param_names),*), err)] }
+                    } else {
+                        quote! { #[tracing::instrument(err)] }
+                    }
+                } else if instrumented_impl_is_accessor(&method_name) {
+                    quote! { #[tracing::instrument(level = "trace", ret)] }
+                } else {
+                    quote! { #[tracing::instrument(skip(self))] }
+                };
+
+                let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
+                method.attrs.insert(0, attr);
+            }
+        }
+
+        TokenStream::from(quote! { #impl_block })
+    }
+}
+
+fn instrumented_impl_is_constructor(name: &str) -> bool {
+    name == "new" || name.starts_with("from_") || name.starts_with("try_") || name == "default"
+}
+
+fn instrumented_impl_is_accessor(name: &str) -> bool {
+    name == "get"
+        || name == "into_inner"
+        || name.starts_with("as_")
+        || name.starts_with("to_")
+        || name.starts_with("get_")
+}
+
+/// Generates elicitation tool methods inside an impl block for rmcp tool_router.
+///
+/// For each type T, generates an `elicit_T` method with `#[tool]` marker.
+#[proc_macro_attribute]
+pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
+    use quote::quote;
+    use syn::{ItemImpl, parse_macro_input};
+
+    let impl_block = parse_macro_input!(item as ItemImpl);
+
+    let types_input = attr.to_string();
+    let types: Vec<&str> = types_input
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if types.is_empty() {
+        return syn::Error::new_spanned(
+            &impl_block,
+            "elicit_tools requires at least one type: #[elicit_tools(Type1, Type2)]",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let mut new_impl = impl_block.clone();
+
+    for ty_str in types {
+        let ty: syn::Type = match syn::parse_str(ty_str) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse type '{}': {}", ty_str, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let method_name = elicit_tools_to_snake_case(ty_str);
+        let method_ident = syn::Ident::new(
+            &format!("elicit_{}", method_name),
+            proc_macro2::Span::call_site(),
+        );
+
+        let tool_description = format!("Elicit {} via MCP", ty_str);
+        let method: syn::ImplItemFn = syn::parse_quote! {
+            #[doc = concat!("Elicit `", #ty_str, "` via MCP.")]
+            #[tool(description = #tool_description)]
+            pub async fn #method_ident(
+                peer: ::rmcp::service::Peer<::rmcp::service::RoleServer>,
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<::elicitation::ElicitToolOutput<#ty>>,
+                ::rmcp::ErrorData
+            > {
+                let value = #ty::elicit_checked(peer).await
+                    .map_err(|e| ::rmcp::ErrorData::internal_error(e.to_string(), None))?;
+                Ok(::rmcp::handler::server::wrapper::Json(::elicitation::ElicitToolOutput::new(value)))
+            }
+        };
+
+        new_impl.items.push(syn::ImplItem::Fn(method));
+    }
+
+    TokenStream::from(quote! { #new_impl })
+}
+
+fn elicit_tools_to_snake_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut prev_was_lowercase = false;
+    for (i, ch) in s.chars().enumerate() {
+        if ch.is_uppercase() {
+            if i > 0 && prev_was_lowercase {
+                result.push('_');
+            }
+            result.push(ch.to_ascii_lowercase());
+            prev_was_lowercase = false;
+        } else {
+            result.push(ch);
+            prev_was_lowercase = ch.is_lowercase();
+        }
+    }
+    result
+}
+
+/// Generates MCP tool wrappers for trait methods, delegating to a named field.
+#[proc_macro_attribute]
+pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
+    use quote::quote;
+    use syn::{ItemImpl, parse_macro_input};
+
+    let attr_str = attr.to_string();
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut bracket_depth = 0;
+
+    for ch in attr_str.chars() {
+        match ch {
+            '[' => {
+                bracket_depth += 1;
+                current.push(ch);
+            }
+            ']' => {
+                bracket_depth -= 1;
+                current.push(ch);
+            }
+            ',' if bracket_depth == 0 => {
+                parts.push(current.trim().to_string());
+                current.clear();
+            }
+            _ => current.push(ch),
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current.trim().to_string());
+    }
+
+    if parts.len() != 3 {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires three arguments: #[elicit_trait_tools_router(TraitName, field_name, [method1, method2])]",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let _trait_name = &parts[0];
+    let field_name = &parts[1];
+    let methods_str = &parts[2];
+
+    let methods_str = methods_str.trim_start_matches('[').trim_end_matches(']');
+    let methods: Vec<&str> = methods_str
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if methods.is_empty() {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires at least one method in the list",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let mut impl_block = parse_macro_input!(item as ItemImpl);
+
+    for method_name in methods {
+        let pascal_case = elicit_trait_tools_to_pascal_case(method_name);
+        let params_type = format!("{}Params", pascal_case);
+        let result_type = format!("{}Result", pascal_case);
+
+        let params_ty: syn::Type = match syn::parse_str(&params_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse params type '{}': {}", params_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let result_ty: syn::Type = match syn::parse_str(&result_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse result type '{}': {}", result_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+
+        let method_ident = syn::Ident::new(method_name, proc_macro2::Span::call_site());
+        let field_ident = syn::Ident::new(field_name, proc_macro2::Span::call_site());
+        let tool_description = format!("{} operation", method_name.replace('_', " "));
+
+        let method: syn::ImplItemFn = syn::parse_quote! {
+            #[doc = concat!("`", #method_name, "` operation via trait method delegation.")]
+            #[::rmcp::tool(description = #tool_description)]
+            pub async fn #method_ident(
+                &self,
+                params: ::rmcp::handler::server::wrapper::Parameters<#params_ty>,
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<#result_ty>,
+                ::rmcp::ErrorData
+            > {
+                self.#field_ident.#method_ident(params).await
+            }
+        };
+
+        impl_block.items.push(syn::ImplItem::Fn(method));
+    }
+
+    TokenStream::from(quote! { #impl_block })
+}
+
+fn elicit_trait_tools_to_pascal_case(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+            }
+        })
+        .collect()
+}
+
+/// Capture a third-party trait's methods as MCP tools.
+///
+/// Apply to an `impl` block that names the factory struct and lists the
+/// method signatures of the third-party trait you want to wrap.
+#[proc_macro_attribute]
+pub fn reflect_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+    match trait_reflection::expand(attr2, item2) {
+        Ok(ts) => ts.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
 }

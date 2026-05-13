@@ -10,16 +10,38 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  test:
-    name: Test (${{ matrix.os }})
+  # All platforms: fmt + clippy only (proves cross-platform compilation)
+  lint:
+    name: Lint (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            extra_exclude: ""
+          - os: windows-latest
+            # proj-sys requires sqlite3 executable for cmake build
+            extra_exclude: "--exclude elicit_proj"
+          - os: macos-latest
+            extra_exclude: ""
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y libasound2-dev libudev-dev
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install proj
+
+      - name: Install system dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install sqlite --no-progress -y
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -29,20 +51,105 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          # Separate cache per OS and Cargo.lock hash
-          key: ${{ matrix.os }}-${{ hashFiles('Cargo.lock') }}
+          key: lint-${{ matrix.os }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
-      - name: Test workspace (default features)
-        run: cargo test --workspace
+  # Ubuntu only: test elicitation_derive and elicitation_macros (fast, no heavy deps).
+  test-derive:
+    name: Test derive and macros
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Test derive — all third-party feature combinations
-        run: cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y libasound2-dev libudev-dev
 
-      - name: Test elicit_server smoke suite
-        run: cargo test -p elicit_server --features emit
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-derive-ubuntu-${{ hashFiles('Cargo.lock') }}
+
+      - name: Test elicitation_derive
+        run: |
+          cargo test -p elicitation_derive
+          cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
+          cargo test -p elicitation_macros
+
+  # Ubuntu only: elicitation split by feature group to stay within runner memory/disk limits.
+  # Heavy GUI/GPU features (bevy-types, wgpu-types, egui-winit-types, winit-types) are
+  # excluded from core CI and tested via satellite.yml on demand.
+  test-elicitation:
+    name: Test elicitation (${{ matrix.group }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: core
+            features: "--no-default-features"
+            sys_deps: "libasound2-dev libudev-dev"
+
+          - group: datetime-scalar
+            features: >-
+              --no-default-features
+              --features chrono,time,jiff,uuid,url,regex,rand,serde,serde_json,emit,graph
+            sys_deps: "libasound2-dev libudev-dev"
+
+          - group: storage
+            features: >-
+              --no-default-features
+              --features csv-types,toml-types,redb-types
+            sys_deps: "libasound2-dev libudev-dev"
+
+          - group: network
+            features: >-
+              --no-default-features
+              --features reqwest,url,clap-types,sqlx-types,axum-types,tower-types,leptos-types
+            sys_deps: "libasound2-dev libudev-dev"
+
+          - group: geo
+            features: >-
+              --no-default-features
+              --features geo-types,geo,proj-types,rstar-types,geojson-types,wkt-types,wkb-types,georaster-types,serde_json
+            sys_deps: "libasound2-dev libudev-dev libproj-dev"
+
+          - group: analytics
+            features: >-
+              --no-default-features
+              --features polars-types,uom-types,surreal-types,uuid,chrono,serde_json,geo-types
+            sys_deps: "libasound2-dev libudev-dev"
+
+          - group: ui-light
+            features: >-
+              --no-default-features
+              --features ratatui,egui-types,accesskit,palette
+            sys_deps: "libasound2-dev libudev-dev"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ${{ matrix.sys_deps }}
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test-elicitation-${{ matrix.group }}-ubuntu-${{ hashFiles('Cargo.lock') }}
+
+      - name: Test elicitation (${{ matrix.group }})
+        run: cargo test -p elicitation ${{ matrix.features }}

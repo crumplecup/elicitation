@@ -192,6 +192,7 @@
 //! cargo run --example verification_demo --features verification
 //! ```
 
+#[cfg(not(creusot))]
 use crate::ElicitResult;
 use crate::traits::Elicitation;
 use std::fmt::Debug;
@@ -658,6 +659,7 @@ where
 /// Builder for elicitation with contract verification.
 ///
 /// Enables ergonomic syntax: `String::with_contract(StringNonEmpty).elicit(&peer).await?`
+#[cfg(not(creusot))]
 pub struct ContractedElicitation<T, C>
 where
     T: Elicitation,
@@ -667,6 +669,7 @@ where
     _phantom: std::marker::PhantomData<T>,
 }
 
+#[cfg(not(creusot))]
 impl<T, C> ContractedElicitation<T, C>
 where
     T: Elicitation + Clone + Debug + Send,
@@ -701,6 +704,7 @@ where
     ///
     /// - Contract violation: Precondition or postcondition failed
     /// - Elicitation error: Standard elicitation failures
+    #[cfg(not(creusot))]
     pub async fn elicit(
         self,
         peer: std::sync::Arc<crate::rmcp::Peer<crate::rmcp::RoleClient>>,
@@ -773,6 +777,7 @@ where
 /// // Value is guaranteed to satisfy StringNonEmpty contract
 /// assert!(!value.is_empty());
 /// ```
+#[cfg(not(creusot))]
 pub trait WithContract: Elicitation + Clone + Debug + Send {
     /// Attach a contract to this type's elicitation.
     ///
@@ -794,6 +799,7 @@ pub trait WithContract: Elicitation + Clone + Debug + Send {
 }
 
 // Blanket implementation for all Elicitation types
+#[cfg(not(creusot))]
 impl<T> WithContract for T where T: Elicitation + Clone + Debug + Send {}
 
 // ============================================================================

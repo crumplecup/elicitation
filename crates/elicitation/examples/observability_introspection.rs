@@ -31,7 +31,7 @@
 //! cargo run --example observability_introspection
 //! ```
 
-use elicitation::{Elicit, ElicitIntrospect, PatternDetails, Prompt, Select};
+use elicitation::{Elicit, ElicitIntrospect, PatternDetails};
 
 // ============================================================================
 // Example Types

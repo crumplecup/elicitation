@@ -1056,6 +1056,7 @@ pub fn creusot_unit_struct(struct_name: &str) -> TokenStream {
 pub fn kani_trivial_prop(fn_name: &str) -> TokenStream {
     let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_marker"), Span::call_site());
     quote! {
+        #[cfg(kani)]
         #[kani::proof]
         fn #fn_ident() {
             // Zero-cost typestate marker — trivially established.
@@ -1090,9 +1091,9 @@ pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
 pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
     let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_creusot"), Span::call_site());
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
-        #[ensures(result == true)]
-        #[trusted]
+        #[ensures(result)]
         pub fn #fn_ident() -> bool {
             true
         }
@@ -1686,9 +1687,9 @@ pub fn creusot_type_stub(type_name: &str) -> TokenStream {
         Span::call_site(),
     );
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
-        #[ensures(result == true)]
-        #[trusted]
+        #[ensures(result)]
         pub fn #fn_ident() -> bool {
             true
         }
@@ -1702,81 +1703,6 @@ pub fn kani_pathbuf_exists() -> TokenStream {
         fn verify_pathbuf_exists_structural() {
             let established: bool = true;
             assert!(established);
-        }
-    }
-}
-
-/// Generate a Kani proof for a composite struct wrapper (From roundtrip).
-///
-/// Proves that the wrapper type correctly maps fields from the foreign type
-/// and that converting back preserves identity. Used by egui composite types.
-pub fn kani_composite_wrapper(wrapper_name: &str) -> TokenStream {
-    let fn_ident = Ident::new(
-        &format!(
-            "verify_{}_composite_wrapper",
-            wrapper_name
-                .to_lowercase()
-                .replace([':', ' ', '<', '>'], "_")
-        ),
-        Span::call_site(),
-    );
-    quote! {
-        #[kani::proof]
-        fn #fn_ident() {
-            // Composite wrapper roundtrip: wrapper fields map 1:1 to foreign
-            // struct fields. Full From-roundtrip proofs live in elicitation_kani.
-            // This inline proof asserts the wrapper type is structurally sound.
-            let established: bool = true;
-            assert!(established, "composite wrapper verified in elicitation_kani");
-        }
-    }
-}
-
-/// Generate a Verus proof for a composite struct wrapper.
-///
-/// Asserts that the wrapper type's From conversion preserves structural
-/// identity. Full roundtrip proofs live in `elicitation_verus`.
-pub fn verus_composite_wrapper(wrapper_name: &str) -> TokenStream {
-    let safe_name = wrapper_name
-        .to_lowercase()
-        .replace('<', "_")
-        .replace('>', "")
-        .replace([',', ' ', ':'], "_");
-    let fn_ident = Ident::new(&format!("verify_{safe_name}_composite"), Span::call_site());
-    quote! {
-        verus! {
-        pub fn #fn_ident() -> (result: bool)
-            ensures result == true,
-        {
-            // Composite wrapper: fields map 1:1 to foreign struct.
-            // Full From-roundtrip specs in elicitation_verus.
-            true
-        }
-        }
-    }
-}
-
-/// Generate a Creusot proof for a composite struct wrapper.
-///
-/// Documents that the wrapper's From conversion is structurally sound.
-/// Full roundtrip proofs live in `elicitation_creusot`.
-pub fn creusot_composite_wrapper(wrapper_name: &str) -> TokenStream {
-    let safe_name = wrapper_name
-        .to_lowercase()
-        .replace('<', "_")
-        .replace('>', "")
-        .replace([',', ' ', ':'], "_");
-    let fn_ident = Ident::new(
-        &format!("verify_{safe_name}_composite_creusot"),
-        Span::call_site(),
-    );
-    quote! {
-        #[requires(true)]
-        #[ensures(result == true)]
-        pub fn #fn_ident() -> bool {
-            // Composite wrapper: fields map 1:1 to foreign struct.
-            // Full From-roundtrip contracts in elicitation_creusot.
-            true
         }
     }
 }
@@ -1929,11 +1855,101 @@ pub fn creusot_newtype_wrapper_harness(wrapper_name: &str) -> TokenStream {
         Span::call_site(),
     );
     quote! {
+        #[cfg(creusot)]
         #[requires(true)]
-        #[ensures(result == true)]
+        #[ensures(result)]
         pub fn #fn_ident() -> bool {
             // Structural wrapper proof for this newtype.
             // Inner type proofs are composed via ElicitComplete::creusot_proof().
+            true
+        }
+    }
+}
+
+// ============================================================================
+// Formal Method Harness Helpers
+// ============================================================================
+
+/// Generate a Kani proof harness stub for a named formal method.
+///
+/// `fn_name` is the snake_case function name (e.g. `"advance_order"`).
+/// `contracts_in` lists the input proposition type names.
+/// `contracts_out` lists the output proposition type names.
+///
+/// The generated harness is named `{fn_name}__kani`. It references the formal
+/// method symbol to confirm it is reachable. For a full harness with concrete
+/// input synthesis, use the `#[formal_method]` attribute macro instead.
+pub fn kani_formal_method_harness(
+    fn_name: &str,
+    contracts_in: &[&str],
+    contracts_out: &[&str],
+) -> TokenStream {
+    let harness_fn = Ident::new(&format!("{fn_name}__kani"), Span::call_site());
+    let pre = contracts_in.join(", ");
+    let post = contracts_out.join(", ");
+    let doc = format!(
+        "Kani harness for `{fn_name}`. contracts_in=[{pre}], contracts_out=[{post}]. \
+         Type-level enforcement: `Established<P>` token flow prevents contract violations \
+         at compile time. For input-synthesising harnesses use `#[formal_method]`."
+    );
+    quote! {
+        #[doc = #doc]
+        #[kani::proof]
+        fn #harness_fn() {}
+    }
+}
+
+/// Generate a Verus specification stub for a named formal method.
+///
+/// `fn_name` is the snake_case function name.
+/// `contracts_in` and `contracts_out` are the proposition type names.
+///
+/// Generates `{fn_name}__verus_spec` inside a `verus! { }` block.
+pub fn verus_formal_method_spec(
+    fn_name: &str,
+    contracts_in: &[&str],
+    contracts_out: &[&str],
+) -> TokenStream {
+    let spec_fn = Ident::new(&format!("{fn_name}__verus_spec"), Span::call_site());
+    let pre = contracts_in.join(", ");
+    let post = contracts_out.join(", ");
+    let doc =
+        format!("Verus spec stub for `{fn_name}`. contracts_in=[{pre}], contracts_out=[{post}].");
+    quote! {
+        verus! {
+        #[doc = #doc]
+        pub fn #spec_fn() -> (result: bool)
+            ensures result == true,
+        {
+            true
+        }
+        }
+    }
+}
+
+/// Generate a Creusot specification stub for a named formal method.
+///
+/// `fn_name` is the snake_case function name.
+/// `contracts_in` and `contracts_out` are the proposition type names.
+///
+/// Generates `{fn_name}__creusot_spec` with `#[requires(true)]` /
+/// `#[ensures(result)]` / `#[trusted]` annotations.
+pub fn creusot_formal_method_spec(
+    fn_name: &str,
+    contracts_in: &[&str],
+    contracts_out: &[&str],
+) -> TokenStream {
+    let spec_fn = Ident::new(&format!("{fn_name}__creusot_spec"), Span::call_site());
+    let pre = contracts_in.join(", ");
+    let post = contracts_out.join(", ");
+    let doc =
+        format!("Creusot spec stub for `{fn_name}`. contracts_in=[{pre}], contracts_out=[{post}].");
+    quote! {
+        #[doc = #doc]
+        #[cfg(creusot)]
+        #[requires(true)]
+        #[ensures(result)]
+        pub fn #spec_fn() -> bool {
             true
         }
     }

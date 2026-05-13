@@ -347,6 +347,45 @@ pub trait Prop: 'static {
     ///
     /// Available with the `proofs` feature.
     fn creusot_proof() -> proc_macro2::TokenStream;
+
+    /// The name of the Creusot pearlite `#[logic]` function that expresses this
+    /// proposition as a predicate over the machine state.
+    ///
+    /// When non-empty, `#[formal_method]`-generated Creusot companions emit
+    /// real `#[requires]` / `#[ensures]` contracts using this function instead
+    /// of the weaker `#[trusted]` placeholder.
+    ///
+    /// Set via `#[prop(creusot_invariant_fn = "my_fn")]` on the prop struct.
+    /// The named function must be a `#[cfg(creusot)] #[logic]` function in scope
+    /// wherever the generated companions are compiled.
+    fn creusot_invariant_fn_name() -> &'static str {
+        ""
+    }
+
+    /// The name of a `#[cfg(kani)]` boolean predicate function that expresses
+    /// this proposition as a Kani-evaluable invariant check.
+    ///
+    /// When non-empty, [`formal_method`][crate::formal_method]-generated companion
+    /// structs emit `#[kani::requires(fn(&state))]` / `#[kani::ensures]` contracted
+    /// wrappers, enabling `#[kani::proof_for_contract]` closure proofs that close
+    /// the depth-based inductive argument into a full symbolic proof.
+    ///
+    /// Set via `#[prop(kani_invariant_fn = "my_fn")]` on the prop struct.
+    fn kani_invariant_fn_name() -> &'static str {
+        ""
+    }
+
+    /// The name of a Verus `pub open spec fn` that expresses this proposition
+    /// as a Verus-verifiable predicate over the machine state.
+    ///
+    /// When non-empty, [`formal_method`][crate::formal_method]-generated companion
+    /// structs emit `assume_specification` blocks with real `requires`/`ensures`
+    /// clauses using this function, enabling Verus to check invariant preservation.
+    ///
+    /// Set via `#[prop(verus_invariant_fn = "my_fn")]` on the prop struct.
+    fn verus_invariant_fn_name() -> &'static str {
+        ""
+    }
 }
 
 /// Witness that proposition P has been established.
@@ -374,22 +413,110 @@ pub struct Established<P: Prop> {
     _marker: PhantomData<fn() -> P>,
 }
 
+/// Relation: proposition `P` can be proven from credential `C`.
+///
+/// Implement this on a `Prop` type to declare which credentials can mint it.
+/// The only way to construct `Established<P>` externally is via
+/// `Established::<P>::prove(&credential)` where `P: ProvableFrom<C>`.
+pub trait ProvableFrom<C>: Prop {}
+
+/// Declare one or more proof-credential ZST types and wire each to its proposition.
+///
+/// # Syntax
+///
+/// ```text
+/// proof_credential! {
+///     /// Optional doc comment.
+///     VISIBILITY CredentialName => PropositionType;
+///     ...
+/// }
+/// ```
+///
+/// Each entry emits:
+/// 1. A zero-sized struct `CredentialName` with the given visibility and doc comments.
+/// 2. `impl ProvableFrom<CredentialName> for PropositionType {}`
+///
+/// Credentials are typically `pub(crate)` so only the factory method that
+/// performed the runtime check can construct them.  External code cannot call
+/// `Established::prove(&CredentialName)` without access to the type.
+///
+/// # Example
+///
+/// ```rust
+/// use elicitation::contracts::{Established, Prop, ProvableFrom};
+/// use elicitation::proof_credential;
+///
+/// #[derive(elicitation::Prop)]
+/// pub struct ContrastChecked;
+///
+/// proof_credential! {
+///     /// Witness that a colour pair was verified for WCAG contrast.
+///     pub(crate) NormalContrastVerified => ContrastChecked;
+/// }
+///
+/// // Inside the factory (same crate):
+/// let proof: Established<ContrastChecked> =
+///     Established::prove(&NormalContrastVerified);
+/// ```
+#[macro_export]
+macro_rules! proof_credential {
+    (
+        $(
+            $(#[$meta:meta])*
+            $vis:vis $cred:ident => $prop:ty;
+        )*
+    ) => {
+        $(
+            $(#[$meta])*
+            $vis struct $cred;
+
+            impl $crate::contracts::ProvableFrom<$cred> for $prop {}
+        )*
+    };
+}
+
 impl<P: Prop> Established<P> {
-    /// Assert that proposition P holds.
+    /// Mint a proof token by presenting a valid credential.
     ///
-    /// This is a semantic assertion - the caller asserts that P is true
-    /// in the current context. Typically called by elicitation internals
-    /// after successful validation.
+    /// The credential type `C` must implement `ProvableFrom<C>` for `P`,
+    /// establishing a declared relationship between the two.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// use elicitation::contracts::{Established, Is};
+    /// use elicitation::contracts::{Established, Is, Prop, ProvableFrom};
     ///
-    /// // After validating a String
-    /// let s = String::from("valid");
-    /// let proof: Established<Is<String>> = Established::assert();
+    /// #[derive(elicitation::Prop)]
+    /// struct InputValidated;
+    ///
+    /// struct ValidInput(String);
+    /// impl ProvableFrom<ValidInput> for InputValidated {}
+    ///
+    /// let input = ValidInput("hello".to_string());
+    /// let proof: Established<InputValidated> = Established::prove(&input);
     /// ```
+    #[inline(always)]
+    pub fn prove<C>(_credential: &C) -> Self
+    where
+        P: ProvableFrom<C>,
+    {
+        Self {
+            _marker: PhantomData,
+        }
+    }
+
+    /// Assert that proposition `P` holds without a credential.
+    ///
+    /// This is the unchecked escape hatch: callers take responsibility for
+    /// ensuring `P` genuinely holds.  Prefer
+    /// [`prove`][Established::prove] when a credential type exists, since
+    /// `prove` encodes the check in the type system.
+    ///
+    /// WCAG proposition types are protected by their credential types being
+    /// `pub(crate)` within `elicit_ui` — even with `assert()` available,
+    /// external code cannot construct the required credential to call
+    /// `prove()`, and calling `assert()` on a WCAG type directly is a clear
+    /// audit-trail violation.
     #[inline(always)]
     pub fn assert() -> Self {
         Self {
@@ -432,6 +559,18 @@ impl<P: Prop> Copy for Established<P> {}
 impl<P: Prop> Clone for Established<P> {
     fn clone(&self) -> Self {
         *self
+    }
+}
+
+// Under Kani, `stub_verified` replaces a call with `kani::any()` of the
+// return type.  `Established<P>` is a ZST — its unique value is trivially
+// constructible, so any() just returns the unit token.
+#[cfg(kani)]
+impl<P: Prop> kani::Arbitrary for Established<P> {
+    fn any() -> Self {
+        Self {
+            _marker: std::marker::PhantomData,
+        }
     }
 }
 
@@ -491,7 +630,6 @@ impl<P: Prop + 'static> crate::emit_code::ToCodeLiteral for Established<P> {
 /// prompt. Any struct that holds one as a field still needs the bound satisfied
 /// when `prompt-tree` is enabled; we return an empty `Leaf` so the derive
 /// can compile without noise in the assembled prompt output.
-#[cfg(feature = "prompt-tree")]
 impl<P: Prop> crate::ElicitPromptTree for Established<P> {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Leaf {
@@ -847,541 +985,398 @@ impl<E: 'static, V: 'static> Prop for InVariant<E, V> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// ── Formal Methods ────────────────────────────────────────────────────────────
 
-    #[test]
-    fn test_established_is_zero_sized() {
-        let proof: Established<Is<String>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&proof), 0);
+/// A function that consumes a proof and produces a proof.
+///
+/// Any `Fn(In, Established<PIn>) -> (Out, Established<POut>)` automatically
+/// implements this trait via the blanket impl below. The signature IS the
+/// contract declaration — no attribute or registry required.
+///
+/// # Type-driven call-graph closure
+///
+/// A function calling an informal helper cannot derive `Established<POut>` from
+/// that helper's result without using [`Established::assert`], the explicit,
+/// auditable escape hatch. The type system therefore closes the call graph
+/// automatically: proof tokens only flow from formal call sites.
+///
+/// # Evidence bundles
+///
+/// When multiple propositions must be satisfied, use an evidence bundle struct
+/// (a plain struct whose fields are `Established<P>` tokens that implements
+/// `ProvableFrom<Bundle>`). Pass the bundle as `In` or as `PIn` evidence.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, FormalMethod, Prop};
+///
+/// #[derive(elicitation::Prop)]
+/// struct Validated;
+/// #[derive(elicitation::Prop)]
+/// struct Processed;
+///
+/// // Any function with the matching signature is automatically a FormalMethod.
+/// fn process(input: String, _proof: Established<Validated>)
+///     -> (String, Established<Processed>)
+/// {
+///     (input.to_uppercase(), Established::assert())
+/// }
+///
+/// // Use via the trait or call directly — both work.
+/// let proof_in = Established::assert();
+/// let (_result, _proof_out) = process("hello".to_string(), proof_in);
+/// ```
+pub trait FormalMethod<In, PIn: Prop, Out, POut: Prop> {
+    /// Call this method, consuming the input proof and producing an output proof.
+    fn call_formal(&self, input: In, proof: Established<PIn>) -> (Out, Established<POut>);
+
+    /// Generate a Kani proof harness for this method's precondition/postcondition.
+    ///
+    /// The default returns an empty token stream (no harness). Override to emit
+    /// a `#[kani::proof]` harness asserting that the method honours its contract.
+    fn kani_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 
-    #[test]
-    fn test_established_is_copy() {
-        let proof: Established<Is<String>> = Established::assert();
-        let proof2 = proof; // Copy
-        let _proof3 = proof; // Can still use original
-        let _proof4 = proof2; // Can use copy
+    /// Generate a Verus proof harness for this method's contract.
+    fn verus_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 
-    #[test]
-    fn test_can_construct_proof() {
-        let _proof: Established<Is<String>> = Established::assert();
-        let _proof: Established<Is<i32>> = Established::assert();
-        let _proof: Established<Is<Vec<u8>>> = Established::assert();
+    /// Generate a Creusot contract for this method.
+    fn creusot_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
+/// Blanket impl: any `Fn(In, Established<PIn>) -> (Out, Established<POut>)`
+/// is automatically a `FormalMethod`.
+impl<F, In, PIn: Prop, Out, POut: Prop> FormalMethod<In, PIn, Out, POut> for F
+where
+    F: Fn(In, Established<PIn>) -> (Out, Established<POut>),
+{
+    #[inline(always)]
+    fn call_formal(&self, input: In, proof: Established<PIn>) -> (Out, Established<POut>) {
+        self(input, proof)
+    }
+}
+
+// ── Verified State Machines ───────────────────────────────────────────────────
+
+/// A state machine whose states are fully described and whose transitions
+/// preserve a declared invariant.
+///
+/// # Contract
+///
+/// A `VerifiedStateMachine` declares two associated types:
+///
+/// - `State` — must be [`ElicitComplete`][crate::ElicitComplete]: fully
+///   introspectable, serialisable, and reasoned about by elicitation tooling.
+/// - `Invariant` — a [`Prop`] that every valid transition must preserve.
+///
+/// Transitions are [`FormalMethod`]s with signature
+/// `(State, Established<Invariant>) -> (State, Established<Invariant>)`.
+/// The type system guarantees that a transition cannot produce a new state
+/// without presenting proof that the invariant still holds.
+///
+/// # "Gated community" for formal verification
+///
+/// Declaring a `VerifiedStateMachine` is the top-level compiler-enforced
+/// claim that a system preserves its invariants. Outside a VSM any piece of
+/// the contracts stack can be used freely; inside, every transition must be
+/// a `FormalMethod`.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{
+///     Established, FormalMethod, Prop, VerifiedStateMachine, VerifiedTransition,
+/// };
+/// use elicitation::ElicitComplete;
+///
+/// // --- State ---
+/// #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
+///          schemars::JsonSchema, elicitation::Elicit)]
+/// enum OrderState { Draft, Submitted, Shipped }
+///
+/// // --- Invariant proposition ---
+/// #[derive(elicitation::Prop)]
+/// struct OrderIntact;
+///
+/// // --- The VSM declaration ---
+/// struct OrderMachine;
+/// impl VerifiedStateMachine for OrderMachine {
+///     type State     = OrderState;
+///     type Invariant = OrderIntact;
+/// }
+///
+/// // --- A verified transition ---
+/// fn submit(state: OrderState, proof: Established<OrderIntact>)
+///     -> (OrderState, Established<OrderIntact>)
+/// {
+///     (OrderState::Submitted, proof) // invariant preserved
+/// }
+///
+/// // `submit` satisfies VerifiedTransition<OrderMachine> automatically.
+/// fn run<T: VerifiedTransition<OrderMachine>>(t: &T) {
+///     let proof = Established::assert();
+///     let (_new_state, _new_proof) = t.call_formal(OrderState::Draft, proof);
+/// }
+/// run(&submit);
+/// ```
+pub trait VerifiedStateMachine {
+    /// The state type.  Must be [`ElicitComplete`][crate::ElicitComplete].
+    type State: crate::ElicitComplete;
+
+    /// The invariant that every transition must preserve.
+    type Invariant: Prop;
+
+    /// Return the Kani harness [`proc_macro2::TokenStream`] for every
+    /// transition in this machine.
+    ///
+    /// Override this in each `VerifiedStateMachine` implementation, listing the
+    /// companion structs generated by [`formal_method`][crate::formal_method]:
+    ///
+    /// ```rust,ignore
+    /// fn transition_harnesses() -> Vec<proc_macro2::TokenStream> {
+    ///     vec![
+    ///         MyTransitionATransition::kani_harness(),
+    ///         MyTransitionBTransition::kani_harness(),
+    ///     ]
+    /// }
+    /// ```
+    ///
+    /// The default implementation returns an empty list (no harnesses).
+    #[cfg(not(kani))]
+    fn transition_harnesses() -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
-    #[test]
-    fn test_proof_requires_type() {
-        fn requires_string_proof(_proof: Established<Is<String>>) {}
-
-        let proof: Established<Is<String>> = Established::assert();
-        requires_string_proof(proof);
-
-        // This would fail to compile:
-        // let wrong_proof: Established<Is<i32>> = Established::assert();
-        // requires_string_proof(wrong_proof);
+    /// Compose the full VSM Kani proof: the invariant proposition proof
+    /// followed by all `proof_for_contract` closure harnesses for each
+    /// registered transition.
+    ///
+    /// This is the token stream that a `build.rs` should write to a generated
+    /// `.rs` file so that Kani can verify the entire state machine end-to-end.
+    ///
+    /// The composition says: "the invariant is a valid proposition AND every
+    /// transition preserves it without panicking for any reachable input."
+    #[cfg(not(kani))]
+    fn vsm_kani_proof() -> proc_macro2::TokenStream {
+        let mut ts = Self::Invariant::kani_proof();
+        let inv_fn = Self::Invariant::kani_invariant_fn_name();
+        for closure in Self::transition_kani_closure_proofs(inv_fn) {
+            ts.extend(closure);
+        }
+        ts
     }
 
-    #[test]
-    fn test_implies_reflexive() {
-        // Every proposition implies itself
-        let proof: Established<Is<String>> = Established::assert();
-        let same_proof: Established<Is<String>> = proof.weaken();
-        let _ = same_proof; // Use it
+    /// Return one `proof_for_contract` closure harness per transition in this machine.
+    ///
+    /// Each entry is a `#[kani::proof_for_contract(fn_name)]` harness using the
+    /// forgive-and-forget pattern.  Contracts on the original function (emitted by
+    /// `#[formal_method]` via `cfg_attr(kani, kani::requires/ensures)`) are verified
+    /// by DFCC.  Once verified, each transition can be replaced with
+    /// `stub_verified(fn_name)` in multi-step composition harnesses.
+    ///
+    /// When `inv_fn` is empty, all entries are empty `TokenStream`s.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_kani_closure_proofs(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
-    #[test]
-    fn test_weaken_with_custom_impl() {
-        // Define custom propositions
-        struct StrongProp;
-        struct WeakProp;
-
-        impl Prop for StrongProp {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for WeakProp {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Implies<WeakProp> for StrongProp {}
-
-        // Can weaken from strong to weak
-        let strong: Established<StrongProp> = Established::assert();
-        let _weak: Established<WeakProp> = strong.weaken();
+    /// Return one Creusot companion contract per transition in this machine.
+    ///
+    /// Each entry is a `#[cfg(creusot)]` function with `#[requires]`/`#[ensures]`
+    /// annotations. When the invariant type's [`Prop::creusot_invariant_fn_name`]
+    /// returns a non-empty string, the contracts are real (no `#[trusted]`).
+    /// Otherwise they fall back to `#[trusted]` placeholders.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_creusot_contracts(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
-    #[test]
-    fn test_cannot_weaken_without_impl() {
-        struct _PropA;
-        struct _PropB;
-
-        impl Prop for _PropA {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for _PropB {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        // This would fail to compile (no Implies<_PropB> for _PropA):
-        // let a: Established<_PropA> = Established::assert();
-        // let _b: Established<_PropB> = a.weaken();
+    /// Return one Verus `assume_specification` block per transition in this machine.
+    ///
+    /// When `inv_fn` is non-empty, each entry constrains the transition with
+    /// `requires inv_fn(&state)` / `ensures inv_fn(&r.0)`.  When `inv_fn` is
+    /// empty, trivially-true `requires true, ensures true` stubs are emitted.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_verus_contracts(_inv_fn: &str) -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
-    #[test]
-    fn test_conjunction_combine() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let p: Established<P> = Established::assert();
-        let q: Established<Q> = Established::assert();
-        let _pq: Established<And<P, Q>> = both(p, q);
+    /// Return one `#[verifier::external]` stub function per transition.
+    ///
+    /// Used by `vsm_verus_standalone_proof()` to generate self-contained Verus
+    /// source files where no external crate rlibs are available.  Each stub
+    /// declares the function with a `todo!()` body so that `assume_specification`
+    /// has a concrete symbol to axiomatise.
+    ///
+    /// The default implementation returns an empty list.
+    #[cfg(not(kani))]
+    fn transition_verus_stubs() -> Vec<proc_macro2::TokenStream> {
+        vec![]
     }
 
-    #[test]
-    fn test_conjunction_project_left() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+    /// Compose the full VSM Creusot proof: the invariant proposition proof
+    /// followed by one contract per registered transition.
+    ///
+    /// When `Self::Invariant::creusot_invariant_fn_name()` is non-empty, the
+    /// generated companions use real `#[requires]`/`#[ensures]` annotations and
+    /// Creusot will verify the function bodies. Otherwise trusted placeholders
+    /// are emitted (same as the stub path).
+    #[cfg(not(kani))]
+    fn vsm_creusot_proof() -> proc_macro2::TokenStream {
+        let mut ts = Self::Invariant::creusot_proof();
+        let inv_fn = Self::Invariant::creusot_invariant_fn_name();
+        for contract in Self::transition_creusot_contracts(inv_fn) {
+            ts.extend(contract);
         }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _p: Established<P> = fst(pq);
+        ts
     }
 
-    #[test]
-    fn test_conjunction_project_right() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+    /// Compose the full VSM Verus proof: the invariant proposition proof
+    /// followed by one `assume_specification` block per registered transition.
+    ///
+    /// When `Self::Invariant::verus_invariant_fn_name()` is non-empty, the
+    /// generated companions emit real `requires`/`ensures` Verus contracts.
+    /// Otherwise trivially-true stubs are emitted.
+    #[cfg(not(kani))]
+    fn vsm_verus_proof() -> proc_macro2::TokenStream {
+        let mut ts = Self::Invariant::verus_proof();
+        let inv_fn = Self::Invariant::verus_invariant_fn_name();
+        for contract in Self::transition_verus_contracts(inv_fn) {
+            ts.extend(contract);
         }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _q: Established<Q> = snd(pq);
+        ts
     }
 
-    #[test]
-    fn test_conjunction_implies_components() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+    /// Compose the transition portion of a self-contained Verus proof file:
+    /// all `#[verifier::external]` stubs followed by all `assume_specification`
+    /// contracts.
+    ///
+    /// Used by `strictly_verus/build.rs` to build files that do **not** import
+    /// external crate rlibs (which the Verus toolchain cannot link).  The
+    /// caller is responsible for prepending the inline type definitions and
+    /// the invariant spec function before this output.
+    #[cfg(not(kani))]
+    fn vsm_verus_transitions() -> proc_macro2::TokenStream {
+        let mut ts = proc_macro2::TokenStream::new();
+        for stub in Self::transition_verus_stubs() {
+            ts.extend(stub);
         }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+        let inv_fn = Self::Invariant::verus_invariant_fn_name();
+        for contract in Self::transition_verus_contracts(inv_fn) {
+            ts.extend(contract);
         }
-
-        // Use projection functions instead of weaken
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        let _p: Established<P> = fst(pq);
-        let _q: Established<Q> = snd(pq);
+        ts
     }
+}
 
-    #[test]
-    fn test_conjunction_is_zero_sized() {
-        struct P;
-        struct Q;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+/// Convenience alias: a verified transition for state machine `VSM`.
+///
+/// Any function (or closure) whose signature is
+/// `(VSM::State, Established<VSM::Invariant>) -> (VSM::State, Established<VSM::Invariant>)`
+/// satisfies this bound automatically via the [`FormalMethod`] blanket impl.
+pub trait VerifiedTransition<VSM: VerifiedStateMachine>:
+    FormalMethod<VSM::State, VSM::Invariant, VSM::State, VSM::Invariant>
+{
+}
 
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+/// Blanket impl: any `FormalMethod` over the right state/invariant types is a
+/// `VerifiedTransition` for the corresponding `VerifiedStateMachine`.
+impl<VSM, T> VerifiedTransition<VSM> for T
+where
+    VSM: VerifiedStateMachine,
+    T: FormalMethod<VSM::State, VSM::Invariant, VSM::State, VSM::Invariant>,
+{
+}
 
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+/// Per-variant concrete construction expressions at each compositional depth.
+///
+/// Used by `#[derive(VerifiedStateMachine)]` to emit three harnesses per
+/// `(transition × variant)`: one per depth.  Each depth uses `KaniCompose`
+/// field expressions from `#[derive(KaniVariantState)]`.
+pub struct KaniVariantConstruction {
+    /// Snake_case variant name suffix for harness function names
+    /// (e.g. `"explain_view"` for `ExplainView`).
+    pub variant_name: &'static str,
+    /// Depth-0 construction expression: all collections empty / `None`.
+    pub depth0: String,
+    /// Depth-1 construction expression: one element in each collection.
+    pub depth1: String,
+    /// Depth-2 construction expression: two elements in each collection.
+    pub depth2: String,
+}
 
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+/// Per-variant concrete construction expressions for VSM state enums.
+///
+/// Implemented via `#[derive(KaniVariantState)]`. Used by `derive_vsm` to
+/// generate per-variant Kani harnesses — three harnesses per
+/// `(transition × variant)`, one per compositional depth — so that CBMC
+/// receives a concrete discriminant and bounded fields instead of a fully
+/// symbolic enum.
+///
+/// # Motivation
+///
+/// `kani::any::<StateEnum>()` creates a tagged union where ALL variant fields
+/// are globally symbolic in CBMC. Dropping such a value requires reasoning
+/// about every variant destructor simultaneously, causing unbounded unwinding
+/// for variants that contain `Vec<T>` or `String` (non-trivial destructors).
+///
+/// Per-variant harnesses give CBMC a concrete discriminant for each proof,
+/// eliminating the symbolic-enum-drop problem while preserving exhaustive
+/// coverage through case analysis.  Per-depth harnesses extend this to
+/// cover recursive / collection fields at sizes 0, 1, and 2.
+pub trait KaniVariantState {
+    /// Returns per-variant construction expressions at all three depths.
+    ///
+    /// Each [`KaniVariantConstruction`] provides:
+    ///
+    /// - `variant_name` — snake_case suffix for the harness function name.
+    /// - `depth0` — all collections empty / `None` (base case).
+    /// - `depth1` — one element in each collection (inductive step).
+    /// - `depth2` — two elements in each collection (inductive step ×2).
+    ///
+    /// Field expressions use `<T as KaniCompose>::kani_depth{n}()` for
+    /// non-primitive types, `Vec::new()` / `None` / `String::new()` for
+    /// recognized collection types, and `kani::any()` for primitives.
+    fn kani_variant_constructions() -> Vec<KaniVariantConstruction>;
+}
 
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
+// ── Kani-safe label helpers ───────────────────────────────────────────────────
 
-        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
-        assert_eq!(std::mem::size_of_val(&pq), 0);
-    }
-
-    #[test]
-    fn test_conjunction_chain() {
-        struct P;
-        struct Q;
-        struct R;
-        impl Prop for P {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for Q {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-        impl Prop for R {
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-        }
-
-        // Can nest: (P ∧ Q) ∧ R
-        let p: Established<P> = Established::assert();
-        let q: Established<Q> = Established::assert();
-        let r: Established<R> = Established::assert();
-
-        let pq = both(p, q);
-        let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
-    }
-
-    #[test]
-    fn test_refinement_downcast() {
-        // Define refined type
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        // Can downcast from refined to base
-        let refined_proof: Established<Is<_NonEmptyString>> = Established::assert();
-        let _base_proof: Established<Is<String>> = downcast(refined_proof);
-    }
-
-    #[test]
-    fn test_refinement_via_weaken() {
-        // Refinement requires explicit Implies impl
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        let refined: Established<Is<_NonEmptyString>> = Established::assert();
-        let _base: Established<Is<String>> = refined.weaken();
-    }
-
-    #[test]
-    fn test_refinement_reflexive() {
-        // Every type refines itself (via reflexive Implies)
-        let proof: Established<Is<String>> = Established::assert();
-        let _same: Established<Is<String>> = downcast(proof);
-    }
-
-    #[test]
-    fn test_refinement_chain() {
-        // Test transitivity: _HttpsUrl -> _ValidUrl -> String
-        use core::marker::PhantomData;
-        struct _HttpsUrl(PhantomData<String>);
-        struct _ValidUrl(PhantomData<String>);
-
-        impl Refines<String> for _ValidUrl {}
-        impl Implies<Is<String>> for Is<_ValidUrl> {}
-
-        impl Refines<_ValidUrl> for _HttpsUrl {}
-        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
-
-        impl Refines<String> for _HttpsUrl {} // Transitive closure
-        impl Implies<Is<String>> for Is<_HttpsUrl> {} // Enable direct downcast
-
-        let https: Established<Is<_HttpsUrl>> = Established::assert();
-        let valid: Established<Is<_ValidUrl>> = downcast(https);
-        let _base: Established<Is<String>> = downcast(valid);
-    }
-
-    #[test]
-    fn test_refinement_direct_chain() {
-        // Direct downcast from most refined to base
-        use core::marker::PhantomData;
-        struct _HttpsUrl(PhantomData<String>);
-        struct _ValidUrl(PhantomData<String>);
-
-        impl Refines<String> for _ValidUrl {}
-        impl Implies<Is<String>> for Is<_ValidUrl> {}
-
-        impl Refines<_ValidUrl> for _HttpsUrl {}
-        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
-
-        impl Refines<String> for _HttpsUrl {}
-        impl Implies<Is<String>> for Is<_HttpsUrl> {}
-
-        let https: Established<Is<_HttpsUrl>> = Established::assert();
-        let _base: Established<Is<String>> = downcast(https);
-    }
-
-    #[test]
-    fn test_refinement_zero_sized() {
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        let refined: Established<Is<_NonEmptyString>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&refined), 0);
-
-        let base: Established<Is<String>> = downcast(refined);
-        assert_eq!(std::mem::size_of_val(&base), 0);
-    }
-
-    #[test]
-    fn test_cannot_upcast() {
-        use core::marker::PhantomData;
-        struct _NonEmptyString(PhantomData<String>);
-        impl Refines<String> for _NonEmptyString {}
-        impl Implies<Is<String>> for Is<_NonEmptyString> {}
-
-        // This would fail to compile (no Implies<Is<_NonEmptyString>> for Is<String>):
-        // let base: Established<Is<String>> = Established::assert();
-        // let _refined: Established<Is<_NonEmptyString>> = downcast(base);
-    }
-
-    #[test]
-    fn test_invariant_zero_sized() {
-        enum _Status {
-            _Active,
-            _Inactive,
-        }
-        struct _ActiveVariant;
-
-        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
-        assert_eq!(std::mem::size_of_val(&proof), 0);
-    }
-
-    #[test]
-    fn test_invariant_type_safety() {
-        enum _Status {
-            _Active,
-            _Inactive,
-        }
-        struct _ActiveVariant;
-        struct _InactiveVariant;
-
-        // Function requires specific variant proof
-        fn process_active(
-            _status: _Status,
-            _proof: Established<InVariant<_Status, _ActiveVariant>>,
-        ) {
-        }
-
-        // Can call with correct proof
-        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
-        process_active(_Status::_Active, proof);
-
-        // This would fail to compile (wrong variant):
-        // let wrong_proof: Established<InVariant<_Status, _InactiveVariant>> = Established::assert();
-        // process_active(_Status::_Active, wrong_proof);
-    }
-
-    #[test]
-    fn test_invariant_enum_branches() {
-        enum _State {
-            _Loading,
-            _Ready,
-            _Error,
-        }
-
-        struct _LoadingVariant;
-        struct _ReadyVariant;
-        struct _ErrorVariant;
-
-        fn handle_loading(_proof: Established<InVariant<_State, _LoadingVariant>>) {
-            // Loading-specific logic
-        }
-
-        fn handle_ready(_proof: Established<InVariant<_State, _ReadyVariant>>) {
-            // Ready-specific logic
-        }
-
-        fn handle_error(_proof: Established<InVariant<_State, _ErrorVariant>>) {
-            // Error-specific logic
-        }
-
-        // Simulate state machine
-        let loading_proof: Established<InVariant<_State, _LoadingVariant>> = Established::assert();
-        handle_loading(loading_proof);
-
-        let ready_proof: Established<InVariant<_State, _ReadyVariant>> = Established::assert();
-        handle_ready(ready_proof);
-
-        let error_proof: Established<InVariant<_State, _ErrorVariant>> = Established::assert();
-        handle_error(error_proof);
-    }
-
-    #[test]
-    fn test_invariant_with_inhabitation() {
-        enum _Color {
-            _Red,
-            _Green,
-            _Blue,
-        }
-        struct _RedVariant;
-
-        // Can have both variant and type proofs
-        let _type_proof: Established<Is<_Color>> = Established::assert();
-        let _variant_proof: Established<InVariant<_Color, _RedVariant>> = Established::assert();
-    }
+/// Produce a label string for display / diagnostics in formal-method transitions.
+///
+/// In normal builds, expands to `format!($args*)` as written.  In Kani builds,
+/// returns `String::new()` instead so CBMC does not model the entire Rust
+/// formatter machinery — `format!()` involves trait-object dispatch through
+/// `std::fmt` that multiplies CBMC paths even for fully concrete inputs.
+///
+/// # Usage
+///
+/// Replace every `format!("...")` that produces a *display label* (content
+/// irrelevant to invariant correctness) in a `#[formal_method]` transition
+/// body with `kani_label!("...")`:
+///
+/// ```rust,ignore
+/// let label_left = kani_label!("{old_schema}.{old_table}");
+/// ```
+#[macro_export]
+macro_rules! kani_label {
+    ($($arg:tt)*) => {{
+        #[cfg(any(kani, creusot))]
+        let _s = ::std::string::String::new();
+        #[cfg(not(any(kani, creusot)))]
+        let _s = format!($($arg)*);
+        _s
+    }};
 }

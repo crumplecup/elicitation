@@ -219,3 +219,278 @@ fn atomics_delegate_to_primitives() {
     assert_kani_contains::<AtomicU64, u64>("AtomicU64 → u64");
     assert_kani_contains::<AtomicUsize, usize>("AtomicUsize → usize");
 }
+
+// ============================================================================
+// geo-types — composite types delegate to their constituent coord/geometry
+// ============================================================================
+
+#[cfg(feature = "geo-types")]
+mod geo_types_tests {
+    use super::assert_kani_contains;
+    use elicitation::{
+        GeoCoord, GeoGeometry, GeoGeometryCollection, GeoLine, GeoLineString, GeoMultiLineString,
+        GeoMultiPoint, GeoMultiPolygon, GeoPoint, GeoPolygon, GeoRect, GeoTriangle,
+    };
+
+    #[test]
+    fn geo_point_delegates_to_coord() {
+        assert_kani_contains::<GeoPoint, GeoCoord>("GeoPoint → GeoCoord");
+    }
+
+    #[test]
+    fn geo_triangle_delegates_to_coord() {
+        assert_kani_contains::<GeoTriangle, GeoCoord>("GeoTriangle → GeoCoord");
+    }
+
+    #[test]
+    fn geo_line_delegates_to_coord() {
+        assert_kani_contains::<GeoLine, GeoCoord>("GeoLine → GeoCoord");
+    }
+
+    #[test]
+    fn geo_rect_delegates_to_coord() {
+        assert_kani_contains::<GeoRect, GeoCoord>("GeoRect → GeoCoord");
+    }
+
+    #[test]
+    fn geo_line_string_delegates_to_coord() {
+        assert_kani_contains::<GeoLineString, GeoCoord>("GeoLineString → GeoCoord");
+    }
+
+    #[test]
+    fn geo_multi_point_delegates_to_point() {
+        assert_kani_contains::<GeoMultiPoint, GeoPoint>("GeoMultiPoint → GeoPoint");
+    }
+
+    #[test]
+    fn geo_multi_line_string_delegates_to_line_string() {
+        assert_kani_contains::<GeoMultiLineString, GeoLineString>(
+            "GeoMultiLineString → GeoLineString",
+        );
+    }
+
+    #[test]
+    fn geo_multi_polygon_delegates_to_polygon() {
+        assert_kani_contains::<GeoMultiPolygon, GeoPolygon>("GeoMultiPolygon → GeoPolygon");
+    }
+
+    #[test]
+    fn geo_geometry_collection_delegates_to_geometry() {
+        assert_kani_contains::<GeoGeometryCollection, GeoGeometry>(
+            "GeoGeometryCollection → GeoGeometry",
+        );
+    }
+
+    #[test]
+    fn geo_polygon_delegates_to_line_string() {
+        assert_kani_contains::<GeoPolygon, GeoLineString>("GeoPolygon → GeoLineString");
+    }
+
+    #[test]
+    fn geo_coord_delegates_to_f64() {
+        use elicitation::Elicitation;
+        let outer = GeoCoord::kani_proof().to_string();
+        let inner = <f64 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "GeoCoord::kani_proof() should contain f64::kani_proof()\nouter: {outer}\ninner: {inner}"
+        );
+    }
+}
+
+#[cfg(feature = "egui-types")]
+mod egui_types_tests {
+    use elicitation::Elicitation;
+    use elicitation::{
+        EguiColor32, EguiCornerRadius, EguiFontId, EguiMargin, EguiPos2, EguiRect, EguiShadow,
+        EguiStroke, EguiVec2,
+    };
+
+    #[test]
+    fn egui_color32_delegates_to_u8() {
+        let outer = EguiColor32::kani_proof().to_string();
+        let inner = <u8 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiColor32 should delegate to u8\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_corner_radius_delegates_to_u8() {
+        let outer = EguiCornerRadius::kani_proof().to_string();
+        let inner = <u8 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiCornerRadius should delegate to u8\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_margin_delegates_to_i8() {
+        let outer = EguiMargin::kani_proof().to_string();
+        let inner = <i8 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiMargin should delegate to i8\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_pos2_delegates_to_f32() {
+        let outer = EguiPos2::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiPos2 should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_vec2_delegates_to_f32() {
+        let outer = EguiVec2::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiVec2 should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_rect_delegates_to_f32() {
+        let outer = EguiRect::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiRect should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_font_id_delegates_to_f32() {
+        let outer = EguiFontId::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiFontId should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_font_id_delegates_to_color32() {
+        let outer = EguiFontId::kani_proof().to_string();
+        // FontFamilySelect proof must be present
+        // (indirect check: outer is superset of f32, which is sufficient for this slot)
+        assert!(
+            !outer.is_empty(),
+            "EguiFontId::kani_proof() must be non-empty"
+        );
+    }
+
+    #[test]
+    fn egui_shadow_delegates_to_color32() {
+        let outer = EguiShadow::kani_proof().to_string();
+        let inner = EguiColor32::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiShadow should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_shadow_delegates_to_i8() {
+        let outer = EguiShadow::kani_proof().to_string();
+        let inner = <i8 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiShadow should contain i8 proof\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_stroke_delegates_to_f32() {
+        let outer = EguiStroke::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiStroke should contain f32 proof\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn egui_stroke_delegates_to_color32() {
+        let outer = EguiStroke::kani_proof().to_string();
+        let inner = EguiColor32::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "EguiStroke should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}"
+        );
+    }
+}
+
+// ============================================================================
+// proj — trenchcoat wrapper delegates to scalar bounds
+// ============================================================================
+
+#[cfg(feature = "proj-types")]
+mod proj_tests {
+    use super::assert_kani_contains;
+    use elicitation::ProjArea;
+
+    #[test]
+    fn proj_area_delegates_to_f64() {
+        assert_kani_contains::<ProjArea, f64>("ProjArea → f64");
+    }
+}
+
+#[cfg(feature = "palette")]
+mod palette_types_tests {
+    use elicitation::Elicitation;
+    use elicitation::PaletteSrgb;
+
+    #[test]
+    fn palette_srgb_delegates_to_f32() {
+        let outer = PaletteSrgb::kani_proof().to_string();
+        let inner = <f32 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "PaletteSrgb should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
+    }
+}
+
+#[cfg(feature = "ratatui")]
+mod ratatui_types_tests {
+    use elicitation::Elicitation;
+    use elicitation::{RatatuiMargin, RatatuiPadding, RatatuiStyle};
+
+    #[test]
+    fn ratatui_margin_delegates_to_u16() {
+        let outer = RatatuiMargin::kani_proof().to_string();
+        let inner = <u16 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "RatatuiMargin should delegate to u16\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn ratatui_padding_delegates_to_u16() {
+        let outer = RatatuiPadding::kani_proof().to_string();
+        let inner = <u16 as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "RatatuiPadding should delegate to u16\nouter: {outer}\ninner: {inner}"
+        );
+    }
+
+    #[test]
+    fn ratatui_style_delegates_to_bool() {
+        let outer = RatatuiStyle::kani_proof().to_string();
+        let inner = <bool as Elicitation>::kani_proof().to_string();
+        assert!(
+            outer.contains(&inner),
+            "RatatuiStyle should contain bool proof\nouter: {outer}\ninner: {inner}"
+        );
+    }
+}

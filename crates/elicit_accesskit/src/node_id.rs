@@ -29,6 +29,12 @@ impl From<accesskit::NodeId> for NodeId {
     }
 }
 
+impl From<u64> for NodeId {
+    fn from(n: u64) -> Self {
+        Self(accesskit::NodeId::from(n))
+    }
+}
+
 impl From<NodeId> for accesskit::NodeId {
     fn from(id: NodeId) -> Self {
         id.0

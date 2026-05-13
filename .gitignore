@@ -12,3 +12,7 @@ crates/elicitation_prusti/Cargo.lock
 Cargo.lock
 .why3find/
 .copilot/
+# scratch files
+check_out.txt
+check_output.txt
+rustc-ice-*.txt

@@ -14,9 +14,7 @@
 use elicit_clap::trait_factories::{
     prime_clap__args, prime_clap__command_factory, prime_clap__subcommand, prime_clap__value_enum,
 };
-use elicitation::{
-    DynamicToolRegistry, Elicit, ElicitPlugin, Prompt, Select, ToolFactoryRegistration,
-};
+use elicitation::{DynamicToolRegistry, Elicit, ElicitPlugin, ToolFactoryRegistration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

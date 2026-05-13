@@ -61,5 +61,77 @@ pub mod ratatui_types;
 #[cfg(feature = "geo-types")]
 pub mod geo_types;
 
+#[cfg(feature = "proj-types")]
+pub mod proj_types;
+
+#[cfg(feature = "rstar-types")]
+pub mod rstar_types;
+
+#[cfg(feature = "georaster-types")]
+pub mod georaster_types;
+
+#[cfg(feature = "geojson-types")]
+pub mod geojson_types;
+
+#[cfg(feature = "wkt-types")]
+pub mod wkt_types;
+
+#[cfg(feature = "wkb-types")]
+pub mod wkb_types;
+
+#[cfg(feature = "winit-types")]
+pub mod winit_types;
+
+#[cfg(feature = "wgpu-types")]
+pub mod wgpu_types;
+
+#[cfg(feature = "bevy-types")]
+pub mod bevy_types;
+
+#[cfg(feature = "egui-winit-types")]
+mod egui_winit_types;
+#[cfg(feature = "egui-winit-types")]
+pub use egui_winit_types::{EguiWinitDescriptor, EguiWinitRenderer, EguiWinitTheme};
+
 #[cfg(feature = "palette")]
 pub mod palette_types;
+
+#[cfg(feature = "tower-types")]
+pub mod tower_types;
+
+#[cfg(feature = "axum-types")]
+pub mod axum_types;
+
+#[cfg(feature = "polars-types")]
+mod polars_types;
+#[cfg(feature = "polars-types")]
+pub use polars_types::{
+    PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
+};
+
+#[cfg(feature = "uom-types")]
+mod uom_types;
+#[cfg(feature = "uom-types")]
+pub use uom_types::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
+
+#[cfg(feature = "leptos-types")]
+mod leptos_types;
+#[cfg(feature = "leptos-types")]
+pub use leptos_types::{
+    LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode,
+    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosDisplayMode, LeptosHtmlTag,
+    LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
+    LeptosViewNode,
+};
+
+#[cfg(feature = "surreal-types")]
+pub mod surreal_types;
+
+#[cfg(feature = "redb-types")]
+pub mod redb_types;
+
+#[cfg(feature = "csv-types")]
+pub mod csv_types;
+
+#[cfg(feature = "toml-types")]
+pub mod toml_types;

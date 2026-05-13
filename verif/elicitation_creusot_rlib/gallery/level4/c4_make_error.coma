@@ -1,0 +1,47 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 84 0 84 51 *)
+
+let%span slevel4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 84 21 84 28
+let%span slevel4'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 82 11 82 32
+let%span slevel4'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 84 41 84 51
+let%span slevel4'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 83 10 83 39
+let%span slevel4'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 36 16 36 28
+let%span slevel4'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 77 16 77 36
+
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_ErrorState = { message: t_String }
+
+predicate inv_String (_1: t_String)
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c4_nonempty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 35 0 35 38] (s: t_String) =
+  [%#slevel4'3] Seq.length (view_String s) > 0
+
+predicate inv_ErrorState (_1: t_ErrorState)
+
+axiom inv_axiom [@rewrite]: forall x: t_ErrorState [inv_ErrorState x]. inv_ErrorState x = inv_String x.message
+
+predicate c4_error_has_message [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 76 0 76 51] (e: t_ErrorState) =
+  [%#slevel4'4] Seq.length (view_String e.message) > 0
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c4_make_error [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level4.rs" 84 0 84 51]
+  (message'0: t_String) (return (x: t_ErrorState)) =
+  {[@stop_split] [@expl:c4_make_error requires] ([@stop_split] [@expl:c4_make_error 'message' type invariant] [%#slevel4] inv_String message'0)
+  /\ ([@stop_split] [@expl:c4_make_error requires] [%#slevel4'0] c4_nonempty message'0)}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- { message = message'0 } ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: t_ErrorState = Any.any_l () | & message'0: t_String = message'0 ])
+  [ return (result: t_ErrorState) ->
+  {[@stop_split] [@expl:c4_make_error ensures] ([@stop_split] [@expl:c4_make_error result type invariant] [%#slevel4'1] inv_ErrorState result)
+    /\ ([@stop_split] [@expl:c4_make_error ensures] [%#slevel4'2] c4_error_has_message result)}
+    (! return {result}) ]

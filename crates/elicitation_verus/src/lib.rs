@@ -56,5 +56,19 @@ pub mod tokio_types;
 pub mod egui_types;
 pub mod ratatui_types;
 pub mod geo_types;
+pub mod georaster_types;
+pub mod geojson_types;
+pub mod rstar_types;
+pub mod proj_types;
+pub mod wkt_types;
+pub mod wkb_types;
 pub mod palette_types;
 pub mod ui_types;
+pub mod winit_types;
+pub mod wgpu_types;
+
+// Proof gallery — learning curriculum for the VSM companion pattern
+pub mod gallery;
+
+// Generated VSM companion proofs (elicitation generate verus)
+pub mod generated;

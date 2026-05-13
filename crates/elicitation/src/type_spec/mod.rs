@@ -21,33 +21,60 @@
 
 mod accesskit_specs;
 mod atomics;
+#[cfg(feature = "axum-types")]
+mod axum_specs;
+#[cfg(feature = "bevy-types")]
+mod bevy_specs;
 mod bool_contracts;
 mod char_contracts;
 mod clap_specs;
 mod collection_contracts;
 mod collections;
+#[cfg(feature = "csv-types")]
+mod csv_specs;
 mod datetime_specs;
 mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
 mod geo_specs;
+#[cfg(feature = "geojson-types")]
+mod geojson_specs;
+#[cfg(feature = "georaster-types")]
+mod georaster_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;
 mod network_specs;
 mod palette_specs;
+#[cfg(feature = "polars-types")]
+mod polars_specs;
+mod proj_specs;
 mod ratatui_specs;
 mod regex_specs;
 mod registry;
+#[cfg(feature = "rstar-types")]
+mod rstar_specs;
 mod scalars;
 mod sqlx_specs;
 mod std_extras;
 mod string_contracts;
 mod strings;
+#[cfg(feature = "surreal-types")]
+mod surreal_specs;
+#[cfg(feature = "toml-types")]
+mod toml_specs;
+mod tower_specs;
 pub mod type_spec_plugin;
 mod url_specs;
 mod uuid_specs;
 mod value_specs;
+#[cfg(feature = "wgpu-types")]
+mod wgpu_specs;
+#[cfg(feature = "winit-types")]
+mod winit_specs;
+#[cfg(feature = "wkb-types")]
+mod wkb_specs;
+mod wkt_specs;
 
 pub use collections::{HashMapSpec, HashSetSpec, OptionSpec, ResultSpec, VecSpec};
 

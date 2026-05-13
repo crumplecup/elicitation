@@ -1,7 +1,8 @@
 //! Tests for TypeGraphPlugin MCP tool definitions and schema.
+#![cfg(feature = "graph")]
 
 use elicitation::plugin::ElicitPlugin;
-use elicitation::{Elicit, Prompt, Select, TypeGraphPlugin};
+use elicitation::{Elicit, TypeGraphPlugin};
 
 // --- Test types ---
 

@@ -3,7 +3,7 @@
 //! This test would have caught the bug where enum derives were generating
 //! call_tool() instead of send_prompt(), which broke server-side elicitation.
 
-use elicitation::{ElicitCommunicator, ElicitError, Elicitation, Prompt, Select};
+use elicitation::{ElicitCommunicator, ElicitError, Elicitation};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 

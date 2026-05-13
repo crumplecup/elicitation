@@ -1,6 +1,7 @@
 //! Tests for the TypeGraph builder (BFS traversal and cycle handling).
+#![cfg(feature = "graph")]
 
-use elicitation::{Elicit, NodeKind, Prompt, Select, TypeGraph, TypeGraphError};
+use elicitation::{Elicit, NodeKind, TypeGraph, TypeGraphError};
 
 // --- Test type hierarchy ---
 

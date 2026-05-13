@@ -36,7 +36,7 @@ pub fn ui_node_to_tree_update(root_node: &UiNode) -> TreeUpdate {
 #[tracing::instrument(skip(update))]
 pub fn tree_update_to_ui_node(update: &TreeUpdate) -> Option<UiNode> {
     let root_id = update.tree.as_ref()?.root;
-    let node_map: std::collections::HashMap<NodeId, &Node> =
+    let node_map: std::collections::BTreeMap<NodeId, &Node> =
         update.nodes.iter().map(|(id, n)| (*id, n)).collect();
 
     Some(convert_accesskit_node(root_id, &node_map))
@@ -336,7 +336,7 @@ fn layout_to_accesskit(layout: &LayoutJson) -> Node {
 
 fn convert_accesskit_node(
     node_id: NodeId,
-    node_map: &std::collections::HashMap<NodeId, &Node>,
+    node_map: &std::collections::BTreeMap<NodeId, &Node>,
 ) -> UiNode {
     let Some(node) = node_map.get(&node_id) else {
         return UiNode::Widget {

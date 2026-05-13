@@ -1,0 +1,87 @@
+//! Creusot proof gallery for VSM invariant expressibility.
+//!
+//! Each level tests a specific hypothesis about what Pearlite can express,
+//! mirroring the methodology used in the Kani gallery.  Unlike Kani (which
+//! runs CBMC and measures wall-clock time), Creusot gallery levels are
+//! validated by:
+//!
+//! 1. **Compilation** (`cargo creusot`): annotations parse and type-check
+//!    in Pearlite.  Failure here means the predicate is inexpressible.
+//! 2. **Goal discharge** (Why3 + Alt-Ergo/Z3): the generated WhyML proof
+//!    obligations close.  For trivial goals this takes < 1 s.
+//!
+//! ## Gallery levels
+//!
+//! | Level        | Subject                              | Key question                                    |
+//! |--------------|--------------------------------------|-------------------------------------------------|
+//! | [`level1`]  | Unit type, trivial invariant         | Does basic `#[logic]` / `#[requires]` work?    |
+//! | [`level2`]  | Integer bounds (`@` model)           | Can Pearlite do arithmetic?                     |
+//! | [`level3`]  | Unit enum, `match` in `#[logic]`    | Can predicates match on enum variants?          |
+//! | [`level4`]  | String length via `@.len()`          | Can Pearlite reason about String?               |
+//! | [`level5`]  | Data-carrying enum (String payload)  | Invariant over data variant field?              |
+//! | [`level6`]  | Composition (postcond → precond)    | Is composition free (no `stub_verified`)?       |
+//! | [`level7`]  | Named struct fields in variants      | Can predicates access named enum struct fields? |
+//! | [`level8`]  | Machine wrapper struct               | Invariant over state enum + numeric metadata?   |
+//! | [`level9`]  | Contract chains vs proof tokens      | Is `Established<P>` unnecessary in Creusot?     |
+//! | [`level10`] | Full mini connection machine         | Complete 4-state VSM lifecycle provable?        |
+//! | [`level11`] | Panel machine with nested enum       | Nested enum field access in pearlite?           |
+//! | [`level12`] | Two-machine composition + gating     | Cross-machine invariant (panel gates on conn)?  |
+//! | [`level13`] | Machine wrapper + transition counter | Exact counter postconditions chain `below_max`? |
+//! | [`level14`] | Two counters + relational invariant  | Can `error_count ≤ transition_count` be proved? |
+//! | [`level15`] | Six-variant state, two-field variant | Two-field `Connecting`, tag propagation through `match`? |
+//! | [`level16`] | Nested struct field in enum variant  | Struct consistency predicate, field propagation across variants? |
+//! | [`level17`] | Nested enum field + backend routing  | Nested enum match in `#[logic]`; routing guard chains through lifecycle? |
+//! | [`level18`] | Full `ArchiveConnectionState` replica | All C15–C17 patterns combined; production-identical structure? |
+//! | [`level19`] | `ArchiveConnectionMachine` wrapper    | Counter + routing guards + struct propagation simultaneously?  |
+//! | [`level20`] | `Option<T>` fields + bool implication | `Option<String>`/`Option<Struct>` in `#[logic]`; `*running ==>` invariant? |
+//! | [`level21`] | `Vec<T>` sequence + `usize` cursor    | `forall` quantifier over Vec; cursor-in-bounds after saturating move?      |
+//! | [`level22`] | `Box<T>` field access in `#[logic]`   | Pearlite deref of boxed struct fields; invariant on boxed content?         |
+//! | [`level23`] | 18-variant scale test (panel machine) | Alt-Ergo closes 18-arm match? All patterns combined at production scale?   |
+//! | [`level24`] | Depth-bounded inductive closure       | `depth > 0 ==> Ok`? Well-foundedness of depth-decrement? Error at limit?  |
+//! | [`level26`] | `#[instrument]` delegation + `format!` pitfalls | `{ f(args) }` body rewritten to `__creusot`? `String::new()` safe for labels? |
+//!
+//! ## Run all levels
+//!
+//! ```bash
+//! cargo creusot -p elicitation_creusot
+//! ```
+//!
+//! The output is WhyML in `verif/elicitation_creusot_rlib/`.
+//! Each level's functions appear as separate Why3 modules.
+//!
+//! ## Prove gallery
+//!
+//! ```bash
+//! just verify-creusot-gallery
+//! ```
+
+pub mod level1;
+pub mod level10;
+pub mod level11;
+pub mod level12;
+pub mod level13;
+pub mod level14;
+pub mod level15;
+pub mod level16;
+pub mod level17;
+pub mod level18;
+pub mod level19;
+pub mod level2;
+pub mod level20;
+pub mod level21;
+pub mod level22;
+pub mod level23;
+pub mod level24;
+pub mod level25;
+pub mod level26;
+pub mod level27;
+pub mod level28;
+pub mod level29;
+pub mod level3;
+pub mod level30;
+pub mod level4;
+pub mod level5;
+pub mod level6;
+pub mod level7;
+pub mod level8;
+pub mod level9;

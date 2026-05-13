@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c20_abort_edit": { "prover": "cvc5", "time": 0.018 },
+      "vc_elim_Browsing": { "prover": "cvc5", "time": 0.012 }
+    }
+  }
+}

@@ -1208,6 +1208,52 @@ mod verification_impls {
         }
     }
 
+    // ---- Plain Rust tuples (Survey: each component is a named positional field) ----
+
+    impl<A: ElicitPromptTree, B: ElicitPromptTree> ElicitPromptTree for (A, B) {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 2-tuple:".to_string()),
+                type_name: "(_, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                ],
+            }
+        }
+    }
+
+    impl<A: ElicitPromptTree, B: ElicitPromptTree, C: ElicitPromptTree> ElicitPromptTree for (A, B, C) {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 3-tuple:".to_string()),
+                type_name: "(_, _, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                    ("_2".to_string(), Box::new(C::prompt_tree())),
+                ],
+            }
+        }
+    }
+
+    impl<A: ElicitPromptTree, B: ElicitPromptTree, C: ElicitPromptTree, D: ElicitPromptTree>
+        ElicitPromptTree for (A, B, C, D)
+    {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 4-tuple:".to_string()),
+                type_name: "(_, _, _, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                    ("_2".to_string(), Box::new(C::prompt_tree())),
+                    ("_3".to_string(), Box::new(D::prompt_tree())),
+                ],
+            }
+        }
+    }
+
     // ---- Feature-gated types ----
 
     #[cfg(feature = "uuid")]
@@ -1218,8 +1264,19 @@ mod verification_impls {
         leaf_impl!(UuidNonNil, "UuidNonNil");
     }
 
+    // Raw chrono types are fine under kani (no PhantomData stubs).
+    #[cfg(feature = "chrono")]
+    mod chrono_primitive_impls {
+        use super::*;
+        use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
+        leaf_impl!(DateTime<Utc>, "DateTime<Utc>");
+        leaf_impl!(DateTime<FixedOffset>, "DateTime<FixedOffset>");
+        leaf_impl!(NaiveDateTime, "NaiveDateTime");
+    }
+
+    // Contract types use PhantomData stubs under kani — gate them out.
     #[cfg(all(feature = "chrono", not(kani)))]
-    mod chrono_impls {
+    mod chrono_contract_impls {
         use super::*;
         use crate::verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
         leaf_impl!(DateTimeUtcAfter, "DateTimeUtcAfter");
@@ -1261,9 +1318,19 @@ mod verification_impls {
         leaf_impl!(ValueObject, "ValueObject");
         leaf_impl!(ValueArray, "ValueArray");
         leaf_impl!(ValueNonNull, "ValueNonNull");
+        leaf_impl!(serde_json::Value, "serde_json::Value");
     }
 
-    #[cfg(feature = "regex")]
+    // Under kani, ValueObject/Array/NonNull use PhantomData stubs that don't
+    // expose Prompt, so we skip them. serde_json::Value::prompt() is
+    // unconditional and safe to use under kani.
+    #[cfg(all(feature = "serde_json", kani))]
+    mod serde_json_kani_impls {
+        use super::*;
+        leaf_impl!(serde_json::Value, "serde_json::Value");
+    }
+
+    #[cfg(all(feature = "regex", not(kani)))]
     mod regex_impls {
         use super::*;
         use crate::verification::types::{
@@ -1276,7 +1343,7 @@ mod verification_impls {
         leaf_impl!(RegexSetNonEmpty, "RegexSetNonEmpty");
     }
 
-    #[cfg(feature = "reqwest")]
+    #[cfg(all(feature = "reqwest", not(kani)))]
     mod reqwest_impls {
         use super::*;
         use crate::verification::types::StatusCodeValid;

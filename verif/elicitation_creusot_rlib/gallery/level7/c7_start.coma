@@ -1,0 +1,68 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 88 0 88 69 *)
+
+let%span slevel7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 91 18 91 19
+let%span slevel7'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 88 16 88 18
+let%span slevel7'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 88 33 88 45
+let%span slevel7'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 86 11 86 34
+let%span slevel7'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 88 58 88 69
+let%span slevel7'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 87 10 87 32
+let%span slevel7'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 46 8 50 9
+
+use creusot.int.Int64
+use creusot.prelude.Any
+use seq.Seq
+use creusot.prelude.Char
+use int.Int
+
+type t_String
+
+type t_TaggedState = Idle | Connecting t_String Int64.t
+
+predicate inv_String (_1: t_String)
+
+predicate inv_TaggedState (_1: t_TaggedState)
+
+axiom inv_axiom [@rewrite]: forall x: t_TaggedState [inv_TaggedState x]. inv_TaggedState x
+    = match x with
+      | Idle -> true
+      | Connecting profile_name attempts -> inv_String profile_name
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_TaggedState (_1: t_TaggedState)
+
+axiom resolve_axiom [@rewrite]: forall x: t_TaggedState [resolve_TaggedState x]. resolve_TaggedState x
+    = match x with
+      | Idle -> true
+      | Connecting x0 x1 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+predicate c7_consistent [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 44 0 44 45] (s: t_TaggedState) =
+  [%#slevel7'5] match s with
+    | Idle -> true
+    | Connecting profile_name attempts -> Seq.length (view_String profile_name) > 0 /\ Int64.to_int attempts >= 0
+    end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c7_start [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level7.rs" 88 0 88 69]
+  (_s: t_TaggedState) (profile_name: t_String) (return (x: t_TaggedState)) =
+  {[@stop_split] [@expl:c7_start requires] ([@stop_split] [@expl:c7_start '_s' type invariant] [%#slevel7'0] inv_TaggedState _s)
+  /\ ([@stop_split] [@expl:c7_start 'profile_name' type invariant] [%#slevel7'1] inv_String profile_name)
+  /\ ([@stop_split] [@expl:c7_start requires] [%#slevel7'2] Seq.length (view_String profile_name) > 0)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_TaggedState _s} any) ]
+    | s1 = -{resolve_TaggedState _s}- s2
+    | s2 = [ &_ret <- Connecting profile_name ([%#slevel7] (0: Int64.t)) ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_TaggedState = Any.any_l () | & _s: t_TaggedState = _s | & profile_name: t_String = profile_name ])
+  [ return (result: t_TaggedState) ->
+  {[@stop_split] [@expl:c7_start ensures] ([@stop_split] [@expl:c7_start result type invariant] [%#slevel7'3] inv_TaggedState result)
+    /\ ([@stop_split] [@expl:c7_start ensures] [%#slevel7'4] c7_consistent result)}
+    (! return {result}) ]

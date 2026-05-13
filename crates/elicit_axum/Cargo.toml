@@ -1,0 +1,38 @@
+[package]
+name = "elicit_axum"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled axum shadow crate — MCP tools for router, handler, response, and serve descriptors"
+keywords = ["mcp", "axum", "web", "elicitation"]
+categories = ["web-programming", "network-programming"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["axum-types", "emit"] }
+
+axum = { workspace = true }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+futures = { workspace = true }
+quote = { workspace = true }
+
+[dev-dependencies]
+serde_json.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

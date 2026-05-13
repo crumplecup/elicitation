@@ -56,15 +56,16 @@ impl Elicitation for GeoLine {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("GeoLine")
+        // GeoLine has two GeoCoord fields — delegate to compose the proof chain.
+        GeoCoord::kani_proof()
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("GeoLine")
+        GeoCoord::verus_proof()
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("GeoLine")
+        GeoCoord::creusot_proof()
     }
 }
 
@@ -95,7 +96,6 @@ impl ElicitIntrospect for GeoLine {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for GeoLine {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

@@ -5,7 +5,7 @@ use elicit_ui::{
     BreakpointOutcome, BreakpointTier, ConstraintSetBuilder, MinReadableSize, TerminalBreakpoint,
     TerminalBreakpointSet, TerminalNoOverflow,
 };
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 fn make_node(role: Role, bounds: Option<Rect>, children: Vec<NodeId>) -> Node {
     let mut node = Node::new(role);
@@ -23,7 +23,7 @@ fn rect(x0: f64, y0: f64, x1: f64, y1: f64) -> Rect {
 }
 
 /// Build a simple tree: root window (full viewport) + labeled button.
-fn make_simple_tree(cols: f64, rows: f64) -> (NodeId, HashMap<NodeId, Node>) {
+fn make_simple_tree(cols: f64, rows: f64) -> (NodeId, BTreeMap<NodeId, Node>) {
     let root_id = NodeId::from(0u64);
     let button_id = NodeId::from(1u64);
 
@@ -36,7 +36,7 @@ fn make_simple_tree(cols: f64, rows: f64) -> (NodeId, HashMap<NodeId, Node>) {
     button.set_label("OK");
     button.set_bounds(rect(2.0, 2.0, 12.0, 4.0));
 
-    let mut nodes = HashMap::new();
+    let mut nodes = BTreeMap::new();
     nodes.insert(root_id, root);
     nodes.insert(button_id, button);
     (root_id, nodes)
@@ -176,7 +176,7 @@ fn min_readable_at_breakpoints() {
     );
     let child = make_node(Role::Group, Some(rect(0.0, 0.0, 8.0, 2.0)), vec![]);
 
-    let mut nodes = HashMap::new();
+    let mut nodes = BTreeMap::new();
     nodes.insert(root_id, root);
     nodes.insert(child_id, child);
 

@@ -34,13 +34,19 @@ paste = { workspace = true }
 async-trait = { workspace = true }
 inventory = { workspace = true }
 anodized = { workspace = true }
+hex = { workspace = true, optional = true }
 
 # CLI dependencies (optional)
 anyhow = { workspace = true }
 clap = { workspace = true, optional = true }
 csv = { workspace = true, optional = true }
+toml = { workspace = true, optional = true }
+toml_datetime = { workspace = true, optional = true }
 shellexpand = { workspace = true, optional = true }
 dirs = { workspace = true, optional = true }
+dotenvy = { workspace = true, optional = true }
+indicatif = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, optional = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -73,9 +79,38 @@ proc-macro2 = { workspace = true }
 quote = { workspace = true }
 prettyplease = { workspace = true }
 syn = { workspace = true }
+walkdir = { workspace = true, optional = true }
 
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
+geo = { workspace = true, optional = true }
+proj = { workspace = true, optional = true }
+rstar = { workspace = true, optional = true }
+# SurrealDB types (optional)
+surrealdb-types = { workspace = true, optional = true }
+rust_decimal = { workspace = true, optional = true }
+# redb types (optional)
+redb = { workspace = true, optional = true }
+georaster = { workspace = true, optional = true }
+geojson = { workspace = true, optional = true }
+tiff = { workspace = true, optional = true }
+
+# Windowing / input (optional)
+winit = { workspace = true, optional = true }
+
+# GPU rendering (optional)
+wgpu = { workspace = true, optional = true }
+
+# Bevy game engine types (optional)
+bevy = { workspace = true, optional = true }
+
+# Well-Known Text spatial format (optional)
+wkt = { workspace = true, optional = true }
+wkb = { workspace = true, optional = true }
+
+# Tower middleware types (optional)
+tower = { workspace = true, features = ["full"], optional = true }
+tower-http = { workspace = true, features = ["full"], optional = true }
 
 # Color science (optional)
 palette = { workspace = true, optional = true }
@@ -85,25 +120,25 @@ elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
+egui-winit = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
+strum = { workspace = true, optional = true }
+
+[target.'cfg(unix)'.dependencies]
+libc = { workspace = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 criterion = { workspace = true }
-elicit_time = { path = "../elicit_time" }
-elicit_regex = { path = "../elicit_regex" }
-elicit_reqwest = { path = "../elicit_reqwest" }
-elicit_chrono = { path = "../elicit_chrono" }
-elicit_url = { path = "../elicit_url" }
-elicit_jiff = { path = "../elicit_jiff" }
+tempfile = { workspace = true }
 
 [features]
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "redb-types", "csv-types", "toml-types", "emit", "accesskit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -137,10 +172,9 @@ emit = []
 graph = []
 
 # Static prompt tree — PromptTree, ElicitPromptTree, assembled_prompts()
-prompt-tree = ["elicitation_derive/prompt-tree"]
 
 # AccessKit tree bridge — PromptTree::to_accesskit_tree()
-prompt-tree-accesskit = ["prompt-tree", "dep:accesskit"]
+prompt-tree-accesskit = ["dep:accesskit"]
 
 # Formal verification support
 # verify-kani lives in elicitation_kani crate (dedicated)
@@ -154,7 +188,7 @@ clap-types = ["dep:clap"]
 sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
-cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
+cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs", "dep:dotenvy", "dep:indicatif", "dep:tracing-subscriber"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
@@ -162,6 +196,55 @@ accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
+geo = ["dep:geo", "geo-types"]
+proj-types = ["dep:proj", "geo-types"]
+rstar-types = ["dep:rstar", "geo-types"]
+georaster-types = ["dep:georaster", "dep:tiff"]
+geojson-types = ["dep:geojson", "geo-types", "serde_json"]
+# Enable wkt spatial format type elicitation
+wkt-types = ["dep:wkt", "geo-types"]
+# Enable wkb spatial format type elicitation
+wkb-types = ["dep:wkb", "dep:hex"]
+surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid", "chrono", "serde_json"]
+# Enable redb embedded key-value store type elicitation
+redb-types = ["dep:redb"]
+# Enable csv reader/writer type elicitation
+csv-types = ["dep:csv"]
+# Enable toml/toml_datetime type elicitation
+toml-types = ["dep:toml", "dep:toml_datetime"]
+# Windowing / input (optional)
+winit-types = ["dep:winit"]
+# Enable wgpu GPU descriptor type elicitation
+wgpu-types = ["dep:wgpu"]
+# Enable Bevy game engine type elicitation
+bevy-types = [
+    "dep:bevy",
+    "bevy/bevy_animation",
+    "bevy/bevy_audio",
+    "bevy/bevy_camera",
+    "bevy/bevy_color",
+    "bevy/bevy_core_pipeline",
+    "bevy/bevy_light",
+    "bevy/bevy_mesh",
+    "bevy/bevy_pbr",
+    "bevy/bevy_picking",
+    "bevy/bevy_render",
+    "bevy/bevy_sprite",
+    "bevy/bevy_text",
+    "bevy/bevy_ui",
+    "bevy/gamepad",
+    "bevy/serialize",
+]
+# Enable egui + winit integration descriptor type elicitation
+egui-winit-types = ["dep:egui-winit", "egui-types", "winit-types", "strum"]
+# Enable tower middleware type elicitation
+tower-types = ["dep:tower", "dep:tower-http"]
+# Enable axum descriptor type support (router, handler, response, serve descriptors)
+axum-types = ["uuid"]
+# Enable polars descriptor type support (pipeline, join, dtype descriptors)
+polars-types = ["uuid"]
+uom-types = []
+leptos-types = ["strum"]
 palette = ["dep:palette"]
 
 [lints.rust]

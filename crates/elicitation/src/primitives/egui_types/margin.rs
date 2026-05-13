@@ -85,15 +85,15 @@ impl Elicitation for EguiMargin {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("EguiMargin")
+        <i8 as crate::Elicitation>::kani_proof()
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("EguiMargin")
+        <i8 as crate::Elicitation>::verus_proof()
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("EguiMargin")
+        <i8 as crate::Elicitation>::creusot_proof()
     }
 }
 
@@ -134,7 +134,6 @@ impl ElicitIntrospect for EguiMargin {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for EguiMargin {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

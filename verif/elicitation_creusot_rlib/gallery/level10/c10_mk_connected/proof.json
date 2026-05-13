@@ -1,0 +1,6 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": { "vc_c10_mk_connected": { "prover": "cvc5", "time": 0.016 } }
+  }
+}

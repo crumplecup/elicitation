@@ -17,6 +17,7 @@ Compared to previous shadow crates:
 | Polars | Large API surface (DataFrame, SQL, etc.) | Focused on linear algebra |
 
 **Key simplifications:**
+
 1. **Serialization is natural**: Matrices → nested arrays `[[1,2],[3,4]]`, Vectors → arrays `[1,2,3]`
 2. **Operations are concrete**: `matrix.transpose()`, `vector.normalize()` - not trait method dispatch
 3. **No lifetime complexity**: Most types are owned (`Matrix`, `Vector`, `Rotation`)
@@ -52,6 +53,7 @@ where
 ## Tool Breakdown: 480 Total
 
 ### Runtime-Only Tools (60)
+
 UUID-keyed handles for persistent matrices/vectors:
 
 | Registry | Operations | Count |
@@ -68,6 +70,7 @@ UUID-keyed handles for persistent matrices/vectors:
 Tools that both execute at runtime AND emit code via `CustomEmit`:
 
 #### Matrix Operations (120)
+
 - **Creation** (20): `matrix_zeros`, `matrix_identity`, `matrix_from_rows`, `matrix_from_fn`, etc.
 - **Arithmetic** (25): `matrix_add`, `matrix_mul`, `matrix_sub`, `matrix_component_mul`, `matrix_scale`, etc.
 - **Transformations** (20): `transpose`, `inverse`, `adjoint`, `normalize_columns`, etc.
@@ -77,6 +80,7 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Norms** (10): `norm`, `norm_squared`, `magnitude`, `metric_distance`, etc.
 
 #### Vector Operations (80)
+
 - **Creation** (15): `vector_zeros`, `vector_from_iterator`, `vector_repeat`, `vector_from_fn`, etc.
 - **Arithmetic** (20): `vector_add`, `vector_sub`, `vector_scale`, `vector_component_mul`, etc.
 - **Geometric** (20): `dot`, `cross`, `normalize`, `angle`, `project`, `reflect`, etc.
@@ -84,6 +88,7 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Properties** (15): `norm`, `norm_squared`, `is_normalized`, `min`, `max`, `sum`, etc.
 
 #### Geometric Types (80)
+
 - **Rotations** (25): `rotation2_new`, `rotation3_from_euler`, `quaternion_slerp`, `axis_angle`, etc.
 - **Translations** (10): `translation_new`, `translation_inverse`, `translate_point`, etc.
 - **Isometries** (15): `isometry_new`, `isometry_inverse`, `transform_point`, `transform_vector`, etc.
@@ -91,6 +96,7 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 - **Transforms** (20): `affine_new`, `projective_new`, `perspective_new`, `orthographic_new`, etc.
 
 #### Decompositions (70)
+
 - **SVD** (15): `svd_new`, `svd_solve`, `svd_pseudo_inverse`, `svd_rank`, `singular_values`, etc.
 - **QR** (12): `qr_new`, `qr_solve`, `qr_q`, `qr_r`, `qr_determinant`, etc.
 - **LU** (12): `lu_new`, `lu_solve`, `lu_inverse`, `lu_determinant`, `lu_l`, `lu_u`, etc.
@@ -104,6 +110,7 @@ Tools that both execute at runtime AND emit code via `CustomEmit`:
 Code generation for generic dimensions and scalar types:
 
 #### Generic Dimension Code (30)
+
 - `emit_matrix_type` - `SMatrix<T, R, C>` or `DMatrix<T>`
 - `emit_vector_type` - `SVector<T, N>` or `DVector<T>`
 - `emit_function_generic_dim` - Functions with `const N: usize` parameters
@@ -112,6 +119,7 @@ Code generation for generic dimensions and scalar types:
 - And 25 more for various generic dimension patterns
 
 #### Generic Scalar Code (20)
+
 - `emit_function_realfield` - Functions bounded by `T: RealField`
 - `emit_function_complexfield` - Functions bounded by `T: ComplexField`
 - `emit_function_simdrealfield` - SIMD-aware functions
@@ -119,6 +127,7 @@ Code generation for generic dimensions and scalar types:
 - And 16 more for scalar type patterns
 
 #### Complete Code Assembly (20)
+
 - `emit_module_linalg` - Complete linear algebra module
 - `emit_struct_with_matrices` - Structs containing matrix fields
 - `emit_impl_block_matrix_ops` - Impl blocks with matrix operations

@@ -1,0 +1,120 @@
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 0 112 198 *)
+
+let%span sarchive_connection = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 201 112 240
+let%span sarchive_connection'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 32 112 37
+let%span sarchive_connection'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 63 112 68
+let%span sarchive_connection'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 112 112 119
+let%span sarchive_connection'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 110 11 110 48
+let%span sarchive_connection'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 132 112 198
+let%span sarchive_connection'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 111 10 111 50
+let%span sarchive_connection'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 106 24 106 29
+let%span sarchive_connection'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 106 55 106 60
+let%span sarchive_connection'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 106 104 106 111
+let%span sarchive_connection'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 104 15 104 52
+let%span sarchive_connection'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 105 14 105 54
+let%span sarchive_connection'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 22 16 22 20
+let%span sconnection = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/connection.rs" 233 0 240 1
+
+use creusot.prelude.Any
+
+type t_String
+
+type t_BackendKind = Postgres | Sqlite | Mysql | Redb | Unknown
+
+type t_Option_String = None | Some t_String
+
+type t_DatabaseDescriptor = {
+  connection_id: t_String;
+  db_name: t_String;
+  version: t_Option_String;
+  backend: t_BackendKind }
+
+type t_ArchiveConnectionState =
+  | Disconnected
+  | Connecting t_String t_BackendKind
+  | SqlConnected t_DatabaseDescriptor
+  | KvConnected t_String
+  | Reconnecting t_DatabaseDescriptor
+  | ConnectionError t_String
+
+type t_Established_ArchiveConnectionConsistent
+
+type tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent = {
+  f0: t_ArchiveConnectionState;
+  f1: t_Established_ArchiveConnectionConsistent }
+
+predicate inv_String (_1: t_String)
+
+predicate inv_Option_String (_1: t_Option_String)
+
+axiom inv_axiom [@rewrite]: forall x: t_Option_String [inv_Option_String x]. inv_Option_String x
+    = match x with
+      | None -> true
+      | Some f0'0 -> inv_String f0'0
+      end
+
+predicate inv_DatabaseDescriptor (_1: t_DatabaseDescriptor)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_DatabaseDescriptor [inv_DatabaseDescriptor x]. inv_DatabaseDescriptor x
+    = (inv_String x.connection_id /\ inv_String x.db_name /\ inv_Option_String x.version)
+
+predicate inv_ArchiveConnectionState (_1: t_ArchiveConnectionState)
+
+axiom inv_axiom'1 [@rewrite]:
+  forall x: t_ArchiveConnectionState [inv_ArchiveConnectionState x]. inv_ArchiveConnectionState x
+    = match x with
+      | Disconnected -> true
+      | Connecting profile_name backend'0 -> inv_String profile_name
+      | SqlConnected db -> inv_DatabaseDescriptor db
+      | KvConnected path -> inv_String path
+      | Reconnecting db -> inv_DatabaseDescriptor db
+      | ConnectionError message -> inv_String message
+      end
+
+predicate inv_Established_ArchiveConnectionConsistent (_1: t_Established_ArchiveConnectionConsistent)
+
+predicate archive_connection_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 21 0 21 77] (_state: t_ArchiveConnectionState) =
+  [%#sarchive_connection'11] true
+
+predicate inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent [@inline:trivial] (_1: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) =
+  inv_ArchiveConnectionState _1.f0 /\ inv_Established_ArchiveConnectionConsistent _1.f1
+
+meta "rewrite_def" predicate inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent
+
+let rec connection_error (state: t_ArchiveConnectionState) (proof: t_Established_ArchiveConnectionConsistent)
+  (message: t_String) (return (x: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent)) =
+  {[@stop_split] [@expl:connection_error requires] ([@stop_split] [@expl:connection_error 'state' type invariant] [%#sarchive_connection'6] inv_ArchiveConnectionState state)
+  /\ ([@stop_split] [@expl:connection_error 'proof' type invariant] [%#sarchive_connection'7] inv_Established_ArchiveConnectionConsistent proof)
+  /\ ([@stop_split] [@expl:connection_error 'message' type invariant] [%#sarchive_connection'8] inv_String message)
+  /\ ([@stop_split] [@expl:connection_error requires] [%#sarchive_connection'9] archive_connection_consistent state)}
+  any
+  [ return (result: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) ->
+  {[@stop_split] [@expl:connection_error ensures] ([@stop_split] [@expl:connection_error result type invariant] [%#sconnection] inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent result)
+    /\ ([@stop_split] [@expl:connection_error ensures] [%#sarchive_connection'10] archive_connection_consistent result.f0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec connection_error_creusot
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 112 0 112 198]
+  (state: t_ArchiveConnectionState) (proof: t_Established_ArchiveConnectionConsistent) (message: t_String)
+  (return (x: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent)) =
+  {[@stop_split] [@expl:connection_error_creusot requires] ([@stop_split] [@expl:connection_error_creusot 'state' type invariant] [%#sarchive_connection'0] inv_ArchiveConnectionState state)
+  /\ ([@stop_split] [@expl:connection_error_creusot 'proof' type invariant] [%#sarchive_connection'1] inv_Established_ArchiveConnectionConsistent proof)
+  /\ ([@stop_split] [@expl:connection_error_creusot 'message' type invariant] [%#sarchive_connection'2] inv_String message)
+  /\ ([@stop_split] [@expl:connection_error_creusot requires] [%#sarchive_connection'3] archive_connection_consistent state)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = connection_error [%#sarchive_connection] {state} {proof} {message}
+        (fun (_x: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent = Any.any_l ()
+  | & state: t_ArchiveConnectionState = state
+  | & proof: t_Established_ArchiveConnectionConsistent = proof
+  | & message: t_String = message ])
+  [ return (result: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) ->
+  {[@stop_split] [@expl:connection_error_creusot ensures] ([@stop_split] [@expl:connection_error_creusot result type invariant] [%#sarchive_connection'4] inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent result)
+    /\ ([@stop_split] [@expl:connection_error_creusot ensures] [%#sarchive_connection'5] archive_connection_consistent result.f0)}
+    (! return {result}) ]

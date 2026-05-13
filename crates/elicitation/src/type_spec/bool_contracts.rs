@@ -66,3 +66,22 @@ inventory::submit!(TypeSpecInventoryKey::new(
 
 impl crate::ElicitComplete for crate::verification::types::BoolTrue {}
 impl crate::ElicitComplete for crate::verification::types::BoolFalse {}
+
+impl crate::ElicitSpec for crate::verification::types::BoolDefault {
+    fn type_spec() -> crate::TypeSpec {
+        crate::TypeSpecBuilder::default()
+            .type_name("BoolDefault".to_string())
+            .summary("An unconstrained boolean value (true or false).".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(crate::TypeSpecInventoryKey::new(
+    "BoolDefault",
+    crate::verification::types::BoolDefault::type_spec,
+    std::any::TypeId::of::<crate::verification::types::BoolDefault>
+));
+
+impl crate::ElicitComplete for crate::verification::types::BoolDefault {}

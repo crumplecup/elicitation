@@ -4,7 +4,7 @@ use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use anodized::spec;
 #[cfg(not(kani))]
-use elicitation_macros::instrumented_impl;
+use elicitation_derive::instrumented_impl;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 // IpPrivate - Private IP addresses

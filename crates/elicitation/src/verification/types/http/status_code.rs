@@ -1,6 +1,7 @@
 //! HTTP status code contract type.
 
 use crate::verification::types::ValidationError;
+#[cfg(not(kani))]
 use anodized::spec;
 
 /// A valid HTTP status code (100–999).

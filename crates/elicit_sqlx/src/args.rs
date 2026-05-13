@@ -39,7 +39,8 @@
 //! // Agent can now call: create_user__to_sqlx_args { target: { … } }
 //! ```
 
-use elicitation_macros::reflect_trait;
+#[cfg(not(creusot))]
+use elicitation_derive::reflect_trait;
 use serde::Serialize;
 
 /// Convert `self` into a flat list of positional SQL argument values.
@@ -73,6 +74,7 @@ where
 /// The `target` parameter must be the JSON representation of the `T` value.
 /// The output `Vec<serde_json::Value>` can be passed directly as `args` to
 /// any driver plugin execute or fetch tool.
+#[cfg(not(creusot))]
 #[reflect_trait(crate::ToSqlxArgs)]
 pub trait ToSqlxArgsTools {
     /// Serialize this value to a list of positional SQL argument values.

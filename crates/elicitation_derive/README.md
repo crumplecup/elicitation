@@ -314,6 +314,38 @@ struct ColorJson {
 // }
 ```
 
+#### Tuple Constructor Proxies
+
+For upstream tuple structs wrapped by object-style params, use
+`#[to_code_literal(tuple)]` with a `path` override:
+
+```rust
+#[derive(ToCodeLiteral)]
+#[to_code_literal(path = "::bevy::mesh::Mesh3d", tuple)]
+struct Mesh3dParams {
+    #[to_code_literal(expr)]
+    mesh_expr: String,
+}
+```
+
+This emits `::bevy::mesh::Mesh3d(meshes.add(...))` while preserving a named-field
+JSON shape for MCP params.
+
+Named helper structs can also emit a raw tuple literal:
+
+```rust
+#[derive(ToCodeLiteral)]
+#[to_code_literal(raw_tuple)]
+struct TextStyleParts {
+    font: TextFontJson,
+    color: TextColorJson,
+    layout: TextLayoutJson,
+}
+```
+
+This emits `(TextFont { ... }, TextColor(...), TextLayout { ... })` without wrapping
+the tuple in a proxy type name.
+
 #### Enum Support
 
 Handles unit, tuple, and struct variants:
@@ -328,7 +360,7 @@ enum UiNode {
 }
 ```
 
-Each variant becomes a match arm that destructures, converts each field via `to_code_literal()`, and reassembles.
+Each variant becomes a match arm that destructures, converts each field via `to_code_literal()`, and reassembles. Both tuple-variant fields and named struct-variant fields honor `#[to_code_literal(expr)]` and `#[to_code_literal(to_tokens = "...")]`, so tagged JSON enums can still emit upstream expressions exactly. Named enum variants can also opt into tuple emission with `#[to_code_literal(tuple)]` on the variant itself, which is useful when the JSON shape wants named fields but the upstream Rust variant is tuple-style.
 
 #### Recursive Types
 

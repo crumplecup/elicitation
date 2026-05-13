@@ -1,0 +1,75 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 140 0 140 64 *)
+
+let%span slevel30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 142 17 142 35
+let%span slevel30'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 140 28 140 29
+let%span slevel30'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 138 11 138 22
+let%span slevel30'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 140 56 140 64
+let%span slevel30'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 139 10 139 26
+let%span slevel30'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 130 29 130 35
+let%span slevel30'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 129 10 129 28
+let%span slevel30'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 74 4 74 8
+
+use creusot.int.UInt64
+use seq.Seq
+use creusot.prelude.Char
+use creusot.prelude.Any
+
+type t_String
+
+type t_C30State = Empty | Active t_String UInt64.t
+
+predicate inv_String (_1: t_String)
+
+predicate inv_C30State (_1: t_C30State)
+
+axiom inv_axiom [@rewrite]: forall x: t_C30State [inv_C30State x]. inv_C30State x
+    = match x with
+      | Empty -> true
+      | Active filter count -> inv_String filter
+      end
+
+predicate resolve_String (_1: t_String)
+
+predicate resolve_C30State (_1: t_C30State)
+
+axiom resolve_axiom [@rewrite]: forall x: t_C30State [resolve_C30State x]. resolve_C30State x
+    = match x with
+      | Empty -> true
+      | Active x0 x1 -> resolve_String x0
+      end
+
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec c30_empty_string (return (x: t_String)) = any
+  [ return (result: t_String) ->
+  {[@stop_split] [@expl:c30_empty_string ensures] ([@stop_split] [@expl:c30_empty_string result type invariant] [%#slevel30'4] inv_String result)
+    /\ ([@stop_split] [@expl:c30_empty_string ensures] [%#slevel30'5] Seq.length (view_String result) = 0)}
+    (! return {result}) ]
+
+predicate c30_inv [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 73 0 73 37] (_s: t_C30State) =
+  [%#slevel30'6] true
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c30c_activate_helper
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 140 0 140 64] (s: t_C30State)
+  (count: UInt64.t) (return (x: t_C30State)) =
+  {[@stop_split] [@expl:c30c_activate_helper requires] ([@stop_split] [@expl:c30c_activate_helper 's' type invariant] [%#slevel30'0] inv_C30State s)
+  /\ ([@stop_split] [@expl:c30c_activate_helper requires] [%#slevel30'1] c30_inv s)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = s1 [ _ck -> (! {[@expl:type invariant] inv_C30State s} any) ]
+    | s1 = -{resolve_C30State s}- s2
+    | s2 = c30_empty_string [%#slevel30] (fun (_x: t_String) -> [ &filter <- _x ] s3)
+    | s3 = [ &_ret <- Active filter count ] s4
+    | s4 = return {_ret} ] ]
+  [ & _ret: t_C30State = Any.any_l ()
+  | & s: t_C30State = s
+  | & count: UInt64.t = count
+  | & filter: t_String = Any.any_l () ])
+  [ return (result: t_C30State) ->
+  {[@stop_split] [@expl:c30c_activate_helper ensures] ([@stop_split] [@expl:c30c_activate_helper result type invariant] [%#slevel30'2] inv_C30State result)
+    /\ ([@stop_split] [@expl:c30c_activate_helper ensures] [%#slevel30'3] c30_inv result)}
+    (! return {result}) ]

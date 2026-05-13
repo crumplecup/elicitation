@@ -1,5 +1,5 @@
 use elicitation::Elicit;
-use elicitation_macros::elicit_tools;
+use elicitation_derive::elicit_tools;
 use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::{ServerHandler, tool, tool_router};
 use schemars::JsonSchema;

@@ -29,6 +29,7 @@ Research findings for implementing the spec-backed constraint system defined in 
 **Solution**: Multiple options, ranked by capability:
 
 #### 1. **palette** (Recommended ⭐)
+
 ```toml
 palette = { version = "0.7", features = ["std"] }
 ```
@@ -36,12 +37,14 @@ palette = { version = "0.7", features = ["std"] }
 **Why**: Most comprehensive color science library in Rust ecosystem.
 
 **Features**:
+
 - CIELAB, Oklab, LCH color spaces (perceptually uniform)
 - DeltaE distance algorithms (CIEDE2000, CIEDE1994)
 - Color conversion: sRGB ↔ linear RGB ↔ XYZ ↔ Lab
 - Type-safe color operations
 
 **Usage**:
+
 ```rust
 use palette::{Srgb, Lab, IntoColor, color_difference::ImprovedCiede2000};
 
@@ -69,6 +72,7 @@ pub fn color_distance(c1: Srgb, c2: Srgb) -> f64 {
 ```
 
 **Integration**:
+
 ```rust
 // constraints/wcag.rs
 pub struct ContrastMinimum;
@@ -106,11 +110,12 @@ impl Constraint for ContrastMinimum {
 }
 ```
 
-**Docs**: https://docs.rs/palette/latest/palette/
+**Docs**: <https://docs.rs/palette/latest/palette/>
 
 ---
 
 #### 2. **contrast** (Alternative)
+
 ```toml
 contrast = "0.1"
 ```
@@ -118,6 +123,7 @@ contrast = "0.1"
 **Why**: Focused solely on WCAG contrast (simpler API).
 
 **Usage**:
+
 ```rust
 use contrast::contrast_ratio;
 
@@ -127,11 +133,12 @@ let ratio = contrast_ratio([255, 255, 255], [0, 0, 0]);
 
 **Limitation**: No perceptual color spaces (Lab/Oklab), only RGB.
 
-**Docs**: https://docs.rs/contrast/latest/contrast/
+**Docs**: <https://docs.rs/contrast/latest/contrast/>
 
 ---
 
 #### 3. **deltae** (Perceptual distance only)
+
 ```toml
 deltae = "0.2"
 ```
@@ -139,6 +146,7 @@ deltae = "0.2"
 **Why**: Pure DeltaE implementation (CIEDE2000).
 
 **Usage**:
+
 ```rust
 use deltae::{LabValue, DEMethod, DeltaE};
 
@@ -151,11 +159,12 @@ let delta = DeltaE::new(lab1, lab2, DEMethod::DE2000);
 
 **Use case**: Advanced color harmony validation (not WCAG contrast).
 
-**Docs**: https://docs.rs/deltae/latest/deltae/
+**Docs**: <https://docs.rs/deltae/latest/deltae/>
 
 ---
 
 ### Recommendation: Use **palette**
+
 - Most comprehensive
 - Handles both WCAG contrast AND perceptual color science
 - Active maintenance
@@ -178,11 +187,13 @@ oak-css = "0.1"  # Check latest version
 **Why**: Modern CSS parser with detailed unit handling.
 
 **Features**:
+
 - Parse CSS units: px, rem, em, vw, vh, %, pt, pc, etc.
 - Parse CSS functions: calc(), clamp(), min(), max()
 - Incremental parsing (efficient updates)
 
 **Usage**:
+
 ```rust
 use oak_css::{Parser, Token};
 
@@ -226,6 +237,7 @@ impl CssUnit {
 ```
 
 **Integration**:
+
 ```rust
 // constraints/css.rs
 pub struct ZoomInvariant;
@@ -246,9 +258,10 @@ impl Constraint for ZoomInvariant {
 }
 ```
 
-**Docs**: https://crates.io/crates/oak-css
+**Docs**: <https://crates.io/crates/oak-css>
 
 **Alternative**: **cssparser** (Mozilla/Servo)
+
 - Lower-level (more control)
 - Used in Firefox (battle-tested)
 - Requires more manual parsing
@@ -268,12 +281,14 @@ taffy = "0.5"  # Check latest version
 **Why**: Reference implementation of CSS layout algorithms.
 
 **Features**:
+
 - CSS Block layout
 - CSS Flexbox (complete spec)
 - CSS Grid (complete spec)
 - Used by Dioxus, egui_taffy
 
 **Usage**:
+
 ```rust
 use taffy::prelude::*;
 
@@ -306,6 +321,7 @@ impl LayoutEngine {
 ```
 
 **Integration**:
+
 ```rust
 // constraints/wcag.rs
 pub struct Reflow320;
@@ -338,7 +354,7 @@ impl Constraint for Reflow320 {
 
 **Benefit**: Accurate layout-based overflow detection (not just bounds-based).
 
-**Docs**: https://github.com/DioxusLabs/taffy
+**Docs**: <https://github.com/DioxusLabs/taffy>
 
 ---
 
@@ -356,11 +372,13 @@ ttf-parser = "0.24"
 **Why**: Industry-standard text shaping algorithm.
 
 **Features**:
+
 - Text shaping (converts text → positioned glyphs)
 - Font metrics (ascent, descent, line height)
 - Passes 98.6% of HarfBuzz test suite
 
 **Usage**:
+
 ```rust
 use rustybuzz::{Face, UnicodeBuffer};
 use ttf-parser::Face as TtfFace;
@@ -391,6 +409,7 @@ pub fn get_text_metrics(
 ```
 
 **Integration**:
+
 ```rust
 // constraints/wcag.rs
 pub struct MinTextSize;
@@ -420,7 +439,7 @@ impl Constraint for MinTextSize {
 }
 ```
 
-**Docs**: https://github.com/harfbuzz/rustybuzz
+**Docs**: <https://github.com/harfbuzz/rustybuzz>
 
 ---
 
@@ -437,11 +456,13 @@ material-color-utilities = "0.2"
 ```
 
 **Features**:
+
 - Generate M3 tonal palettes from seed color
 - Extract colors from images (HCT color space)
 - Ensure accessible color combinations
 
 **Usage**:
+
 ```rust
 use material_color_utilities::{Hct, TonalPalette};
 
@@ -475,7 +496,7 @@ impl Constraint for MaterialColorScheme {
 }
 ```
 
-**Docs**: https://crates.io/crates/material-color-utilities
+**Docs**: <https://crates.io/crates/material-color-utilities>
 
 ---
 
@@ -490,10 +511,12 @@ design_token_parser = "0.1"
 ```
 
 **Features**:
+
 - Parse Design Tokens Format (W3C Community Group)
 - Load colors, typography, spacing from JSON/YAML
 
 **Usage**:
+
 ```rust
 use design_token_parser::DesignTokens;
 
@@ -513,7 +536,7 @@ pub fn load_design_tokens(path: &str) -> Result<ConstraintProfile, ParseError> {
 }
 ```
 
-**Docs**: https://crates.io/crates/design_token_parser
+**Docs**: <https://crates.io/crates/design_token_parser>
 
 ---
 
@@ -528,12 +551,14 @@ pub fn load_design_tokens(path: &str) -> Result<ConstraintProfile, ParseError> {
 - **Verus** - Verified Rust with linear types
 
 **No additional SMT solvers needed**. The existing verification stack provides:
+
 - Proof-carrying code generation
 - Invariant checking
 - Precondition/postcondition verification
 - Refinement types
 
 **Integration with constraints**:
+
 ```rust
 #[kani::proof]
 fn prove_reflow_320() {
@@ -559,6 +584,7 @@ proptest = "1.5"
 ```
 
 **Usage**:
+
 ```rust
 use proptest::prelude::*;
 
@@ -601,6 +627,7 @@ proptest! {
 **Goal**: Add WCAG 1.4.3 (Contrast Minimum) constraint.
 
 **Tasks**:
+
 1. Add `palette` dependency
 2. Implement `wcag_contrast_ratio()` function
 3. Create `ContrastMinimum` constraint
@@ -610,6 +637,7 @@ proptest! {
 **Time**: 2-4 hours
 
 **Files**:
+
 - `Cargo.toml` - Add palette
 - `crates/elicit_ui/src/constraints/wcag.rs` - Add ContrastMinimum
 - `crates/elicit_ui/tests/constraints_test.rs` - Add tests
@@ -621,6 +649,7 @@ proptest! {
 **Goal**: Parse and validate CSS units for layout calculations.
 
 **Tasks**:
+
 1. Add `oak-css` dependency
 2. Extend `CssUnit` enum with parser
 3. Update `LayoutContext` to resolve units
@@ -630,6 +659,7 @@ proptest! {
 **Time**: 4-6 hours
 
 **Files**:
+
 - `Cargo.toml` - Add oak-css
 - `crates/elicit_ui/src/constraints/css.rs` - Implement CssUnit parsing
 - `crates/elicit_ui/src/types.rs` - Update LayoutContext
@@ -642,6 +672,7 @@ proptest! {
 **Goal**: Compute layouts with `taffy` for accurate overflow detection.
 
 **Tasks**:
+
 1. Add `taffy` dependency
 2. Create `LayoutEngine` wrapper
 3. Build AccessKit → Taffy tree converter
@@ -651,6 +682,7 @@ proptest! {
 **Time**: 8-12 hours
 
 **Files**:
+
 - `Cargo.toml` - Add taffy
 - `crates/elicit_ui/src/layout_engine.rs` - New file
 - `crates/elicit_ui/src/constraints/wcag.rs` - Update Reflow320
@@ -663,6 +695,7 @@ proptest! {
 **Goal**: Validate font sizes and line heights with `rustybuzz`.
 
 **Tasks**:
+
 1. Add `rustybuzz` and `ttf-parser` dependencies
 2. Implement `get_text_metrics()` function
 3. Create `MinTextSize` constraint
@@ -672,6 +705,7 @@ proptest! {
 **Time**: 4-6 hours
 
 **Files**:
+
 - `Cargo.toml` - Add rustybuzz, ttf-parser
 - `crates/elicit_ui/src/typography.rs` - New file
 - `crates/elicit_ui/src/constraints/wcag.rs` - Add MinTextSize
@@ -696,13 +730,16 @@ proptest! {
 ## Decision Matrix
 
 ### Add Immediately
+
 - ✅ **palette** - Color contrast is critical, stable crate
 - ✅ **oak-css** - CSS units needed for proper constraint validation
 
 ### Evaluate Next
+
 - 🔍 **taffy** - High value but complex integration
 
 ### Future Extensions
+
 - 📅 **rustybuzz** - Typography metrics (WCAG 1.4.4 extended)
 - 📅 **material-color-utilities** - Design system layer
 - 📅 **design_token_parser** - Token validation
@@ -714,11 +751,13 @@ proptest! {
 All crate links verified as of March 2026.
 
 ### Documentation
+
 - [WCAG 2.2 Guidelines](https://www.w3.org/WAI/WCAG22/)
 - [CSS Values and Units Module](https://www.w3.org/TR/css-values-3/)
 - [Material Design 3](https://m3.material.io/)
 - [Design Tokens Format](https://design-tokens.github.io/community-group/)
 
 ### Related Plans
+
 - `ELICIT_UI_GEORUST_PLAN.md` - Main constraint architecture
 - `TYPESTATE_UI_DESIGN.md` - Typestate verification pattern

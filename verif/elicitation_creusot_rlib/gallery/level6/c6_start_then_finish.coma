@@ -1,0 +1,53 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 93 0 93 50 *)
+
+let%span slevel6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 94 16 94 27
+let%span slevel6'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 95 4 95 20
+let%span slevel6'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 91 11 91 15
+let%span slevel6'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 92 10 92 29
+let%span slevel6'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 68 11 68 15
+let%span slevel6'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 69 10 69 30
+let%span slevel6'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 78 11 78 26
+let%span slevel6'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 79 10 79 29
+let%span slevel6'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 58 4 61 5
+let%span slevel6'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 50 4 53 5
+
+use creusot.prelude.Any
+
+type t_C6State = Idle | Ready | Done
+
+predicate c6_is_ready [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 49 0 49 39] (s: t_C6State) =
+  [%#slevel6'8] match s with
+    | Ready -> true
+    | _ -> false
+    end
+
+let rec c6_start (_s: t_C6State) (return (x: t_C6State)) = any
+  [ return (result: t_C6State) -> {[@stop_split] [@expl:c6_start ensures] [%#slevel6'4] c6_is_ready result}
+    (! return {result}) ]
+
+predicate c6_is_done [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 57 0 57 38] (s: t_C6State) =
+  [%#slevel6'7] match s with
+    | Done -> true
+    | _ -> false
+    end
+
+let rec c6_finish (s: t_C6State) (return (x: t_C6State)) =
+  {[@stop_split] [@expl:c6_finish requires] [%#slevel6'5] c6_is_ready s}
+  any
+  [ return (result: t_C6State) -> {[@stop_split] [@expl:c6_finish ensures] [%#slevel6'6] c6_is_done result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c6_start_then_finish
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level6.rs" 93 0 93 50] (s: t_C6State)
+  (return (x: t_C6State)) = (! bb0
+  [ bb0 = s0
+    [ s0 = c6_start [%#slevel6] {s} (fun (_x: t_C6State) -> [ &ready <- _x ] s1)
+    | s1 = c6_finish [%#slevel6'0] {ready} (fun (_x: t_C6State) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_C6State = Any.any_l () | & s: t_C6State = s | & ready: t_C6State = Any.any_l () ])
+  [ return (result: t_C6State) -> {[@stop_split] [@expl:c6_start_then_finish ensures] [%#slevel6'2] c6_is_done result}
+    (! return {result}) ]

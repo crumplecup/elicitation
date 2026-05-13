@@ -15,7 +15,7 @@ categories = ["development-tools", "asynchronous"]
 
 [dependencies]
 # Elicitation core
-elicitation = { workspace = true, features = ["url"] }
+elicitation = { workspace = true, features = ["url", "chrono"] }
 
 # Workflow crates (cross-crate composition)
 elicit_reqwest = { workspace = true }
@@ -24,10 +24,18 @@ elicit_url = { workspace = true }
 elicit_chrono = { workspace = true }
 elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
+elicit_db = { workspace = true }
 elicit_sqlx = { workspace = true }
 elicit_regex = { workspace = true }
+elicit_accesskit = { workspace = true }
+accesskit = { workspace = true }
 elicit_tokio = { workspace = true }
 elicit_egui = { workspace = true }
+elicit_ratatui = { workspace = true, features = ["runtime"] }
+elicit_leptos = { workspace = true }
+elicit_axum = { workspace = true }
+elicit_ui = { workspace = true }
+elicit_redb = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -35,7 +43,19 @@ chrono = { workspace = true }
 jiff = { workspace = true }
 url = { workspace = true }
 time = { workspace = true }
+dirs = { workspace = true }
 sqlx = { workspace = true }
+ratatui = { workspace = true }
+axum = { workspace = true }
+crossterm = { workspace = true }
+egui = { workspace = true }
+egui-winit = { workspace = true }
+egui-wgpu = { workspace = true }
+wgpu = { workspace = true, features = ["vulkan"] }
+winit = { workspace = true }
+
+# CLI
+clap = { workspace = true }
 
 # Serialization
 serde = { workspace = true }
@@ -44,9 +64,10 @@ schemars = { workspace = true }
 
 # Derive macros
 derive_more = { workspace = true }
+strum = { workspace = true }
 
 # Async
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 
 # MCP
@@ -54,10 +75,18 @@ rmcp = { workspace = true }
 
 # Tracing
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+# Environment variables
+dotenvy = { workspace = true }
 
 # Code recovery
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
+anyhow = { workspace = true }
 
 [features]
 emit = [
@@ -72,12 +101,21 @@ emit = [
   "elicit_tokio/emit",
   "elicit_egui/emit",
 ]
+api = []
+ci = []
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 tracing-subscriber = { workspace = true }
 tempfile = "3.13"
 reqwest = { workspace = true }
+
+[[bin]]
+name = "archive"
+path = "src/bin/archive.rs"
+
+[lints]
+workspace = true
 
 [[test]]
 name = "ledger_smoke_test"

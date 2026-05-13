@@ -123,3 +123,43 @@ impl_float_contract_spec!(
         ("finite", "Value must be finite (not NaN or infinite).", "value.is_finite()"),
     ],
 );
+
+// ── Float default wrappers ────────────────────────────────────────────────────
+
+use crate::verification::types::{F32Default, F64Default};
+
+impl ElicitSpec for F32Default {
+    fn type_spec() -> TypeSpec {
+        TypeSpecBuilder::default()
+            .type_name("F32Default".to_string())
+            .summary("An unconstrained 32-bit floating-point wrapper.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "F32Default",
+    F32Default::type_spec,
+    std::any::TypeId::of::<F32Default>
+));
+impl crate::ElicitComplete for F32Default {}
+
+impl ElicitSpec for F64Default {
+    fn type_spec() -> TypeSpec {
+        TypeSpecBuilder::default()
+            .type_name("F64Default".to_string())
+            .summary("An unconstrained 64-bit floating-point wrapper.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "F64Default",
+    F64Default::type_spec,
+    std::any::TypeId::of::<F64Default>
+));
+impl crate::ElicitComplete for F64Default {}

@@ -12,8 +12,8 @@ use std::sync::atomic::{
 };
 
 use crate::{
-    ElicitComplete, ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
-    TypeSpecInventoryKey,
+    ElicitComplete, ElicitPromptTree, ElicitSpec, PromptTree, SpecCategoryBuilder,
+    SpecEntryBuilder, TypeSpec, TypeSpecBuilder, TypeSpecInventoryKey,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -128,6 +128,15 @@ macro_rules! impl_atomic_bool_spec {
             std::any::TypeId::of::<$atomic>
         ));
 
+        impl ElicitPromptTree for $atomic {
+            fn prompt_tree() -> PromptTree {
+                PromptTree::Affirm {
+                    prompt: "AtomicBool (true/false)".to_string(),
+                    type_name: $name.to_string(),
+                }
+            }
+        }
+
         impl ElicitComplete for $atomic {}
     };
 }
@@ -178,11 +187,18 @@ macro_rules! impl_atomic_integer_spec {
             std::any::TypeId::of::<$atomic>
         ));
 
+        impl ElicitPromptTree for $atomic {
+            fn prompt_tree() -> PromptTree {
+                PromptTree::Leaf {
+                    prompt: concat!($name, " (integer)").to_string(),
+                    type_name: $name.to_string(),
+                }
+            }
+        }
+
         impl ElicitComplete for $atomic {}
     };
 }
-
-// ── AtomicBool ────────────────────────────────────────────────────────────────
 
 impl_atomic_bool_spec!(AtomicBool, "std::sync::atomic::AtomicBool");
 
