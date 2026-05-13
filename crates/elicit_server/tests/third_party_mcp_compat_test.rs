@@ -62,7 +62,6 @@ fn assert_mcp_compat<T: JsonSchema + Serialize + DeserializeOwned>() {}
 // ── uuid ─────────────────────────────────────────────────────────────────────
 
 #[test]
-#[cfg(feature = "uuid")]
 fn uuid_uuid_is_mcp_compat() {
     assert_mcp_compat::<uuid::Uuid>();
 }
@@ -70,7 +69,6 @@ fn uuid_uuid_is_mcp_compat() {
 // ── url ──────────────────────────────────────────────────────────────────────
 
 #[test]
-#[cfg(feature = "url")]
 fn url_url_is_mcp_compat() {
     assert_mcp_compat::<url::Url>();
 }
@@ -78,19 +76,16 @@ fn url_url_is_mcp_compat() {
 // ── chrono ───────────────────────────────────────────────────────────────────
 
 #[test]
-#[cfg(feature = "chrono")]
 fn chrono_datetime_utc_is_mcp_compat() {
     assert_mcp_compat::<chrono::DateTime<chrono::Utc>>();
 }
 
 #[test]
-#[cfg(feature = "chrono")]
 fn chrono_datetime_fixed_offset_is_mcp_compat() {
     assert_mcp_compat::<chrono::DateTime<chrono::FixedOffset>>();
 }
 
 #[test]
-#[cfg(feature = "chrono")]
 fn chrono_naive_datetime_is_mcp_compat() {
     assert_mcp_compat::<chrono::NaiveDateTime>();
 }
@@ -98,13 +93,11 @@ fn chrono_naive_datetime_is_mcp_compat() {
 // ── jiff ─────────────────────────────────────────────────────────────────────
 
 #[test]
-#[cfg(feature = "jiff")]
 fn jiff_zoned_is_mcp_compat() {
     assert_mcp_compat::<jiff::Zoned>();
 }
 
 #[test]
-#[cfg(feature = "jiff")]
 fn jiff_timestamp_is_mcp_compat() {
     assert_mcp_compat::<jiff::Timestamp>();
 }

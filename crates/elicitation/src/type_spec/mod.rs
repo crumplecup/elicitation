@@ -30,7 +30,6 @@ mod char_contracts;
 mod clap_specs;
 mod collection_contracts;
 mod collections;
-#[cfg(feature = "proj-types")]
 #[cfg(feature = "csv-types")]
 mod csv_specs;
 mod datetime_specs;
