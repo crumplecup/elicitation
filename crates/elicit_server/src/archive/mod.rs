@@ -49,10 +49,10 @@ pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveAdminPlugin, ArchiveBrowsePlugin, ArchiveConstraintPlugin,
-    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin,
-    ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, SavedQueryStore, SchemaExists,
-    TableExists, explain_sql_direct, generate_ddl_direct, get_column_stats_direct,
-    inspect_table_direct,
+    ArchiveDisplayPlugin, ArchiveKvPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin,
+    ArchiveRoutinePlugin, ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore,
+    SavedQueryStore, SchemaExists, TableExists, explain_sql_direct, generate_ddl_direct,
+    get_column_stats_direct, inspect_table_direct,
 };
 #[cfg(not(kani))]
 pub use plugins::{ArchiveQueryPlugin, QueryExecuted, export_query_result};
@@ -62,7 +62,8 @@ pub use types::{
     DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ErdColumn, ErdDiagram,
     ErdEdge, ErdLayout, ErdNode, ExplainComparison, ExplainNode, ExplainPlan, ExportFormat,
     ExportResult, FkAction, ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility,
-    IndexDescriptor, MonitorSnapshot, MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind,
+    IndexDescriptor, KvEntryDescriptor, KvScanResult, KvSnapshotDescriptor, KvStatsDescriptor,
+    KvTableDescriptor, MonitorSnapshot, MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind,
     RowEditState, SavedQuery, SchemaDescriptor, SequenceDescriptor, SslMode, StagedEdit,
     TableDescriptor, TableInspection, TableType, TriggerDescriptor, TriggerEvents,
 };
