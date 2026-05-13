@@ -1,4 +1,5 @@
 //! Tests for the TypeGraphKey structural registry.
+#![cfg(feature = "graph")]
 
 use elicitation::{
     Elicit, ElicitIntrospect, PatternDetails, TypeGraphKey, all_graphable_types, lookup_type_graph,

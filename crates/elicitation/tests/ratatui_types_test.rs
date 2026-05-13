@@ -1,5 +1,6 @@
 //! Tests for ratatui Phase 2 — Elicitation, Select, ElicitIntrospect, ElicitSpec,
 //! ElicitComplete implementations for ratatui types.
+#![cfg(feature = "ratatui")]
 //!
 //! Covers: Alignment, Direction, BorderType, Color, Borders (via BordersSelect),
 //! ScrollbarOrientation (via ScrollbarOrientationSelect), RatatuiStyle,

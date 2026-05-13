@@ -1,4 +1,5 @@
 //! Tests for the TypeGraph builder (BFS traversal and cycle handling).
+#![cfg(feature = "graph")]
 
 use elicitation::{Elicit, NodeKind, TypeGraph, TypeGraphError};
 
