@@ -46,6 +46,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod backend;
 mod database;
 mod error;
 mod plugin;
@@ -54,6 +55,7 @@ mod stats;
 mod table_def;
 mod transactions;
 
+pub use backend::RedbBackend;
 pub use database::Database;
 pub use error::{
     CommitError, CompactionError, DatabaseError, SavepointError, SetDurabilityError, StorageError,
