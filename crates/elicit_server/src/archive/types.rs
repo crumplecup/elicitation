@@ -9,7 +9,7 @@ use elicitation::{Elicit, KaniCompose};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use elicit_db::{DbIndexInfo, DbRoleInfo, DbRows, DbSessionInfo, DbTableInfo};
+use elicit_db::{DbIndexInfo, DbRoleInfo, DbRows, DbSessionInfo, DbTableInfo, KvTableInfo};
 
 use chrono::{DateTime, Utc};
 
@@ -1874,4 +1874,110 @@ impl ErdLayout {
     pub fn centre_top(&self, key: &str) -> Option<(f32, f32)> {
         self.boxes.get(key).map(|(x, y, w, _h)| (x + w / 2.0, *y))
     }
+}
+
+// ── KV descriptor types ───────────────────────────────────────────────────────
+
+/// Descriptor for a single KV table in an embedded redb store.
+///
+/// Produced by [`ArchiveKvPlugin`] and consumed by the display layer.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
+pub struct KvTableDescriptor {
+    /// Table name.
+    pub name: String,
+    /// Number of key-value entries currently stored.
+    pub entry_count: u64,
+}
+
+impl KvTableDescriptor {
+    /// Build from an [`elicit_db::KvTableInfo`].
+    pub fn from_kv_table_info(info: &KvTableInfo) -> Self {
+        Self {
+            name: info.name.clone(),
+            entry_count: info.entry_count,
+        }
+    }
+}
+
+/// A single key-value entry as display strings.
+///
+/// Keys and values from `DbValue` are rendered to strings by the plugin so
+/// the display layer stays free of `elicit_db` internals.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
+pub struct KvEntryDescriptor {
+    /// String representation of the entry key.
+    pub key: String,
+    /// String representation of the entry value.
+    pub value: String,
+}
+
+/// A page of KV entries returned from a table scan or range query.
+///
+/// Analogous to [`QueryResult`] but for the embedded KV store.
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
+pub struct KvScanResult {
+    /// Name of the KV table that was scanned.
+    pub table_name: String,
+    /// Entries in this page.
+    pub entries: Vec<KvEntryDescriptor>,
+    /// Total number of entries in the table (across all pages).
+    pub total_count: u64,
+    /// Zero-based offset of the first entry in this page.
+    pub offset: u64,
+}
+
+#[cfg(kani)]
+impl kani::Arbitrary for KvScanResult {
+    fn any() -> Self {
+        Self {
+            table_name: String::new(),
+            entries: Vec::new(),
+            total_count: kani::any(),
+            offset: kani::any(),
+        }
+    }
+}
+
+/// Descriptor for a durable KV snapshot (persistent savepoint).
+///
+/// Produced by [`ArchiveKvPlugin`] snapshot operations.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
+pub struct KvSnapshotDescriptor {
+    /// Human-readable label supplied at creation time.
+    pub name: String,
+    /// Backend-assigned numeric identifier.
+    pub id: u64,
+}
+
+/// Storage-level statistics for the embedded redb database.
+///
+/// Produced by [`ArchiveKvPlugin`] and displayed in the KV panel.
+#[cfg_attr(kani, derive(kani::Arbitrary))]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
+)]
+pub struct KvStatsDescriptor {
+    /// Filesystem path or `redb://…` URL of the open database.
+    pub path: String,
+    /// Total bytes occupied by live data pages.
+    pub stored_bytes: u64,
+    /// Bytes in pages no longer live but not yet reclaimed.
+    pub fragmented_bytes: u64,
+    /// Bytes used by database metadata.
+    pub metadata_bytes: u64,
+    /// Number of tables currently open.
+    pub table_count: usize,
+    /// Estimated cache hit ratio (0.0–1.0).
+    pub cache_hit_ratio: f64,
 }

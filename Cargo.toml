@@ -3,7 +3,6 @@ members = [
   # Core
   "crates/elicitation",
   "crates/elicitation_derive",
-  "crates/elicitation_macros",
   # Verification
   "crates/elicitation_creusot",
   "crates/elicitation_kani",
@@ -89,7 +88,6 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 # ── Internal workspace crates ─────────────────────────────────────────────────
 elicitation = { path = "crates/elicitation", version = "0.10.0" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.10.0" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.10.0" }
 elicitation_kani = { path = "crates/elicitation_kani", version = "0.10.0" }
 elicit_proofs = { path = "crates/elicit_proofs", version = "0.10.0" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.10.0" }

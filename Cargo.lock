@@ -3352,7 +3352,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "rmcp",
@@ -3389,7 +3388,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "proc-macro2",
@@ -3429,7 +3427,6 @@ dependencies = [
  "clap",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "proc-macro2",
@@ -3450,7 +3447,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "rmcp",
@@ -3497,7 +3493,6 @@ dependencies = [
  "elicit_ui",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "quote",
@@ -3679,7 +3674,6 @@ dependencies = [
  "elicit_ui",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "inventory",
  "quote",
  "ratatui",
@@ -3700,7 +3694,6 @@ dependencies = [
  "elicit_db",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "hex",
  "inventory",
@@ -3779,7 +3772,6 @@ version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "rmcp",
@@ -3873,7 +3865,6 @@ dependencies = [
  "elicit_db",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "proc-macro2",
@@ -3948,7 +3939,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "inventory",
  "rmcp",
@@ -3997,7 +3987,6 @@ dependencies = [
  "elicit_accesskit",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "geo",
  "geo-types",
  "inventory",
@@ -4073,7 +4062,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "rmcp",
  "schemars",
  "serde",
@@ -4090,7 +4078,6 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "rmcp",
  "schemars",
  "serde",
@@ -4122,7 +4109,6 @@ version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
- "elicitation_macros",
  "futures",
  "geo-types",
  "inventory",
@@ -4160,7 +4146,6 @@ dependencies = [
  "egui",
  "egui-winit",
  "elicitation_derive",
- "elicitation_macros",
  "erased-serde",
  "futures",
  "geo",
@@ -4304,10 +4289,6 @@ dependencies = [
  "wkb",
  "wkt",
 ]
-
-[[package]]
-name = "elicitation_macros"
-version = "0.10.0"
 
 [[package]]
 name = "elicitation_rand"

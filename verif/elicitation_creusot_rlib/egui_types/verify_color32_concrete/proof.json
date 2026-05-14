@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_from_rgba_unmultiplied": { "prover": "cvc5", "time": 0.015 },
+      "vc_verify_color32_concrete": { "prover": "cvc5", "time": 0.016 }
+    }
+  }
+}

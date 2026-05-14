@@ -15,7 +15,6 @@ categories = ["gui", "development-tools"]
 [dependencies]
 elicitation = { workspace = true, features = ["egui-types", "egui-winit-types"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 elicit_ui.workspace = true
 elicit_accesskit.workspace = true
 egui.workspace = true

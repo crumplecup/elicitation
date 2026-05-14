@@ -42,6 +42,9 @@
 //! cargo kani -p elicitation_kani --all-features -- --default-unwind 20
 //! ```
 
+// Harness helper utilities (bounded_string, bounded_vec, kani_arbitrary!)
+pub mod harness_helpers;
+
 // Re-export verification framework from main crate
 pub use elicitation::verification::Contract;
 #[cfg(not(creusot))]

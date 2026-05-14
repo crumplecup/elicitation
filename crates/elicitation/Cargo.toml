@@ -117,7 +117,6 @@ palette = { workspace = true, optional = true }
 
 # Re-export derive macro
 elicitation_derive = { workspace = true }
-elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
 egui-winit = { workspace = true, optional = true }
