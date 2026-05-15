@@ -11,8 +11,8 @@
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicit_server::archive::vsm::{
-    begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
-    finish_connect_sql, reconnect, ArchiveConnectionConsistent, ArchiveConnectionState,
+    ArchiveConnectionConsistent, ArchiveConnectionState, begin_connect_kv, begin_connect_sql,
+    connection_error, disconnect, finish_connect_kv, finish_connect_sql, reconnect,
 };
 #[cfg(creusot)]
 use elicit_server::archive::{BackendKind, DatabaseDescriptor};

@@ -680,6 +680,7 @@ verify-kani-list:
 
 # Regenerate all proof files for archive VSMs (Kani + Creusot + Verus)
 generate-vsm-proofs: (generate-vsm-kani) (generate-vsm-creusot) (generate-vsm-verus)
+    cargo fmt -p elicit_proofs
 
 # Regenerate Kani harnesses for archive VSMs
 generate-vsm-kani:

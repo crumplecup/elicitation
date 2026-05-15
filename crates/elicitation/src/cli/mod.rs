@@ -690,17 +690,22 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
                 let path = dir.join(filename);
                 std::fs::write(&path, content)?;
                 // Format the file in-place so it passes `cargo fmt --check`.
+                // Set the current directory explicitly so the rustup proxy can
+                // locate rust-toolchain.toml and use the correct toolchain.
                 let fmt_status = std::process::Command::new("rustfmt")
                     .arg("--edition=2021")
                     .arg(&path)
+                    .current_dir(
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")),
+                    )
                     .status();
                 match fmt_status {
                     Ok(s) if s.success() => {}
                     Ok(s) => {
-                        tracing::warn!(path = %path.display(), status = %s, "rustfmt exited non-zero")
+                        tracing::warn!(path = %path.display(), status = %s, "cargo fmt exited non-zero")
                     }
                     Err(e) => {
-                        tracing::warn!(path = %path.display(), error = %e, "rustfmt not available")
+                        tracing::warn!(path = %path.display(), error = %e, "cargo fmt not available")
                     }
                 }
                 println!("Written: {}", path.display());

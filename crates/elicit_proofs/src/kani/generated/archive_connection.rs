@@ -7,9 +7,9 @@
 
 #[cfg(kani)]
 use elicit_server::archive::vsm::{
-    archive_connection_consistent, begin_connect_kv, begin_connect_sql, connection_error,
-    disconnect, finish_connect_kv, finish_connect_sql, reconnect, ArchiveConnectionConsistent,
-    ArchiveConnectionState,
+    ArchiveConnectionConsistent, ArchiveConnectionState, archive_connection_consistent,
+    begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
+    finish_connect_sql, reconnect,
 };
 #[cfg(kani)]
 use elicit_server::archive::{BackendKind, DatabaseDescriptor};

@@ -586,8 +586,7 @@ fn kill_descendants(pid: u32) {
             .flatten()
             .filter_map(|entry| {
                 let child_pid: u32 = entry.file_name().to_string_lossy().parse().ok()?;
-                let status =
-                    fs::read_to_string(format!("/proc/{child_pid}/status")).ok()?;
+                let status = fs::read_to_string(format!("/proc/{child_pid}/status")).ok()?;
                 status.lines().find_map(|line| {
                     let ppid_str = line.strip_prefix("PPid:\t")?;
                     (ppid_str.trim().parse::<u32>() == Ok(pid)).then_some(child_pid)
