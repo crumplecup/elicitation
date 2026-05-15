@@ -37,6 +37,8 @@ git show <last-commit>:<filename>
 | ELICIT_POLARS_PLAN.md | `246c48b0` |
 | ELICIT_PROJ_PLAN.md | `15a4e5ef` |
 | ELICIT_RSTAR_PLAN.md | `3658c398` |
+| parallel_frontend_plan.md | `0cee1bf5` |
+| sketch.md | `e121d771` |
 
 ---
 
