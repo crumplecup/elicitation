@@ -13,11 +13,11 @@ use elicit_server::archive::display::{
 };
 #[cfg(kani)]
 use elicit_server::archive::vsm::{
-    ArchivePanelConsistent, ArchivePanelState, abort_edits, admin_ready, archive_panel_consistent,
-    begin_edit, column_detail, commit_edits, constraints_ready, data_grid_ready, ddl_ready,
-    erd_ready, explain_ready, export_ready, history_ready, indexes_ready, monitor_ready,
-    open_connection_editor, open_export_panel, open_help_panel, open_saved_panel, open_sql_editor,
-    panel_error, panel_loading, query_complete, saved_ready,
+    abort_edits, admin_ready, archive_panel_consistent, begin_edit, column_detail, commit_edits,
+    constraints_ready, data_grid_ready, ddl_ready, erd_ready, explain_ready, export_ready,
+    history_ready, indexes_ready, monitor_ready, open_connection_editor, open_export_panel,
+    open_help_panel, open_saved_panel, open_sql_editor, panel_error, panel_loading, query_complete,
+    saved_ready, ArchivePanelConsistent, ArchivePanelState,
 };
 #[cfg(kani)]
 use elicit_server::archive::{

@@ -26,6 +26,8 @@
 
 use anyhow::Context as _;
 #[cfg(unix)]
+use libc;
+#[cfg(unix)]
 use std::os::unix::process::CommandExt as _;
 use std::{
     collections::HashSet,
@@ -557,6 +559,48 @@ fn find_package_dir(package: &str) -> anyhow::Result<PathBuf> {
     anyhow::bail!("Package '{package}' not found in workspace")
 }
 
+/// Send SIGKILL to the process group rooted at `root_pid` (which must be its
+/// own group leader, i.e. spawned with `process_group(0)`), then walk `/proc`
+/// on Linux to kill any descendants that escaped the group via `setsid()` or
+/// an explicit `setpgid()` call — both of which kani-driver / cbmc may perform
+/// internally on some versions.
+#[cfg(unix)]
+fn kill_tree(root_pid: u32) {
+    // Kill the whole process group first (fast path).
+    unsafe { libc::killpg(root_pid as libc::pid_t, libc::SIGKILL) };
+
+    // Belt-and-suspenders: recursively kill any descendants that escaped the
+    // process group.  Linux-only because it relies on /proc.
+    #[cfg(target_os = "linux")]
+    kill_descendants(root_pid);
+}
+
+/// Recursively SIGKILL all descendants of `pid` by reading PPid from
+/// `/proc/<n>/status`.  Children are killed before the parent so that a parent
+/// cannot re-spawn children between the two kills.
+#[cfg(target_os = "linux")]
+fn kill_descendants(pid: u32) {
+    let children: Vec<u32> = match fs::read_dir("/proc") {
+        Err(_) => return,
+        Ok(rd) => rd
+            .flatten()
+            .filter_map(|entry| {
+                let child_pid: u32 = entry.file_name().to_string_lossy().parse().ok()?;
+                let status =
+                    fs::read_to_string(format!("/proc/{child_pid}/status")).ok()?;
+                status.lines().find_map(|line| {
+                    let ppid_str = line.strip_prefix("PPid:\t")?;
+                    (ppid_str.trim().parse::<u32>() == Ok(pid)).then_some(child_pid)
+                })
+            })
+            .collect(),
+    };
+    for child in children {
+        kill_descendants(child);
+        unsafe { libc::kill(child as libc::pid_t, libc::SIGKILL) };
+    }
+}
+
 /// Run a command with a per-invocation timeout. Returns (status_str, elapsed).
 ///
 /// On Unix, the child is placed in its own process group so that killing on
@@ -599,13 +643,7 @@ fn run_harness_timed(
                     // Kill the entire process group, not just the direct child.
                     // pgid == child.id() because we called process_group(0).
                     #[cfg(unix)]
-                    {
-                        let pgid = child.id() as i32;
-                        let _ = Command::new("kill")
-                            .args(["-9", &format!("-{pgid}")])
-                            .stderr(Stdio::null())
-                            .status();
-                    }
+                    kill_tree(child.id());
                     let _ = child.kill();
                     let _ = child.wait();
                     return Ok(("TIMEOUT".to_string(), start.elapsed()));
@@ -1109,13 +1147,7 @@ fn execute_with_progress(
                 None => {
                     if Instant::now() >= deadline {
                         #[cfg(unix)]
-                        {
-                            let pgid = child.id() as i32;
-                            let _ = Command::new("kill")
-                                .args(["-9", &format!("-{pgid}")])
-                                .stderr(Stdio::null())
-                                .status();
-                        }
+                        kill_tree(child.id());
                         let _ = child.kill();
                         let _ = child.wait();
                         join_threads(stdout_thread, stderr_thread);
@@ -1242,13 +1274,7 @@ fn execute_timed(
                 None => {
                     if Instant::now() >= deadline {
                         #[cfg(unix)]
-                        {
-                            let pgid = child.id() as i32;
-                            let _ = Command::new("kill")
-                                .args(["-9", &format!("-{pgid}")])
-                                .stderr(Stdio::null())
-                                .status();
-                        }
+                        kill_tree(child.id());
                         let _ = child.kill();
                         let _ = child.wait();
                         join_threads(stdout_thread, stderr_thread);

@@ -363,93 +363,17 @@ fn vec_string_struct_literal() {
     drop(v);
 }
 
-#[kani::proof]
-fn vec_string_struct_any_vec() {
-    let v: Vec<StringRow> = kani::vec::any_vec::<StringRow, 0>();
-    drop(v);
-}
-
-#[kani::proof]
-fn vec_string_struct_bounded_any() {
-    let v: Vec<StringRow> = Vec::<StringRow>::bounded_any::<0>();
-    drop(v);
-}
+// NOTE: `vec_string_struct_any_vec` and `vec_string_struct_bounded_any` were
+// removed — both produce CBMC symbolic-length Vecs over a type with a non-trivial
+// destructor (String), causing unbounded drop_in_place loops.  The failure mode
+// is documented in the Level 7 comment below.  See Level 9 for the correct pattern.
 
 // ── Level 6: function call drops the Vec ──────────────────────────────────────
 //
-// Mimics the VSM pattern: a state enum is passed into a function that drops it.
-
-enum OverlayLike {
-    None,
-    Picker { formats: Vec<FmtLike>, idx: usize },
-    Browser { entries: Vec<StringRow>, idx: usize },
-}
-
-#[cfg(kani)]
-impl kani::Arbitrary for OverlayLike {
-    fn any() -> Self {
-        match kani::any::<u8>() % 3 {
-            0 => OverlayLike::None,
-            1 => OverlayLike::Picker {
-                formats: Vec::<FmtLike>::bounded_any::<0>(),
-                idx: kani::any(),
-            },
-            _ => OverlayLike::Browser {
-                entries: Vec::<StringRow>::bounded_any::<0>(),
-                idx: kani::any(),
-            },
-        }
-    }
-}
-
-/// Mimics `close_overlay`: takes state by value, drops it, returns `None`.
-fn consume_overlay(state: OverlayLike) -> OverlayLike {
-    drop(state);
-    OverlayLike::None
-}
-
-#[kani::proof]
-fn fn_drop_overlay_bounded_any() {
-    let state: OverlayLike = kani::any();
-    let result = consume_overlay(state);
-    assert!(matches!(result, OverlayLike::None));
-}
-
-/// Same but using any_vec inside the Arbitrary impl.
-enum OverlayAnyVec {
-    None,
-    Picker { formats: Vec<FmtLike>, idx: usize },
-    Browser { entries: Vec<StringRow>, idx: usize },
-}
-
-#[cfg(kani)]
-impl kani::Arbitrary for OverlayAnyVec {
-    fn any() -> Self {
-        match kani::any::<u8>() % 3 {
-            0 => OverlayAnyVec::None,
-            1 => OverlayAnyVec::Picker {
-                formats: kani::vec::any_vec::<FmtLike, 0>(),
-                idx: kani::any(),
-            },
-            _ => OverlayAnyVec::Browser {
-                entries: kani::vec::any_vec::<StringRow, 0>(),
-                idx: kani::any(),
-            },
-        }
-    }
-}
-
-fn consume_overlay_anyvec(state: OverlayAnyVec) -> OverlayAnyVec {
-    drop(state);
-    OverlayAnyVec::None
-}
-
-#[kani::proof]
-fn fn_drop_overlay_any_vec() {
-    let state: OverlayAnyVec = kani::any();
-    let result = consume_overlay_anyvec(state);
-    assert!(matches!(result, OverlayAnyVec::None));
-}
+// All Level 6 harnesses (fn_drop_overlay_bounded_any, fn_drop_overlay_any_vec)
+// timed out: any_vec / bounded_any leave Vec length symbolic; CBMC diverges
+// on drop_in_place over a slice of symbolic length when the element type has
+// a non-trivial destructor.  Removed; findings carried forward to Level 7+.
 
 // ── Level 7: String isolation — pin down the exact failure mode ──────────────
 //
@@ -579,13 +503,9 @@ fn consume_overlay_fixed(state: OverlayFixed) -> OverlayFixed {
 }
 
 /// Definitive harness: Vec::new() + struct-with-String element type + function boundary.
-/// This is the exact pattern of close_overlay__kani.
-#[kani::proof]
-fn fn_drop_overlay_fixed() {
-    let state: OverlayFixed = kani::any();
-    let result = consume_overlay_fixed(state);
-    assert!(matches!(result, OverlayFixed::None));
-}
+/// NOTE: Using kani::any::<OverlayFixed>() here still times out — CBMC models the
+/// symbolic discriminant and reasons about ALL variant destructors simultaneously,
+/// making Vec fields appear symbolic-length globally.  See Level 9 for the fix.
 
 // ── Level 9: per-variant harnesses — avoid symbolic enum dispatch ─────────────
 //

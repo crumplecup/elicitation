@@ -3346,7 +3346,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_accesskit"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "derive_more",
@@ -3365,7 +3365,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_axum"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "axum",
  "elicitation",
@@ -3382,7 +3382,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_bevy"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "bevy",
  "derive_more",
@@ -3404,7 +3404,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_chrono"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "chrono",
  "derive_builder",
@@ -3422,7 +3422,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_clap"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "clap",
  "elicitation",
@@ -3441,7 +3441,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_csv"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "csv",
  "derive_more",
@@ -3460,7 +3460,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_db"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicit_geo_types",
@@ -3484,7 +3484,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_egui"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "egui",
@@ -3507,7 +3507,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_geo"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicit_geo_types",
  "elicitation",
@@ -3524,7 +3524,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_geo_types"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3541,7 +3541,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_geojson"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicit_geo_types",
  "elicitation",
@@ -3558,7 +3558,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_georaster"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3576,7 +3576,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_gis"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -3595,7 +3595,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_jiff"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -3613,7 +3613,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_leptos"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "derive_more",
@@ -3634,7 +3634,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_proj"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -3653,7 +3653,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_proofs"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "chrono",
  "creusot-std",
@@ -3666,7 +3666,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_ratatui"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "crossterm 0.29.0",
@@ -3688,7 +3688,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_redb"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicit_db",
@@ -3711,7 +3711,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_regex"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3728,7 +3728,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_reqwest"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "bytes",
  "derive_builder",
@@ -3750,7 +3750,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_rstar"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive-new",
  "elicitation",
@@ -3768,7 +3768,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3784,7 +3784,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde_json"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3800,7 +3800,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_server"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "anyhow",
@@ -3857,7 +3857,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_sqlx"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive-getters",
  "derive_more",
@@ -3882,7 +3882,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_std"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3899,7 +3899,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_time"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -3917,7 +3917,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_tokio"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -3934,7 +3934,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_toml"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -3955,7 +3955,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_tower"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "bytes",
  "elicitation",
@@ -3977,7 +3977,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_ui"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "cssparser",
@@ -4004,7 +4004,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_uom"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -4021,7 +4021,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_url"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -4039,7 +4039,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_uuid"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -4057,7 +4057,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_wgpu"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -4073,7 +4073,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_winit"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -4089,7 +4089,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_wkb"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "derive_more",
  "elicitation",
@@ -4105,7 +4105,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_wkt"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -4124,7 +4124,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "anodized",
@@ -4203,7 +4203,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "chrono",
@@ -4235,7 +4235,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -4261,7 +4261,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "accesskit 0.24.0",
  "chrono",
@@ -4292,7 +4292,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "chrono",
  "csv",
@@ -8320,9 +8320,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e12ca9067b5ebfbd5b3fcdc4acfceb81aa7d5ab2a879dff7cb75d22434276aad"
+checksum = "0810a9f717d9828f475fe1f629f4c305c8464b7f496c3a854b58d29e65f4058e"
 dependencies = [
  "async-trait",
  "base64",
@@ -8344,9 +8344,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp-macros"
-version = "1.6.0"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7caa6743cc0888e433105fe1bc551a7f607940b126a37bc97b478e86064627eb"
+checksum = "6aefac48c364756e97f04c0401ba3231e8607882c7c1d92da0437dc16307904d"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
