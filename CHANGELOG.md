@@ -9,24 +9,420 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Gate proof emission methods behind opt-in `proofs` feature
-- Phase 1 ToolDescriptor + DescriptorPlugin with SecureFetchPlugin canary
-- Phase 2 #[elicit_tool] attribute macro
-- Phase 3 #[derive(ElicitPlugin)] + inventory registration
-- Phase 4 PluginContext injection + shared reqwest::Client
-- Phase 6 global emit registry via inventory
-- Serde bridge for constrained types + UrlHttps canary
-- Propagate UrlValid + F64Positive to all HTTP params
-- Add serde boundary consistency proofs (Phase E)
-- Serde boundary coverage for Creusot and Verus
-- Phase 1 — ToCodeLiteral trait + impls for primitives and constrained types
-- Phase 2 — extend #[elicit_tool] to parse emit / emit_ctx attrs
-- Phase 3 — emit_rewriter token rewriter
-- Phase 5 — canary migration of secure_fetch to #[elicit_tool] emit
-- Phase 6 — all 40 smoke tests passing
-- Replace emit=false with CustomEmit<P> trait escape hatch
-- Replace heuristic dep inference with toml-based cargo metadata
-- Add elicit_newtype_traits! for explicit trait forwarding
+- Add ContextualFactory for runtime-bounded dynamic tools
+- Add GAAP propositions for audit-traceable ledger operations
+- Phase 1 - GAAP-native ledger foundation (account types and chart)
+- Phase 2 - Journal entries with typestate state machine
+- Phase 3 - Ledger storage with account balances and queries
+- Phase 4 - Financial statements with period analysis and ratios
+- Add PostgreSQL persistence layer
+- Complete Phase 2+3 — 9 new primitives + elicit_geo_types shadow crate
+- Phase 6 — verification proofs for all geo wrappers
+- Complete geo algorithms shadow crate — 72 MCP tools across 8 plugins
+- Register all 14 geo_types proofs in kani/verus runners
+- Complete FromRequest/IntoResponse/FromRef factory plugins — 60 MCP tools
+- Complete Router/Extractors/Responses/Handler plugins — 480 MCP tools
+- Add tower + tower-http ElicitComplete trenchcoats
+- Add tower shadow crate with limit, retry, and http plugins
+- Add util, builder, balance, and steer plugins
+- Add skew, smooth, densify, and map_coords tools
+- Implement axum shadow crate with 4 plugins, 22 tools
+- Implement polars shadow crate with 4 plugins, 72 tools
+- Implement uom shadow crate with multi-param factory pattern
+- Implement Leptos 0.8 shadow crate with 84 MCP tools
+- Database contract interface crate
+- Implement SqlxDbBackend for all 11 elicit_db traits
+- Implement PolarsDbBackend for elicit_db trait subset
+- Add WKT, WKB, and GeoJSON support
+- Add spatial and GeoJSON transport helpers
+- Add georaster support
+- Add georaster proof coverage
+- Add core wrappers and tree factories
+- Add rstar proof coverage
+- Add shadow crate and proj-types Phase 2 support
+- Add winit-types ElicitComplete support for 11 types
+- Add winit 0.30 shadow crate with 3 plugins and proof wiring
+- Add wgpu-types Phase 2 primitives and specs
+- Add code-gen shadow crate for wgpu 29 (5 plugins, 17 tools)
+- Add wgpu-types proof wiring for Kani, Creusot, and Verus
+- Scaffold archive module with Elicit derives and elicit_accesskit display layer
+- Implement Phase 3 plugins
+- Phase 4 — ArchiveDbBackend + wiring + tests
+- Complete AccessKit → Leptos HTML5/view! bridge
+- Add LeptosAxumPlugin for Axum SSR integration
+- Complete WASM scaffold — emit_client, emit_index_html, emit_client_cargo_toml
+- LeptosAxumBridgePlugin — leptos descriptor → axum router bridge
+- Db slot sugar for Axum state and Leptos context
+- Add verified frontend pipeline and archive CLI binary
+- Load .env via dotenvy, DATABASE_URL as default connection
+- Zellij-style keybinding status bar at AccessKit IR layer
+- Interactive ratatui navigation (↑↓ / Enter / ? / r)
+- Browser interactive tree with CSS dark theme + JS arrow-key nav
+- EguiWinitPlugin — egui_winit shadow with 10 tools and wgpu/glow emit
+- Native egui frontend with wgpu rendering
+- Shared ArchiveNavModel with AccessKit IR keybindings
+- Phase 1 async data grid + three-frontend URL wiring
+- Phase 2 rich inspection — FK, constraints, indexes, DDL viewer
+- Phase 2 column stats + EXPLAIN viewer
+- Phase 3.4 — CSV/JSON/TSV/NDJSON export
+- Phase 3.2 — query history with SQLite persistence
+- Phase 3.3 saved queries — full egui + ratatui support
+- Full leptos browser API (13 routes, leptos-api complete)
+- Leptos-tree — HTMX nav, filter input, table click-to-preview
+- Leptos-sql — SQL editor panel with history/saved browsers
+- Leptos-ddl — DDL/EXPLAIN viewers with context tracking
+- Leptos-coldetail — column detail + stats panel
+- Leptos-export — export format picker with file download
+- ISO 19111 interface crate — Phase 1
+- OGC SFS contracts and traits — Phase 2
+- ISO 19115-1:2014 contracts — Phase 3
+- ISO 19111 gap props from critique
+- ISO 19111 formal-verification precondition props
+- ISO 19111 validity-by-construction trait surface
+- OGC SFS FV granularity — finiteness guards and aggregate validity seams
+- OGC SFS three-role trait interface
+- Add 21 ISO 19115 FV gap props
+- ISO 19115 three-role trait surface
+- RFC 7946 GeoJSON contracts (210 props)
+- RFC 7946 three-role trait interface
+- Add FGDC CSDGM contracts (160 props §0–§10)
+- Add FGDC CSDGM traits and descriptor types
+- Rewrite WCAG contracts with full 2.2 concordance
+- WCAG validity-by-construction backend rewrite
+- Complete UiNodeBridge renderer trait + all three frontend bridges
+- Chain-of-custody proof tokens across all rendering backends
+- ProvableFrom credentialed proof-minting system
+- Add proof_credential! macro for ZST credential + ProvableFrom binding
+- Add ProvableFrom proof dependency tree across all GIS domains
+- Lift GAAP module to first-class with full ASC concordance
+- GAAP trait interface — descriptor types, trait factories, and GaapBackend
+- Comprehensive contract gap-fill — 6294 insertions across 15 files
+- Add three-role trait interface — 5 new trait pairs + descriptor types
+- Implement 9 new elicit_db traits in SqlxDbBackend and ArchiveDbBackend
+- Phase 3.1 — inline row edit/insert/delete
+- Phase 3.5 — multi-connection management
+- Compiler-enforced key binding IR architecture
+- Phase 4 advanced types + Phase 5 monitoring plugin
+- Phase 5 monitor panel UI wiring — all three frontends
+- Phase 5.2 admin panel — roles, backups, WAL, settings
+- Phase 5.3 HTMX endpoints — /api/monitor and /api/admin
+- Phase 6 ERD diagram view — ErdPanel + fetch_erd + all frontends
+- Phase 7 — ArchiveDisplay for all 24 descriptor types
+- Phase 8 — constraint/index panels, trigger/extension nav, pagination, ERD FK enrichment
+- Phase 9 — monitor panel depth (5 tabs, 4 new data sources)
+- Phase 10 — visual ERD grid layout
+- Phase 11 — SSE live monitor polling
+- Phase 12 — SQL syntax highlighting across all frontends
+- Phase 13 — ConnectionProfile SSH tunnel + SSL fields
+- Phase 14 — Query plan comparison
+- Proof-carrying WCAG 2.2 palette system
+- Add render_enums, pbr, camera primitives + fix pre-existing compile errors
+- Phase 2 complete — all primitives + ElicitSpec type registry
+- Add input/sprite/text/scene types + Name wrapper
+- Add AnimationPlayer, AnimationTransitions, light/aabb gizmo types
+- Add image sampler types and TextBounds
+- Add ForwardDecal, AtmosphereMode/Settings, SpritePickingCamera/Mode/Settings
+- Add NoAutomaticBatching, MipBias, OcclusionCulling, AutoDirectionalNavigation
+- Add AabbGizmoConfigGroup, SystemCursorIcon, CursorIcon, WindowPosition
+- Add input_focus module with AutoFocus, TabIndex, TabGroup, InputFocusVisible, AutoNavigationConfig
+- Add Msaa, Hdr, ColorGrading family to render coverage
+- Add 18 missing Bevy 0.18 shadow types
+- Add 5 missing light/pbr shadow types
+- Add VideoMode and VideoModeSelection shadow types
+- Add FontGenerator and TextureSliceGenerator
+- Extend ToCodeLiteral with tuple, raw_tuple, and enum variant attrs
+- Extend elicit_newtype! with nodebug/forward_serde; add emit_code helpers
+- Add complete SurrealDB 3.x MCP coverage (62 tools)
+- Add surrealdb-types bidirectional From conversions
+- Add auth and config shadow types
+- Surreal-types primitives improvements + redb-types primitives + macro reference handling
+- Total rewrite — 7 plugins, 53 tools, tests, README
+- Rewrite as true shadow crate with StatefulPlugin
+- Add full MCP shadow crate for csv 1.x
+- Implement ElicitComplete for all 7 csv primitive types
+- Add TOML ecosystem MCP support (Phase 1 + Phase 2)
+- Add FormalMethod and VerifiedStateMachine
+- Add #[formal_method] attribute macro
+- #[formal_method] Phase 4 — Creusot + Verus backend harnesses
+- Upgrade archive module to VerifiedStateMachine + add RedbBackend support
+- Expand archive VSM to 4-machine full-app coverage
+- Add transition_harnesses and vsm_kani_proof to VerifiedStateMachine
+- Add #[derive(VerifiedStateMachine)] proc macro
+- Add ProofHarness::in_package and elicit_proofs VSM harness entries
+- Add unified proof crate for Kani/Creusot/Verus verification
+- Impl ElicitComplete for 92 ReadyNow types + add accesskit to full
+- Compositional proof architecture — prove() replaces assert()
+- Per-variant Kani harnesses + VSM runner binary
+- KaniCompose derive macro + kani_label! macro
+- Per-depth VSM harness generation (d0/d1/d2)
+- KaniCompose unit suite + ExplainNode compositional proofs
+- Add KaniCompose derive to archive + db types
+- Add ToCodeLiteral impl for BTreeMap<String, V>
+- Diagnostic theories + regenerated VSM harnesses + KaniCompose fixes
+- Generate real Creusot VSM companion contracts
+- Replace per-variant depth harnesses with proof_for_contract architecture
+- Add 6-level Creusot proof gallery to elicitation_creusot
+- Fix proof architecture and build C1-C6 gallery
+- Fix gallery C2/C4 goals and prove all 19 gallery files
+- Add gallery levels C7-C10, prove all 40 gallery files
+- Add gallery levels C11-C12, prove all 55 gallery files
+- Add gallery level C13, prove all 61 gallery files
+- Add gallery levels C13-C14, prove all 67 gallery files
+- Add gallery levels C15-C16, prove all 85 gallery files
+- Add gallery level C17, prove all 93 gallery files
+- Add gallery level C18, prove all 105 gallery files
+- Add gallery level C19, prove all 112 gallery files
+- Gallery C20-C23 — all panel machine patterns proven
+- Add creusot-std dep to elicitation/elicit_server; fix bare attribute paths
+- Add proof gallery V1–V6
+- Add gallery V7–V10
+- Add Verus VSM companions Phase 3
+- Add verus_external_stub + vsm_verus_transitions for standalone VSM proofs
+- Add V11-V13 leaf-lemma and composition patterns
+- Add generate subcommand with syn-based VSM scanner
+- Phase 2 — Kani harness generator
+- Phase 3 — Verus companion generator
+- Phase 4 — Creusot companion generator
+- Retire elicit_proofs/build.rs in favor of CLI generator
+- Generators return Result<String,String>; hard-error on missing invariant body
+- Phase 6c/6d — foundation subcommand, fix path-qualified derives, fix creusot emit
+- Add `elicitation prove --kani/--verus/--creusot` command
+- Per-harness Kani CSV tracking with 300s default timeout
+- Precise import resolver with parent module scanning
+- Add indicatif progress reporting
+- Add verus_class annotation + standalone overlay proof
+- Verus directory mode — verify generated files individually
+- Detect plain #[derive(KaniCompose)] + add Established<P>: KaniCompose
+- Add level 15 — DFCC + bounded Vec blowup diagnosis
+- Add KANI_TIMEOUT env var support; remove max_memory_gb
+- Add journal→GAAP bridges and proof composition impls
+- Upgrade generator to V13 assume_specification pattern
+- Add RedbBackend with elicit_db trait impls
+- Add ArchiveKvPlugin with MCP tools for redb KV operations
+
+### Documentation
+
+- Update GAAP_LEDGER_INTEGRATION.md with completion status
+- Phase 7 — type hierarchy, geo algorithm examples, elicit_ui integration
+- Add README
+- Comprehensive README with all 55 tools, params, and examples
+- Realign plan to upstream API
+- Add ARCHIVE.md quick-start guide and README link
+- Document egui as third parallel frontend
+- ARCHIVE_PARITY_PLAN.md — feature parity roadmap vs pgAdmin/DBeaver
+- Update ARCHIVE.md — IR pipeline, browser routes, PanelMode table
+- Add full-depth standards research notes for all five GIS standards
+- Fill ISO 19111 gap analysis — add 55 props in §21–29
+- Rewrite README for credential proof architecture
+- Rewrite README in spirit of elicit_ui
+- Write README in spirit of elicit_ui
+- Write GAAP.md in spirit of elicit_ui
+- Update ARCHIVE.md for monitor, admin, ERD panels and keybinding IR
+- Tighten Phase 7-15 roadmap — Leptos as first-class frontend
+- Add comprehensive README
+- Add ELICIT_SURREALDB_PLAN and update PLANNING_INDEX
+- Add SurrealConstructorsPlugin to README coverage table
+- Add SUPPORT_PATTERNS.md with trenchcoat, factory, stateful plugin, macro guide
+- Add four new patterns to SUPPORT_PATTERNS.md
+- Add VERIFIED_STATE_MACHINES architecture guide
+- Move VERIFIED_STATE_MACHINES.md to repo root
+- Add Verified State Machines section to ARCHIVE.md
+- Add ELICIT_DOC_PLAN.md for elicit_doc companion crate
+- Add KANI_FOR_VSMS.md — operational Kani guide for VSMs
+- Update KANI_FOR_VSMS.md with compositional strategy
+- Update KANI_FOR_VSMS.md with SAT explosion blocker and fix pattern
+- Add §4 union byte aliasing, renumber sections, update troubleshooting
+- Add CREUSOT_FOR_VSMS; expand CREUSOT_GUIDE with operational details
+- Add VERUS_FOR_VSMS.md and update VERUS_GUIDE.md with gallery + VSM sections
+- Mark Phase 4 done; add Phase 6 as next planned step
+- Add ELICITATION_GENERATE_PLAN and index entry
+- Update architecture docs for V13 Verus, Kani 54/54, Creusot consumer features
+
+### Fixed
+
+- Add ElicitPromptTree impl to elicit_uuid::Uuid
+- Replace vacuous kani struct harness with constructibility proof
+- Add missing kani-time deps for verification/runner.rs
+- Correct Triangle proofs — vertex-set not positional equality
+- Qualify vec! to resolve creusot_std prelude ambiguity
+- Resolve all compilation errors
+- Box CallToolResult in helper fns to fix result_large_err
+- Resolve all workspace clippy warnings
+- Update for wkt 0.14, geojson 1.0, pin tiff 0.9.1
+- Add Serialize/Deserialize/JsonSchema/ToCodeLiteral to Value* types; derive Default on WgpuOrigin3d
+- Remove ledger2 — migrated to formalware repo
+- CAST information_schema Name columns to text for AnyPool
+- Browser mode now renders full schema+table tree
+- Run event loop on calling thread, not a spawned thread
+- Bridge gaps — selection, expansion, thead/tbody, textarea
+- Restore nav tree visibility and keybinding responsiveness
+- Resolve all three frontend keybinding and rendering bugs
+- Update archive frontends to chain-of-custody renderer API
+- Restore assert() to pub — WCAG enforcement via credentials not visibility
+- Support #[skip] in ToCodeLiteral for recursive types
+- Pin earcut to 0.4.5 to unblock geo 0.33.0
+- Update Bevy Phase 2 primitives; fix deprecated geo Triangle fields
+- Address clippy warnings from dep updates
+- Update archive_frontend_smoke_test to current render API
+- Remove unused Prompt and Select imports from types.rs
+- Extract SnapshotMap type alias, collapse nested if-let
+- Resolve all clippy warnings in archive modules
+- Correct two test expectations to match actual renderer
+- Resolve 91 clippy warnings; improve lint recipe logging
+- Use unit struct literal instead of Default::default()
+- Remove unused Prompt and Select imports
+- Resolve all workspace lint failures (unused imports, deprecated APIs, wrong test APIs)
+- Rename type registration from Value to GeometryValue
+- Break recursive prompt_tree cycle in TomlValue
+- Add to_pascal_case helper and update formal_method docs
+- Exclude surrealdb-types vendor from workspace clippy+test
+- Check-features collects all warnings before failing
+- Feature flag and crate-root export corrections
+- Format generated Kani harnesses with prettyplease
+- Add --bin elicitation to all cargo run invocations
+- Update kani proofs for upstream API changes
+- Resolve all-features kani toolchain compile errors
+- Add missing SpecOrd import to wkb_types
+- Add creusot-std dep and prelude imports for formal_method
+- Fix runner -p scoping and revert elicit_server creusot-std dep
+- Fix prove runner -p arg order + update proof API calls
+- Resolve 53 kani verification failures
+- Manual Arbitrary impls + bounded String::new() for VSM state types
+- Add --lib to cargo kani invocation
+- Replace format! with kani_label! in explain_ready transition
+- Swap HashMap for BTreeMap throughout UI/egui/nav layers
+- Split DbValue::Json under cfg(kani) to eliminate recursive drop
+- Split QueryResult under cfg(kani) to eliminate nested-Vec SAT explosion
+- Gate all ArchiveDisplay impls with cfg(not(kani))
+- Clean up unused warnings in VSM panel/nav/connection/overlay
+- Box ConnectionProfile in ConnectionEdit to eliminate SAT explosion
+- Silence all unused-import warnings under --features kani
+- Gate proc_macro2-returning VSM methods with #[cfg(not(kani))]
+- Suppress unexpected_cfgs warnings on all generated custom cfgs
+- Resolve all cargo creusot compile errors in elicit_proofs
+- Isolate creusot to elicitation_creusot; fix reserved param names
+- Replace array-repeat syntax to avoid Slice64.create
+- Add local String extern specs; fix VSM companion prove
+- Gate creusot-std behind creusot feature
+- Update cargo creusot prove argument syntax
+- Trusted status, feature flags, revert RPIT
+- Resolve warnings and test failures for clean check-all
+- Replace HashMap with BTreeMap in all tests
+- Add serde_json to surreal-types feature deps
+- Replace vacuous archive VSM invariants with real predicates
+- Gate Verus generated mods with cfg(verus)
+- Exclude creusot from check-features powerset; rustfmt cleanup
+- Derive crate name from Cargo.toml instead of hardcoding
+- Process-group termination on Kani timeout; codegen warm-up
+- Fix Creusot generator imports and proof infrastructure
+- Clean build for creusot/csv pipeline
+- Prove c24_two_steps (strengthen c24_step contract)
+- Surface creusot/verus results and summary lines
+- Replace first_field_zero with extract_inv_arm for sound predicates
+- Replace TODO fallbacks with fail-fast or clean output
+- Creusot unlimited timeout by default; suppress signal stderr
+- Wire Kani prove pipeline to generated VSM harnesses
+- Derive crate_name from VSM source file, not workspace root
+- Replace #[trusted] conclusions with extern_spec! premises + non-trusted wrappers
+- Carry specific variant name in TransKind
+- Depth-aware String in KaniCompose derive + harness generator
+- Run rustfmt on generated files at emit time
+- Exclude pearlite-syn patch warning from check-features
+- Exclude vendored surrealdb-types and skip elicit_proj on Windows
+- Free macOS disk space and install sqlite3 on Windows
+- Free disk space on all platforms before build
+- Add cfg(feature) guards to feature-gated test files
+- Remove spurious proj-types gate on csv_specs and fix test cfg guards
+- Remove redundant --exclude surrealdb-types from lint/test/check-features
+- Rewrite verify-vsm recipes to use elicitation prove CLI
+- Replace shell kill with libc::killpg + /proc tree walk on timeout
+- Remove spurious mut on lines vec in generate_creusot_shared_file
+
+### Miscellaneous
+
+- Remove stale .coma artifacts from ui_types
+- Mop up unused variable warnings
+- Remove scratch check_out/check_output files from tracking
+- Ignore check_out.txt and check_output.txt scratch files
+- Stop tracking .env — already in .gitignore
+- Remove creusot-std/pearlite-syn vendor patches (now on crates.io 0.11)
+- Update verus dependencies to 2026-04-12
+- Regenerate VSM harnesses with per-depth construction
+- Regenerate elicit_server archive proofs
+- Remove legacy runner binary
+- Regenerate elicit_proofs proof harnesses
+- Update Cargo.lock
+- Retire elicitation_macros crate, move helpers to elicitation_kani
+
+### Refactor
+
+- Make prompt-tree always-on, remove feature gate
+- Expunge composite_wrapper stubs — real field-type delegation
+- Implement trait interface refactor
+- Enforce IR-sourced contract across all three frontends
+- Leptos frontend fully IR-driven, zero hardcoded HTML
+- Deduplicate SQL tokenizer and palette into elicit_accesskit
+- Replace manual EmitCode impls with ToCodeLiteral derives; fix warnings
+- Extract BoxFuture return-type aliases in async trait methods
+- Split types.rs into individual shadow-type modules
+- Wire 4 VSMs into ArchiveNavModel
+- Replace impl VerifiedStateMachine with #[derive(VerifiedStateMachine)]
+- Migrate proc macros from elicitation_macros to elicitation_derive
+- Split lint/test jobs, scope tests to core crates
+- Move third_party_mcp_compat_test to elicit_server
+
+### Styling
+
+- Apply cargo fmt across workspace tests and examples
+- Cargo fmt
+
+### Testing
+
+- Headless smoke tests for all three frontend paths
+- Add workflow integration tests
+- Migrate inline mod tests to tests/ directory
+- Multi-file scan_vsms tests (6a complete)
+
+### Ci
+
+- Install libasound2-dev and libudev-dev on ubuntu runner
+- Per-package test job with ci feature flag for smoke tests
+- Split core vs satellite test workflows
+- Add libasound2-dev libudev-dev to core test job
+- Restore free-disk-space to core test job
+- Split elicitation tests into feature-group matrix jobs
+- Add libasound2-dev libudev-dev to all test jobs
+
+### Fmt
+
+- Fix rustfmt formatting after ci feature flag additions
+
+### Kani
+
+- Forget harness results to eliminate drop-glue overhead
+- Add kani_invariant_fn_name + closure proof infrastructure
+- Fix drop-glue SAT explosion in closure harnesses
+- Apply forget-and-shadow to all closure harnesses
+
+### Plan
+
+- Design uom shadow crate with multi-param factory pattern
+- Revise plan for Leptos 0.8 with correct patterns
+- Design standards-anchored database contract interface crate
+- Expand with full object-safe trait family
+
+### Proof
+
+- Level 11 — proof_for_contract + stub_verified with APS
+
+### Rewrite
+
+- Shadow crate rewrite with UUID-handle pattern
+
+## [0.10.0] - 2026-04-05
+
+### Added
+
 - Add structural type graph visualization system
 - Add graph subcommand for type visualization
 - Add TypeGraphPlugin MCP tool (Phase E)
@@ -162,8 +558,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- CONTRACT_PARAMS_PLAN — contract-carrying param types (replaces Phase 7)
-- Add EMIT_AUTODERIVE_PLAN.md to planning index
 - Add TYPE_GRAPH_GUIDE.md user guide + update planning index
 - Add CREUSOT_GUIDE.md for Creusot 0.10.0 proof suite
 - Update guide and tracking to reflect 240 SMT goals
@@ -226,11 +620,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Move elicited_types binding inside cfg(proofs) scope
-- Gate feature-conditional code and exports; rewrite check-features to use cargo-hack powerset
-- Remove redundant bare `use toml;`
 - Replace approximate PI literal with std::f64::consts::PI
 - Use toml::from_str instead of .parse() for toml 1.0 compat; add dep-pipeline tests
+- Toml 1.0 compat + crate_deps pipeline tests; fix approx PI lint
 - Run cargo creusot instead of cargo check in run_creusot_module
 - Achieve 26/26 passing modules in tracked verification
 - Use is_none_or instead of map_or(true, ...) in renderers
@@ -280,25 +672,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prove all StringNonEmpty goals in strings module
 - Resolve check-all warnings
 - Gate prompt-tree impls and fix taffy 0.10 API breakage
+- Restore elicit_clap dev-dependencies dropped during features addition
+- Restore elicit_uuid serde_json dev-dependency
+- Workspace resolution for elicit_ui in elicit_egui
+- Workspace resolution for elicit_ui in elicit_ratatui
 
 ### Miscellaneous
 
-- Rustfmt serde_boundary.rs + update Cargo.lock
-- Prepare 0.9.1 — changelog + release notes
-- Bump workspace to 0.9.1; update toml dep to 1.0
+- Increment version for Verus crate.
 - Remove stale planning documents
 - Commit proof artifacts from verify-creusot-prove
 - Add .copilot/ to gitignore
 - Bump to 0.10.0, update deps, organize Cargo.toml
 - Remove obsolete Kani benchmark scripts
+- Regenerate CHANGELOG.md with git-cliff
+- Archive implemented planning docs, clean up PLANNING_INDEX
+- Merge dev into main for v0.10.0
+- Merge dev into main for v0.10.0
+- Add Creusot proof artifacts for ui_types overflow functions
+- Update Verus to latest daily and increment version to 0.10.0
 
 ### Refactor
 
-- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
-- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
-- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
-- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
-- Migrate all plugins to #[elicit_tool] + #[derive(ElicitPlugin)]
 - Remove graph feature gate — always on
 - Replace SerdePlugin with #[reflect_trait] factories
 - Replace concrete PluginContext with trait + typed contexts
@@ -323,7 +718,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Testing
 
-- Serde boundary tests for constrained types
 - 20 integration tests for all clap trait factories
 - Add fragment unit tests and live DB integration tests
 - Add Phase 5b typestate integration tests
@@ -331,14 +725,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add 64 integration tests for serde types and conversions
 - Proof_coverage_test.rs for all elicit_* crates
 
+### Merge
+
+- Dev → main — VerifiedWorkflow trait, Prop derive, pre-merge fixes
+
+### Vendor
+
+- Vendor creusot-std, creusot-std-proc, pearlite-syn from creusot 0.10
+
+## [0.9.1] - 2026-03-10
+
+### Added
+
+- Gate proof emission methods behind opt-in `proofs` feature
+- Phase 1 ToolDescriptor + DescriptorPlugin with SecureFetchPlugin canary
+- Phase 2 #[elicit_tool] attribute macro
+- Phase 3 #[derive(ElicitPlugin)] + inventory registration
+- Phase 4 PluginContext injection + shared reqwest::Client
+- Phase 6 global emit registry via inventory
+- Serde bridge for constrained types + UrlHttps canary
+- Propagate UrlValid + F64Positive to all HTTP params
+- Add serde boundary consistency proofs (Phase E)
+- Serde boundary coverage for Creusot and Verus
+- Phase 1 — ToCodeLiteral trait + impls for primitives and constrained types
+- Phase 2 — extend #[elicit_tool] to parse emit / emit_ctx attrs
+- Phase 3 — emit_rewriter token rewriter
+- Phase 5 — canary migration of secure_fetch to #[elicit_tool] emit
+- Phase 6 — all 40 smoke tests passing
+- Replace emit=false with CustomEmit<P> trait escape hatch
+- Replace heuristic dep inference with toml-based cargo metadata
+- Add elicit_newtype_traits! for explicit trait forwarding
+
+### Documentation
+
+- CONTRACT_PARAMS_PLAN — contract-carrying param types (replaces Phase 7)
+- Add EMIT_AUTODERIVE_PLAN.md to planning index
+
+### Fixed
+
+- Move elicited_types binding inside cfg(proofs) scope
+- Gate feature-conditional code and exports; rewrite check-features to use cargo-hack powerset
+- Remove redundant bare `use toml;`
+
+### Miscellaneous
+
+- Rustfmt serde_boundary.rs + update Cargo.lock
+- Prepare 0.9.1 — changelog + release notes
+- Bump workspace to 0.9.1; update toml dep to 1.0
+
+### Refactor
+
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate all plugins to #[elicit_tool] + #[derive(ElicitPlugin)]
+
+### Testing
+
+- Serde boundary tests for constrained types
+
 ### Ci
 
 - Add pull_request trigger and feature-powerset job
 - Move check-features to pre-merge only; remove from CI pipe
 
-### Vendor
+### Release
 
-- Vendor creusot-std, creusot-std-proc, pearlite-syn from creusot 0.10
+- Merge dev → main for v0.9.1
 
 ## [0.9.0] - 2026-03-06
 
