@@ -4157,7 +4157,6 @@ dependencies = [
  "indicatif",
  "inventory",
  "jiff",
- "libc",
  "palette",
  "paste",
  "prettyplease",
