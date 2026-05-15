@@ -32,6 +32,11 @@ git show <last-commit>:<filename>
 | ELICIT_WINIT_PLAN.md | `246c48b0` |
 | ELICIT_WKB_PLAN.md | `9ba0b52f` |
 | ELICIT_WKT_PLAN.md | `246c48b0` |
+| CRATE_RESEARCH_UI_CONSTRAINTS.md | `246c48b0` |
+| ELICITATION_GENERATE_PLAN.md | `8187a008` |
+| ELICIT_POLARS_PLAN.md | `246c48b0` |
+| ELICIT_PROJ_PLAN.md | `15a4e5ef` |
+| ELICIT_RSTAR_PLAN.md | `3658c398` |
 
 ---
 
