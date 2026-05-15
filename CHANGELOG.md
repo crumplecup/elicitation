@@ -313,7 +313,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Gate Verus generated mods with cfg(verus)
 - Exclude creusot from check-features powerset; rustfmt cleanup
 - Derive crate name from Cargo.toml instead of hardcoding
-- Process-group termination on Kani timeout; codegen warm-up
+- Pass --harness-timeout to kani (replaces unsafe process-group kill); codegen warm-up
 - Fix Creusot generator imports and proof infrastructure
 - Clean build for creusot/csv pipeline
 - Prove c24_two_steps (strengthen c24_step contract)
@@ -326,7 +326,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace #[trusted] conclusions with extern_spec! premises + non-trusted wrappers
 - Carry specific variant name in TransKind
 - Depth-aware String in KaniCompose derive + harness generator
-- Run rustfmt on generated files at emit time
+- Run cargo fmt on generated files at emit time; add cargo fmt safety net to justfile
 - Exclude pearlite-syn patch warning from check-features
 - Exclude vendored surrealdb-types and skip elicit_proj on Windows
 - Free macOS disk space and install sqlite3 on Windows
