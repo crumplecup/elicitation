@@ -700,32 +700,20 @@ generate-vsm-verus:
         --out crates/elicit_proofs/src/verus/generated
 
 # ─────────────────────────────────────────────────────────────────────────────
-# VSM Kani proof tracking (elicit_proofs runner — auto-generated harnesses)
+# VSM Kani proof tracking (elicitation prove CLI — auto-generated harnesses)
 # ─────────────────────────────────────────────────────────────────────────────
-
-# List all VSM proof harnesses from the manifest
-verify-vsm-list:
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm list
 
 # Run all VSM harnesses with CSV tracking
 verify-vsm csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}}
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}}
 
-# Run VSM harnesses matching a substring filter (e.g. "archive_panel" or "close_overlay")
-verify-vsm-filter filter csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --filter {{filter}} --csv {{csv}} --timeout {{timeout}}
+# Run VSM harnesses for a specific module prefix (e.g. "kani::generated::archive_panel")
+verify-vsm-filter module csv="vsm_kani_results.csv" timeout="300":
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --kani-harness {{module}}
 
-# Resume VSM verification (skips harnesses already marked SUCCESS in the CSV)
+# Resume VSM verification (skips harnesses already recorded as PASS in the CSV)
 verify-vsm-resume csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}} --resume
-
-# Show summary statistics from a VSM results CSV
-verify-vsm-summary csv="vsm_kani_results.csv":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm summary --csv {{csv}}
-
-# Show failing harnesses from a VSM results CSV
-verify-vsm-failed csv="vsm_kani_results.csv":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm failed --csv {{csv}}
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --resume
 
 # Run Prusti verification (simple)
 # Run Prusti verification with CSV tracking (recommended)
