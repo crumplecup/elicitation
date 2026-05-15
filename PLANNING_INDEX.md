@@ -26,6 +26,12 @@ git show <last-commit>:<filename>
 | ELICIT_GEO_TYPES_PLAN.md | `246c48b0` |
 | ELICIT_LEPTOS_PLAN.md | `246c48b0` |
 | ELICIT_NALGEBRA_PLAN.md | `246c48b0` |
+| ELICIT_SURREALDB_PLAN.md | `70445f5c` |
+| ELICIT_UOM_PLAN.md | `246c48b0` |
+| ELICIT_WGPU_PLAN.md | `246c48b0` |
+| ELICIT_WINIT_PLAN.md | `246c48b0` |
+| ELICIT_WKB_PLAN.md | `9ba0b52f` |
+| ELICIT_WKT_PLAN.md | `246c48b0` |
 
 ---
 
