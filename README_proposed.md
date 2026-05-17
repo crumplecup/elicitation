@@ -160,10 +160,6 @@ logic *must* run. The compiler enforces it. Proofs can then verify that this cha
 `Prop` types: `elicit_sqlx` has `DbConnected`, `QueryExecuted`, `TransactionOpen`;
 `elicit_reqwest` has `UrlValid`, `RequestCompleted`, `FetchSucceeded`.
 
-The `Tool` trait formalises composable steps with typed `Pre`/`Post` constraints. Sequential
-(`then`) and parallel (`both_tools`) composition check at compile time that each step's
-postcondition satisfies the next step's precondition.
-
 ---
 
 ## Verified State Machines
