@@ -123,50 +123,63 @@ For compile-time macros (e.g. `sqlx::query!`), fragment tools emit verified Rust
 
 ---
 
-## Contracts — Invalid Sequences Fail at Compile Time
+## Contracts — Invariants as Types
 
-Agents orchestrate operations in sequences. The contracts system makes *wrong* sequences
-unrepresentable: if `fetch_rows` requires a live connection, passing it without one is a
-type error, not a runtime panic.
+Programs have invariants that hold regardless of execution path. Most frameworks leave them as
+comments or runtime checks — things developers know but the compiler doesn't. Elicitation makes
+them explicit in the type system.
 
-`Established<P>` is a zero-sized proof token that proposition `P` holds. Functions that
-require prior work take it as a parameter; functions that do work return it:
+A `Prop` is a marker type: a name for an invariant. `Established<P>` is a zero-sized proof
+token that `P` holds — it exists only because something produced it, and the only way to produce
+it is through a `ProvableFrom` exchange:
 
 ```rust
-pub struct DbConnected;
-impl Prop for DbConnected {}
+#[derive(Prop)] pub struct ConnectionReady;
+#[derive(Prop)] pub struct QueryValidated;
 
-fn connect(url: &str)                                    -> (Pool, Established<DbConnected>) { ... }
-fn fetch_rows(sql: &str, _pre: Established<DbConnected>) -> Vec<Row>                        { ... }
-
-// Compose proofs with And<P,Q> and both()
-let together: Established<And<DbConnected, QueryExecuted>> = both(db_proof, query_proof);
+// ProvableFrom is a sealed exchange: present ConnectionReady, receive QueryValidated
+impl ProvableFrom<ConnectionReady> for QueryValidated { ... }
 ```
 
-Shadow crates ship their own propositions: `elicit_sqlx` has `DbConnected`, `QueryExecuted`,
-`TransactionOpen`; `elicit_reqwest` has `UrlValid`, `RequestCompleted`, `FetchSucceeded`.
+The exchange lives in a trait method — and that trait method is the *only door* to the token:
+
+```rust
+fn validate_query(
+    &self,
+    query: &str,
+    _pre: Established<ConnectionReady>,   // credential required
+) -> Result<(ValidatedQuery, Established<QueryValidated>), DbError> {
+    // business logic that maintains the invariant — no other path exists
+}
+```
+
+Because the trait method is the only constructor for `Established<QueryValidated>`, the business
+logic *must* run. The compiler enforces it. Proofs can then verify that this chain is sound.
+
+`And<P,Q>` composes proofs; `both(p, q)` constructs conjunctions. Shadow crates ship their own
+`Prop` types: `elicit_sqlx` has `DbConnected`, `QueryExecuted`, `TransactionOpen`;
+`elicit_reqwest` has `UrlValid`, `RequestCompleted`, `FetchSucceeded`.
 
 The `Tool` trait formalises composable steps with typed `Pre`/`Post` constraints. Sequential
-(`then`) and parallel (`both_tools`) composition verify at compile time that each step's
+(`then`) and parallel (`both_tools`) composition check at compile time that each step's
 postcondition satisfies the next step's precondition.
 
 ---
 
 ## Verified State Machines
 
-Contracts enforce sequencing. Verified State Machines (VSMs) add *proof* that the transitions
-are sound: that they preserve a declared consistency predicate, and that the predicate is strong
-enough to guarantee your invariants.
-
-A VSM has four elements — state enum, consistency predicate, transitions, and
-`#[derive(VerifiedStateMachine)]` wiring them together:
+A Verified State Machine is a state machine where every state implements `Elicitation` and
+every transition is a `#[formal_method]`. That dual constraint is exactly what the derive needs
+to auto-generate proofs: all inputs and outputs are within the verified type system, and all
+transitions follow the `ProvableFrom` contract — so there is no path through the machine that
+the framework cannot inspect and verify.
 
 ```rust
-// 1. State enum
+// All states implement Elicitation
 #[derive(Debug, Clone, VerifiedStateMachine)]
 pub enum PanelState { Idle, Loading, Ready, Error }
 
-// 2. Consistency predicate — the invariant the VSM preserves
+// Consistency predicate — the invariant every transition must preserve
 pub fn panel_consistent(state: &PanelState, data: &Option<Data>) -> bool {
     match state {
         PanelState::Ready => data.is_some(),
@@ -175,9 +188,7 @@ pub fn panel_consistent(state: &PanelState, data: &Option<Data>) -> bool {
     }
 }
 
-// 3. Transitions annotated with #[formal_method]
-//    Each transition: enforces contracts, is traced in production,
-//    and is registered for automatic proof harness generation
+// All transitions are #[formal_method] — the only doors between states
 impl PanelMachine {
     #[formal_method]
     pub fn begin_load(&mut self) -> Established<Loading> { ... }
@@ -188,8 +199,9 @@ impl PanelMachine {
 }
 ```
 
-`#[formal_method]` gates `#[instrument]` so the proof verifiers don't chase tracing internals,
-and registers the method for harness generation. Generate and run proofs:
+`#[formal_method]` gates `#[instrument]` so proof toolchains don't chase tracing internals,
+and registers the transition for harness generation. The generated proofs verify that every
+reachable transition preserves the consistency predicate — correctness by construction.
 
 ```bash
 elicitation generate kani --crate-path crates/my_vsm/src --out crates/proofs/src/kani/generated
@@ -200,17 +212,21 @@ just prove   # runs all three backends
 
 ## Formal Verification
 
-Every `Elicitation` type can carry proofs for three independent verifiers:
+The proof infrastructure is bottom-up. The core crate and shadow crates ship verified proofs for
+stdlib and third-party types — capturing meaningful bounds: a `PortNumber` is always in
+[1024, 65535]; a `NonEmptyString` always has length > 0; an `Established<FetchSucceeded>` is
+always produced from a 2xx response. When you derive `Elicit` on your own types, your proofs
+compose from those canonical proofs. A struct's proof is the union of its fields' proofs — add
+a field, get its verification bounds for free.
+
+At the VSM level, proofs verify the richer claim: that every transition preserves the
+consistency predicate. Three verifiers approach this from independent directions:
 
 | Verifier | Approach | Current workspace coverage |
 |---|---|---|
 | **Kani** | Bounded model checking — exhaustive within bound | 388 passing harnesses |
 | **Verus** | SMT-based program logic | 158 passing proofs |
 | **Creusot** | Deductive verification — rich compositional invariants | 22,837 valid goals / 19 modules |
-
-Proofs cover *our* logic, not third-party internals. Third-party invariants enter via
-`kani::assume` as accepted axioms; we assert what we guarantee on top. A struct's proof
-is the union of its fields' proofs — composition is free.
 
 ```bash
 just verify-kani-tracked
