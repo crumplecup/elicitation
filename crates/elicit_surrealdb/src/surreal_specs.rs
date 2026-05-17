@@ -1,13 +1,12 @@
-//! [`ElicitSpec`](crate::ElicitSpec) stubs for SurrealDB bridge types.
+//! [`ElicitSpec`](elicitation::ElicitSpec) stubs for SurrealDB bridge types.
 //!
 //! Available with the `surreal-types` feature.
 
-#[cfg(feature = "surreal-types")]
 mod surreal_impls {
     use crate::primitives::surreal_types::{
         Datetime, Duration, Geometry, GeometryKind, Kind, Number, PatchOp, RecordId, Table, Value,
     };
-    use crate::{
+    use elicitation::{
         ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
         TypeSpecInventoryKey,
     };
@@ -285,14 +284,14 @@ mod surreal_impls {
         ]
     );
 
-    impl crate::ElicitComplete for Datetime {}
-    impl crate::ElicitComplete for Duration {}
-    impl crate::ElicitComplete for Table {}
-    impl crate::ElicitComplete for RecordId {}
-    impl crate::ElicitComplete for Number {}
-    impl crate::ElicitComplete for PatchOp {}
-    impl crate::ElicitComplete for Geometry {}
-    impl crate::ElicitComplete for GeometryKind {}
-    impl crate::ElicitComplete for Kind {}
-    impl crate::ElicitComplete for Value {}
+    impl elicitation::ElicitComplete for Datetime {}
+    impl elicitation::ElicitComplete for Duration {}
+    impl elicitation::ElicitComplete for Table {}
+    impl elicitation::ElicitComplete for RecordId {}
+    impl elicitation::ElicitComplete for Number {}
+    impl elicitation::ElicitComplete for PatchOp {}
+    impl elicitation::ElicitComplete for Geometry {}
+    impl elicitation::ElicitComplete for GeometryKind {}
+    impl elicitation::ElicitComplete for Kind {}
+    impl elicitation::ElicitComplete for Value {}
 }

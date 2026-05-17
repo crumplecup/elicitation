@@ -16,7 +16,7 @@
 //! - [`Table`] — string newtype for table names
 //! - [`PatchOp`] — shadow of JSON Patch operations
 //!
-//! # Enabled by the `surreal-types` feature
+//! Moved from `elicitation` crate to avoid publish-time dep conflict.
 
 mod datetime;
 mod duration;

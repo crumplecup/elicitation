@@ -3,7 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
     PatternDetails, Prompt, TypeMetadata, mcp,
 };
@@ -25,7 +25,6 @@ impl Table {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Table> for Table {
     fn from(t: surrealdb_types::Table) -> Self {
         Self {
@@ -34,14 +33,13 @@ impl From<surrealdb_types::Table> for Table {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Table> for surrealdb_types::Table {
     fn from(t: Table) -> Self {
         surrealdb_types::Table::new(t.name)
     }
 }
 
-crate::default_style!(Table => TableStyle);
+elicitation::default_style!(Table => TableStyle);
 
 impl Prompt for Table {
     fn prompt() -> Option<&'static str> {
@@ -69,15 +67,15 @@ impl Elicitation for Table {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("table")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("table")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("table")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("table")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("table")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("table")
     }
 }
 
@@ -95,9 +93,9 @@ impl ElicitIntrospect for Table {
     }
 }
 
-impl crate::ElicitPromptTree for Table {
-    fn prompt_tree() -> crate::PromptTree {
-        crate::PromptTree::Leaf {
+impl elicitation::ElicitPromptTree for Table {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
             prompt: Self::prompt()
                 .unwrap_or("Enter the SurrealDB table name:")
                 .to_string(),
@@ -106,9 +104,9 @@ impl crate::ElicitPromptTree for Table {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Table {
+impl elicitation::emit_code::ToCodeLiteral for Table {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let n = &self.name;
-        quote::quote! { elicitation::SurrealTable { name: #n.to_string() } }
+        quote::quote! { elicit_surrealdb::SurrealTable { name: #n.to_string() } }
     }
 }

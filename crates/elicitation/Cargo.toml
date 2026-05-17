@@ -86,9 +86,6 @@ geo-types = { workspace = true, optional = true }
 geo = { workspace = true, optional = true }
 proj = { workspace = true, optional = true }
 rstar = { workspace = true, optional = true }
-# SurrealDB types (optional)
-surrealdb-types = { workspace = true, optional = true }
-rust_decimal = { workspace = true, optional = true }
 # redb types (optional)
 redb = { workspace = true, optional = true }
 georaster = { workspace = true, optional = true }
@@ -136,7 +133,7 @@ tempfile = { workspace = true }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "redb-types", "csv-types", "toml-types", "emit", "accesskit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "redb-types", "csv-types", "toml-types", "emit", "accesskit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -203,7 +200,6 @@ geojson-types = ["dep:geojson", "geo-types", "serde_json"]
 wkt-types = ["dep:wkt", "geo-types"]
 # Enable wkb spatial format type elicitation
 wkb-types = ["dep:wkb", "dep:hex"]
-surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid", "chrono", "serde_json"]
 # Enable redb embedded key-value store type elicitation
 redb-types = ["dep:redb"]
 # Enable csv reader/writer type elicitation

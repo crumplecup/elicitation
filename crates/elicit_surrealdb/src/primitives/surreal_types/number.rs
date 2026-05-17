@@ -21,7 +21,6 @@ pub enum Number {
     Decimal(String),
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Number> for Number {
     fn from(n: surrealdb_types::Number) -> Self {
         match n {
@@ -32,7 +31,6 @@ impl From<surrealdb_types::Number> for Number {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Number> for surrealdb_types::Number {
     fn from(n: Number) -> Self {
         match n {
@@ -45,7 +43,7 @@ impl From<Number> for surrealdb_types::Number {
     }
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
@@ -83,7 +81,7 @@ impl Select for Number {
     }
 }
 
-crate::default_style!(Number => NumberStyle);
+elicitation::default_style!(Number => NumberStyle);
 
 impl Elicitation for Number {
     type Style = NumberStyle;
@@ -139,21 +137,21 @@ impl Elicitation for Number {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper(
+        elicitation::verification::proof_helpers::kani_select_wrapper(
             "Number",
             "Int (64-bit signed integer)",
         )
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper(
+        elicitation::verification::proof_helpers::verus_select_wrapper(
             "Number",
             "Int (64-bit signed integer)",
         )
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_select_wrapper(
+        elicitation::verification::proof_helpers::creusot_select_wrapper(
             "Number",
             "Int (64-bit signed integer)",
         )
@@ -182,11 +180,11 @@ impl ElicitIntrospect for Number {
     }
 }
 
-impl crate::ElicitPromptTree for Number {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for Number {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts = Self::labels();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the numeric value type:")
                 .to_string(),
@@ -197,11 +195,11 @@ impl crate::ElicitPromptTree for Number {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Number {
+impl elicitation::emit_code::ToCodeLiteral for Number {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("Number should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealNumber>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealNumber>(#json)
                 .expect("serialized SurrealNumber should deserialize")
         }
     }

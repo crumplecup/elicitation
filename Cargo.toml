@@ -213,7 +213,7 @@ redb = "4"
 # We vendor the crate and change that pin to 0.33 to unify the dep graph.
 # The [patch.crates-io] table below ensures surrealdb-core also resolves to
 # this vendored copy (and therefore geo 0.33) rather than the upstream one.
-surrealdb-types = { version = "3.0.5", path = "vendor/surrealdb-types-3.0.5" }
+surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
 surrealdb = { version = "3.0.5", features = [
   "protocol-ws",
   "protocol-http",

@@ -3,7 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
     PatternDetails, Prompt, TypeMetadata, mcp,
 };
@@ -32,7 +32,6 @@ impl Duration {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Duration> for Duration {
     fn from(d: surrealdb_types::Duration) -> Self {
         // Display formats the duration in SurrealDB string notation (e.g. "1y2w3d").
@@ -42,7 +41,6 @@ impl From<surrealdb_types::Duration> for Duration {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Duration> for surrealdb_types::Duration {
     fn from(d: Duration) -> Self {
         d.value
@@ -51,7 +49,7 @@ impl From<Duration> for surrealdb_types::Duration {
     }
 }
 
-crate::default_style!(Duration => DurationStyle);
+elicitation::default_style!(Duration => DurationStyle);
 
 impl Prompt for Duration {
     fn prompt() -> Option<&'static str> {
@@ -79,15 +77,15 @@ impl Elicitation for Duration {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("duration")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("duration")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("duration")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("duration")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("duration")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("duration")
     }
 }
 
@@ -105,9 +103,9 @@ impl ElicitIntrospect for Duration {
     }
 }
 
-impl crate::ElicitPromptTree for Duration {
-    fn prompt_tree() -> crate::PromptTree {
-        crate::PromptTree::Leaf {
+impl elicitation::ElicitPromptTree for Duration {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
             prompt: Self::prompt()
                 .unwrap_or("Enter a SurrealDB duration string (e.g. \"1h30m\" or \"500ms\"):")
                 .to_string(),
@@ -116,9 +114,9 @@ impl crate::ElicitPromptTree for Duration {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Duration {
+impl elicitation::emit_code::ToCodeLiteral for Duration {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let v = &self.value;
-        quote::quote! { elicitation::SurrealDuration { value: #v.to_string() } }
+        quote::quote! { elicit_surrealdb::SurrealDuration { value: #v.to_string() } }
     }
 }

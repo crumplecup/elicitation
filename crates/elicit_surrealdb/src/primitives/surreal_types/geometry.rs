@@ -26,13 +26,11 @@ pub enum Geometry {
 }
 
 /// Extract a flat coordinate list from a geo LineString.
-#[cfg(feature = "surreal-types")]
 fn linestring_to_coords(ls: &geo_types::LineString) -> Vec<[f64; 2]> {
     ls.coords().map(|c| [c.x, c.y]).collect()
 }
 
 /// Build a geo LineString from a flat coordinate list.
-#[cfg(feature = "surreal-types")]
 fn coords_to_linestring(coords: Vec<[f64; 2]>) -> geo_types::LineString {
     geo_types::LineString(
         coords
@@ -43,7 +41,6 @@ fn coords_to_linestring(coords: Vec<[f64; 2]>) -> geo_types::LineString {
 }
 
 /// Build a geo Polygon from a rings list (first ring is exterior, rest are holes).
-#[cfg(feature = "surreal-types")]
 fn rings_to_polygon(rings: Vec<Vec<[f64; 2]>>) -> geo_types::Polygon {
     let mut iter = rings.into_iter();
     let exterior = iter
@@ -54,7 +51,6 @@ fn rings_to_polygon(rings: Vec<Vec<[f64; 2]>>) -> geo_types::Polygon {
     geo_types::Polygon::new(exterior, interiors)
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Geometry> for Geometry {
     fn from(g: surrealdb_types::Geometry) -> Self {
         match g {
@@ -89,7 +85,6 @@ impl From<surrealdb_types::Geometry> for Geometry {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Geometry> for surrealdb_types::Geometry {
     fn from(g: Geometry) -> Self {
         use geo_types::{Coord, MultiLineString, MultiPoint, MultiPolygon, Point};
@@ -117,12 +112,12 @@ impl From<Geometry> for surrealdb_types::Geometry {
     }
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, PatternDetails, Prompt, TypeMetadata, VariantMetadata, mcp,
 };
 
-crate::default_style!(Geometry => GeometryStyle);
+elicitation::default_style!(Geometry => GeometryStyle);
 
 impl Prompt for Geometry {
     fn prompt() -> Option<&'static str> {
@@ -231,15 +226,15 @@ impl Elicitation for Geometry {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("geometry")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("geometry")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("geometry")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("geometry")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("geometry")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("geometry")
     }
 }
 
@@ -273,8 +268,8 @@ impl ElicitIntrospect for Geometry {
     }
 }
 
-impl crate::ElicitPromptTree for Geometry {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for Geometry {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts: Vec<String> = [
             "Point",
             "Line",
@@ -288,7 +283,7 @@ impl crate::ElicitPromptTree for Geometry {
         .map(|s| s.to_string())
         .collect();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the SurrealDB geometry variant:")
                 .to_string(),
@@ -299,11 +294,11 @@ impl crate::ElicitPromptTree for Geometry {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Geometry {
+impl elicitation::emit_code::ToCodeLiteral for Geometry {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("Geometry should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealGeometry>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealGeometry>(#json)
                 .expect("serialized SurrealGeometry should deserialize")
         }
     }

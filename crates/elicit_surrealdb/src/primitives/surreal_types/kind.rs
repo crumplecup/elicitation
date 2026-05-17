@@ -89,7 +89,6 @@ pub enum Kind {
     LiteralBool(bool),
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::GeometryKind> for GeometryKind {
     fn from(gk: surrealdb_types::GeometryKind) -> Self {
         match gk {
@@ -104,7 +103,6 @@ impl From<surrealdb_types::GeometryKind> for GeometryKind {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<GeometryKind> for surrealdb_types::GeometryKind {
     fn from(gk: GeometryKind) -> Self {
         match gk {
@@ -121,7 +119,6 @@ impl From<GeometryKind> for surrealdb_types::GeometryKind {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Kind> for Kind {
     fn from(k: surrealdb_types::Kind) -> Self {
         match k {
@@ -175,7 +172,6 @@ impl From<surrealdb_types::Kind> for Kind {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Kind> for surrealdb_types::Kind {
     fn from(k: Kind) -> Self {
         match k {
@@ -232,7 +228,7 @@ impl From<Kind> for surrealdb_types::Kind {
     }
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
@@ -287,7 +283,7 @@ impl Select for GeometryKind {
     }
 }
 
-crate::default_style!(GeometryKind => GeometryKindStyle);
+elicitation::default_style!(GeometryKind => GeometryKindStyle);
 
 impl Elicitation for GeometryKind {
     type Style = GeometryKindStyle;
@@ -315,15 +311,15 @@ impl Elicitation for GeometryKind {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper("GeometryKind", "point")
+        elicitation::verification::proof_helpers::kani_select_wrapper("GeometryKind", "point")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper("GeometryKind", "point")
+        elicitation::verification::proof_helpers::verus_select_wrapper("GeometryKind", "point")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_select_wrapper("GeometryKind", "point")
+        elicitation::verification::proof_helpers::creusot_select_wrapper("GeometryKind", "point")
     }
 }
 
@@ -349,11 +345,11 @@ impl ElicitIntrospect for GeometryKind {
     }
 }
 
-impl crate::ElicitPromptTree for GeometryKind {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for GeometryKind {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts = Self::labels();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the SurrealDB geometry kind:")
                 .to_string(),
@@ -364,7 +360,7 @@ impl crate::ElicitPromptTree for GeometryKind {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for GeometryKind {
+impl elicitation::emit_code::ToCodeLiteral for GeometryKind {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("GeometryKind should serialize");
         quote::quote! {
@@ -484,7 +480,7 @@ impl Select for Kind {
     }
 }
 
-crate::default_style!(Kind => KindStyle);
+elicitation::default_style!(Kind => KindStyle);
 
 impl Elicitation for Kind {
     type Style = KindStyle;
@@ -662,15 +658,15 @@ impl Elicitation for Kind {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper("Kind", "any")
+        elicitation::verification::proof_helpers::kani_select_wrapper("Kind", "any")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper("Kind", "any")
+        elicitation::verification::proof_helpers::verus_select_wrapper("Kind", "any")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_select_wrapper("Kind", "any")
+        elicitation::verification::proof_helpers::creusot_select_wrapper("Kind", "any")
     }
 }
 
@@ -696,11 +692,11 @@ impl ElicitIntrospect for Kind {
     }
 }
 
-impl crate::ElicitPromptTree for Kind {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for Kind {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts: Vec<String> = kind_all_labels().into_iter().map(String::from).collect();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the SurrealDB field type kind:")
                 .to_string(),
@@ -711,11 +707,11 @@ impl crate::ElicitPromptTree for Kind {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Kind {
+impl elicitation::emit_code::ToCodeLiteral for Kind {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("Kind should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealKind>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealKind>(#json)
                 .expect("serialized SurrealKind should deserialize")
         }
     }

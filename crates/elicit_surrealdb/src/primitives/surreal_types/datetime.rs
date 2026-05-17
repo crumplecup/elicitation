@@ -3,7 +3,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
     PatternDetails, Prompt, TypeMetadata, mcp,
 };
@@ -28,7 +28,6 @@ impl Datetime {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Datetime> for Datetime {
     fn from(dt: surrealdb_types::Datetime) -> Self {
         use chrono::SecondsFormat;
@@ -38,7 +37,6 @@ impl From<surrealdb_types::Datetime> for Datetime {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Datetime> for surrealdb_types::Datetime {
     fn from(dt: Datetime) -> Self {
         dt.value
@@ -47,7 +45,7 @@ impl From<Datetime> for surrealdb_types::Datetime {
     }
 }
 
-crate::default_style!(Datetime => DatetimeStyle);
+elicitation::default_style!(Datetime => DatetimeStyle);
 
 impl Prompt for Datetime {
     fn prompt() -> Option<&'static str> {
@@ -75,15 +73,15 @@ impl Elicitation for Datetime {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("datetime")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("datetime")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("datetime")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("datetime")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("datetime")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("datetime")
     }
 }
 
@@ -101,9 +99,9 @@ impl ElicitIntrospect for Datetime {
     }
 }
 
-impl crate::ElicitPromptTree for Datetime {
-    fn prompt_tree() -> crate::PromptTree {
-        crate::PromptTree::Leaf {
+impl elicitation::ElicitPromptTree for Datetime {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
             prompt: Self::prompt()
                 .unwrap_or("Enter an ISO 8601 datetime string (e.g. \"2024-01-15T10:30:00Z\"):")
                 .to_string(),
@@ -112,9 +110,9 @@ impl crate::ElicitPromptTree for Datetime {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Datetime {
+impl elicitation::emit_code::ToCodeLiteral for Datetime {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let v = &self.value;
-        quote::quote! { elicitation::SurrealDatetime { value: #v.to_string() } }
+        quote::quote! { elicit_surrealdb::SurrealDatetime { value: #v.to_string() } }
     }
 }

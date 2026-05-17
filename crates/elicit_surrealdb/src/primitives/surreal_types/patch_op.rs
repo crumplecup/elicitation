@@ -73,7 +73,7 @@ pub enum PatchOp {
     },
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
@@ -181,7 +181,7 @@ impl Select for PatchOp {
     }
 }
 
-crate::default_style!(PatchOp => PatchOpStyle);
+elicitation::default_style!(PatchOp => PatchOpStyle);
 
 impl Elicitation for PatchOp {
     type Style = PatchOpStyle;
@@ -273,15 +273,15 @@ impl Elicitation for PatchOp {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper("PatchOp", "add")
+        elicitation::verification::proof_helpers::kani_select_wrapper("PatchOp", "add")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper("PatchOp", "add")
+        elicitation::verification::proof_helpers::verus_select_wrapper("PatchOp", "add")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_select_wrapper("PatchOp", "add")
+        elicitation::verification::proof_helpers::creusot_select_wrapper("PatchOp", "add")
     }
 }
 
@@ -307,11 +307,11 @@ impl ElicitIntrospect for PatchOp {
     }
 }
 
-impl crate::ElicitPromptTree for PatchOp {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for PatchOp {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts = Self::labels();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the JSON Patch operation:")
                 .to_string(),
@@ -322,11 +322,11 @@ impl crate::ElicitPromptTree for PatchOp {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for PatchOp {
+impl elicitation::emit_code::ToCodeLiteral for PatchOp {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("PatchOp should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealPatchOp>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealPatchOp>(#json)
                 .expect("serialized SurrealPatchOp should deserialize")
         }
     }

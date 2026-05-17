@@ -17,7 +17,7 @@ categories = ["database", "development-tools"]
 api = []
 
 [dependencies]
-elicitation = { workspace = true, features = ["surreal-types"] }
+elicitation = { workspace = true }
 elicitation_derive.workspace = true
 inventory.workspace = true
 surrealdb-types.workspace = true

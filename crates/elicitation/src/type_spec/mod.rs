@@ -59,8 +59,7 @@ mod sqlx_specs;
 mod std_extras;
 mod string_contracts;
 mod strings;
-#[cfg(feature = "surreal-types")]
-mod surreal_specs;
+
 #[cfg(feature = "toml-types")]
 mod toml_specs;
 mod tower_specs;

@@ -29,7 +29,6 @@ impl RecordId {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::RecordId> for RecordId {
     fn from(rid: surrealdb_types::RecordId) -> Self {
         let table = rid.table.into_inner();
@@ -39,7 +38,6 @@ impl From<surrealdb_types::RecordId> for RecordId {
 }
 
 /// Convert a [`surrealdb_types::RecordIdKey`] to a [`serde_json::Value`].
-#[cfg(feature = "surreal-types")]
 fn record_id_key_to_json(key: surrealdb_types::RecordIdKey) -> JsonValue {
     match key {
         surrealdb_types::RecordIdKey::Number(n) => serde_json::json!(n),
@@ -59,7 +57,6 @@ fn record_id_key_to_json(key: surrealdb_types::RecordIdKey) -> JsonValue {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<RecordId> for surrealdb_types::RecordId {
     fn from(rid: RecordId) -> Self {
         let table = surrealdb_types::Table::new(rid.table);
@@ -69,7 +66,6 @@ impl From<RecordId> for surrealdb_types::RecordId {
 }
 
 /// Convert a [`serde_json::Value`] to a [`surrealdb_types::RecordIdKey`].
-#[cfg(feature = "surreal-types")]
 fn json_to_record_id_key(v: JsonValue) -> surrealdb_types::RecordIdKey {
     match v {
         JsonValue::Number(n) if n.is_i64() => {
@@ -84,12 +80,12 @@ fn json_to_record_id_key(v: JsonValue) -> surrealdb_types::RecordIdKey {
     }
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, FieldInfo, PatternDetails, Prompt, Survey, TypeMetadata, mcp,
 };
 
-crate::default_style!(RecordId => RecordIdStyle);
+elicitation::default_style!(RecordId => RecordIdStyle);
 
 impl Prompt for RecordId {
     fn prompt() -> Option<&'static str> {
@@ -154,15 +150,15 @@ impl Elicitation for RecordId {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("record_id")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("record_id")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("record_id")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("record_id")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("record_id")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("record_id")
     }
 }
 
@@ -182,27 +178,27 @@ impl ElicitIntrospect for RecordId {
     }
 }
 
-impl crate::ElicitPromptTree for RecordId {
-    fn prompt_tree() -> crate::PromptTree {
-        crate::PromptTree::Survey {
+impl elicitation::ElicitPromptTree for RecordId {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Survey {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "SurrealRecordId".to_string(),
             fields: vec![
                 ("table".to_string(), Box::new(String::prompt_tree())),
                 (
                     "key".to_string(),
-                    Box::new(<serde_json::Value as crate::ElicitPromptTree>::prompt_tree()),
+                    Box::new(<serde_json::Value as elicitation::ElicitPromptTree>::prompt_tree()),
                 ),
             ],
         }
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for RecordId {
+impl elicitation::emit_code::ToCodeLiteral for RecordId {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("RecordId should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealRecordId>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealRecordId>(#json)
                 .expect("serialized SurrealRecordId should deserialize")
         }
     }

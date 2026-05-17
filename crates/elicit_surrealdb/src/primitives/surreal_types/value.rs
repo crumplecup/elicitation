@@ -46,7 +46,6 @@ pub enum Value {
     Object(serde_json::Map<String, serde_json::Value>),
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<surrealdb_types::Value> for Value {
     fn from(v: surrealdb_types::Value) -> Self {
         match v {
@@ -88,7 +87,6 @@ impl From<surrealdb_types::Value> for Value {
     }
 }
 
-#[cfg(feature = "surreal-types")]
 impl From<Value> for surrealdb_types::Value {
     fn from(v: Value) -> Self {
         match v {
@@ -137,12 +135,12 @@ impl From<Value> for surrealdb_types::Value {
     }
 }
 
-use crate::{
+use elicitation::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
     ElicitationPattern, PatternDetails, Prompt, TypeMetadata, VariantMetadata, mcp,
 };
 
-crate::default_style!(Value => ValueStyle);
+elicitation::default_style!(Value => ValueStyle);
 
 /// All variant labels presented to the user during elicitation.
 fn value_labels() -> Vec<String> {
@@ -286,15 +284,15 @@ impl Elicitation for Value {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_trusted_opaque("value")
+        elicitation::verification::proof_helpers::kani_trusted_opaque("value")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_trusted_opaque("value")
+        elicitation::verification::proof_helpers::verus_trusted_opaque("value")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_trusted_opaque("value")
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("value")
     }
 }
 
@@ -320,11 +318,11 @@ impl ElicitIntrospect for Value {
     }
 }
 
-impl crate::ElicitPromptTree for Value {
-    fn prompt_tree() -> crate::PromptTree {
+impl elicitation::ElicitPromptTree for Value {
+    fn prompt_tree() -> elicitation::PromptTree {
         let opts = value_labels();
         let n = opts.len();
-        crate::PromptTree::Select {
+        elicitation::PromptTree::Select {
             prompt: Self::prompt()
                 .unwrap_or("Choose the SurrealDB value type:")
                 .to_string(),
@@ -335,11 +333,11 @@ impl crate::ElicitPromptTree for Value {
     }
 }
 
-impl crate::emit_code::ToCodeLiteral for Value {
+impl elicitation::emit_code::ToCodeLiteral for Value {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let json = serde_json::to_string(self).expect("Value should serialize");
         quote::quote! {
-            ::serde_json::from_str::<elicitation::SurrealValue>(#json)
+            ::serde_json::from_str::<elicit_surrealdb::SurrealValue>(#json)
                 .expect("serialized SurrealValue should deserialize")
         }
     }

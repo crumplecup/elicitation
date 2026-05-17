@@ -39,6 +39,9 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod primitives;
+mod surreal_specs;
+
 mod admin_plugin;
 mod array;
 mod auth;
@@ -102,3 +105,11 @@ pub use trait_factories::SurrealValueFactory;
 pub use txn_plugin::SurrealTransactionPlugin;
 pub use uuid_type::Uuid;
 pub use value::Value;
+
+// Elicitation bridge primitives (for use in #[derive(Elicit)] structs)
+pub use primitives::{
+    GeometryKind, GeometryKindStyle, SurrealDatetime, SurrealDatetimeStyle, SurrealDuration,
+    SurrealDurationStyle, SurrealGeometry, SurrealGeometryStyle, SurrealKind, SurrealKindStyle,
+    SurrealNumber, SurrealNumberStyle, SurrealPatchOp, SurrealPatchOpStyle, SurrealRecordId,
+    SurrealRecordIdStyle, SurrealTable, SurrealTableStyle, SurrealValue, SurrealValueStyle,
+};
