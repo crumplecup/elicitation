@@ -88,15 +88,18 @@ lookup tables, physics steps. `elicitation_rand` adds `#[rand(...)]` field attri
 
 ---
 
-## Shadow Crates — The Agent's Dictionary
+## Shadow Crates — Familiar APIs Over MCP
 
-Agents can only work with what they can name. A shadow crate (`elicit_*`) is a typed vocabulary
-for a third-party library — three layers that together let an agent reason about and compose
-the library's behaviour without writing a line of Rust:
+A shadow crate (`elicit_*`) mirrors the API of its source library with MCP-compatible types and
+tools that use the same names and types developers already know. The goal is that an agent working
+with `elicit_reqwest` feels like it is working with `reqwest` — the vocabulary is familiar, the
+types correspond, but everything crosses the MCP boundary safely.
+
+Each shadow crate exposes three layers:
 
 | Layer | What it provides | Mechanism |
 |---|---|---|
-| **Types** | `serde` + `JsonSchema` wrappers | Newtypes |
+| **Types** | MCP-safe wrappers with the source library's names | Newtypes |
 | **Methods** | Instance methods as MCP tools | `#[reflect_methods]` |
 | **Traits** | Third-party trait methods as typed factories | `#[reflect_trait]` |
 
@@ -208,12 +211,12 @@ just prove   # runs all three backends
 
 ## Formal Verification
 
-The proof infrastructure is bottom-up. The core crate and shadow crates ship verified proofs for
-stdlib and third-party types — capturing meaningful bounds: a `PortNumber` is always in
-[1024, 65535]; a `NonEmptyString` always has length > 0; an `Established<FetchSucceeded>` is
-always produced from a 2xx response. When you derive `Elicit` on your own types, your proofs
-compose from those canonical proofs. A struct's proof is the union of its fields' proofs — add
-a field, get its verification bounds for free.
+The proof infrastructure is bottom-up. The core `elicitation` crate ships verified proofs for
+stdlib and third-party types behind feature gates — capturing meaningful bounds: a `PortNumber`
+is always in [1024, 65535]; a `NonEmptyString` always has length > 0; an
+`Established<FetchSucceeded>` is always produced from a 2xx response. When you derive `Elicit`
+on your own types, your proofs compose from those canonical proofs. A struct's proof is the
+union of its fields' proofs — add a field, get its verification bounds for free.
 
 At the VSM level, proofs verify the richer claim: that every transition preserves the
 consistency predicate. Three verifiers approach this from independent directions:
