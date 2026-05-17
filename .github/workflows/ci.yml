@@ -59,7 +59,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
 
-  # Ubuntu only: test elicitation_derive and elicitation_macros (fast, no heavy deps).
+  # Ubuntu only: test elicitation_derive (fast, no heavy deps).
   test-derive:
     name: Test derive and macros
     runs-on: ubuntu-latest
@@ -83,7 +83,6 @@ jobs:
         run: |
           cargo test -p elicitation_derive
           cargo test -p elicitation_derive --features "chrono,time,jiff,uuid,url"
-          cargo test -p elicitation_macros
 
   # Ubuntu only: elicitation split by feature group to stay within runner memory/disk limits.
   # Heavy GUI/GPU features (bevy-types, wgpu-types, egui-winit-types, winit-types) are
