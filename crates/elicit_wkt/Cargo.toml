@@ -14,7 +14,6 @@ documentation.workspace = true
 [dependencies]
 elicitation = { workspace = true, features = ["wkt-types", "emit"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 wkt = { workspace = true }
 geo-types = { workspace = true }
 schemars.workspace = true

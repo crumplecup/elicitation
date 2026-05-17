@@ -15,7 +15,6 @@ categories = ["command-line-interface", "development-tools"]
 [dependencies]
 elicitation = { workspace = true, features = ["clap-types"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 clap = { workspace = true }
 inventory.workspace = true
 rmcp.workspace = true

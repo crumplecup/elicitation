@@ -19,6 +19,7 @@ mod explain_node;
 mod foreign_key;
 mod function;
 mod index;
+mod kv;
 mod monitor_snapshot;
 mod query_history;
 mod query_result;
@@ -46,6 +47,10 @@ pub use explain_node::ExplainNodeMode;
 pub use foreign_key::ForeignKeyDescriptorMode;
 pub use function::FunctionDescriptorMode;
 pub use index::IndexDescriptorMode;
+pub use kv::{
+    KvEntryDescriptorMode, KvScanResultMode, KvSnapshotDescriptorMode, KvStatsDescriptorMode,
+    KvTableDescriptorMode,
+};
 pub use monitor_snapshot::MonitorSnapshotMode;
 pub use query_history::QueryHistoryEntryMode;
 pub use query_result::QueryResultMode;

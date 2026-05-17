@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_from_slice": { "prover": "cvc5", "time": 0.013 },
+      "vc_verify_charclass_negated": { "prover": "cvc5", "time": 0.015 }
+    }
+  }
+}

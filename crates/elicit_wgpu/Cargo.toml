@@ -17,7 +17,6 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 [dependencies]
 elicitation = { workspace = true, features = ["wgpu-types"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 wgpu = { workspace = true }
 rmcp.workspace = true
 schemars.workspace = true

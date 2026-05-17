@@ -1,0 +1,8 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_verify_overflow_exact_fit": { "prover": "cvc5", "time": 0.016 }
+    }
+  }
+}

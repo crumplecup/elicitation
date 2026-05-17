@@ -10,6 +10,7 @@ pub mod constraint;
 pub mod export;
 pub mod history;
 pub mod inspect;
+pub mod kv;
 pub mod monitor;
 #[cfg(not(kani))]
 pub mod query;
@@ -29,6 +30,7 @@ pub use history::HistoryStore;
 pub use inspect::{
     explain_sql_direct, generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
 };
+pub use kv::ArchiveKvPlugin;
 pub use monitor::ArchiveMonitorPlugin;
 #[cfg(not(kani))]
 pub use query::{ArchiveQueryPlugin, QueryExecuted};

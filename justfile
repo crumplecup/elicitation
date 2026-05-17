@@ -21,6 +21,7 @@ setup:
     cargo install omnibor-cli || true
     cargo install cargo-hack || true
     cargo install cargo-nextest || true
+    cargo install cargo-semver-checks || true
     @echo "✅ All development tools installed"
     @echo ""
     @just setup-verifiers
@@ -214,7 +215,7 @@ lint package='':
     rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
             exit 1
@@ -273,7 +274,6 @@ check-features:
         --exclude-features "$EXCLUDE_FEATURES" \
         --exclude elicitation_kani \
         --exclude elicitation_creusot \
-        --exclude surrealdb-types \
         2>&1 | tee "$LOG_FILE"; then
         echo ""
         echo "❌ Feature powerset check failed. See: $LOG_FILE"
@@ -318,12 +318,12 @@ check-all package='':
 
         # Run lint (show output and log warnings/errors)
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
         # Run tests (show output and log failures)
-        if ! cargo test --workspace --lib --tests --exclude surrealdb-types 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo test --workspace --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
@@ -372,6 +372,11 @@ omnibor:
 security: audit omnibor
     @echo "✅ Security checks completed!"
 
+# Check for semver compatibility against published crates.io baseline
+semver-check:
+    @command -v cargo-semver-checks >/dev/null 2>&1 || (echo "❌ cargo-semver-checks not installed. Run: just setup" && exit 1)
+    cargo semver-checks --workspace
+
 # Full Workflow (CI/CD)
 # ====================
 
@@ -387,8 +392,8 @@ pre-commit: fix-all test-full
 pre-merge: pre-commit check-features test-api
     @echo "✅ Ready to merge!"
 
-# Prepare for release (all checks + security + changelog update + release build)
-pre-release: ci security
+# Prepare for release (all checks + security + semver + changelog update + release build)
+pre-release: ci security semver-check
     @echo "📋 Generating changelog preview..."
     git cliff --unreleased
     @echo ""
@@ -675,6 +680,7 @@ verify-kani-list:
 
 # Regenerate all proof files for archive VSMs (Kani + Creusot + Verus)
 generate-vsm-proofs: (generate-vsm-kani) (generate-vsm-creusot) (generate-vsm-verus)
+    cargo fmt -p elicit_proofs
 
 # Regenerate Kani harnesses for archive VSMs
 generate-vsm-kani:
@@ -695,32 +701,20 @@ generate-vsm-verus:
         --out crates/elicit_proofs/src/verus/generated
 
 # ─────────────────────────────────────────────────────────────────────────────
-# VSM Kani proof tracking (elicit_proofs runner — auto-generated harnesses)
+# VSM Kani proof tracking (elicitation prove CLI — auto-generated harnesses)
 # ─────────────────────────────────────────────────────────────────────────────
-
-# List all VSM proof harnesses from the manifest
-verify-vsm-list:
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm list
 
 # Run all VSM harnesses with CSV tracking
 verify-vsm csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}}
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}}
 
-# Run VSM harnesses matching a substring filter (e.g. "archive_panel" or "close_overlay")
-verify-vsm-filter filter csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --filter {{filter}} --csv {{csv}} --timeout {{timeout}}
+# Run VSM harnesses for a specific module prefix (e.g. "kani::generated::archive_panel")
+verify-vsm-filter module csv="vsm_kani_results.csv" timeout="300":
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --kani-harness {{module}}
 
-# Resume VSM verification (skips harnesses already marked SUCCESS in the CSV)
+# Resume VSM verification (skips harnesses already recorded as PASS in the CSV)
 verify-vsm-resume csv="vsm_kani_results.csv" timeout="300":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm run --csv {{csv}} --timeout {{timeout}} --resume
-
-# Show summary statistics from a VSM results CSV
-verify-vsm-summary csv="vsm_kani_results.csv":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm summary --csv {{csv}}
-
-# Show failing harnesses from a VSM results CSV
-verify-vsm-failed csv="vsm_kani_results.csv":
-    cargo run --bin elicit_proofs --quiet --features runner --release -p elicit_proofs -- vsm failed --csv {{csv}}
+    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --resume
 
 # Run Prusti verification (simple)
 # Run Prusti verification with CSV tracking (recommended)

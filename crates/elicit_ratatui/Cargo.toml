@@ -15,7 +15,6 @@ categories = ["command-line-interface", "development-tools"]
 [dependencies]
 elicitation.workspace = true
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 elicit_ui.workspace = true
 elicit_accesskit.workspace = true
 ratatui.workspace = true

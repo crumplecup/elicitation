@@ -17,7 +17,6 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 [dependencies]
 elicitation = { workspace = true, features = ["bevy-types"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 bevy = { workspace = true, features = [
     "bevy_color",
     "bevy_render",

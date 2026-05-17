@@ -1,0 +1,14 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_new": { "prover": "cvc5", "time": 0.014 },
+      "vc_read_margin_horizontal": { "prover": "cvc5", "time": 0.014 },
+      "vc_read_margin_vertical": { "prover": "cvc5", "time": 0.014 },
+      "vc_verify_ratatui_margin_roundtrip": {
+        "prover": "cvc5",
+        "time": 0.017
+      }
+    }
+  }
+}

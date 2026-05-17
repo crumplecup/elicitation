@@ -24,18 +24,21 @@ use elicit_db::{
     DbTableInfo, DbTableManager, DbTransactor, DbValue, EncryptedAtRest, EncryptedInTransit,
     ForeignKeyDefined, FunctionAltered, FunctionCreated, FunctionDropped,
     FunctionParallelRestricted, FunctionParallelSafe, FunctionParallelUnsafe,
-    FunctionSecurityDefiner, FunctionSecurityInvoker, IndexExists, IsolationLevel,
-    LeastPrivilegeEnforced, LogicalReplicationConfigured, LogicalReplicationSlotCreated,
-    MultiFactorAuthEnforced, NotNullConstraintDefined, Open, PasswordPolicyEnforced,
-    PhysicalReplicationSlotCreated, PrimaryKeyDefined, ProcedureCreated, ProcedureDropped,
-    PublicationCreated, ReadCommittedIsolation, ReadUncommittedIsolation, RepeatableReadIsolation,
-    ReplicationSlotDropped, RolledBack, RowLevelSecurityEnabled, RowLevelSecurityPolicyDefined,
-    SchemaCreated, SerializableIsolation, SessionIsolationLevelSet, SessionTimeoutEnforced,
-    SqlInjectionPrevented, SslModeRequired, StreamingReplicationConfigured, SubscriptionCreated,
-    TableCreated, TableExists, TransactionHandle, TransactionIsolationLevelSet,
-    TransactionReadOnly, TransactionReadWrite, TriggerFunctionCreated, TriggerWhenConditionDefined,
-    TxMarker, UniqueConstraintDefined, WALReplayable, WalLevelLogical, WalLevelReplica,
+    FunctionSecurityDefiner, FunctionSecurityInvoker, IndexExists, IsolationLevel, KvEntry,
+    KvIntegrityVerified, KvKeyDeleted, KvKeyInserted, KvSnapshotCreated, KvSnapshotRestored,
+    KvTableCompacted, LeastPrivilegeEnforced, LogicalReplicationConfigured,
+    LogicalReplicationSlotCreated, MultiFactorAuthEnforced, NotNullConstraintDefined, Open,
+    PasswordPolicyEnforced, PhysicalReplicationSlotCreated, PrimaryKeyDefined, ProcedureCreated,
+    ProcedureDropped, PublicationCreated, ReadCommittedIsolation, ReadUncommittedIsolation,
+    RepeatableReadIsolation, ReplicationSlotDropped, RolledBack, RowLevelSecurityEnabled,
+    RowLevelSecurityPolicyDefined, SchemaCreated, SerializableIsolation, SessionIsolationLevelSet,
+    SessionTimeoutEnforced, SnapshotHandle, SqlInjectionPrevented, SslModeRequired,
+    StreamingReplicationConfigured, SubscriptionCreated, TableCreated, TableExists,
+    TransactionHandle, TransactionIsolationLevelSet, TransactionReadOnly, TransactionReadWrite,
+    TriggerFunctionCreated, TriggerWhenConditionDefined, TxMarker, UniqueConstraintDefined,
+    WALReplayable, WalLevelLogical, WalLevelReplica,
 };
+use elicit_db::{DbEmbeddedStore, DbKvStore, DbSnapshotManager, DbStorageStats};
 use elicit_redb::RedbBackend;
 use elicit_sqlx::SqlxDbBackend;
 use elicitation::Established;
@@ -1053,7 +1056,8 @@ impl DbReplicationMeta for ArchiveDbBackend {
 
 /// An embedded key-value backend for the archive module.
 ///
-/// Wraps [`RedbBackend`] and exposes the `DbEmbeddedBackend` constituent traits.
+/// Wraps [`RedbBackend`] and implements [`DbKvStore`], [`DbEmbeddedStore`],
+/// [`DbTransactor`], and [`DbSnapshotManager`] by delegating to the inner backend.
 /// Obtain via [`ArchiveKvBackend::open`] (file-backed) or
 /// [`ArchiveKvBackend::in_memory`] (transient, useful for tests).
 pub struct ArchiveKvBackend(RedbBackend);
@@ -1077,5 +1081,141 @@ impl ArchiveKvBackend {
     /// Access the underlying [`RedbBackend`] for direct KV operations.
     pub fn backend(&self) -> &RedbBackend {
         &self.0
+    }
+}
+
+// ── ArchiveKvBackend trait impls ──────────────────────────────────────────────
+
+impl DbKvStore for ArchiveKvBackend {
+    fn kv_get(
+        &self,
+        table: &str,
+        key: &DbValue,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Option<DbValue>>> {
+        self.0.kv_get(table, key)
+    }
+
+    fn kv_insert(
+        &self,
+        table: &str,
+        key: DbValue,
+        value: DbValue,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvKeyInserted>>> {
+        self.0.kv_insert(table, key, value)
+    }
+
+    fn kv_remove(
+        &self,
+        table: &str,
+        key: &DbValue,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvKeyDeleted>>> {
+        self.0.kv_remove(table, key)
+    }
+
+    fn kv_scan(
+        &self,
+        table: &str,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Vec<KvEntry>>> {
+        self.0.kv_scan(table)
+    }
+
+    fn kv_range(
+        &self,
+        table: &str,
+        from: &DbValue,
+        to: &DbValue,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Vec<KvEntry>>> {
+        self.0.kv_range(table, from, to)
+    }
+
+    fn kv_len(&self, table: &str) -> futures::future::BoxFuture<'_, elicit_db::DbResult<u64>> {
+        self.0.kv_len(table)
+    }
+}
+
+impl DbEmbeddedStore for ArchiveKvBackend {
+    fn compact(
+        &self,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvTableCompacted>>> {
+        self.0.compact()
+    }
+
+    fn check_integrity(
+        &self,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvIntegrityVerified>>> {
+        self.0.check_integrity()
+    }
+
+    fn storage_stats(&self) -> futures::future::BoxFuture<'_, elicit_db::DbResult<DbStorageStats>> {
+        self.0.storage_stats()
+    }
+}
+
+impl DbTransactor for ArchiveKvBackend {
+    fn begin(
+        &self,
+        isolation: IsolationLevel,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<(TransactionHandle, TxMarker<Open>)>>
+    {
+        self.0.begin(isolation)
+    }
+
+    fn commit(&self, handle: TransactionHandle) -> futures::future::BoxFuture<'_, DbCommitResult> {
+        self.0.commit(handle)
+    }
+
+    fn rollback(
+        &self,
+        handle: TransactionHandle,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<TxMarker<RolledBack>>> {
+        self.0.rollback(handle)
+    }
+
+    fn savepoint(
+        &self,
+        handle: &TransactionHandle,
+        name: &str,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<()>> {
+        self.0.savepoint(handle, name)
+    }
+
+    fn rollback_to_savepoint(
+        &self,
+        handle: &TransactionHandle,
+        name: &str,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<()>> {
+        self.0.rollback_to_savepoint(handle, name)
+    }
+}
+
+impl DbSnapshotManager for ArchiveKvBackend {
+    fn create_snapshot(
+        &self,
+        name: &str,
+    ) -> futures::future::BoxFuture<
+        '_,
+        elicit_db::DbResult<(SnapshotHandle, Established<KvSnapshotCreated>)>,
+    > {
+        self.0.create_snapshot(name)
+    }
+
+    fn restore_snapshot(
+        &self,
+        handle: &SnapshotHandle,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvSnapshotRestored>>> {
+        self.0.restore_snapshot(handle)
+    }
+
+    fn drop_snapshot(
+        &self,
+        handle: SnapshotHandle,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<()>> {
+        self.0.drop_snapshot(handle)
+    }
+
+    fn list_snapshots(
+        &self,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Vec<SnapshotHandle>>> {
+        self.0.list_snapshots()
     }
 }

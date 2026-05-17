@@ -2,6 +2,49 @@
 
 This file tracks all planning documents for the elicitation project.
 
+## Archive Notice — v0.11.0
+
+**Planning documents archived as of v0.11.0** (see last-commit hashes below)
+
+These documents covered work completed during the 0.10–0.11 development cycle
+and have been deleted from the working tree. Their complete content is preserved
+in git history. To retrieve any document:
+
+```bash
+git show <last-commit>:<filename>
+```
+
+| Document | Last Commit |
+|----------|-------------|
+| ELICIT_AXUM_PLAN.md | `246c48b0` |
+| ELICIT_BEVY_PLAN.md | `ab3fc4a4` |
+| ELICIT_DB_PLAN.md | `246c48b0` |
+| ELICIT_DOC_PLAN.md | `4b85b625` |
+| ELICIT_GEOJSON_PLAN.md | `246c48b0` |
+| ELICIT_GEORASTER_PLAN.md | `9a4d26da` |
+| ELICIT_GEO_PLAN.md | `246c48b0` |
+| ELICIT_GEO_TYPES_PLAN.md | `246c48b0` |
+| ELICIT_LEPTOS_PLAN.md | `246c48b0` |
+| ELICIT_NALGEBRA_PLAN.md | `246c48b0` |
+| ELICIT_SURREALDB_PLAN.md | `70445f5c` |
+| ELICIT_UOM_PLAN.md | `246c48b0` |
+| ELICIT_WGPU_PLAN.md | `246c48b0` |
+| ELICIT_WINIT_PLAN.md | `246c48b0` |
+| ELICIT_WKB_PLAN.md | `9ba0b52f` |
+| ELICIT_WKT_PLAN.md | `246c48b0` |
+| CRATE_RESEARCH_UI_CONSTRAINTS.md | `246c48b0` |
+| ELICITATION_GENERATE_PLAN.md | `8187a008` |
+| ELICIT_POLARS_PLAN.md | `246c48b0` |
+| ELICIT_PROJ_PLAN.md | `15a4e5ef` |
+| ELICIT_RSTAR_PLAN.md | `3658c398` |
+| parallel_frontend_plan.md | `0cee1bf5` |
+| sketch.md | `e121d771` |
+| GAAP_LEDGER_INTEGRATION.md | `246c48b0` |
+| GAAP_NATIVE_LEDGER.md | `246c48b0` |
+| GAAP_PRINCIPLES_RESEARCH.md | `246c48b0` |
+
+---
+
 ## Archive Notice — v0.10.0
 
 **All planning documents archived as of v0.10.0** (see last-commit hashes below)

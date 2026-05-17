@@ -27,4 +27,3 @@ extern_spec! {
         fn assert() -> Established<P>;
     }
 }
-

@@ -1,28 +1,27 @@
-//! [`RedbPlugin`] — stateful plugin context for redb live objects.
+//! [`RedbPlugin`] — stateful MCP plugin for the redb embedded key-value store.
+//!
+//! Lock ordering (when holding multiple guards simultaneously):
+//! `savepoints` → `write_txns` → `read_txns` → `databases`
 
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, MutexGuard},
 };
 
-use elicitation::{PluginContext, PluginToolRegistration, StatefulPlugin, ToolDescriptor};
+use elicitation::{ElicitPlugin, plugin::PluginContext};
 use rmcp::{
     ErrorData,
-    model::{CallToolResult, Tool},
+    model::{CallToolResult, Content},
 };
 use uuid::Uuid;
 
-// ── Context ──────────────────────────────────────────────────────────────────
+// ── Context ───────────────────────────────────────────────────────────────────
 
 /// Shared context holding all live redb objects keyed by UUID.
 pub struct RedbCtx {
-    /// Open `redb::Database` instances.
     pub(crate) databases: Mutex<HashMap<Uuid, redb::Database>>,
-    /// Active write transactions.
     pub(crate) write_txns: Mutex<HashMap<Uuid, redb::WriteTransaction>>,
-    /// Active read transactions.
     pub(crate) read_txns: Mutex<HashMap<Uuid, redb::ReadTransaction>>,
-    /// Savepoints created during write transactions.
     pub(crate) savepoints: Mutex<HashMap<Uuid, redb::Savepoint>>,
 }
 
@@ -36,7 +35,7 @@ impl RedbCtx {
         }
     }
 
-    /// Acquires the databases map, returning an error if the mutex is poisoned.
+    /// Lock the databases map.
     pub fn lock_databases(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::Database>>, ErrorData> {
@@ -45,7 +44,7 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb databases lock poisoned", None))
     }
 
-    /// Acquires the write transactions map, returning an error if the mutex is poisoned.
+    /// Lock the write transactions map.
     pub fn lock_write_txns(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::WriteTransaction>>, ErrorData> {
@@ -54,7 +53,7 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb write_txns lock poisoned", None))
     }
 
-    /// Acquires the read transactions map, returning an error if the mutex is poisoned.
+    /// Lock the read transactions map.
     pub fn lock_read_txns(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::ReadTransaction>>, ErrorData> {
@@ -63,7 +62,7 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb read_txns lock poisoned", None))
     }
 
-    /// Acquires the savepoints map, returning an error if the mutex is poisoned.
+    /// Lock the savepoints map.
     pub fn lock_savepoints(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::Savepoint>>, ErrorData> {
@@ -75,15 +74,23 @@ impl RedbCtx {
 
 impl std::fmt::Debug for RedbCtx {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let n_db = self.databases.lock().map(|m| m.len()).unwrap_or(0);
-        let n_wt = self.write_txns.lock().map(|m| m.len()).unwrap_or(0);
-        let n_rt = self.read_txns.lock().map(|m| m.len()).unwrap_or(0);
-        let n_sp = self.savepoints.lock().map(|m| m.len()).unwrap_or(0);
         f.debug_struct("RedbCtx")
-            .field("databases", &n_db)
-            .field("write_txns", &n_wt)
-            .field("read_txns", &n_rt)
-            .field("savepoints", &n_sp)
+            .field(
+                "databases",
+                &self.databases.lock().map(|m| m.len()).unwrap_or(0),
+            )
+            .field(
+                "write_txns",
+                &self.write_txns.lock().map(|m| m.len()).unwrap_or(0),
+            )
+            .field(
+                "read_txns",
+                &self.read_txns.lock().map(|m| m.len()).unwrap_or(0),
+            )
+            .field(
+                "savepoints",
+                &self.savepoints.lock().map(|m| m.len()).unwrap_or(0),
+            )
             .finish()
     }
 }
@@ -94,10 +101,12 @@ impl PluginContext for RedbCtx {}
 
 /// Stateful MCP plugin for the redb embedded key-value store.
 ///
-/// Holds all live redb objects in a shared [`RedbCtx`] and exposes them via
-/// UUID handles.  Create a single instance and register it with your MCP
-/// server; all `redb__*` tools will share the same context.
-pub struct RedbPlugin(Arc<RedbCtx>);
+/// Holds all live redb objects in a shared [`RedbCtx`] keyed by UUID.
+/// Register a single instance with your MCP server; all `redb__*` tools share
+/// the same context.
+#[derive(ElicitPlugin)]
+#[plugin(name = "redb")]
+pub struct RedbPlugin(pub Arc<RedbCtx>);
 
 impl RedbPlugin {
     /// Creates a new plugin with an empty context.
@@ -111,61 +120,32 @@ impl RedbPlugin {
     }
 }
 
-impl std::fmt::Debug for RedbPlugin {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("RedbPlugin").field(&self.0).finish()
-    }
-}
-
 impl Default for RedbPlugin {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl StatefulPlugin for RedbPlugin {
-    type Context = RedbCtx;
-
-    fn name(&self) -> &'static str {
-        "redb"
-    }
-
-    fn list_tools(&self) -> Vec<Tool> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "redb")
-            .map(|r| (r.constructor)().as_tool())
-            .collect()
-    }
-
-    fn tool_descriptors(&self) -> Vec<ToolDescriptor> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "redb")
-            .map(|r| (r.constructor)())
-            .collect()
-    }
-
-    fn context(&self) -> Arc<RedbCtx> {
-        self.0.clone()
+impl std::fmt::Debug for RedbPlugin {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("RedbPlugin").field(&self.0).finish()
     }
 }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
-pub(crate) fn parse_uuid(s: &str) -> Result<Uuid, ErrorData> {
-    s.parse()
-        .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {s}"), None))
+/// Wrap a text message in a successful [`CallToolResult`].
+pub(crate) fn ok_text(msg: impl Into<String>) -> Result<CallToolResult, ErrorData> {
+    Ok(CallToolResult::success(vec![Content::text(msg.into())]))
 }
 
-pub(crate) fn ok_text(s: impl Into<String>) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![rmcp::model::Content::text(
-        s.into(),
-    )]))
-}
-
+/// Serialize a value as JSON in a successful [`CallToolResult`].
 pub(crate) fn ok_json<T: serde::Serialize>(v: &T) -> Result<CallToolResult, ErrorData> {
-    let text = serde_json::to_string(v)
-        .map_err(|e| ErrorData::internal_error(format!("serialization error: {e}"), None))?;
-    Ok(CallToolResult::success(vec![rmcp::model::Content::text(
-        text,
-    )]))
+    match serde_json::to_string(v) {
+        Ok(s) => Ok(CallToolResult::success(vec![Content::text(s)])),
+        Err(e) => Err(ErrorData::internal_error(
+            format!("serialization error: {e}"),
+            None,
+        )),
+    }
 }

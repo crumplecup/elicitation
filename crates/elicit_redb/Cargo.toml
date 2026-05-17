@@ -19,7 +19,6 @@ api = []
 elicitation = { workspace = true, features = ["redb-types", "emit"] }
 elicit_db.workspace = true
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 inventory.workspace = true
 redb.workspace = true
 rmcp.workspace = true

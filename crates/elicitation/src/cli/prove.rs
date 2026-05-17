@@ -25,8 +25,6 @@
 //! | `PROVE_LOG_DIR`       | `.` (current directory)                               | all backends   |
 
 use anyhow::Context as _;
-#[cfg(unix)]
-use std::os::unix::process::CommandExt as _;
 use std::{
     collections::HashSet,
     fs,
@@ -454,6 +452,13 @@ fn build_kani_harness_cmd(config: &ProveConfig, pkg: &str, harness: &str) -> Com
     for flag in &config.kani_flags {
         cmd.arg(flag);
     }
+    // Let kani manage its own per-harness timeout so it can clean up cbmc children
+    // gracefully. --harness-timeout is experimental and requires unstable-options.
+    if config.timeout > 0 {
+        cmd.arg("-Z")
+            .arg("unstable-options")
+            .arg(format!("--harness-timeout={}s", config.timeout));
+    }
     cmd
 }
 
@@ -557,63 +562,23 @@ fn find_package_dir(package: &str) -> anyhow::Result<PathBuf> {
     anyhow::bail!("Package '{package}' not found in workspace")
 }
 
-/// Run a command with a per-invocation timeout. Returns (status_str, elapsed).
-///
-/// On Unix, the child is placed in its own process group so that killing on
-/// timeout sends SIGKILL to the entire tree (including `cbmc` sub-processes
-/// spawned by `cargo kani` that would otherwise become orphans).
+/// Run a command with a simple wait (no external timeout — kani manages its own
+/// harness timeout via `--harness-timeout`). Returns (status_str, elapsed).
 fn run_harness_timed(
     mut cmd: Command,
-    timeout_secs: u64,
+    _timeout_secs: u64,
 ) -> anyhow::Result<(String, std::time::Duration)> {
     cmd.stdout(Stdio::null()).stderr(Stdio::null());
 
-    // Put the child in its own process group (pgid == child pid).
-    #[cfg(unix)]
-    cmd.process_group(0);
-
     let start = Instant::now();
     let mut child = cmd.spawn().context("Failed to spawn cargo kani")?;
-
-    if timeout_secs == 0 {
-        let status = child.wait().context("Failed to wait for cargo kani")?;
-        let elapsed = start.elapsed();
-        return Ok((
-            if status.success() { "PASS" } else { "FAIL" }.to_string(),
-            elapsed,
-        ));
-    }
-
-    let deadline = start + std::time::Duration::from_secs(timeout_secs);
-    loop {
-        match child.try_wait()? {
-            Some(s) => {
-                let elapsed = start.elapsed();
-                return Ok((
-                    if s.success() { "PASS" } else { "FAIL" }.to_string(),
-                    elapsed,
-                ));
-            }
-            None => {
-                if Instant::now() >= deadline {
-                    // Kill the entire process group, not just the direct child.
-                    // pgid == child.id() because we called process_group(0).
-                    #[cfg(unix)]
-                    {
-                        let pgid = child.id() as i32;
-                        let _ = Command::new("kill")
-                            .args(["-9", &format!("-{pgid}")])
-                            .stderr(Stdio::null())
-                            .status();
-                    }
-                    let _ = child.kill();
-                    let _ = child.wait();
-                    return Ok(("TIMEOUT".to_string(), start.elapsed()));
-                }
-                std::thread::sleep(std::time::Duration::from_millis(500));
-            }
-        }
-    }
+    let status = child.wait().context("Failed to wait for cargo kani")?;
+    let elapsed = start.elapsed();
+    // Kani exits with a non-success status when a harness times out or fails.
+    Ok((
+        if status.success() { "PASS" } else { "FAIL" }.to_string(),
+        elapsed,
+    ))
 }
 
 /// Load harness names already recorded as PASS in an existing CSV.
@@ -1042,8 +1007,6 @@ fn execute_with_progress(
     ));
 
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
-    #[cfg(unix)]
-    cmd.process_group(0);
 
     let mut child = cmd
         .spawn()
@@ -1108,14 +1071,6 @@ fn execute_with_progress(
                 }
                 None => {
                     if Instant::now() >= deadline {
-                        #[cfg(unix)]
-                        {
-                            let pgid = child.id() as i32;
-                            let _ = Command::new("kill")
-                                .args(["-9", &format!("-{pgid}")])
-                                .stderr(Stdio::null())
-                                .status();
-                        }
                         let _ = child.kill();
                         let _ = child.wait();
                         join_threads(stdout_thread, stderr_thread);
@@ -1139,9 +1094,6 @@ fn execute_with_progress(
 
 /// Run a command with a timeout, teeing stdout+stderr to both the terminal and
 /// `log_path`. Returns the status string ("PASS"/"FAIL"/"TIMEOUT").
-///
-/// On Unix the child is placed in its own process group so that a timeout
-/// SIGKILL reaches the full process tree.
 fn execute_timed(
     label: &str,
     mut cmd: Command,
@@ -1167,8 +1119,6 @@ fn execute_timed(
     ));
 
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
-    #[cfg(unix)]
-    cmd.process_group(0);
 
     let mut child = cmd
         .spawn()
@@ -1241,14 +1191,6 @@ fn execute_timed(
                 }
                 None => {
                     if Instant::now() >= deadline {
-                        #[cfg(unix)]
-                        {
-                            let pgid = child.id() as i32;
-                            let _ = Command::new("kill")
-                                .args(["-9", &format!("-{pgid}")])
-                                .stderr(Stdio::null())
-                                .status();
-                        }
                         let _ = child.kill();
                         let _ = child.wait();
                         join_threads(stdout_thread, stderr_thread);

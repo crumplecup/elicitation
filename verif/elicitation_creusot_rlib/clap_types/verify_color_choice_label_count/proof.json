@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_labels_ColorChoice": { "prover": "cvc5", "time": 0.01 },
+      "vc_len_ColorChoice": { "prover": "cvc5", "time": 0.013 },
+      "vc_len_String": { "prover": "cvc5", "time": 0.015 },
+      "vc_options_ColorChoice": { "prover": "cvc5", "time": 0.013 },
+      "vc_verify_color_choice_label_count": {
+        "prover": "cvc5",
+        "time": 0.014
+      }
+    }
+  }
+}

@@ -15,7 +15,6 @@ categories = ["encoding", "development-tools"]
 [dependencies]
 elicitation = { workspace = true, features = ["serde"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 serde = { workspace = true }
 serde_json = { workspace = true }
 rmcp = { workspace = true }

@@ -18,7 +18,6 @@ api = []
 [dependencies]
 elicitation = { workspace = true, features = ["csv-types", "emit"] }
 elicitation_derive.workspace = true
-elicitation_macros.workspace = true
 inventory.workspace = true
 csv.workspace = true
 rmcp.workspace = true
