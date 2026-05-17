@@ -109,15 +109,17 @@ pub struct ElicitArg(pub clap::Arg);
 For compile-time macros (e.g. `sqlx::query!`), fragment tools emit verified Rust source via
 `EmitCode`; the macro expands in the consumer binary where a live connection is available.
 
-| Crate | Library |
+| Domain | Shadow crates |
 |---|---|
-| `elicit_reqwest` | HTTP client |
-| `elicit_sqlx` | Database |
-| `elicit_tokio` | Async runtime |
-| `elicit_clap` | CLI |
-| `elicit_chrono` / `elicit_jiff` / `elicit_time` | Datetimes |
-| `elicit_url` / `elicit_regex` / `elicit_uuid` | String types |
-| `elicit_serde_json` / `elicit_std` | JSON values, stdlib |
+| Web / HTTP | `elicit_reqwest`, `elicit_axum`, `elicit_tower` |
+| Database | `elicit_sqlx`, `elicit_redb`, `elicit_db` |
+| Async runtime | `elicit_tokio` |
+| CLI | `elicit_clap` |
+| UI / graphics | `elicit_egui`, `elicit_ratatui`, `elicit_bevy`, `elicit_wgpu`, `elicit_winit`, `elicit_accesskit`, `elicit_leptos`, `elicit_ui` |
+| GIS / geometry | `elicit_geo`, `elicit_geo_types`, `elicit_geojson`, `elicit_georaster`, `elicit_gis`, `elicit_proj`, `elicit_rstar`, `elicit_wkb`, `elicit_wkt` |
+| Date / time | `elicit_chrono`, `elicit_jiff`, `elicit_time` |
+| Data formats | `elicit_csv`, `elicit_serde`, `elicit_serde_json`, `elicit_toml` |
+| String / type utilities | `elicit_url`, `elicit_regex`, `elicit_uuid`, `elicit_uom`, `elicit_std` |
 
 ---
 
@@ -304,13 +306,12 @@ One registry, one transport, zero glue code.
 |---|---|
 | `elicitation` | Core: traits, contracts, MCP plumbing |
 | `elicitation_derive` | Proc macros: `#[derive(Elicit)]`, `#[formal_method]`, `#[reflect_methods]`, `#[reflect_trait]` |
-| `elicit_proofs` | Generated harnesses (Kani / Verus / Creusot) |
 | `elicitation_rand` | Randomised value generation |
+| `elicit_proofs` | Generated harnesses (Kani / Verus / Creusot) |
+| `elicitation_kani` / `elicitation_creusot` | Proof gallery and support |
 | `elicit_server` | MCP server support |
-| `elicit_reqwest` / `elicit_sqlx` / `elicit_tokio` | Workflow vocabularies |
 | `elicit_clap` | CLI vocabulary (canonical shadow crate reference) |
-| `elicit_chrono` / `elicit_jiff` / `elicit_time` | Datetime vocabularies |
-| `elicit_url` / `elicit_regex` / `elicit_uuid` / `elicit_serde_json` / `elicit_std` | Type vocabularies |
+| `elicit_*` | 30+ domain shadow crates — see [Shadow Crates](#shadow-crates--the-agents-dictionary) above |
 
 ---
 
