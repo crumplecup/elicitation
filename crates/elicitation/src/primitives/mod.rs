@@ -124,8 +124,6 @@ pub use leptos_types::{
     LeptosViewNode,
 };
 
-
-
 #[cfg(feature = "redb-types")]
 pub mod redb_types;
 

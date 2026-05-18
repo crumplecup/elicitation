@@ -125,7 +125,7 @@ jobs:
           - group: analytics
             features: >-
               --no-default-features
-              --features polars-types,uom-types,surreal-types,uuid,chrono,serde_json,geo-types
+              --features polars-types,uom-types,uuid,chrono,serde_json,geo-types
             sys_deps: "libasound2-dev libudev-dev"
 
           - group: ui-light
