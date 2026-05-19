@@ -11,7 +11,7 @@ readme.workspace = true
 
 description = "Conversational elicitation of strongly-typed Rust values via MCP"
 keywords = ["mcp", "llm", "elicitation", "types", "async"]
-categories = ["development-tools", "asynchronous"]
+categories = ["artificial-intelligence", "development-tools", "asynchronous"]
 
 [package.metadata.verus]
 verify = true
