@@ -8,6 +8,9 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
+description = "Elicitation-enabled rstar shadow crate — MCP tools for R*-tree spatial index descriptors"
+keywords = ["mcp", "rstar", "spatial", "elicitation", "geo"]
+categories = ["science", "data-structures"]
 
 [lints]
 workspace = true

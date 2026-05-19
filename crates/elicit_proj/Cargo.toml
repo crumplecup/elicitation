@@ -8,6 +8,9 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
+description = "Elicitation-enabled proj shadow crate — MCP tools for coordinate reference system and projection descriptors"
+keywords = ["mcp", "proj", "geo", "elicitation", "gis"]
+categories = ["science", "geospatial"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["proj-types", "geo-types"] }
