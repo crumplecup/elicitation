@@ -10,7 +10,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled proj shadow crate — MCP tools for coordinate reference system and projection descriptors"
 keywords = ["mcp", "proj", "geo", "elicitation", "gis"]
-categories = ["science", "geospatial"]
+categories = ["science::geo", "mathematics", "development-tools"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["proj-types", "geo-types"] }
