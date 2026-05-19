@@ -18,13 +18,13 @@ api = []
 
 [dependencies]
 elicitation = { workspace = true, features = ["sqlx-types", "emit"] }
-elicit_db = { path = "../elicit_db" }
+elicit_db.workspace = true
 elicitation_derive.workspace = true
 sqlx = { workspace = true }
 # Direct dep for types not re-exported by the `sqlx` facade crate
 # (AnyColumn, AnyValueKind). Fields accessed are pub but #[doc(hidden)],
 # meaning they are semver-exempt — acceptable at our version pin.
-sqlx-core = "0.8"
+sqlx-core.workspace = true
 inventory.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
@@ -42,7 +42,7 @@ derive-getters = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
 serde_json = { workspace = true }
-dotenvy = "0.15"
+dotenvy.workspace = true
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)', 'cfg(feature, values("emit"))'] }
