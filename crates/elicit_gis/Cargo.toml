@@ -10,7 +10,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Geospatial contract interface — Props, traits, and types for GIS domain boundaries"
 keywords = ["gis", "contracts", "crs", "geospatial", "elicitation"]
-categories = ["science", "rust-patterns"]
+categories = ["science::geo", "development-tools"]
 
 [dependencies]
 elicitation = { workspace = true }

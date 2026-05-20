@@ -11,7 +11,7 @@ readme = "README.md"
 
 description = "Cross-crate workflow plugins for elicitation — code recovery, multi-crate compositions, and server-side orchestration"
 keywords = ["mcp", "elicitation", "state-machine", "server", "agent"]
-categories = ["development-tools", "asynchronous"]
+categories = ["artificial-intelligence", "development-tools", "asynchronous"]
 
 [dependencies]
 # Elicitation core

@@ -11,7 +11,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Formal verification proof harnesses for the elicitation ecosystem (Kani, Creusot, Verus)"
 keywords = ["verification", "kani", "formal-methods", "state-machine", "contracts"]
-categories = ["development-tools", "mathematics"]
+categories = ["development-tools::testing", "mathematics"]
 
 [dependencies]
 elicitation = { workspace = true }

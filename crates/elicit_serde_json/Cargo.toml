@@ -11,7 +11,7 @@ readme = "README.md"
 
 description = "Elicitation MCP tools for serde_json types (Value, Map, Number)"
 keywords = ["mcp", "serde-json", "json", "elicitation", "agent"]
-categories = ["development-tools"]
+categories = ["encoding", "development-tools"]
 
 [dependencies]
 elicitation = { workspace = true }

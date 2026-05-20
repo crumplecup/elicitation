@@ -11,7 +11,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Kani model-checking proofs for elicitation contract types"
 keywords = ["verification", "kani", "formal-methods", "model-checking", "contracts"]
-categories = ["development-tools", "mathematics"]
+categories = ["development-tools::testing", "mathematics"]
 
 [dependencies]
 # Core dependency - verification framework only

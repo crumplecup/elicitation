@@ -10,7 +10,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled rstar shadow crate — MCP tools for R*-tree spatial index descriptors"
 keywords = ["mcp", "rstar", "spatial-index", "elicitation", "agent"]
-categories = ["science", "data-structures"]
+categories = ["science::geo", "algorithms", "data-structures"]
 
 [lints]
 workspace = true

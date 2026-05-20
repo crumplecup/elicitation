@@ -10,7 +10,7 @@ documentation.workspace = true
 readme = "README.md"
 description = "Creusot formal verification proofs for elicitation contract types"
 keywords = ["verification", "creusot", "formal-methods", "deductive", "contracts"]
-categories = ["development-tools", "mathematics"]
+categories = ["development-tools::testing", "mathematics"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }

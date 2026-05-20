@@ -16,7 +16,7 @@ keywords = [
   "smt-verification",
   "contracts",
 ]
-categories = ["development-tools", "mathematics"]
+categories = ["development-tools::testing", "mathematics"]
 readme = "README.md"
 
 [package.metadata.verus]
