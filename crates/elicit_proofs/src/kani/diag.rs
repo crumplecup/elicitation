@@ -222,7 +222,14 @@ fn diag_explain_ready_non_explain_view() {
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
     let plan = ExplainPlan::kani_depth0();
     let mode = ExplainNodeMode::kani_depth0();
-    let _ = explain_ready(state, proof, String::kani_depth1(), String::kani_depth1(), plan, mode);
+    let _ = explain_ready(
+        state,
+        proof,
+        String::kani_depth1(),
+        String::kani_depth1(),
+        plan,
+        mode,
+    );
 }
 
 /// Theory Q: explain_ready with ExplainView state but drop the result immediately.

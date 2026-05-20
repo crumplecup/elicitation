@@ -102,11 +102,15 @@ pub fn g18_rename(state: G18State, new_label: String) -> G18State {
 #[kani::proof_for_contract(g18_rename)]
 fn gallery18a_vacuous_empty() {
     // Witness (depth2-equivalent): active with empty label — assume will prune
-    let witness = G18State::Active { label: String::new() };
+    let witness = G18State::Active {
+        label: String::new(),
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
     // Actual input (depth1-equivalent): also empty — same problem
-    let state = G18State::Active { label: String::new() };
+    let state = G18State::Active {
+        label: String::new(),
+    };
     let new_label = String::from("b");
     let result = g18_rename(state, new_label);
     forget(result);
@@ -126,11 +130,15 @@ fn gallery18a_vacuous_empty() {
 #[kani::proof_for_contract(g18_rename)]
 fn gallery18b_literal_depth1_nonempty() {
     // Witness: depth2-equivalent, non-empty so assume passes, then forgotten
-    let witness = G18State::Active { label: String::from("ab") };
+    let witness = G18State::Active {
+        label: String::from("ab"),
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
     // Actual input: depth1-equivalent with concrete non-empty string
-    let state = G18State::Active { label: String::from("a") };
+    let state = G18State::Active {
+        label: String::from("a"),
+    };
     let new_label = String::from("b");
     let result = g18_rename(state, new_label);
     forget(result);
@@ -147,10 +155,14 @@ fn gallery18b_literal_depth1_nonempty() {
 #[cfg(kani)]
 #[kani::proof_for_contract(g18_rename)]
 fn gallery18c_literal_depth1_drop() {
-    let witness = G18State::Active { label: String::from("ab") };
+    let witness = G18State::Active {
+        label: String::from("ab"),
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
-    let state = G18State::Active { label: String::from("a") };
+    let state = G18State::Active {
+        label: String::from("a"),
+    };
     let new_label = String::from("b");
     // result is dropped here (not forgotten) — exercises DFCC's free check
     let _result = g18_rename(state, new_label);
@@ -165,7 +177,9 @@ fn gallery18c_literal_depth1_drop() {
 #[cfg(kani)]
 #[kani::proof_for_contract(g18_rename)]
 fn gallery18d_symbolic_depth2_drop() {
-    let witness = G18State::Active { label: String::from("ab") };
+    let witness = G18State::Active {
+        label: String::from("ab"),
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
     // Symbolic two-char string — same construction as current kani_depth2
@@ -188,10 +202,14 @@ fn gallery18d_symbolic_depth2_drop() {
 #[cfg(kani)]
 #[kani::proof_for_contract(g18_rename)]
 fn gallery18e_literal_depth2_nonempty() {
-    let witness = G18State::Active { label: String::from("abc") };
+    let witness = G18State::Active {
+        label: String::from("abc"),
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
-    let state = G18State::Active { label: String::from("ab") };
+    let state = G18State::Active {
+        label: String::from("ab"),
+    };
     let new_label = String::from("c");
     let result = g18_rename(state, new_label);
     forget(result);
@@ -218,12 +236,16 @@ fn gallery18f_symbolic_depth1_one_char() {
     let c2: char = kani::any();
     let mut witness_label = c1.to_string();
     witness_label.push(c2);
-    let witness = G18State::Active { label: witness_label };
+    let witness = G18State::Active {
+        label: witness_label,
+    };
     kani::assume(g18_consistent(&witness));
     forget(witness);
     // Actual input: ONE symbolic char — the true inductive depth1 step
     let one_char: char = kani::any();
-    let state = G18State::Active { label: one_char.to_string() };
+    let state = G18State::Active {
+        label: one_char.to_string(),
+    };
     let new_label = String::from("b");
     let result = g18_rename(state, new_label);
     forget(result);
