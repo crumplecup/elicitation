@@ -508,6 +508,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
 
     quote! {
         #[allow(unexpected_cfgs)]
+        const _: () = {
         #[cfg(kani)]
         impl #impl_generics ::elicitation::KaniCompose for #name #ty_generics #where_clause {
             // #[inline(always)] ensures CBMC can propagate Vec::new() etc.
@@ -530,6 +531,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 #kani_any_body
             }
         }
+        }; // end const _: () = { ... }
     }
     .into()
 }

@@ -278,6 +278,8 @@ pub fn expand(input: TokenStream) -> TokenStream {
         .collect();
 
     let expanded = quote! {
+        #[allow(unexpected_cfgs)]
+        const _: () = {
         impl #impl_generics ::elicitation::contracts::VerifiedStateMachine
             for #struct_name #ty_generics
         #where_clause
@@ -285,7 +287,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
             type State     = #state_type;
             type Invariant = #invariant_type;
 
-            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_harnesses() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __harnesses = ::std::vec::Vec::new();
@@ -297,7 +298,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __harnesses
             }
 
-            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_creusot_contracts(
                 __inv_fn: &str,
@@ -307,7 +307,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __contracts
             }
 
-            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_verus_contracts(
                 __inv_fn: &str,
@@ -317,7 +316,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __contracts
             }
 
-            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_verus_stubs() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __stubs = ::std::vec::Vec::new();
@@ -325,7 +323,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __stubs
             }
 
-            #[allow(unexpected_cfgs)]
             #[cfg(not(kani))]
             fn transition_kani_closure_proofs(
                 __inv_fn: &str,
@@ -335,6 +332,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __closures
             }
         }
+        }; // end const _: () = { ... }
     };
 
     expanded.into()
