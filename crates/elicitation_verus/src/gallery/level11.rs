@@ -9,6 +9,8 @@
 //! Invariant: in `Filtered` state, `cursor < count` must always hold.
 //! Expected: ✓ proves.
 
+#[allow(unused_imports)]
+use vstd::prelude::*;
 use verus_builtin_macros::verus;
 
 verus! {

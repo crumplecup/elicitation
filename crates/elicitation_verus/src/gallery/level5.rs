@@ -5,6 +5,8 @@
 //! No `extern_spec!` needed.
 //! Expected: ✓ proves.
 
+#[allow(unused_imports)]
+use vstd::prelude::*;
 use verus_builtin_macros::verus;
 
 verus! {
@@ -30,7 +32,7 @@ pub fn v5_new(name: String) -> (r: V5State)
 }
 
 /// Rename: replace name, preserving the invariant.
-pub fn v5_rename(_s: V5State, new_name: String) -> (r: V5State)
+pub fn v5_rename(s: V5State, new_name: String) -> (r: V5State)
     requires
         v5_wf(&s),
         new_name@.len() > 0 && new_name@.len() <= 100,
@@ -38,6 +40,7 @@ pub fn v5_rename(_s: V5State, new_name: String) -> (r: V5State)
         v5_wf(&r),
         r.name@ == new_name@,
 {
+    let _ = s;
     V5State { name: new_name }
 }
 

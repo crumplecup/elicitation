@@ -24,22 +24,24 @@ pub open spec fn v2_wf(s: &V2State) -> bool {
 }
 
 /// Turn on: only valid from Off, result is always On.
-pub fn v2_turn_on(_s: V2State) -> (r: V2State)
+pub fn v2_turn_on(s: V2State) -> (r: V2State)
     requires s matches V2State::Off,
     ensures
         r matches V2State::On,
         v2_wf(&r),
 {
+    let _ = s;
     V2State::On
 }
 
 /// Turn off: only valid from On, result is always Off.
-pub fn v2_turn_off(_s: V2State) -> (r: V2State)
+pub fn v2_turn_off(s: V2State) -> (r: V2State)
     requires s matches V2State::On,
     ensures
         r matches V2State::Off,
         v2_wf(&r),
 {
+    let _ = s;
     V2State::Off
 }
 

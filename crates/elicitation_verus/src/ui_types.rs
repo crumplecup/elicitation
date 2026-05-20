@@ -194,10 +194,12 @@ pub fn verify_heading_size_positive(level: u32) -> (result: bool)
 }
 
 /// bounds_to_size: absolute value of difference is non-negative.
+// abs_diff not used: unsupported by Verus (no vstd specification)
+#[allow(clippy::manual_abs_diff)]
 pub fn verify_bounds_abs_non_negative(a: u32, b: u32) -> (result: u32)
     ensures result as int >= 0,
 {
-    a.abs_diff(b)
+    if a >= b { a - b } else { b - a }
 }
 
 /// RenderStats default: all fields are zero.

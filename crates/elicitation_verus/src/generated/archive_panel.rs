@@ -111,7 +111,8 @@ pub fn constraints_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { 
 pub fn indexes_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 
-/// Abstract mirror of `ArchivePanelState` (invariant-relevant variants only).
+#[allow(unused_imports)]
+use vstd::prelude::*;
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
 

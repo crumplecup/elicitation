@@ -6,6 +6,8 @@
 //! This is the canonical shape for production VSM companions.
 //! Expected: ✓ proves.
 
+#[allow(unused_imports)]
+use vstd::prelude::*;
 use verus_builtin_macros::verus;
 
 verus! {
@@ -35,7 +37,7 @@ pub open spec fn v7_wf(s: &V7State) -> bool {
 }
 
 /// Begin loading: Initial → Loading.
-pub fn v7_begin_loading(_state: V7State, label: String) -> (r: V7State)
+pub fn v7_begin_loading(state: V7State, label: String) -> (r: V7State)
     requires
         v7_wf(&state),
         state matches V7State::Initial,
@@ -44,6 +46,7 @@ pub fn v7_begin_loading(_state: V7State, label: String) -> (r: V7State)
         v7_wf(&r),
         r matches V7State::Loading { .. },
 {
+    let _ = state;
     V7State::Loading { label }
 }
 
@@ -64,7 +67,7 @@ pub fn v7_finish_loading(state: V7State, count: u64) -> (r: V7State)
 }
 
 /// Fail: any valid state → Failed with a non-empty message.
-pub fn v7_fail(_state: V7State, message: String) -> (r: V7State)
+pub fn v7_fail(state: V7State, message: String) -> (r: V7State)
     requires
         v7_wf(&state),
         message@.len() > 0,
@@ -72,16 +75,18 @@ pub fn v7_fail(_state: V7State, message: String) -> (r: V7State)
         v7_wf(&r),
         r matches V7State::Failed { .. },
 {
+    let _ = state;
     V7State::Failed { message }
 }
 
 /// Reset: any valid state → Initial.
-pub fn v7_reset(_state: V7State) -> (r: V7State)
+pub fn v7_reset(state: V7State) -> (r: V7State)
     requires v7_wf(&state),
     ensures
         v7_wf(&r),
         r matches V7State::Initial,
 {
+    let _ = state;
     V7State::Initial
 }
 

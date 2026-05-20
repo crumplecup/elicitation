@@ -55,7 +55,8 @@ pub fn apply_filter_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 pub fn clear_filter_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 
-/// Abstract mirror of `ArchiveNavState` (invariant-relevant variants only).
+#[allow(unused_imports)]
+use vstd::prelude::*;
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
 

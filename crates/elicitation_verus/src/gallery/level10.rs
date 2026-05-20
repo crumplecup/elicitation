@@ -5,12 +5,11 @@
 //! composing production VSM companions works before touching the archive.
 //! Expected: ✓ proves.
 
+#[allow(unused_imports)]
+use vstd::prelude::*;
 use verus_builtin_macros::verus;
 
 verus! {
-
-#[allow(unused_imports)]
-use vstd::prelude::SpecOrd;
 
 /// Minimal state machine: Initial → Loading → Loaded.
 #[derive(Debug)]
@@ -57,7 +56,7 @@ pub proof fn v10_advance(tracked tok: V10Token, new_s: V10State) -> (tracked new
 }
 
 /// Step 1: Initial → Loading.
-pub fn v10_step1(_state: V10State, label: String) -> (r: V10State)
+pub fn v10_step1(state: V10State, label: String) -> (r: V10State)
     requires
         v10_wf(&state),
         state matches V10State::Initial,
@@ -66,6 +65,7 @@ pub fn v10_step1(_state: V10State, label: String) -> (r: V10State)
         v10_wf(&r),
         r matches V10State::Loading { .. },
 {
+    let _ = state;
     V10State::Loading { label }
 }
 

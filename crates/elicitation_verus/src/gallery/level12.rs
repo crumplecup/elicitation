@@ -13,6 +13,8 @@
 use verus_builtin_macros::verus;
 
 #[cfg(verus_keep_ghost)]
+use crate::gallery::level11::V11State;
+#[cfg(verus_keep_ghost)]
 use crate::gallery::level11::{
     v11_inv, v11_is_advance, v11_is_begin, v11_leaf_advance, v11_leaf_begin, v11_leaf_trivial,
 };

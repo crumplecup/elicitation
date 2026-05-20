@@ -56,12 +56,13 @@ pub fn v3_increment(s: V3State) -> (r: V3State)
 }
 
 /// Stop: Active → Idle (invariant trivially satisfied).
-pub fn v3_stop(_s: V3State) -> (r: V3State)
+pub fn v3_stop(s: V3State) -> (r: V3State)
     requires v3_wf(&s),
     ensures
         v3_wf(&r),
         r matches V3State::Idle,
 {
+    let _ = s;
     V3State::Idle
 }
 
