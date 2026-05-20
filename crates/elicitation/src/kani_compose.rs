@@ -147,23 +147,22 @@ impl_kani_compose_primitive!(
 
 // ── Standard library impls ────────────────────────────────────────────────────
 
-/// `String` follows char-level induction, matching the "String is Vec<u8>" insight.
+/// `String` follows char-level induction.
 ///
-/// - `kani_depth0()` = empty string (base case)
-/// - `kani_depth1()` = concrete non-empty string `"a"` (first inductive step)
-/// - `kani_depth2()` = two symbolic chars (second inductive step)
-/// - `kani_any()` = symbolic bounded string (length ≤ 4, each char symbolic)
+/// - `kani_depth0()` = empty string (base case: proves invariant holds for `""`).
+/// - `kani_depth1()` = one symbolic char (first inductive step: CBMC explores all
+///   1-char strings, proving the invariant holds for any non-empty single-char label).
+/// - `kani_depth2()` = two symbolic chars (second inductive step: all 2-char strings).
+/// - `kani_any()` = symbolic bounded string (length ≤ 4, each char symbolic).
 ///
-/// `kani_depth1()` returns `String::new()` (same as depth-0).  Any heap
-/// allocation — even a concrete `String::from("a")` — causes Kani's DFCC
-/// (Dynamic Frame Condition Checking) to flag the implicit `free` that occurs
-/// when the string is dropped inside a `proof_for_contract` body (e.g., via a
-/// `..` pattern).  An empty string has no backing allocation, so no `free` is
-/// emitted and DFCC is satisfied.
+/// Symbolic strings can be dropped inside `proof_for_contract` bodies without
+/// triggering DFCC "ptr is freeable" failures — confirmed by gallery level 18
+/// (18d and 18f both PASS with symbolic strings dropped via `..` patterns).
 ///
-/// Depth-2 strings are symbolic two-char strings used exclusively in the
-/// forgive-and-forget witness.  Those states are always `mem::forget`'d before
-/// the actual function call, so they never trigger DFCC checks.
+/// The previous implementation returned `String::new()` at depth-1, which made
+/// any proof with a `requires(!label.is_empty())` clause vacuous: `kani::assume`
+/// pruned the empty-string path, so the non-empty case was never verified.
+/// Gallery 18a demonstrated this soundness hole; 18f confirmed the fix.
 #[cfg(kani)]
 impl KaniCompose for String {
     fn kani_depth0() -> Self {
@@ -171,7 +170,7 @@ impl KaniCompose for String {
     }
 
     fn kani_depth1() -> Self {
-        String::new()
+        kani::any::<char>().to_string()
     }
 
     fn kani_depth2() -> Self {

@@ -1881,7 +1881,6 @@ impl ErdLayout {
 /// Descriptor for a single KV table in an embedded redb store.
 ///
 /// Produced by [`ArchiveKvPlugin`] and consumed by the display layer.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1906,7 +1905,6 @@ impl KvTableDescriptor {
 ///
 /// Keys and values from `DbValue` are rendered to strings by the plugin so
 /// the display layer stays free of `elicit_db` internals.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1934,22 +1932,11 @@ pub struct KvScanResult {
     pub offset: u64,
 }
 
-#[cfg(kani)]
-impl kani::Arbitrary for KvScanResult {
-    fn any() -> Self {
-        Self {
-            table_name: String::new(),
-            entries: Vec::new(),
-            total_count: kani::any(),
-            offset: kani::any(),
-        }
-    }
-}
+
 
 /// Descriptor for a durable KV snapshot (persistent savepoint).
 ///
 /// Produced by [`ArchiveKvPlugin`] snapshot operations.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1963,7 +1950,6 @@ pub struct KvSnapshotDescriptor {
 /// Storage-level statistics for the embedded redb database.
 ///
 /// Produced by [`ArchiveKvPlugin`] and displayed in the KV panel.
-#[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
     Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
