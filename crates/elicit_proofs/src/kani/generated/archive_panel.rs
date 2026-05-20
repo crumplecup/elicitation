@@ -13,11 +13,11 @@ use elicit_server::archive::display::{
 };
 #[cfg(kani)]
 use elicit_server::archive::vsm::{
-    ArchivePanelConsistent, ArchivePanelState, abort_edits, admin_ready, archive_panel_consistent,
-    begin_edit, column_detail, commit_edits, constraints_ready, data_grid_ready, ddl_ready,
-    erd_ready, explain_ready, export_ready, history_ready, indexes_ready, monitor_ready,
-    open_connection_editor, open_export_panel, open_help_panel, open_saved_panel, open_sql_editor,
-    panel_error, panel_loading, query_complete, saved_ready,
+    abort_edits, admin_ready, archive_panel_consistent, begin_edit, column_detail, commit_edits,
+    constraints_ready, data_grid_ready, ddl_ready, erd_ready, explain_ready, export_ready,
+    history_ready, indexes_ready, monitor_ready, open_connection_editor, open_export_panel,
+    open_help_panel, open_saved_panel, open_sql_editor, panel_error, panel_loading, query_complete,
+    saved_ready, ArchivePanelConsistent, ArchivePanelState,
 };
 #[cfg(kani)]
 use elicit_server::archive::{
@@ -65,8 +65,8 @@ fn panel_loading_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let label: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let label: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = panel_loading(_state, proof, schema, label);
     ::std::mem::forget(_result);
 }
@@ -84,7 +84,7 @@ fn panel_error_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let message: String = ::std::string::String::new();
+    let message: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = panel_error(_state, proof, message);
     ::std::mem::forget(_result);
 }
@@ -102,8 +102,8 @@ fn data_grid_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let query_result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: QueryResultMode =
         <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
@@ -185,7 +185,7 @@ fn open_sql_editor_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let initial_text: String = ::std::string::String::new();
+    let initial_text: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = open_sql_editor(_state, proof, initial_text);
     ::std::mem::forget(_result);
 }
@@ -203,8 +203,8 @@ fn open_export_panel_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = open_export_panel(_state, proof, schema, table);
     ::std::mem::forget(_result);
 }
@@ -280,8 +280,8 @@ fn ddl_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: DdlDescriptorMode =
         <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
@@ -300,8 +300,8 @@ fn explain_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: ExplainNodeMode =
         <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
@@ -418,7 +418,7 @@ fn erd_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let diagram: ErdDiagram = <ErdDiagram as ::elicitation::KaniCompose>::kani_depth0();
     let layout: Option<ErdLayout> = ::core::option::Option::None;
     let display_mode: ErdDiagramMode =
@@ -440,8 +440,8 @@ fn constraints_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
     let display_mode: ConstraintDescriptorMode =
         <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
@@ -462,8 +462,8 @@ fn indexes_ready_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let schema: String = ::std::string::String::new();
-    let table: String = ::std::string::String::new();
+    let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
+    let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
     let display_mode: IndexDescriptorMode =
         <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();

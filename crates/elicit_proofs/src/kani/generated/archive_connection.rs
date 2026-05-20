@@ -7,9 +7,9 @@
 
 #[cfg(kani)]
 use elicit_server::archive::vsm::{
-    ArchiveConnectionConsistent, ArchiveConnectionState, archive_connection_consistent,
-    begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
-    finish_connect_sql, reconnect,
+    archive_connection_consistent, begin_connect_kv, begin_connect_sql, connection_error,
+    disconnect, finish_connect_kv, finish_connect_sql, reconnect, ArchiveConnectionConsistent,
+    ArchiveConnectionState,
 };
 #[cfg(kani)]
 use elicit_server::archive::{BackendKind, DatabaseDescriptor};
@@ -36,7 +36,7 @@ fn begin_connect_sql_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let profile_name: String = ::std::string::String::new();
+    let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
     let _result = begin_connect_sql(_state, proof, profile_name, backend);
     ::std::mem::forget(_result);
@@ -55,7 +55,7 @@ fn begin_connect_kv_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let profile_name: String = ::std::string::String::new();
+    let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = begin_connect_kv(_state, proof, profile_name);
     ::std::mem::forget(_result);
 }
@@ -91,7 +91,7 @@ fn finish_connect_kv_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let path: String = ::std::string::String::new();
+    let path: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = finish_connect_kv(_state, proof, path);
     ::std::mem::forget(_result);
 }
@@ -143,7 +143,7 @@ fn connection_error_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let message: String = ::std::string::String::new();
+    let message: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let _result = connection_error(_state, proof, message);
     ::std::mem::forget(_result);
 }

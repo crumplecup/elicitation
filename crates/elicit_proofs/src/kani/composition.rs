@@ -25,6 +25,8 @@
 
 #[cfg(kani)]
 use elicit_server::archive::{display::*, types::*, vsm::*};
+#[cfg(kani)]
+use elicitation::KaniCompose;
 
 // ── Shared helper ─────────────────────────────────────────────────────────────
 
@@ -35,7 +37,7 @@ use elicit_server::archive::{display::*, types::*, vsm::*};
 #[cfg(kani)]
 fn concrete_leaf() -> ExplainNode {
     ExplainNode {
-        node_type: String::new(),
+        node_type: String::kani_depth1(),
         relation_name: None,
         alias: None,
         startup_cost: 0.0,
@@ -56,9 +58,9 @@ fn concrete_leaf() -> ExplainNode {
 #[cfg(kani)]
 fn concrete_leaf_some() -> ExplainNode {
     ExplainNode {
-        node_type: String::new(),
-        relation_name: Some(String::new()),
-        alias: Some(String::new()),
+        node_type: String::kani_depth1(),
+        relation_name: Some(String::kani_depth1()),
+        alias: Some(String::kani_depth1()),
         startup_cost: 0.0,
         total_cost: 0.0,
         plan_rows: 0,
@@ -248,8 +250,8 @@ fn comp__explain_comparison__two_leaves() {
     let cmp = ExplainComparison {
         left: concrete_plan(),
         right: concrete_plan(),
-        label_left: String::new(),
-        label_right: String::new(),
+        label_left: String::kani_depth1(),
+        label_right: String::kani_depth1(),
     };
     let _clone = cmp.clone();
     drop(cmp);
@@ -285,8 +287,8 @@ fn comp__explain_comparison__two_depth2() {
     let cmp = ExplainComparison {
         left: left_plan,
         right: right_plan,
-        label_left: String::new(),
-        label_right: String::new(),
+        label_left: String::kani_depth1(),
+        label_right: String::kani_depth1(),
     };
     drop(cmp);
 }
@@ -300,8 +302,8 @@ fn comp__explain_comparison__two_depth2() {
 #[kani::proof]
 fn comp__panel_state__explain_view_leaf_root() {
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: concrete_plan(),
         display_mode: ExplainNodeMode::TreeNode,
     };
@@ -316,13 +318,13 @@ fn comp__panel_state__explain_view_leaf_root() {
 #[kani::proof]
 fn comp__panel_state__explain_compare_two_leaves() {
     let state = ArchivePanelState::ExplainCompare {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         comparison: ExplainComparison {
             left: concrete_plan(),
             right: concrete_plan(),
-            label_left: String::new(),
-            label_right: String::new(),
+            label_left: String::kani_depth1(),
+            label_right: String::kani_depth1(),
         },
     };
     drop(state);
@@ -338,8 +340,8 @@ fn comp__panel_state__explain_compare_two_leaves() {
 #[kani::proof]
 fn comp__transition__explain_ready_view_to_compare() {
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: concrete_plan(),
         display_mode: ExplainNodeMode::TreeNode,
     };
@@ -347,8 +349,8 @@ fn comp__transition__explain_ready_view_to_compare() {
     let (new_state, _new_proof) = explain_ready(
         state,
         proof,
-        String::new(),
-        String::new(),
+        String::kani_depth1(),
+        String::kani_depth1(),
         concrete_plan(),
         ExplainNodeMode::TreeNode,
     );
@@ -365,13 +367,13 @@ fn comp__transition__explain_ready_view_to_compare() {
 #[kani::proof]
 fn comp__transition__column_detail_drops_explain_compare() {
     let state = ArchivePanelState::ExplainCompare {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         comparison: ExplainComparison {
             left: concrete_plan(),
             right: concrete_plan(),
-            label_left: String::new(),
-            label_right: String::new(),
+            label_left: String::kani_depth1(),
+            label_right: String::kani_depth1(),
         },
     };
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();

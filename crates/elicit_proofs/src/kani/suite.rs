@@ -158,8 +158,11 @@ fn suite__prim__char() {
 
 // ── String ───────────────────────────────────────────────────────────────────
 //
-// All three depths must return `String::new()` (empty).
-// Symbolic strings cause path explosion; the spec mandates empty at all depths.
+// depth-0 → empty (base case, no heap allocation)
+// depth-1 → one symbolic char (inductive step: non-empty, heap-allocated)
+// depth-2 → two symbolic chars (second inductive step)
+//
+// See gallery18 for the experimental foundation of this design.
 
 #[kani::proof]
 fn suite__string__depth0_is_empty() {
@@ -168,15 +171,15 @@ fn suite__string__depth0_is_empty() {
 }
 
 #[kani::proof]
-fn suite__string__depth1_is_empty() {
+fn suite__string__depth1_is_nonempty() {
     let s = String::kani_depth1();
-    assert!(s.is_empty(), "String depth-1 must be empty");
+    assert!(!s.is_empty(), "String depth-1 must be non-empty");
 }
 
 #[kani::proof]
-fn suite__string__depth2_is_empty() {
+fn suite__string__depth2_is_nonempty() {
     let s = String::kani_depth2();
-    assert!(s.is_empty(), "String depth-2 must be empty");
+    assert!(!s.is_empty(), "String depth-2 must be non-empty");
 }
 
 // ── Vec<T> ───────────────────────────────────────────────────────────────────

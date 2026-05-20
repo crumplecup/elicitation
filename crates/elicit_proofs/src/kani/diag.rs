@@ -7,6 +7,8 @@
 use elicit_db::DbRows;
 #[cfg(kani)]
 use elicit_server::archive::{display::*, types::*, vsm::*};
+#[cfg(kani)]
+use elicitation::KaniCompose;
 
 /// Theory A: BTreeMap<String, (f32,f32,f32,f32)> drop causes unbounded unwinding.
 #[cfg(kani)]
@@ -109,7 +111,7 @@ fn diag_explain_node_mode_arbitrary() {
 #[kani::proof]
 fn diag_explain_ready_concrete_inputs() {
     let concrete_node = ExplainNode {
-        node_type: String::new(),
+        node_type: String::kani_depth1(),
         relation_name: None,
         alias: None,
         startup_cost: 0.0,
@@ -127,8 +129,8 @@ fn diag_explain_ready_concrete_inputs() {
         root: 0,
     };
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: concrete_plan.clone(),
         display_mode: ExplainNodeMode::TreeNode,
     };
@@ -136,8 +138,8 @@ fn diag_explain_ready_concrete_inputs() {
     let _ = explain_ready(
         state,
         proof,
-        String::new(),
-        String::new(),
+        String::kani_depth1(),
+        String::kani_depth1(),
         concrete_plan,
         ExplainNodeMode::TreeNode,
     );
@@ -157,7 +159,7 @@ fn diag_explain_ready_concrete_inputs() {
 #[kani::proof]
 fn diag_explain_node_all_concrete() {
     let _node = ExplainNode {
-        node_type: String::new(),
+        node_type: String::kani_depth1(),
         relation_name: None,
         alias: None,
         startup_cost: 0.0_f64,
@@ -180,7 +182,7 @@ fn diag_explain_node_all_concrete() {
 #[kani::proof]
 fn diag_explain_node_one_symbolic_f64() {
     let _node = ExplainNode {
-        node_type: String::new(),
+        node_type: String::kani_depth1(),
         relation_name: None,
         alias: None,
         startup_cost: kani::any::<f64>(),
@@ -220,7 +222,7 @@ fn diag_explain_ready_non_explain_view() {
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
     let plan = ExplainPlan::kani_depth0();
     let mode = ExplainNodeMode::kani_depth0();
-    let _ = explain_ready(state, proof, String::new(), String::new(), plan, mode);
+    let _ = explain_ready(state, proof, String::kani_depth1(), String::kani_depth1(), plan, mode);
 }
 
 /// Theory Q: explain_ready with ExplainView state but drop the result immediately.
@@ -232,8 +234,8 @@ fn diag_explain_ready_non_explain_view() {
 fn diag_explain_ready_explainview_drop_result() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
@@ -241,8 +243,8 @@ fn diag_explain_ready_explainview_drop_result() {
     let _ = explain_ready(
         state,
         proof,
-        String::new(),
-        String::new(),
+        String::kani_depth1(),
+        String::kani_depth1(),
         ExplainPlan::kani_depth0(),
         ExplainNodeMode::kani_depth0(),
     );
@@ -260,8 +262,8 @@ fn diag_explain_comparison_drop() {
     let _cmp = ExplainComparison {
         left: ExplainPlan::kani_depth0(),
         right: ExplainPlan::kani_depth0(),
-        label_left: String::new(),
-        label_right: String::new(),
+        label_left: String::kani_depth1(),
+        label_right: String::kani_depth1(),
     };
 }
 
@@ -287,13 +289,13 @@ fn diag_two_explain_nodes_local() {
 fn diag_explain_ready_inlined_body() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
-    let schema = String::new();
-    let table = String::new();
+    let schema = String::kani_depth1();
+    let table = String::kani_depth1();
     let root = ExplainPlan::kani_depth0();
     let display_mode = ExplainNodeMode::kani_depth0();
     let _next = match state {
@@ -308,8 +310,8 @@ fn diag_explain_ready_inlined_body() {
             comparison: ExplainComparison {
                 left: old_root,
                 right: root,
-                label_left: String::new(),
-                label_right: String::new(),
+                label_left: String::kani_depth1(),
+                label_right: String::kani_depth1(),
             },
         },
         _ => ArchivePanelState::ExplainView {
@@ -327,8 +329,8 @@ fn diag_explain_ready_inlined_body() {
 fn diag_partial_move_if_let() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
@@ -337,8 +339,8 @@ fn diag_partial_move_if_let() {
         let _comparison = ExplainComparison {
             left: old_root,
             right: root,
-            label_left: String::new(),
-            label_right: String::new(),
+            label_left: String::kani_depth1(),
+            label_right: String::kani_depth1(),
         };
     }
 }
@@ -349,20 +351,20 @@ fn diag_partial_move_if_let() {
 fn diag_match_no_field_move() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
     let _next = match state {
         ArchivePanelState::ExplainView { .. } => ArchivePanelState::ExplainCompare {
-            schema: String::new(),
-            table: String::new(),
+            schema: String::kani_depth1(),
+            table: String::kani_depth1(),
             comparison: ExplainComparison {
                 left: ExplainPlan::kani_depth0(),
                 right: ExplainPlan::kani_depth0(),
-                label_left: String::new(),
-                label_right: String::new(),
+                label_left: String::kani_depth1(),
+                label_right: String::kani_depth1(),
             },
         },
         _ => ArchivePanelState::ColumnDetail,
@@ -376,8 +378,8 @@ fn diag_match_no_field_move() {
 fn diag_wildcard_arm_explain_view() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
@@ -385,8 +387,8 @@ fn diag_wildcard_arm_explain_view() {
     let _next = match state {
         ArchivePanelState::ExplainView { .. } => ArchivePanelState::ColumnDetail,
         _ => ArchivePanelState::ExplainView {
-            schema: String::new(),
-            table: String::new(),
+            schema: String::kani_depth1(),
+            table: String::kani_depth1(),
             root: fallback_root,
             display_mode: ExplainNodeMode::kani_depth0(),
         },
@@ -399,13 +401,13 @@ fn diag_wildcard_arm_explain_view() {
 fn diag_drop_explain_compare() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ExplainCompare {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         comparison: ExplainComparison {
             left: ExplainPlan::kani_depth0(),
             right: ExplainPlan::kani_depth0(),
-            label_left: String::new(),
-            label_right: String::new(),
+            label_left: String::kani_depth1(),
+            label_right: String::kani_depth1(),
         },
     };
 }
@@ -416,8 +418,8 @@ fn diag_drop_explain_compare() {
 fn diag_drop_explain_view_direct() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
@@ -429,13 +431,13 @@ fn diag_drop_explain_view_direct() {
 fn diag_drop_explain_compare_bounded() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ExplainCompare {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         comparison: ExplainComparison {
             left: ExplainPlan::kani_depth0(),
             right: ExplainPlan::kani_depth0(),
-            label_left: String::new(),
-            label_right: String::new(),
+            label_left: String::kani_depth1(),
+            label_right: String::kani_depth1(),
         },
     };
 }
@@ -447,13 +449,13 @@ fn diag_erd_ready_concrete() {
     let state = ArchivePanelState::ColumnDetail;
     let proof = elicitation::contracts::Established::<ArchivePanelConsistent>::assert();
     let diagram = ErdDiagram {
-        schema: String::new(),
+        schema: String::kani_depth1(),
         nodes: vec![],
         edges: vec![],
     };
     let layout: Option<ErdLayout> = None;
     let mode: ErdDiagramMode = kani::any();
-    let _ = erd_ready(state, proof, String::new(), diagram, layout, mode);
+    let _ = erd_ready(state, proof, String::kani_depth1(), diagram, layout, mode);
 }
 
 /// Theory AA: serde_json::Value::Null — does dropping a concrete Null cause recursive unwind?
@@ -494,8 +496,8 @@ fn diag_query_result_kani_depth0_drop() {
 fn diag_data_grid_state_drop() {
     use elicitation::KaniCompose;
     let s = ArchivePanelState::DataGrid {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         result: QueryResult::kani_depth0(),
         page: 0,
         grid_row: 0,
@@ -517,8 +519,8 @@ fn diag_data_grid_minimal() {
     // Under kani, QueryResult is simplified to { row_count: u64 }.
     let result = QueryResult { row_count: 0 };
     let s = ArchivePanelState::DataGrid {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         result,
         page: 0,
         grid_row: 0,
@@ -537,8 +539,8 @@ fn diag_data_grid_minimal() {
 fn diag_panel_state_expl_view_drop() {
     use elicitation::KaniCompose;
     let s = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: ExplainPlan::kani_depth0(),
         display_mode: ExplainNodeMode::kani_depth0(),
     };
@@ -625,8 +627,8 @@ fn diag_explain_plan_depth2() {
 fn diag_open_connection_editor_inlined_d1() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -651,8 +653,8 @@ fn diag_open_connection_editor_inlined_d1() {
 fn diag_open_connection_editor_real_d1() {
     use elicitation::KaniCompose;
     let state = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -673,8 +675,8 @@ fn diag_open_connection_editor_real_d1() {
 fn diag_two_panel_state_drops_d1() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -691,8 +693,8 @@ fn diag_two_panel_state_drops_d1() {
 fn diag_one_explain_view_drop_d1() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -705,8 +707,8 @@ fn diag_one_explain_view_drop_d1() {
 fn diag_explain_view_plus_column_detail_d1() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -720,8 +722,8 @@ fn diag_explain_view_plus_column_detail_d1() {
 fn diag_explain_view_d0_plus_connection_edit_d1() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth0(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth0(),
     };
@@ -752,8 +754,8 @@ fn diag_admin_view_alone_d0() {
 fn diag_explain_view_d1_plus_admin_view_d0() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -771,8 +773,8 @@ fn diag_explain_view_d1_plus_admin_view_d0() {
 fn diag_explain_view_d0_plus_admin_view_d0() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth0(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth0(),
     };
@@ -791,8 +793,8 @@ fn diag_explain_view_d0_plus_admin_view_d0() {
 fn diag_explain_view_d1_plus_monitor_view_d0() {
     use elicitation::KaniCompose;
     let _s1 = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -819,8 +821,8 @@ fn diag_connection_profile_d0_alone() {
 fn diag_explain_view_d1_plus_connection_profile_d0() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ExplainView {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         root: <ExplainPlan as KaniCompose>::kani_depth1(),
         display_mode: <ExplainNodeMode as KaniCompose>::kani_depth1(),
     };
@@ -850,7 +852,7 @@ fn diag_connection_edit_state_d0_alone() {
 fn diag_erd_view_layout_none() {
     use elicitation::KaniCompose;
     let _s = ArchivePanelState::ErdView {
-        schema: String::new(),
+        schema: String::kani_depth1(),
         diagram: <ErdDiagram as KaniCompose>::kani_depth0(),
         layout: None,
         loading: false,
@@ -875,8 +877,8 @@ fn diag_column_detail_unit_alone() {
 #[kani::proof]
 fn diag_loading_alone() {
     let _s = ArchivePanelState::Loading {
-        schema: String::new(),
-        label: String::new(),
+        schema: String::kani_depth1(),
+        label: String::kani_depth1(),
     };
 }
 
@@ -886,7 +888,7 @@ fn diag_loading_alone() {
 #[kani::proof]
 fn diag_error_view_alone() {
     let _s = ArchivePanelState::ErrorView {
-        message: String::new(),
+        message: String::kani_depth1(),
     };
 }
 
@@ -913,7 +915,7 @@ fn diag_error_view_alone() {
 #[kani::proof]
 fn diag_sql_editor_alone() {
     let _s = ArchivePanelState::SqlEditor {
-        text: String::new(),
+        text: String::kani_depth1(),
         result: None,
         running: false,
         error: None,
@@ -927,8 +929,8 @@ fn diag_sql_editor_alone() {
 #[kani::proof]
 fn diag_data_grid_concrete_zero() {
     let _s = ArchivePanelState::DataGrid {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         result: QueryResult { row_count: 0 },
         page: 0_u32,
         grid_row: 0_usize,
@@ -945,8 +947,8 @@ fn diag_data_grid_concrete_zero() {
 #[kani::proof]
 fn diag_data_grid_symbolic_scalars() {
     let _s = ArchivePanelState::DataGrid {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         result: QueryResult {
             row_count: kani::any(),
         },
@@ -967,8 +969,8 @@ fn diag_data_grid_symbolic_scalars() {
 fn diag_column_detail_with_data_grid_input() {
     use elicitation::contracts::{Established, ProvableFrom};
     let state = ArchivePanelState::DataGrid {
-        schema: String::new(),
-        table: String::new(),
+        schema: String::kani_depth1(),
+        table: String::kani_depth1(),
         result: QueryResult { row_count: 0 },
         page: 0_u32,
         grid_row: 0_usize,
@@ -994,8 +996,8 @@ fn diag_data_grid_ready_with_column_detail_input() {
     let _r = data_grid_ready(
         state,
         proof,
-        String::new(),
-        String::new(),
+        String::kani_depth1(),
+        String::kani_depth1(),
         result,
         display_mode,
     );

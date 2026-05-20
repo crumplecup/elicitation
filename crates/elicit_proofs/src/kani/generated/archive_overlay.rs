@@ -7,9 +7,9 @@
 
 #[cfg(kani)]
 use elicit_server::archive::vsm::{
-    ArchiveOverlayConsistent, ArchiveOverlayState, archive_overlay_consistent, close_overlay,
-    open_export_picker, open_help, open_save_prompt, open_saved_browser, picker_move_down,
-    picker_move_up, prompt_backspace, prompt_push, saved_browser_down, saved_browser_up,
+    archive_overlay_consistent, close_overlay, open_export_picker, open_help, open_save_prompt,
+    open_saved_browser, picker_move_down, picker_move_up, prompt_backspace, prompt_push,
+    saved_browser_down, saved_browser_up, ArchiveOverlayConsistent, ArchiveOverlayState,
 };
 #[cfg(kani)]
 use elicit_server::archive::{ExportFormat, SavedQuery};
