@@ -47,6 +47,7 @@ mod integers;
 mod network_specs;
 mod palette_specs;
 #[cfg(feature = "polars-types")]
+mod egui_winit_specs;
 mod polars_specs;
 mod proj_specs;
 mod ratatui_specs;
