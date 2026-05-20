@@ -67,6 +67,7 @@ mod strings;
 mod toml_specs;
 mod tower_specs;
 pub mod type_spec_plugin;
+mod uom_specs;
 mod url_specs;
 mod uuid_specs;
 mod value_specs;
