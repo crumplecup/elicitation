@@ -4,7 +4,7 @@
 
 ## Overview
 
-0.11.0 is the largest release in the project's history. The headline story is the maturation of the **Verified State Machine (VSM) toolchain** into a complete, end-to-end developer workflow — from annotating your Rust code to running proofs across three backends with a single command. Alongside that, this release delivers a wave of new shadow crates, a production-quality database explorer application, and a complete formal GIS standards library.
+The headline story is the maturation of the **Verified State Machine (VSM) toolchain** into a complete, end-to-end developer workflow — from annotating your Rust code to running proofs across three backends with a single command. Alongside that, this release delivers a wave of new shadow crates, a production-quality database explorer application, and a complete formal GIS standards library.
 
 ---
 

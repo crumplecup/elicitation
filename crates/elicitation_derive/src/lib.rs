@@ -1121,6 +1121,92 @@ pub fn cfg_gallery_f(input: TokenStream) -> TokenStream {
     })
 }
 
+/// Gallery case G: attribute macro pushes `#[allow(unexpected_cfgs)]` then
+/// `#[cfg_attr(foo, inline)]` at the END of a function's attrs.
+///
+/// Models what `formal_method` does: `func.attrs.push(allow); func.attrs.push(cfg_attr(...))`.
+/// Expected: **warning** (same as case F — allow on same item still fires).
+#[proc_macro_attribute]
+pub fn cfg_gallery_g(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    func.attrs
+        .push(syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(foo, inline)]));
+    TokenStream::from(quote::quote! { #func })
+}
+
+/// Gallery case H: attribute macro INSERTS `#[allow(unexpected_cfgs)]` at position 0,
+/// then pushes `#[cfg_attr(foo, inline)]` at the end.
+///
+/// Tests whether allow position (front vs back) makes any difference.
+/// Expected: **warning** (position doesn't matter — same item, still fires).
+#[proc_macro_attribute]
+pub fn cfg_gallery_h(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    func.attrs
+        .insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(foo, inline)]));
+    TokenStream::from(quote::quote! { #func })
+}
+
+/// Gallery case I: attribute macro emits an `#[allow(unexpected_cfgs)] const _: () = {};`
+/// BEFORE the modified function (which has `#[cfg_attr(foo, inline)]` in its attrs).
+///
+/// Tests the "preceding allow const" approach on an attribute macro.
+/// Expected: **warning** (allow on a different preceding item doesn't suppress — same as C).
+#[proc_macro_attribute]
+pub fn cfg_gallery_i(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(foo, inline)]));
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        const _: () = {};
+        #func
+    })
+}
+
+/// Gallery case J: attribute macro wraps the entire emitted function in an
+/// `#[allow(unexpected_cfgs)] const _: () = { fn ... };` block.
+///
+/// This is the const-wrapper pattern applied to a function item.
+/// Expected: **no warning** (const wrapper suppresses cfgs inside it).
+/// Downside: function is inaccessible from outer scope.
+#[proc_macro_attribute]
+pub fn cfg_gallery_j(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(foo, inline)]));
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        const _: () = {
+            #func
+        };
+    })
+}
+
+/// Gallery case K: attribute macro emits the function inside an
+/// `#[allow(unexpected_cfgs)] mod _compat { ... }` block, then re-exports it.
+///
+/// Tests whether allow on an enclosing MODULE suppresses cfg_attr warnings
+/// inside, while keeping the function accessible via `pub use`.
+/// Expected: **no warning** (allow on module propagates inward).
+#[proc_macro_attribute]
+pub fn cfg_gallery_k(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    // Ensure function is pub inside the module
+    func.vis = syn::parse_quote!(pub);
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(foo, inline)]));
+    let mod_name = quote::format_ident!("_gallery_k_compat_{}", fn_name);
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        pub use #mod_name::#fn_name;
+    })
+}
+
 /// Capture a third-party trait's methods as MCP tools.
 ///
 /// Apply to an `impl` block that names the factory struct and lists the

@@ -49,8 +49,6 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     quote! {
-        // Inherent impl and inventory submit are only needed outside of creusot formal verification
-        #[cfg(not(creusot))]
         const _: () = {
         // Inherent impl for direct access AND trait default method override
         // The #[tool] attribute here makes this discoverable by rmcp

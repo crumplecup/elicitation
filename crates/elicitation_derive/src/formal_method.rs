@@ -329,29 +329,42 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
 
     let fn_name = &func.sig.ident;
 
+    // Pre-compute receiver/async status: needed to gate instrument and contracts.
+    let has_receiver = func
+        .sig
+        .inputs
+        .iter()
+        .any(|a| matches!(a, FnArg::Receiver(_)));
+    let is_async = func.sig.asyncness.is_some();
+
+    // Tracks whether any cfg_attr(kani/not(kani), ...) was pushed onto func.
+    // When true, we wrap func in an `#[allow(unexpected_cfgs)] mod` and
+    // re-export it — the only pattern (gallery case K) that suppresses
+    // unexpected_cfgs in downstream crates for attribute macros.
+    let mut needs_compat_mod = false;
+
     // ── Gate tracing instrumentation under not(kani) ──────────────────────────
     // `#[instrument]` from tracing expands to heap-allocating Span/enter code
     // with no Kani contracts.  Under proof_for_contract, DFCC would inline the
     // entire tracing prologue/epilogue (no contracts on tracing functions),
     // inflating the proof cost from ~32s to timeout.
+    // Only relevant for free, non-async functions: methods don't get
+    // proof_for_contract, so no inflation risk and no cfg_attr needed.
     // Transform:  #[instrument(…)]  →  #[cfg_attr(not(kani), instrument(…))]
-    let mut instrumented = false;
-    for attr in func.attrs.iter_mut() {
-        let is_instrument = attr
-            .path()
-            .segments
-            .last()
-            .map(|s| s.ident == "instrument")
-            .unwrap_or(false);
-        if is_instrument {
-            let meta = attr.meta.clone();
-            *attr = syn::parse_quote! { #[cfg_attr(not(kani), #meta)] };
-            instrumented = true;
+    if !has_receiver && !is_async {
+        for attr in func.attrs.iter_mut() {
+            let is_instrument = attr
+                .path()
+                .segments
+                .last()
+                .map(|s| s.ident == "instrument")
+                .unwrap_or(false);
+            if is_instrument {
+                let meta = attr.meta.clone();
+                *attr = syn::parse_quote! { #[cfg_attr(not(kani), #meta)] };
+                needs_compat_mod = true;
+            }
         }
-    }
-    if instrumented {
-        let allow: syn::Attribute = syn::parse_quote! { #[allow(unexpected_cfgs)] };
-        func.attrs.push(allow);
     }
 
     // ── Doc annotation ────────────────────────────────────────────────────────
@@ -377,12 +390,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     // ── Backend harnesses ─────────────────────────────────────────────────────
     // Only generated for free functions (no `self`) and non-async functions.
     // Kani doesn't support async proofs, and `self` requires a concrete receiver.
-    let has_receiver = func
-        .sig
-        .inputs
-        .iter()
-        .any(|a| matches!(a, FnArg::Receiver(_)));
-    let is_async = func.sig.asyncness.is_some();
 
     let contracts_str = if parsed_args.contracts.is_empty() {
         String::new()
@@ -586,17 +593,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 syn::parse_str(&inv_fn_name).expect("derived ident is valid");
             let state_pat_tokens: TokenStream =
                 state_pat_s.parse().expect("state_pat_s is valid tokens");
-            let allow_unexpected: syn::Attribute = syn::parse_quote! { #[allow(unexpected_cfgs)] };
             let requires_attr: syn::Attribute = syn::parse_quote! {
                 #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
             };
             let ensures_attr: syn::Attribute = syn::parse_quote! {
                 #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
             };
-            func.attrs.push(allow_unexpected.clone());
             func.attrs.push(requires_attr);
-            func.attrs.push(allow_unexpected.clone());
             func.attrs.push(ensures_attr);
+            needs_compat_mod = true;
 
             // Emit any extra kani_requires expressions as additional
             // #[cfg_attr(kani, ::kani::requires(expr))] attributes.
@@ -609,7 +614,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 let extra_req: syn::Attribute = syn::parse_quote! {
                     #[cfg_attr(kani, ::kani::requires(#expr))]
                 };
-                func.attrs.push(allow_unexpected.clone());
                 func.attrs.push(extra_req);
             }
 
@@ -1024,11 +1028,33 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         (quote! {}, quote! {}, quote! {}, quote! {})
     };
 
-    Ok(quote! {
-        #func
-        #kani_harness
-        #creusot_companion
-        #verus_companion
-        #companion_struct
-    })
+    // Emit the function. When cfg_attr(kani/not(kani), ...) attrs were added to
+    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it —
+    // the only pattern (gallery case K) confirmed to suppress unexpected_cfgs
+    // in downstream crates for attribute macros that modify existing functions.
+    if needs_compat_mod {
+        let original_vis = func.vis.clone();
+        let mod_name = format_ident!("_formal_method_compat_{}", fn_name);
+        func.vis = syn::parse_quote!(pub);
+        Ok(quote! {
+            #[allow(unexpected_cfgs)]
+            mod #mod_name {
+                use super::*;
+                #func
+            }
+            #original_vis use #mod_name::#fn_name;
+            #kani_harness
+            #creusot_companion
+            #verus_companion
+            #companion_struct
+        })
+    } else {
+        Ok(quote! {
+            #func
+            #kani_harness
+            #creusot_companion
+            #verus_companion
+            #companion_struct
+        })
+    }
 }
