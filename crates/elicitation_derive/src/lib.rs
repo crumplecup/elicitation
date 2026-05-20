@@ -1010,6 +1010,117 @@ fn elicit_trait_tools_to_pascal_case(s: &str) -> String {
         .collect()
 }
 
+// ── cfg-allow gallery (for isolating unexpected_cfgs suppress patterns) ───────
+//
+// These macros use `cfg(foo)` — a cfg name NOT declared anywhere in this crate
+// or the test crate — so they behave exactly like `cfg(kani)` / `cfg(creusot)`
+// do in downstream crates. Each variant tests a different allow placement.
+// The test file `tests/cfg_allow_gallery_test.rs` uses each one and documents
+// which pattern suppresses the `unexpected_cfgs` lint.
+
+/// Gallery case A: `cfg(foo)` impl with NO `#[allow(unexpected_cfgs)]` guard.
+///
+/// Expected behaviour in a downstream crate: **warning** about unexpected `foo`.
+#[proc_macro_derive(CfgGalleryA)]
+pub fn cfg_gallery_a(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        #[cfg(foo)]
+        impl #name {
+            pub fn gallery_a_marker() {}
+        }
+    })
+}
+
+/// Gallery case B: `#[allow(unexpected_cfgs)]` on the SAME item, BEFORE `cfg(foo)`.
+///
+/// Expected behaviour in a downstream crate: **no warning**.
+#[proc_macro_derive(CfgGalleryB)]
+pub fn cfg_gallery_b(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        #[cfg(foo)]
+        impl #name {
+            pub fn gallery_b_marker() {}
+        }
+    })
+}
+
+/// Gallery case C: `#[allow(unexpected_cfgs)]` on a SEPARATE preceding item.
+///
+/// A lone `#[allow]` attached to a dummy `const` emitted just before the
+/// `#[cfg(foo)]` item — tests whether the allow must be on the SAME item.
+///
+/// Expected behaviour in a downstream crate: **warning** (allow on wrong item).
+#[proc_macro_derive(CfgGalleryC)]
+pub fn cfg_gallery_c(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        const _GALLERY_C_ALLOW: () = ();
+
+        #[cfg(foo)]
+        impl #name {
+            pub fn gallery_c_marker() {}
+        }
+    })
+}
+
+/// Gallery case D: `cfg(foo)` inside a `const _: () = { ... }` wrapper,
+/// with `#[allow(unexpected_cfgs)]` on the outer const.
+///
+/// Expected behaviour: **no warning** (allow on the enclosing item).
+#[proc_macro_derive(CfgGalleryD)]
+pub fn cfg_gallery_d(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        const _: () = {
+            #[cfg(foo)]
+            impl #name {
+                pub fn gallery_d_marker() {}
+            }
+        };
+    })
+}
+
+/// Gallery case E: `cfg_attr(foo, ...)` (attribute form) with NO allow.
+///
+/// Tests whether `cfg_attr` triggers the same lint as `cfg`.
+/// Expected behaviour in a downstream crate: **warning**.
+#[proc_macro_derive(CfgGalleryE)]
+pub fn cfg_gallery_e(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        impl #name {
+            #[cfg_attr(foo, allow(dead_code))]
+            pub fn gallery_e_marker() {}
+        }
+    })
+}
+
+/// Gallery case F: `cfg_attr(foo, ...)` with `#[allow(unexpected_cfgs)]` on same item.
+///
+/// Expected behaviour in a downstream crate: **no warning**.
+#[proc_macro_derive(CfgGalleryF)]
+pub fn cfg_gallery_f(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    TokenStream::from(quote::quote! {
+        impl #name {
+            #[allow(unexpected_cfgs)]
+            #[cfg_attr(foo, allow(dead_code))]
+            pub fn gallery_f_marker() {}
+        }
+    })
+}
+
 /// Capture a third-party trait's methods as MCP tools.
 ///
 /// Apply to an `impl` block that names the factory struct and lists the

@@ -335,6 +335,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     // entire tracing prologue/epilogue (no contracts on tracing functions),
     // inflating the proof cost from ~32s to timeout.
     // Transform:  #[instrument(…)]  →  #[cfg_attr(not(kani), instrument(…))]
+    let mut instrumented = false;
     for attr in func.attrs.iter_mut() {
         let is_instrument = attr
             .path()
@@ -345,7 +346,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         if is_instrument {
             let meta = attr.meta.clone();
             *attr = syn::parse_quote! { #[cfg_attr(not(kani), #meta)] };
+            instrumented = true;
         }
+    }
+    if instrumented {
+        let allow: syn::Attribute = syn::parse_quote! { #[allow(unexpected_cfgs)] };
+        func.attrs.push(allow);
     }
 
     // ── Doc annotation ────────────────────────────────────────────────────────
@@ -580,13 +586,16 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 syn::parse_str(&inv_fn_name).expect("derived ident is valid");
             let state_pat_tokens: TokenStream =
                 state_pat_s.parse().expect("state_pat_s is valid tokens");
+            let allow_unexpected: syn::Attribute = syn::parse_quote! { #[allow(unexpected_cfgs)] };
             let requires_attr: syn::Attribute = syn::parse_quote! {
                 #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
             };
             let ensures_attr: syn::Attribute = syn::parse_quote! {
                 #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
             };
+            func.attrs.push(allow_unexpected.clone());
             func.attrs.push(requires_attr);
+            func.attrs.push(allow_unexpected.clone());
             func.attrs.push(ensures_attr);
 
             // Emit any extra kani_requires expressions as additional
@@ -600,6 +609,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 let extra_req: syn::Attribute = syn::parse_quote! {
                     #[cfg_attr(kani, ::kani::requires(#expr))]
                 };
+                func.attrs.push(allow_unexpected.clone());
                 func.attrs.push(extra_req);
             }
 
@@ -616,15 +626,17 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // No stub_verified needed.
         let kani = quote! {
             #[allow(unexpected_cfgs)]
-            #[cfg(kani)]
-            #[::kani::proof]
-            fn #kani_fn() {
-                #(#lets)*
-                let _result = #fn_name(#(#call_args),*);
-                // Safe Rust only, no custom Drop impls: forget is sound.
-                // Eliminates CBMC drop-glue reasoning for Vec-bearing return types.
-                ::std::mem::forget(_result);
-            }
+            const _: () = {
+                #[cfg(kani)]
+                #[::kani::proof]
+                fn #kani_fn() {
+                    #(#lets)*
+                    let _result = #fn_name(#(#call_args),*);
+                    // Safe Rust only, no custom Drop impls: forget is sound.
+                    // Eliminates CBMC drop-glue reasoning for Vec-bearing return types.
+                    ::std::mem::forget(_result);
+                }
+            };
         };
 
         // ── Companion struct: returns the harness as a runtime TokenStream ──
@@ -745,13 +757,13 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             // recursive heap type) and CBMC would inflate the SAT formula
             // through the drop-glue for every companion in the crate.
             #[allow(unexpected_cfgs)]
-            #[cfg(not(kani))]
-            #[doc = #struct_doc]
-            #[allow(non_camel_case_types)]
-            #vis struct #struct_name;
-            #[allow(unexpected_cfgs)]
-            #[cfg(not(kani))]
-            impl #struct_name {
+            const _: () = {
+                #[cfg(not(kani))]
+                #[doc = #struct_doc]
+                #[allow(non_camel_case_types)]
+                #vis struct #struct_name;
+                #[cfg(not(kani))]
+                impl #struct_name {
                 /// Return the Kani harness `TokenStream` for this transition.
                 ///
                 /// The string was captured at macro-expansion time; parsing it
@@ -962,6 +974,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                         .expect("kani_closure_proof: invalid TokenStream")
                 }
             }
+            }; // end const _: () = { ... }
         };
 
         // ── Creusot companion ────────────────────────────────────────────
@@ -980,16 +993,18 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         };
         let verus = quote! {
             #[allow(unexpected_cfgs)]
-            #[cfg(verus)]
-            verus! {
-                #[doc = #verus_doc]
-                fn #verus_fn(#inputs) #output
-                    requires true,
-                    ensures true,
-                {
-                    #fn_name(#(#call_args),*)
+            const _: () = {
+                #[cfg(verus)]
+                verus! {
+                    #[doc = #verus_doc]
+                    fn #verus_fn(#inputs) #output
+                        requires true,
+                        ensures true,
+                    {
+                        #fn_name(#(#call_args),*)
+                    }
                 }
-            }
+            };
         };
 
         // The inline kani harness (kani::any() for state) is intentionally

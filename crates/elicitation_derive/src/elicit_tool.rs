@@ -339,21 +339,22 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
 
             let emit_block = quote! {
                 #[allow(unexpected_cfgs)]
-                #[cfg(not(kani))]
-                impl elicitation::emit_code::EmitCode for #params_ty {
-                    fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
-                        #(#field_bindings)*
-                        elicitation::quote::quote! { #rewritten }
+                const _: () = {
+                    #[cfg(not(kani))]
+                    impl elicitation::emit_code::EmitCode for #params_ty {
+                        fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
+                            #(#field_bindings)*
+                            elicitation::quote::quote! { #rewritten }
+                        }
+
+                        fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
+                            ::std::vec![ #(#crate_deps),* ]
+                        }
                     }
 
-                    fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
-                        ::std::vec![ #(#crate_deps),* ]
-                    }
-                }
-
-                #[allow(unexpected_cfgs)]
-                #[cfg(not(kani))]
-                elicitation::register_emit!(#name, #params_ty);
+                    #[cfg(not(kani))]
+                    elicitation::register_emit!(#name, #params_ty);
+                };
             };
 
             expanded = quote! { #expanded #emit_block };
@@ -368,20 +369,21 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 .collect();
             let emit_block = quote! {
                 #[allow(unexpected_cfgs)]
-                #[cfg(not(kani))]
-                impl elicitation::emit_code::EmitCode for #params_ty {
-                    fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
-                        <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::emit_code(self)
+                const _: () = {
+                    #[cfg(not(kani))]
+                    impl elicitation::emit_code::EmitCode for #params_ty {
+                        fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
+                            <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::emit_code(self)
+                        }
+
+                        fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
+                            ::std::vec![ #(#crate_deps),* ]
+                        }
                     }
 
-                    fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
-                        ::std::vec![ #(#crate_deps),* ]
-                    }
-                }
-
-                #[allow(unexpected_cfgs)]
-                #[cfg(not(kani))]
-                elicitation::register_emit!(#name, #params_ty);
+                    #[cfg(not(kani))]
+                    elicitation::register_emit!(#name, #params_ty);
+                };
             };
 
             expanded = quote! { #expanded #emit_block };

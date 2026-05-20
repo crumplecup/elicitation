@@ -203,17 +203,19 @@ pub fn expand(input: TokenStream) -> TokenStream {
             // The user must separately declare impl ProvableFrom<cred_ty> for Self.
             let cred_impl = quote! {
                 #[allow(unexpected_cfgs)]
-                #[cfg(kani)]
-                impl #impl_generics #name #ty_generics #where_clause {
-                    /// Return a Kani symbolic credential for use in proof harnesses.
-                    ///
-                    /// Called by `#[formal_method]`-generated harnesses to produce
-                    /// `Established::prove(&credential)` instead of `Established::assert()`.
-                    #[allow(dead_code)]
-                    pub fn kani_proof_credential() -> #cred_ty {
-                        ::kani::any::<#cred_ty>()
+                const _: () = {
+                    #[cfg(kani)]
+                    impl #impl_generics #name #ty_generics #where_clause {
+                        /// Return a Kani symbolic credential for use in proof harnesses.
+                        ///
+                        /// Called by `#[formal_method]`-generated harnesses to produce
+                        /// `Established::prove(&credential)` instead of `Established::assert()`.
+                        #[allow(dead_code)]
+                        pub fn kani_proof_credential() -> #cred_ty {
+                            ::kani::any::<#cred_ty>()
+                        }
                     }
-                }
+                };
             };
             (cred_impl, quote! {})
         }
@@ -222,14 +224,16 @@ pub fn expand(input: TokenStream) -> TokenStream {
             // This preserves backward-compatible assert()-equivalent proofs.
             let cred_impl = quote! {
                 #[allow(unexpected_cfgs)]
-                #[cfg(kani)]
-                impl #impl_generics #name #ty_generics #where_clause {
-                    /// Return the trivial unit credential used for marker propositions.
-                    #[allow(dead_code)]
-                    pub fn kani_proof_credential() -> () {
-                        ()
+                const _: () = {
+                    #[cfg(kani)]
+                    impl #impl_generics #name #ty_generics #where_clause {
+                        /// Return the trivial unit credential used for marker propositions.
+                        #[allow(dead_code)]
+                        pub fn kani_proof_credential() -> () {
+                            ()
+                        }
                     }
-                }
+                };
             };
             let pf_impl = quote! {
                 impl #impl_generics ::elicitation::contracts::ProvableFrom<()>
