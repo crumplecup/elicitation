@@ -133,3 +133,32 @@ impl ElicitIntrospect for ColumnDescriptor {
         }
     }
 }
+
+impl crate::ElicitPromptTree for ColumnDescriptor {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(|s| s.to_string()),
+            type_name: "ColumnDescriptor".to_string(),
+            fields: vec![
+                ("ordinal".to_string(), Box::new(usize::prompt_tree())),
+                ("name".to_string(), Box::new(String::prompt_tree())),
+                ("type_kind".to_string(), Box::new(crate::SqlTypeKind::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for ColumnDescriptor {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let ordinal = self.ordinal;
+        let name = &self.name;
+        let type_kind = self.type_kind.to_code_literal();
+        quote::quote! {
+            elicitation::ColumnDescriptor {
+                ordinal: #ordinal,
+                name: #name.to_string(),
+                type_kind: #type_kind,
+            }
+        }
+    }
+}

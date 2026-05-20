@@ -153,3 +153,24 @@ impl ElicitIntrospect for DriverKind {
         }
     }
 }
+
+impl crate::ElicitPromptTree for DriverKind {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Choose the SQL database driver:").to_string(),
+            type_name: "DriverKind".to_string(),
+            options: Self::labels(),
+            branches: Self::labels().iter().map(|_| None).collect(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for DriverKind {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            DriverKind::Postgres => quote::quote! { elicitation::DriverKind::Postgres },
+            DriverKind::Sqlite => quote::quote! { elicitation::DriverKind::Sqlite },
+            DriverKind::MySql => quote::quote! { elicitation::DriverKind::MySql },
+        }
+    }
+}

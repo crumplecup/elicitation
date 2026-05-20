@@ -277,4 +277,35 @@ mod sqlx_impls {
             ("columns", "Vec<ColumnEntry> — all column name/value pairs in this row"),
         ]
     );
+
+    // DriverKind — SQL backend selector (ReadyNow: missing ElicitSpec)
+    impl_select_spec!(
+        type    = crate::DriverKind,
+        name    = "elicitation::DriverKind",
+        summary = "SQL database driver category — Postgres, Sqlite, or MySql.",
+        variants = [
+            ("Postgres", "PostgreSQL / CockroachDB backend (postgres://)"),
+            ("Sqlite",   "SQLite embedded database backend (sqlite://)"),
+            ("MySql",    "MySQL / MariaDB backend (mysql://)"),
+        ]
+    );
+
+    // ColumnEntry — (name, value) pair (ReadyNow: missing ElicitSpec)
+    impl_builder_spec!(
+        type    = crate::ColumnEntry,
+        name    = "elicitation::ColumnEntry",
+        summary = "A single named column value within a SQL row.",
+        fields  = [
+            ("name",  "String — column name as returned by the database"),
+            ("value", "ColumnValue — the SQL value for this column"),
+        ]
+    );
+
+    // ElicitComplete impls for all 6 ReadyNow sqlx types
+    impl crate::ElicitComplete for crate::SqlTypeKind {}
+    impl crate::ElicitComplete for crate::ColumnValue {}
+    impl crate::ElicitComplete for crate::ColumnDescriptor {}
+    impl crate::ElicitComplete for crate::ColumnEntry {}
+    impl crate::ElicitComplete for crate::RowData {}
+    impl crate::ElicitComplete for crate::DriverKind {}
 }

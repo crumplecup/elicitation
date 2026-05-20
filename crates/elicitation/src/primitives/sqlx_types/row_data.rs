@@ -213,3 +213,52 @@ impl ElicitIntrospect for RowData {
         }
     }
 }
+
+impl crate::ElicitPromptTree for ColumnEntry {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(|s| s.to_string()),
+            type_name: "ColumnEntry".to_string(),
+            fields: vec![
+                ("name".to_string(), Box::new(String::prompt_tree())),
+                ("value".to_string(), Box::new(crate::ColumnValue::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for RowData {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(|s| s.to_string()),
+            type_name: "RowData".to_string(),
+            fields: vec![
+                ("columns".to_string(), Box::new(crate::ColumnEntry::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for ColumnEntry {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let name = &self.name;
+        let value = self.value.to_code_literal();
+        quote::quote! {
+            elicitation::ColumnEntry {
+                name: #name.to_string(),
+                value: #value,
+            }
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for RowData {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let columns = self.columns.iter().map(|c| c.to_code_literal());
+        quote::quote! {
+            elicitation::RowData {
+                columns: vec![#(#columns),*],
+            }
+        }
+    }
+}
