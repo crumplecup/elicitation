@@ -1932,8 +1932,6 @@ pub struct KvScanResult {
     pub offset: u64,
 }
 
-
-
 /// Descriptor for a durable KV snapshot (persistent savepoint).
 ///
 /// Produced by [`ArchiveKvPlugin`] snapshot operations.
