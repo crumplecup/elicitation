@@ -121,7 +121,7 @@ mod axum_impls {
     }
 
     use crate::{
-        AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
+        AxumDbSlot, AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
         AxumResponseDescriptor, AxumResponseKind, AxumRouteEntry, AxumRouterDescriptor,
         AxumServeDescriptor,
     };
@@ -244,4 +244,27 @@ mod axum_impls {
             ("graceful_shutdown",  "Optional graceful shutdown signal expression"),
         ]
     );
+
+    impl_axum_survey_spec!(
+        type    = AxumDbSlot,
+        name    = "elicitation::AxumDbSlot",
+        summary = "Db pool / state slot injected into an axum router via .with_state().",
+        fields  = [
+            ("pool_type",              "String — Rust type expression for the pool or state struct"),
+            ("var_name",               "String — variable name used in generated code"),
+            ("provide_leptos_context", "bool — emit leptos_routes_with_context and provide_context"),
+        ]
+    );
+
+    // ElicitComplete for all 10 axum ReadyNow types
+    impl crate::ElicitComplete for crate::AxumHttpMethod {}
+    impl crate::ElicitComplete for crate::AxumExtractorKind {}
+    impl crate::ElicitComplete for crate::AxumResponseKind {}
+    impl crate::ElicitComplete for crate::AxumRouteEntry {}
+    impl crate::ElicitComplete for crate::AxumDbSlot {}
+    impl crate::ElicitComplete for crate::AxumRouterDescriptor {}
+    impl crate::ElicitComplete for crate::AxumExtractorEntry {}
+    impl crate::ElicitComplete for crate::AxumHandlerDescriptor {}
+    impl crate::ElicitComplete for crate::AxumResponseDescriptor {}
+    impl crate::ElicitComplete for crate::AxumServeDescriptor {}
 }
