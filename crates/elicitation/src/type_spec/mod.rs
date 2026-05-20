@@ -51,6 +51,8 @@ mod polars_specs;
 mod proj_specs;
 mod ratatui_specs;
 mod regex_specs;
+#[cfg(feature = "redb-types")]
+mod redb_specs;
 mod registry;
 #[cfg(feature = "rstar-types")]
 mod rstar_specs;
