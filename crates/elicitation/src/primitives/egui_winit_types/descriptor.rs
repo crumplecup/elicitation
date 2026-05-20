@@ -138,7 +138,6 @@ impl EguiWinitDescriptor {
     }
 }
 
-#[cfg(feature = "emit")]
 impl crate::emit_code::ToCodeLiteral for EguiWinitRenderer {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
@@ -155,7 +154,6 @@ impl crate::emit_code::ToCodeLiteral for EguiWinitRenderer {
     }
 }
 
-#[cfg(feature = "emit")]
 impl crate::emit_code::ToCodeLiteral for EguiWinitTheme {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
@@ -501,7 +499,6 @@ impl crate::ElicitPromptTree for EguiWinitDescriptor {
     }
 }
 
-#[cfg(feature = "emit")]
 impl crate::emit_code::ToCodeLiteral for EguiWinitDescriptor {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let app_struct = &self.app_struct;
