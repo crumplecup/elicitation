@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled SurrealDB type wrappers — newtype shadows exposing surrealdb-types API as MCP tools"
-keywords = ["mcp", "surrealdb", "elicitation", "jsonschema", "reflect"]
+keywords = ["mcp", "surrealdb", "database", "elicitation", "agent"]
 categories = ["database", "development-tools"]
 
 [features]

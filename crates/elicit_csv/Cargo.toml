@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation shadow crate for the csv reader/writer library — MCP tools for CSV parsing and writing"
-keywords = ["mcp", "csv", "parsing", "elicitation"]
+keywords = ["mcp", "csv", "parsing", "elicitation", "agent"]
 categories = ["parser-implementations", "development-tools"]
 
 [features]

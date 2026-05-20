@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled geo algorithms MCP tools — predicates, measurements, transformations"
-keywords = ["mcp", "geo", "geometry", "algorithms", "elicitation"]
+keywords = ["mcp", "geo", "geospatial", "elicitation", "agent"]
 categories = ["science::geo", "mathematics", "algorithms", "development-tools"]
 
 [dependencies]

@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation shadow crate for toml, toml_edit, and toml_datetime — MCP tools for TOML parsing and document editing"
-keywords = ["mcp", "toml", "parsing", "elicitation"]
+keywords = ["mcp", "toml", "configuration", "elicitation", "agent"]
 categories = ["parser-implementations", "development-tools"]
 
 [features]

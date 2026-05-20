@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled accesskit type wrappers — newtypes with JsonSchema and MCP reflect methods"
-keywords = ["mcp", "accesskit", "accessibility", "elicitation", "jsonschema"]
+keywords = ["mcp", "accesskit", "accessibility", "elicitation", "agent"]
 categories = ["accessibility", "development-tools"]
 
 [dependencies]

@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "MCP tool transport for reqwest — newtype wrappers, plugin registry, and contract-verified HTTP workflows"
-keywords = ["mcp", "reqwest", "http", "elicitation", "workflow"]
+keywords = ["mcp", "reqwest", "http", "elicitation", "agent"]
 categories = ["web-programming::http-client", "development-tools", "asynchronous"]
 
 [dependencies]

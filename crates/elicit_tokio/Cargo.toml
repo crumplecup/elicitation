@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled tokio shadow crate — MCP tools for async time, sync primitives, and runtime inspection"
-keywords = ["mcp", "tokio", "elicitation", "async", "tools"]
+keywords = ["mcp", "tokio", "async-runtime", "elicitation", "agent"]
 categories = ["asynchronous", "development-tools"]
 
 [dependencies]

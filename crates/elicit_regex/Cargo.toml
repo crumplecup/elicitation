@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled Regex newtype — JsonSchema-compatible wrapper around regex::Regex with serde support"
-keywords = ["mcp", "regex", "elicitation", "jsonschema", "tools"]
+keywords = ["mcp", "regex", "pattern-matching", "elicitation", "agent"]
 categories = ["development-tools", "text-processing"]
 
 [dependencies]

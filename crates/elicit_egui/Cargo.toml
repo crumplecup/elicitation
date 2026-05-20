@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled egui widget tools — dual-mode MCP tools with code emission"
-keywords = ["mcp", "egui", "gui", "elicitation", "jsonschema"]
+keywords = ["mcp", "egui", "gui", "elicitation", "agent"]
 categories = ["gui", "development-tools"]
 
 [dependencies]

@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled wgpu code-generation tools for GPU descriptor construction"
-keywords = ["mcp", "wgpu", "gpu", "rendering", "elicitation"]
+keywords = ["mcp", "wgpu", "gpu", "elicitation", "agent"]
 categories = ["graphics", "rendering", "development-tools"]
 
 [lints.rust]

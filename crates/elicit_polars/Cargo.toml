@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled polars shadow crate — MCP tools for DataFrame, Expr, pipeline, and SQL"
-keywords = ["mcp", "polars", "dataframe", "elicitation"]
+keywords = ["mcp", "polars", "dataframe", "elicitation", "agent"]
 categories = ["data-structures", "science"]
 
 [dependencies]

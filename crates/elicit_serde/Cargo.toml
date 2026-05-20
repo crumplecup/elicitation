@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "MCP tool transport for serde — serialize/deserialize any registered Elicitation type as JSON"
-keywords = ["mcp", "serde", "serialization", "elicitation", "tools"]
+keywords = ["mcp", "serde", "serialization", "elicitation", "agent"]
 categories = ["encoding", "development-tools"]
 
 [dependencies]

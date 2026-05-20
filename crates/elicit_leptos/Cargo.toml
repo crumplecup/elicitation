@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled leptos shadow crate — MCP tools for reactive state and code generation"
-keywords = ["mcp", "leptos", "reactive", "webassembly", "elicitation"]
+keywords = ["mcp", "leptos", "webassembly", "elicitation", "agent"]
 categories = ["web-programming", "wasm"]
 
 [dependencies]

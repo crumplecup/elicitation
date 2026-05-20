@@ -10,7 +10,7 @@ documentation.workspace = true
 readme = "README.md"
 
 description = "Derive macros for elicitation library"
-keywords = ["mcp", "derive", "macro", "elicitation", "procedural"]
+keywords = ["mcp", "derive", "macro", "formal-verification", "elicitation"]
 categories = ["development-tools::procedural-macro-helpers"]
 
 [lib]

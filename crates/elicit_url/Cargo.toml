@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled url::Url wrapper with MCP reflect methods"
-keywords = ["mcp", "url", "elicitation", "jsonschema", "tools"]
+keywords = ["mcp", "url", "http", "elicitation", "agent"]
 categories = ["development-tools", "web-programming"]
 
 [dependencies]

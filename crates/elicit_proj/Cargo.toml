@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled proj shadow crate — MCP tools for coordinate reference system and projection descriptors"
-keywords = ["mcp", "proj", "geo", "elicitation", "gis"]
+keywords = ["mcp", "proj", "geospatial", "elicitation", "agent"]
 categories = ["science::geo", "mathematics", "development-tools"]
 
 [dependencies]

@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled uom shadow crate — MCP tools for units-of-measurement"
-keywords = ["mcp", "uom", "units", "physics", "elicitation"]
+keywords = ["mcp", "uom", "units-of-measure", "elicitation", "agent"]
 categories = ["science", "mathematics"]
 
 [dependencies]

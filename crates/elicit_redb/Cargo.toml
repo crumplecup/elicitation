@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled redb type wrappers — MCP tools for redb embedded key-value store code generation"
-keywords = ["mcp", "redb", "embedded", "database", "elicitation"]
+keywords = ["mcp", "redb", "embedded-database", "elicitation", "agent"]
 categories = ["database", "development-tools"]
 
 [features]

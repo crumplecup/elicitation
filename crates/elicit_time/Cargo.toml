@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled time newtypes — JsonSchema-compatible wrappers around time::OffsetDateTime and time::PrimitiveDateTime"
-keywords = ["mcp", "time", "datetime", "elicitation", "jsonschema"]
+keywords = ["mcp", "time", "datetime", "elicitation", "agent"]
 categories = ["development-tools", "date-and-time"]
 
 [dependencies]

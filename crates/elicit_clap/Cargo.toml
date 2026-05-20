@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled clap type wrappers — newtypes with JsonSchema and MCP reflect methods"
-keywords = ["mcp", "clap", "cli", "elicitation", "jsonschema"]
+keywords = ["mcp", "clap", "cli", "elicitation", "agent"]
 categories = ["command-line-interface", "development-tools"]
 
 [dependencies]

@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled geo-types shadow crate — MCP tools for geometric primitives"
-keywords = ["mcp", "geo", "geometry", "spatial", "elicitation"]
+keywords = ["mcp", "geo-types", "geospatial", "elicitation", "agent"]
 categories = ["science::geo", "mathematics", "development-tools"]
 
 [dependencies]

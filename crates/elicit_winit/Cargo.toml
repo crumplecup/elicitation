@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled winit code-generation tools for windowing and input"
-keywords = ["mcp", "winit", "windowing", "input", "elicitation"]
+keywords = ["mcp", "winit", "windowing", "elicitation", "agent"]
 categories = ["gui", "os", "development-tools"]
 
 [lints.rust]

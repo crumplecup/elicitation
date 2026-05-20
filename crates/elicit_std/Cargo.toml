@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "MCP macro tools for the Rust standard library — emit-only tools for format!, include_str!, env!, concat!"
-keywords = ["mcp", "std", "elicitation", "macros", "emit"]
+keywords = ["mcp", "standard-library", "elicitation", "primitives", "agent"]
 categories = ["development-tools"]
 
 [dependencies]

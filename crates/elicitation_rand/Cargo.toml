@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 description = "Random data generation through elicitation - castle on cloud verification pattern"
 repository.workspace = true
-keywords = ["elicitation", "rand", "random", "generator", "testing"]
+keywords = ["elicitation", "random", "generator", "property-testing", "formal-verification"]
 categories = ["development-tools::testing", "game-development"]
 
 [dependencies]

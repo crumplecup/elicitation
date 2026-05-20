@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled ratatui TUI tools — dual-mode MCP tools with code emission"
-keywords = ["mcp", "ratatui", "tui", "elicitation", "jsonschema"]
+keywords = ["mcp", "ratatui", "terminal-ui", "elicitation", "agent"]
 categories = ["command-line-interface", "development-tools"]
 
 [dependencies]

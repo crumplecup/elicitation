@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled axum shadow crate — MCP tools for router, handler, response, and serve descriptors"
-keywords = ["mcp", "axum", "web", "elicitation"]
+keywords = ["mcp", "axum", "web", "elicitation", "agent"]
 categories = ["web-programming", "network-programming"]
 
 [dependencies]

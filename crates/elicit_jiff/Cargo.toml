@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled jiff datetime wrappers with MCP reflect methods"
-keywords = ["mcp", "jiff", "datetime", "elicitation", "jsonschema"]
+keywords = ["mcp", "jiff", "datetime", "elicitation", "agent"]
 categories = ["development-tools", "date-and-time"]
 
 [dependencies]

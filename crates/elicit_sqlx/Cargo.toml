@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled sqlx type wrappers — newtypes with JsonSchema and MCP reflect methods"
-keywords = ["mcp", "sqlx", "database", "elicitation", "jsonschema"]
+keywords = ["mcp", "sqlx", "database", "elicitation", "agent"]
 categories = ["database", "development-tools"]
 
 [features]

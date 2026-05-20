@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled tower shadow crate — MCP tools for middleware, service builders, and tower-http layers"
-keywords = ["mcp", "tower", "elicitation", "middleware", "tools"]
+keywords = ["mcp", "tower", "middleware", "elicitation", "agent"]
 categories = ["network-programming", "development-tools"]
 
 [dependencies]

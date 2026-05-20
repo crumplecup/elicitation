@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
 description = "Elicitation-enabled Uuid newtype — JsonSchema-compatible wrapper around uuid::Uuid for MCP tool integration"
-keywords = ["mcp", "uuid", "elicitation", "jsonschema", "tools"]
+keywords = ["mcp", "uuid", "identifier", "elicitation", "agent"]
 categories = ["development-tools"]
 
 [dependencies]
