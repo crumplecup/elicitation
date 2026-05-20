@@ -227,4 +227,316 @@ mod accesskit_impls {
         summary = "The preferred position of a node after ScrollIntoView: TopLeft, BottomRight, \
                    TopEdge, BottomEdge, LeftEdge, or RightEdge."
     );
+
+    // -------------------------------------------------------------------------
+    // Macro: impl_accesskit_survey_spec!
+    //
+    // Derives ElicitSpec for an accesskit Survey struct. ElicitPromptTree and
+    // ToCodeLiteral are already implemented in the primitives files; this macro
+    // only adds ElicitSpec + inventory::submit!.
+    // -------------------------------------------------------------------------
+
+    macro_rules! impl_accesskit_survey_spec {
+        (
+            type    = $ty:ty,
+            name    = $name:literal,
+            summary = $summary:literal,
+            fields  = [ $( ($field:literal, $desc:literal) ),+ $(,)? ]
+        ) => {
+            impl ElicitSpec for $ty {
+                fn type_spec() -> TypeSpec {
+                    let field_entries = vec![
+                        $(
+                            SpecEntryBuilder::default()
+                                .label($field.to_string())
+                                .description($desc.to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                        )+
+                    ];
+                    let fields = SpecCategoryBuilder::default()
+                        .name("fields".to_string())
+                        .entries(field_entries)
+                        .build()
+                        .expect("valid SpecCategory");
+                    let source = SpecCategoryBuilder::default()
+                        .name("source".to_string())
+                        .entries(vec![
+                            SpecEntryBuilder::default()
+                                .label("crate".to_string())
+                                .description(
+                                    "accesskit v0.24 — cross-platform accessibility tree library"
+                                        .to_string(),
+                                )
+                                .build()
+                                .expect("valid SpecEntry"),
+                            SpecEntryBuilder::default()
+                                .label("pattern".to_string())
+                                .description("Survey — elicit each field in sequence".to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+                    TypeSpecBuilder::default()
+                        .type_name($name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![fields, source])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+        };
+    }
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Point,
+        name    = "accesskit::Point",
+        summary = "A 2-D point with f64 x and y coordinates.",
+        fields  = [
+            ("x", "Horizontal coordinate"),
+            ("y", "Vertical coordinate"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Vec2,
+        name    = "accesskit::Vec2",
+        summary = "A 2-D vector (offset) with f64 x and y components.",
+        fields  = [
+            ("x", "Horizontal component"),
+            ("y", "Vertical component"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Size,
+        name    = "accesskit::Size",
+        summary = "A 2-D size with f64 width and height.",
+        fields  = [
+            ("width",  "Horizontal extent"),
+            ("height", "Vertical extent"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Rect,
+        name    = "accesskit::Rect",
+        summary = "An axis-aligned rectangle defined by (x0, y0) top-left and (x1, y1) bottom-right.",
+        fields  = [
+            ("x0", "Left edge"),
+            ("y0", "Top edge"),
+            ("x1", "Right edge"),
+            ("y1", "Bottom edge"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Affine,
+        name    = "accesskit::Affine",
+        summary = "A 2-D affine transform represented as a 3×3 matrix with 6 coefficients [a,b,c,d,e,f].",
+        fields  = [
+            ("a", "Scale X"),
+            ("b", "Shear Y"),
+            ("c", "Shear X"),
+            ("d", "Scale Y"),
+            ("e", "Translate X"),
+            ("f", "Translate Y"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::NodeId,
+        name    = "accesskit::NodeId",
+        summary = "A unique numeric identifier (u64) for a node in an accessibility tree.",
+        fields  = [
+            ("0", "The raw u64 node identifier"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Node,
+        name    = "accesskit::Node",
+        summary = "An accessibility tree node — elicited by specifying its Role; \
+                   all other properties default to None.",
+        fields  = [
+            ("role", "The semantic role of this node (e.g. Button, TextField, List)"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::TextDecoration,
+        name    = "accesskit::TextDecoration",
+        summary = "A text decoration (underline, strikethrough, etc.) with style and optional color.",
+        fields  = [
+            ("style", "Line style: Solid, Dotted, Dashed, Double, or Wavy"),
+            ("color", "Optional RGBA color for the decoration line"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::TextPosition,
+        name    = "accesskit::TextPosition",
+        summary = "A position within a text run: the node ID and the character index.",
+        fields  = [
+            ("node",            "The node containing the text"),
+            ("character_index", "Zero-based character offset within the node's text"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::TextSelection,
+        name    = "accesskit::TextSelection",
+        summary = "A text selection range: anchor (where selection started) and focus (current end).",
+        fields  = [
+            ("anchor", "Start position of the selection (TextPosition)"),
+            ("focus",  "End / active position of the selection (TextPosition)"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::CustomAction,
+        name    = "accesskit::CustomAction",
+        summary = "A custom action defined by the accessibility provider: \
+                   a numeric ID and a human-readable description.",
+        fields  = [
+            ("id",          "Provider-defined integer action identifier"),
+            ("description", "Human-readable name of the action"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::Tree,
+        name    = "accesskit::Tree",
+        summary = "Top-level metadata for an accessibility tree: the root node ID and \
+                   optional toolkit name / version strings.",
+        fields  = [
+            ("root",          "NodeId of the tree root"),
+            ("toolkit_name",  "Optional name of the UI toolkit (e.g. \"egui\")"),
+            ("toolkit_version", "Optional version string of the UI toolkit"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::TreeUpdate,
+        name    = "accesskit::TreeUpdate",
+        summary = "An atomic update to an accessibility tree: a batch of nodes, \
+                   optional tree metadata, tree UUID, and current focus.",
+        fields  = [
+            ("nodes",   "Vec of (NodeId, Node) pairs to add or update"),
+            ("tree",    "Optional Tree metadata (required on first update)"),
+            ("tree_id", "UUID identifying the tree (use TreeId::ROOT for the main tree)"),
+            ("focus",   "NodeId of the currently focused node"),
+        ]
+    );
+
+    impl_accesskit_survey_spec!(
+        type    = accesskit::ActionRequest,
+        name    = "accesskit::ActionRequest",
+        summary = "A request to perform an accessibility action on a specific node \
+                   in a specific tree, with optional action data payload.",
+        fields  = [
+            ("action",      "The Action variant to perform"),
+            ("target_tree", "UUID of the tree containing the target node"),
+            ("target_node", "NodeId of the node to act on"),
+            ("data",        "Optional ActionData payload for the action"),
+        ]
+    );
+
+    // ActionData: non-unit enum — ElicitSpec registered separately via select-style spec.
+    impl ElicitSpec for accesskit::ActionData {
+        fn type_spec() -> TypeSpec {
+            let variants = SpecCategoryBuilder::default()
+                .name("variants".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default().label("customAction".to_string())
+                        .description("CustomAction(i32) — provider-defined action by ID".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("value".to_string())
+                        .description("Value(Box<str>) — set a string value".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("numericValue".to_string())
+                        .description("NumericValue(f64) — set a numeric value".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("scrollUnit".to_string())
+                        .description("ScrollUnit(ScrollUnit) — scroll by unit".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("scrollHint".to_string())
+                        .description("ScrollHint(ScrollHint) — scroll-into-view hint position".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("scrollToPoint".to_string())
+                        .description("ScrollToPoint(Point) — scroll to absolute position".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("setScrollOffset".to_string())
+                        .description("SetScrollOffset(Point) — set the scroll offset".to_string())
+                        .build().expect("valid SpecEntry"),
+                    SpecEntryBuilder::default().label("setTextSelection".to_string())
+                        .description("SetTextSelection(TextSelection) — set the text selection".to_string())
+                        .build().expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            let source = SpecCategoryBuilder::default()
+                .name("source".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("crate".to_string())
+                        .description(
+                            "accesskit v0.24 — cross-platform accessibility tree library"
+                                .to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("pattern".to_string())
+                        .description(
+                            "Select — choose variant, then elicit its inner value".to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            TypeSpecBuilder::default()
+                .type_name("accesskit::ActionData".to_string())
+                .summary(
+                    "Action data payload: pick a variant (CustomAction, Value, NumericValue, \
+                     ScrollUnit, ScrollHint, ScrollToPoint, SetScrollOffset, SetTextSelection) \
+                     then supply the inner value."
+                        .to_string(),
+                )
+                .categories(vec![variants, source])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "accesskit::ActionData",
+        <accesskit::ActionData as ElicitSpec>::type_spec,
+        std::any::TypeId::of::<accesskit::ActionData>
+    ));
+
+    // ElicitComplete for all 15 new accesskit ReadyNow types
+    impl ElicitComplete for accesskit::Point {}
+    impl ElicitComplete for accesskit::Vec2 {}
+    impl ElicitComplete for accesskit::Size {}
+    impl ElicitComplete for accesskit::Rect {}
+    impl ElicitComplete for accesskit::Affine {}
+    impl ElicitComplete for accesskit::NodeId {}
+    impl ElicitComplete for accesskit::Node {}
+    impl ElicitComplete for accesskit::TextDecoration {}
+    impl ElicitComplete for accesskit::TextPosition {}
+    impl ElicitComplete for accesskit::TextSelection {}
+    impl ElicitComplete for accesskit::CustomAction {}
+    impl ElicitComplete for accesskit::Tree {}
+    impl ElicitComplete for accesskit::TreeUpdate {}
+    impl ElicitComplete for accesskit::ActionRequest {}
+    impl ElicitComplete for accesskit::ActionData {}
 }

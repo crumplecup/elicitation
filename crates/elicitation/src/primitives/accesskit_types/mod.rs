@@ -34,20 +34,32 @@
 
 mod action;
 mod aria_current;
+mod action_data;
+mod action_request;
 mod auto_complete;
+mod color;
+mod custom_action;
+mod geometry;
 mod has_popup;
 mod invalid;
 mod list_style;
 mod live;
+mod node;
+mod node_id;
 mod orientation;
 mod role;
 mod scroll_hint;
 mod scroll_unit;
 mod sort_direction;
 mod text_align;
+mod text_decoration;
 mod text_decoration_style;
 mod text_direction;
+mod text_position;
+mod text_selection;
 mod toggled;
+mod tree;
+mod tree_update;
 mod vertical_offset;
 
 pub use action::ActionStyle;
