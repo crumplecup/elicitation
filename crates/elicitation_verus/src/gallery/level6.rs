@@ -7,7 +7,6 @@
 //! production VSM companions.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 verus! {
 

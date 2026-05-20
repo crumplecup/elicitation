@@ -6,7 +6,6 @@
 //! Expected: ✓ proves.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 verus! {
 
@@ -58,7 +57,7 @@ pub proof fn v10_advance(tracked tok: V10Token, new_s: V10State) -> (tracked new
 }
 
 /// Step 1: Initial → Loading.
-pub fn v10_step1(state: V10State, label: String) -> (r: V10State)
+pub fn v10_step1(_state: V10State, label: String) -> (r: V10State)
     requires
         v10_wf(&state),
         state matches V10State::Initial,

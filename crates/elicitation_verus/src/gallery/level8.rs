@@ -9,7 +9,6 @@
 //! provide automatic enforcement but impose stricter encapsulation.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 verus! {
 
@@ -81,6 +80,9 @@ impl V8Machine {
     pub fn count(&self) -> (r: u64)
         ensures r == Self::count_of(self),
     { self.count }
+
+    pub fn name(&self) -> (r: &str)
+    { self.name.as_str() }
 }
 
 } // verus!

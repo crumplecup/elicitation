@@ -32,4 +32,5 @@ vstd = "0.0.0-2026-05-17-0151"
 unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(verus)',
   'cfg(verus_verify_core)',
+  'cfg(verus_keep_ghost)',
 ] }

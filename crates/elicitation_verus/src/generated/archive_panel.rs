@@ -11,7 +11,6 @@
 //   real transition bodies in elicit_server.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
@@ -21,95 +20,95 @@ verus! {
 
 /// Stub for `column_detail` — body is opaque to Verus.
 #[verifier::external]
-pub fn column_detail_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn column_detail_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `panel_loading` — body is opaque to Verus.
 #[verifier::external]
-pub fn panel_loading_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn panel_loading_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `panel_error` — body is opaque to Verus.
 #[verifier::external]
-pub fn panel_error_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn panel_error_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `data_grid_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn data_grid_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn data_grid_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `query_complete` — body is opaque to Verus.
 #[verifier::external]
-pub fn query_complete_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn query_complete_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `begin_edit` — body is opaque to Verus.
 #[verifier::external]
-pub fn begin_edit_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn begin_edit_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `commit_edits` — body is opaque to Verus.
 #[verifier::external]
-pub fn commit_edits_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn commit_edits_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `abort_edits` — body is opaque to Verus.
 #[verifier::external]
-pub fn abort_edits_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn abort_edits_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `open_sql_editor` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_sql_editor_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn open_sql_editor_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `open_export_panel` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_export_panel_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn open_export_panel_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `open_help_panel` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_help_panel_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn open_help_panel_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `open_saved_panel` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_saved_panel_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn open_saved_panel_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `open_connection_editor` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_connection_editor_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn open_connection_editor_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `ddl_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn ddl_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn ddl_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `explain_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn explain_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn explain_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `export_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn export_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn export_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `history_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn history_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn history_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `saved_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn saved_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn saved_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `monitor_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn monitor_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn monitor_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `admin_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn admin_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn admin_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `erd_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn erd_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn erd_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `constraints_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn constraints_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn constraints_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 /// Stub for `indexes_ready` — body is opaque to Verus.
 #[verifier::external]
-pub fn indexes_ready_stub(state: ArchivePanelState) -> ArchivePanelState { todo!() }
+pub fn indexes_ready_stub(_state: ArchivePanelState) -> ArchivePanelState { todo!() }
 
 
 /// Abstract mirror of `ArchivePanelState` (invariant-relevant variants only).

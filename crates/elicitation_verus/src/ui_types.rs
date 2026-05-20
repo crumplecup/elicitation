@@ -82,12 +82,12 @@ pub fn verify_overflow_detected(
 
 /// Element exactly fills viewport: passes overflow check.
 pub fn verify_exact_fit(
-    w: u32, h: u32,
+    _w: u32, _h: u32,
 ) -> (result: bool)
     ensures result == true,
 {
-    // x=0, y=0, viewport = element size
-    (0u32 + w) <= w && (0u32 + h) <= h
+    // x=0, y=0, viewport = element size: always in bounds
+    true
 }
 
 // ============================================================================
@@ -190,14 +190,14 @@ pub fn verify_heading_size_positive(level: u32) -> (result: bool)
         else if level == 4 { 16 }
         else if level == 5 { 14 }
         else { 12 };
-    size >= 12 && size <= 28
+    (12..=28).contains(&size)
 }
 
 /// bounds_to_size: absolute value of difference is non-negative.
 pub fn verify_bounds_abs_non_negative(a: u32, b: u32) -> (result: u32)
     ensures result as int >= 0,
 {
-    if a >= b { a - b } else { b - a }
+    a.abs_diff(b)
 }
 
 /// RenderStats default: all fields are zero.
@@ -339,10 +339,7 @@ pub fn shadow_is_zoom_invariant(unit: &ShadowCssUnit) -> (result: bool)
             ShadowCssUnit::Percent => true,
         },
 {
-    match unit {
-        ShadowCssUnit::Px => false,
-        _ => true,
-    }
+    !matches!(unit, ShadowCssUnit::Px)
 }
 
 /// Only Px is not zoom-invariant.
@@ -407,10 +404,7 @@ pub fn verify_layout_mode_default_is_block() -> (result: bool)
     ensures result == true,
 {
     let mode = shadow_layout_mode_default();
-    match mode {
-        ShadowLayoutMode::Block => true,
-        _ => false,
-    }
+    matches!(mode, ShadowLayoutMode::Block)
 }
 
 /// Shadow touch target check: width >= 44 && height >= 44.

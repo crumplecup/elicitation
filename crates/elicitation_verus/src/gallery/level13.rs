@@ -14,7 +14,6 @@
 //! Expected: ✓ proves.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 verus! {
 

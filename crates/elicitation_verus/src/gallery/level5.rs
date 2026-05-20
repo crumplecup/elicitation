@@ -6,7 +6,6 @@
 //! Expected: ✓ proves.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 verus! {
 
@@ -31,7 +30,7 @@ pub fn v5_new(name: String) -> (r: V5State)
 }
 
 /// Rename: replace name, preserving the invariant.
-pub fn v5_rename(s: V5State, new_name: String) -> (r: V5State)
+pub fn v5_rename(_s: V5State, new_name: String) -> (r: V5State)
     requires
         v5_wf(&s),
         new_name@.len() > 0 && new_name@.len() <= 100,

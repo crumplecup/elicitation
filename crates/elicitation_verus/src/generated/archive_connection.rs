@@ -11,7 +11,6 @@
 //   real transition bodies in elicit_server.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
@@ -21,31 +20,31 @@ verus! {
 
 /// Stub for `begin_connect_sql` — body is opaque to Verus.
 #[verifier::external]
-pub fn begin_connect_sql_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn begin_connect_sql_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `begin_connect_kv` — body is opaque to Verus.
 #[verifier::external]
-pub fn begin_connect_kv_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn begin_connect_kv_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `finish_connect_sql` — body is opaque to Verus.
 #[verifier::external]
-pub fn finish_connect_sql_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn finish_connect_sql_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `finish_connect_kv` — body is opaque to Verus.
 #[verifier::external]
-pub fn finish_connect_kv_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn finish_connect_kv_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `disconnect` — body is opaque to Verus.
 #[verifier::external]
-pub fn disconnect_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn disconnect_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `reconnect` — body is opaque to Verus.
 #[verifier::external]
-pub fn reconnect_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn reconnect_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 /// Stub for `connection_error` — body is opaque to Verus.
 #[verifier::external]
-pub fn connection_error_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
+pub fn connection_error_stub(_state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
 
 /// Abstract mirror of `ArchiveConnectionState` (invariant-relevant variants only).

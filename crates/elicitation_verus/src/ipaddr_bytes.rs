@@ -36,7 +36,7 @@ impl Ipv4Bytes {
         let second = self.octets[1];
 
         first == 10 ||
-        (first == 172 && second >= 16 && second <= 31) ||
+        (first == 172 && (16..=31).contains(&second)) ||
         (first == 192 && second == 168)
     }
 
@@ -124,7 +124,7 @@ impl Ipv6Bytes {
     {
         // RFC 4193: fc00::/7 (unique local)
         let first = self.segments[0];
-        first >= 0xfc00 && first <= 0xfdff
+        (0xfc00..=0xfdff).contains(&first)
     }
 
     pub fn is_loopback(&self) -> (result: bool)

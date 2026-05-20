@@ -11,7 +11,6 @@
 //   real transition bodies in elicit_server.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
@@ -21,39 +20,39 @@ verus! {
 
 /// Stub for `load_nav` — body is opaque to Verus.
 #[verifier::external]
-pub fn load_nav_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn load_nav_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `nav_loaded` — body is opaque to Verus.
 #[verifier::external]
-pub fn nav_loaded_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn nav_loaded_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `nav_refresh` — body is opaque to Verus.
 #[verifier::external]
-pub fn nav_refresh_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn nav_refresh_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `expand_schema` — body is opaque to Verus.
 #[verifier::external]
-pub fn expand_schema_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn expand_schema_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `collapse_schema` — body is opaque to Verus.
 #[verifier::external]
-pub fn collapse_schema_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn collapse_schema_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `move_cursor_up` — body is opaque to Verus.
 #[verifier::external]
-pub fn move_cursor_up_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn move_cursor_up_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `move_cursor_down` — body is opaque to Verus.
 #[verifier::external]
-pub fn move_cursor_down_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn move_cursor_down_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `apply_filter` — body is opaque to Verus.
 #[verifier::external]
-pub fn apply_filter_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn apply_filter_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 /// Stub for `clear_filter` — body is opaque to Verus.
 #[verifier::external]
-pub fn clear_filter_stub(state: ArchiveNavState) -> ArchiveNavState { todo!() }
+pub fn clear_filter_stub(_state: ArchiveNavState) -> ArchiveNavState { todo!() }
 
 
 /// Abstract mirror of `ArchiveNavState` (invariant-relevant variants only).

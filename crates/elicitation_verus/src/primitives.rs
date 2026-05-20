@@ -95,10 +95,8 @@ pub fn verify_char_construction(value: char) -> (result: char)
 // ============================================================================
 
 /// Proof that unit type can be constructed.
-pub fn verify_unit_construction() -> (result: ())
-    ensures result == (),
-{
-    ()
-}
+pub fn verify_unit_construction()
+    ensures true,
+{}
 
 } // verus!

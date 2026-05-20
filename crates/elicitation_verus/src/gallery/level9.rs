@@ -39,9 +39,8 @@ pub fn v9_use_normalize(x: u64) -> (r: u64)
 pub fn v9_chain(a: u64, b: u64) -> (r: u64)
     ensures r > 0,
 {
-    let _first  = v9_normalize(a);
-    let second = v9_normalize(b);
-    second
+    let _first = v9_normalize(a);
+    v9_normalize(b)
 }
 
 } // verus!

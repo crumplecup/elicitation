@@ -11,7 +11,6 @@
 //   real transition bodies in elicit_server.
 
 use verus_builtin_macros::verus;
-use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
@@ -21,47 +20,47 @@ verus! {
 
 /// Stub for `close_overlay` — body is opaque to Verus.
 #[verifier::external]
-pub fn close_overlay_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn close_overlay_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `open_help` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_help_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn open_help_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `open_export_picker` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_export_picker_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn open_export_picker_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `picker_move_up` — body is opaque to Verus.
 #[verifier::external]
-pub fn picker_move_up_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn picker_move_up_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `picker_move_down` — body is opaque to Verus.
 #[verifier::external]
-pub fn picker_move_down_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn picker_move_down_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `open_save_prompt` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_save_prompt_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn open_save_prompt_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `prompt_push` — body is opaque to Verus.
 #[verifier::external]
-pub fn prompt_push_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn prompt_push_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `prompt_backspace` — body is opaque to Verus.
 #[verifier::external]
-pub fn prompt_backspace_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn prompt_backspace_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `open_saved_browser` — body is opaque to Verus.
 #[verifier::external]
-pub fn open_saved_browser_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn open_saved_browser_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `saved_browser_up` — body is opaque to Verus.
 #[verifier::external]
-pub fn saved_browser_up_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn saved_browser_up_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 /// Stub for `saved_browser_down` — body is opaque to Verus.
 #[verifier::external]
-pub fn saved_browser_down_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
+pub fn saved_browser_down_stub(_state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
 
 /// Abstract mirror of `ArchiveOverlayState` (invariant-relevant variants only).
