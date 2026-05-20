@@ -10,12 +10,13 @@
 //! the rest of the proof never changes.
 //! Expected: ✓ proves.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
+use crate::gallery::level11::V11State;
+#[cfg(verus_keep_ghost)]
 use crate::gallery::level11::{
-    V11State, v11_inv, v11_is_begin, v11_is_advance,
-    v11_leaf_begin, v11_leaf_advance, v11_leaf_trivial,
+    v11_inv, v11_is_advance, v11_is_begin, v11_leaf_advance, v11_leaf_begin, v11_leaf_trivial,
 };
 
 verus! {

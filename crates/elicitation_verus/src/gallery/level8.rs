@@ -8,8 +8,8 @@
 //! Note: compared to V7's `requires`/`ensures` approach, type invariants
 //! provide automatic enforcement but impose stricter encapsulation.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 verus! {
 

@@ -13,8 +13,10 @@
 //! to model an async transition Verus cannot inspect.
 //! Expected: ✓ proves.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
+
+verus! {
 
 /// External transition — Verus does not see or verify the body.
 /// In production this represents an async fn in `elicit_server` (or any crate
@@ -23,8 +25,6 @@ use verus_builtin_macros::verus;
 pub fn v13_begin_ext(count: u64) -> V13State {
     V13State::Filtered { count, cursor: 0 }
 }
-
-verus! {
 
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;

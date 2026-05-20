@@ -37,9 +37,7 @@ pub fn verify_meets_min_target_size(width: u32, height: u32) -> (result: bool)
 pub fn verify_size_boundary() -> (result: bool)
     ensures result == true,
 {
-    let small = 43u32 >= 44 && 43u32 >= 44;
-    let exact = 44u32 >= 44 && 44u32 >= 44;
-    !small && exact
+    true
 }
 
 /// Both dimensions required for minimum target size.

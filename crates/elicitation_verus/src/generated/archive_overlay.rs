@@ -10,13 +10,14 @@
 //   formal_method contract); Kani and Creusot independently verify the
 //   real transition bodies in elicit_server.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
 // Verus does not verify their bodies; assume_specification below injects
 // the trusted contracts.  Kani/Creusot independently verify the real bodies.
+verus! {
 
 /// Stub for `close_overlay` — body is opaque to Verus.
 #[verifier::external]
@@ -62,7 +63,6 @@ pub fn saved_browser_up_stub(state: ArchiveOverlayState) -> ArchiveOverlayState 
 #[verifier::external]
 pub fn saved_browser_down_stub(state: ArchiveOverlayState) -> ArchiveOverlayState { todo!() }
 
-verus! {
 
 /// Abstract mirror of `ArchiveOverlayState` (invariant-relevant variants only).
 #[allow(unused_imports)]

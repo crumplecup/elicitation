@@ -10,13 +10,14 @@
 //   formal_method contract); Kani and Creusot independently verify the
 //   real transition bodies in elicit_server.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 // ─── External transition stubs ─────────────────────────────────────────────────
 // These functions represent the real transitions in elicit_server.
 // Verus does not verify their bodies; assume_specification below injects
 // the trusted contracts.  Kani/Creusot independently verify the real bodies.
+verus! {
 
 /// Stub for `begin_connect_sql` — body is opaque to Verus.
 #[verifier::external]
@@ -46,7 +47,6 @@ pub fn reconnect_stub(state: ArchiveConnectionState) -> ArchiveConnectionState {
 #[verifier::external]
 pub fn connection_error_stub(state: ArchiveConnectionState) -> ArchiveConnectionState { todo!() }
 
-verus! {
 
 /// Abstract mirror of `ArchiveConnectionState` (invariant-relevant variants only).
 #[allow(unused_imports)]

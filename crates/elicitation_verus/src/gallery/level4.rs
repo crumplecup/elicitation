@@ -57,8 +57,11 @@ verus! {
 // Required for `>` in requires/ensures with u64 — comparison operators use SpecOrd.
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
+#[cfg(verus_keep_ghost)]
 use self::inner::v4a_open_inv;
+#[cfg(verus_keep_ghost)]
 use self::inner::v4b_closed_inv;
+#[cfg(verus_keep_ghost)]
 use self::inner::v4c_lemma_positive_implies_inv;
 
 // V4a — open spec fn: body transparent, direct proof works.

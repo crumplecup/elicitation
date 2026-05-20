@@ -6,8 +6,8 @@
 //! Expected: ✓ proves — confirms the ghost token pattern before applying to
 //! production VSM companions.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 verus! {
 

@@ -5,8 +5,8 @@
 //! No `extern_spec!` needed.
 //! Expected: ✓ proves.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 verus! {
 

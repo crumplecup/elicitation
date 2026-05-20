@@ -10,6 +10,8 @@
 
 use verus_builtin_macros::verus;
 
+verus! {
+
 /// An "external" normalizer whose body Verus does not verify.
 /// In production this would be a function from another crate (e.g., an
 /// async transition we cannot call directly).
@@ -17,8 +19,6 @@ use verus_builtin_macros::verus;
 fn v9_normalize(x: u64) -> u64 {
     x.max(1) // always ≥ 1, but Verus doesn't see this
 }
-
-verus! {
 
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;

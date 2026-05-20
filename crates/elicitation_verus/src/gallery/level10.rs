@@ -5,8 +5,8 @@
 //! composing production VSM companions works before touching the archive.
 //! Expected: ✓ proves.
 
-use vstd::prelude::*;
 use verus_builtin_macros::verus;
+use vstd::prelude::*;
 
 verus! {
 

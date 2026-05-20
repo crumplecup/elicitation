@@ -15,7 +15,6 @@
 //! These proofs are for verification only and don't affect runtime behavior.
 //! Run with: `verus crates/elicitation_verus/src/lib.rs`
 
-
 // Serde boundary consistency theorems
 pub mod serde_boundary;
 
@@ -47,25 +46,25 @@ pub mod utf8;
 pub mod uuid_bytes;
 
 // Base type proofs (stdlib and external crates)
-pub mod external_types;
-pub mod primitives;
-pub mod stdlib_collections;
 pub mod clap_types;
-pub mod sqlx_types;
-pub mod tokio_types;
 pub mod egui_types;
-pub mod ratatui_types;
+pub mod external_types;
 pub mod geo_types;
-pub mod georaster_types;
 pub mod geojson_types;
-pub mod rstar_types;
-pub mod proj_types;
-pub mod wkt_types;
-pub mod wkb_types;
+pub mod georaster_types;
 pub mod palette_types;
+pub mod primitives;
+pub mod proj_types;
+pub mod ratatui_types;
+pub mod rstar_types;
+pub mod sqlx_types;
+pub mod stdlib_collections;
+pub mod tokio_types;
 pub mod ui_types;
-pub mod winit_types;
 pub mod wgpu_types;
+pub mod winit_types;
+pub mod wkb_types;
+pub mod wkt_types;
 
 // Proof gallery — learning curriculum for the VSM companion pattern
 pub mod gallery;
