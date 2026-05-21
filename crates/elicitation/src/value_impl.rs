@@ -3,8 +3,8 @@
 //! Available with the `serde_json` feature.
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select,
-    mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
 use serde_json::Value;
 
@@ -312,3 +312,46 @@ fn elicit_object<'a, C: ElicitCommunicator + 'a>(
         Ok(Value::Object(map))
     })
 }
+
+impl ElicitIntrospect for Value {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "serde_json::Value",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: vec![
+                    VariantMetadata { label: "Null".to_string(), fields: vec![] },
+                    VariantMetadata { label: "Bool".to_string(), fields: vec![] },
+                    VariantMetadata { label: "Number".to_string(), fields: vec![] },
+                    VariantMetadata { label: "String".to_string(), fields: vec![] },
+                    VariantMetadata { label: "Array".to_string(), fields: vec![] },
+                    VariantMetadata { label: "Object".to_string(), fields: vec![] },
+                ],
+            },
+        }
+    }
+}
+
+impl crate::ElicitSpec for Value {
+    fn type_spec() -> crate::TypeSpec {
+        crate::TypeSpecBuilder::default()
+            .type_name("serde_json::Value".to_string())
+            .summary("Any JSON value: null, bool, number, string, array, or object.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(crate::TypeSpecInventoryKey::new(
+    "serde_json::Value",
+    <Value as crate::ElicitSpec>::type_spec,
+    std::any::TypeId::of::<Value>
+));
+
+#[cfg(not(kani))]
+impl crate::ElicitComplete for Value {}
