@@ -93,6 +93,86 @@ mod chrono_specs {
 
     #[cfg(not(kani))]
     impl crate::ElicitComplete for DateTimeUtcAfter {}
+
+    impl crate::ElicitSpec for chrono::Weekday {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::Weekday".to_string())
+                .summary("ISO day of the week (Mon–Sun).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::Weekday",
+        <chrono::Weekday as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::Weekday>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::Weekday {}
+
+    impl crate::ElicitSpec for chrono::NaiveDate {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::NaiveDate".to_string())
+                .summary("A calendar date without time or timezone (YYYY-MM-DD).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::NaiveDate",
+        <chrono::NaiveDate as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::NaiveDate>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::NaiveDate {}
+
+    impl crate::ElicitSpec for chrono::NaiveTime {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::NaiveTime".to_string())
+                .summary("A time of day without date or timezone (HH:MM:SS).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::NaiveTime",
+        <chrono::NaiveTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::NaiveTime>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::NaiveTime {}
+
+    impl crate::ElicitSpec for chrono::NaiveDateTime {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::NaiveDateTime".to_string())
+                .summary("A combined date and time without timezone (ISO 8601 local).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::NaiveDateTime",
+        <chrono::NaiveDateTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::NaiveDateTime>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::NaiveDateTime {}
 }
 
 // ── jiff ──────────────────────────────────────────────────────────────────────

@@ -23,16 +23,20 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
+    ElicitPromptTree, ElicitationPattern, Generator, PatternDetails, Prompt, PromptTree, Select,
+    TypeMetadata, VariantMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
+    emit_code::ToCodeLiteral,
     mcp,
 };
-use chrono::{DateTime, Duration, FixedOffset, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Datelike, Duration, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc, Weekday};
 
 // Style enums for datetime types
 crate::default_style!(DateTime<Utc> => DateTimeUtcStyle);
 crate::default_style!(DateTime<FixedOffset> => DateTimeFixedOffsetStyle);
+crate::default_style!(NaiveDate => NaiveDateStyle);
 crate::default_style!(NaiveDateTime => NaiveDateTimeStyle);
+crate::default_style!(NaiveTime => NaiveTimeStyle);
 crate::default_style!(DateTimeUtcGenerationMode => DateTimeUtcGenerationModeStyle);
 crate::default_style!(NaiveDateTimeGenerationMode => NaiveDateTimeGenerationModeStyle);
 
@@ -697,5 +701,326 @@ impl ElicitIntrospect for NaiveDateTime {
             description: Self::prompt(),
             details: PatternDetails::Primitive,
         }
+    }
+}
+
+// ============================================================================
+// Weekday
+// ============================================================================
+
+impl Prompt for Weekday {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose a day of the week:")
+    }
+}
+
+impl Select for Weekday {
+    fn options() -> Vec<Self> {
+        vec![
+            Weekday::Mon,
+            Weekday::Tue,
+            Weekday::Wed,
+            Weekday::Thu,
+            Weekday::Fri,
+            Weekday::Sat,
+            Weekday::Sun,
+        ]
+    }
+
+    fn labels() -> Vec<String> {
+        vec![
+            "Mon".to_string(),
+            "Tue".to_string(),
+            "Wed".to_string(),
+            "Thu".to_string(),
+            "Fri".to_string(),
+            "Sat".to_string(),
+            "Sun".to_string(),
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "Mon" => Some(Weekday::Mon),
+            "Tue" => Some(Weekday::Tue),
+            "Wed" => Some(Weekday::Wed),
+            "Thu" => Some(Weekday::Thu),
+            "Fri" => Some(Weekday::Fri),
+            "Sat" => Some(Weekday::Sat),
+            "Sun" => Some(Weekday::Sun),
+            _ => None,
+        }
+    }
+}
+
+crate::default_style!(Weekday => WeekdayStyle);
+
+impl Elicitation for Weekday {
+    type Style = WeekdayStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting Weekday");
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose a day of the week:"),
+            &Self::labels(),
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid Weekday: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("Weekday", "Mon")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper("Weekday", "Mon")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper("Weekday", "Mon")
+    }
+}
+
+impl ElicitIntrospect for Weekday {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "chrono::Weekday",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for Weekday {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a day of the week:")
+                .to_string(),
+            type_name: "chrono::Weekday".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+impl ToCodeLiteral for Weekday {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let variant = match self {
+            Weekday::Mon => "Mon",
+            Weekday::Tue => "Tue",
+            Weekday::Wed => "Wed",
+            Weekday::Thu => "Thu",
+            Weekday::Fri => "Fri",
+            Weekday::Sat => "Sat",
+            Weekday::Sun => "Sun",
+        };
+        let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+        crate::quote::quote! { chrono::Weekday::#ident }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        crate::quote::quote! { chrono::Weekday }
+    }
+}
+
+// ============================================================================
+// NaiveDate
+// ============================================================================
+
+impl Prompt for NaiveDate {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a date (YYYY-MM-DD):")
+    }
+}
+
+impl Elicitation for NaiveDate {
+    type Style = NaiveDateStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting NaiveDate");
+        let params = mcp::text_params("Enter a date (e.g., \"2024-07-11\"):");
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let s = mcp::parse_string(value)?;
+        NaiveDate::parse_from_str(&s, "%Y-%m-%d").map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid date (expected YYYY-MM-DD): {e}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
+impl ElicitIntrospect for NaiveDate {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "chrono::NaiveDate",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl ElicitPromptTree for NaiveDate {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt().unwrap_or("NaiveDate").to_string(),
+            type_name: "chrono::NaiveDate".to_string(),
+        }
+    }
+}
+
+impl ToCodeLiteral for NaiveDate {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let year = self.year();
+        let month = self.month();
+        let day = self.day();
+        crate::quote::quote! {
+            chrono::NaiveDate::from_ymd_opt(#year, #month, #day).expect("valid date")
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        crate::quote::quote! { chrono::NaiveDate }
+    }
+}
+
+// ============================================================================
+// NaiveTime
+// ============================================================================
+
+impl Prompt for NaiveTime {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a time (HH:MM:SS):")
+    }
+}
+
+impl Elicitation for NaiveTime {
+    type Style = NaiveTimeStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting NaiveTime");
+        let params = mcp::text_params("Enter a time (e.g., \"15:30:00\"):");
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let s = mcp::parse_string(value)?;
+        NaiveTime::parse_from_str(&s, "%H:%M:%S")
+            .or_else(|_| NaiveTime::parse_from_str(&s, "%H:%M:%S%.f"))
+            .map_err(|e| {
+                ElicitError::new(ElicitErrorKind::ParseError(format!(
+                    "Invalid time (expected HH:MM:SS): {e}"
+                )))
+            })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
+impl ElicitIntrospect for NaiveTime {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "chrono::NaiveTime",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl ElicitPromptTree for NaiveTime {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt().unwrap_or("NaiveTime").to_string(),
+            type_name: "chrono::NaiveTime".to_string(),
+        }
+    }
+}
+
+impl ToCodeLiteral for NaiveTime {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let hour = self.hour();
+        let min = self.minute();
+        let sec = self.second();
+        let nano = self.nanosecond();
+        if nano == 0 {
+            crate::quote::quote! {
+                chrono::NaiveTime::from_hms_opt(#hour, #min, #sec).expect("valid time")
+            }
+        } else {
+            crate::quote::quote! {
+                chrono::NaiveTime::from_hms_nano_opt(#hour, #min, #sec, #nano).expect("valid time")
+            }
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        crate::quote::quote! { chrono::NaiveTime }
     }
 }
