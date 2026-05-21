@@ -173,6 +173,38 @@ mod chrono_specs {
 
     #[cfg(not(kani))]
     impl crate::ElicitComplete for chrono::NaiveDateTime {}
+
+    impl crate::ElicitSpec for chrono::Month {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::Month".to_string())
+                .summary("A calendar month (January–December).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::Month",
+        <chrono::Month as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::Month>
+    ));
+
+    impl crate::ElicitSpec for crate::MonthSelect {
+        fn type_spec() -> crate::TypeSpec {
+            <chrono::Month as crate::ElicitSpec>::type_spec()
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "MonthSelect",
+        <crate::MonthSelect as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<crate::MonthSelect>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for crate::MonthSelect {}
 }
 
 // ── jiff ──────────────────────────────────────────────────────────────────────

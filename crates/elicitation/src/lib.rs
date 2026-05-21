@@ -444,8 +444,8 @@ pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};
 // DateTime generators (feature-gated)
 #[cfg(feature = "chrono")]
 pub use datetime_chrono::{
-    DateTimeUtcGenerationMode, DateTimeUtcGenerator, NaiveDateStyle, NaiveDateTimeGenerationMode,
-    NaiveDateTimeGenerator, NaiveTimeStyle, WeekdayStyle,
+    DateTimeUtcGenerationMode, DateTimeUtcGenerator, MonthSelect, MonthStyle, NaiveDateStyle,
+    NaiveDateTimeGenerationMode, NaiveDateTimeGenerator, NaiveTimeStyle, WeekdayStyle,
 };
 
 #[cfg(feature = "time")]

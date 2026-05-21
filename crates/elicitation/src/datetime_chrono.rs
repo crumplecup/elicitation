@@ -29,7 +29,7 @@ use crate::{
     emit_code::ToCodeLiteral,
     mcp,
 };
-use chrono::{DateTime, Datelike, Duration, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc, Weekday};
+use chrono::{DateTime, Datelike, Duration, FixedOffset, Month, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc, Weekday};
 
 // Style enums for datetime types
 crate::default_style!(DateTime<Utc> => DateTimeUtcStyle);
@@ -1024,3 +1024,172 @@ impl ToCodeLiteral for NaiveTime {
         crate::quote::quote! { chrono::NaiveTime }
     }
 }
+
+// ============================================================================
+// Month
+// ============================================================================
+
+impl Prompt for Month {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose a month:")
+    }
+}
+
+impl Select for Month {
+    fn options() -> Vec<Self> {
+        vec![
+            Month::January,
+            Month::February,
+            Month::March,
+            Month::April,
+            Month::May,
+            Month::June,
+            Month::July,
+            Month::August,
+            Month::September,
+            Month::October,
+            Month::November,
+            Month::December,
+        ]
+    }
+
+    fn labels() -> Vec<String> {
+        vec![
+            "January".to_string(),
+            "February".to_string(),
+            "March".to_string(),
+            "April".to_string(),
+            "May".to_string(),
+            "June".to_string(),
+            "July".to_string(),
+            "August".to_string(),
+            "September".to_string(),
+            "October".to_string(),
+            "November".to_string(),
+            "December".to_string(),
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "January" => Some(Month::January),
+            "February" => Some(Month::February),
+            "March" => Some(Month::March),
+            "April" => Some(Month::April),
+            "May" => Some(Month::May),
+            "June" => Some(Month::June),
+            "July" => Some(Month::July),
+            "August" => Some(Month::August),
+            "September" => Some(Month::September),
+            "October" => Some(Month::October),
+            "November" => Some(Month::November),
+            "December" => Some(Month::December),
+            _ => None,
+        }
+    }
+}
+
+crate::default_style!(Month => MonthStyle);
+
+impl Elicitation for Month {
+    type Style = MonthStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting Month");
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose a month:"),
+            &Self::labels(),
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid Month: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("Month", "January")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper("Month", "January")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper("Month", "January")
+    }
+}
+
+impl ElicitIntrospect for Month {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "chrono::Month",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for Month {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a month:")
+                .to_string(),
+            type_name: "chrono::Month".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+impl ToCodeLiteral for Month {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let variant = match self {
+            Month::January => "January",
+            Month::February => "February",
+            Month::March => "March",
+            Month::April => "April",
+            Month::May => "May",
+            Month::June => "June",
+            Month::July => "July",
+            Month::August => "August",
+            Month::September => "September",
+            Month::October => "October",
+            Month::November => "November",
+            Month::December => "December",
+        };
+        let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+        crate::quote::quote! { chrono::Month::#ident }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        crate::quote::quote! { chrono::Month }
+    }
+}
+
+crate::select_trenchcoat!(chrono::Month, as MonthSelect, serde);
+crate::select_trenchcoat_traits!(MonthSelect, chrono::Month, [copy, eq, hash]);
