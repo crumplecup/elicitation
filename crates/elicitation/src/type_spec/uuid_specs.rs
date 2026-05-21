@@ -60,6 +60,25 @@ mod uuid_impls {
         };
     }
 
+    impl ElicitSpec for uuid::Uuid {
+        fn type_spec() -> TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("uuid::Uuid".to_string())
+                .summary("A universally unique identifier (UUID).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "uuid::Uuid",
+        <uuid::Uuid as ElicitSpec>::type_spec,
+        std::any::TypeId::of::<uuid::Uuid>
+    ));
+
+    impl crate::ElicitComplete for uuid::Uuid {}
+
     impl_uuid_spec!(
         type     = UuidV4,
         name     = "UuidV4",
