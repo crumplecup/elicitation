@@ -1,8 +1,9 @@
 //! URL type implementation.
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree, Select,
+    TypeMetadata, VariantMetadata, mcp,
 };
 use url::{SyntaxViolation};
 
@@ -193,3 +194,18 @@ impl ElicitIntrospect for SyntaxViolation {
 
 crate::select_trenchcoat!(url::SyntaxViolation, as SyntaxViolationSelect);
 crate::select_trenchcoat_traits!(SyntaxViolationSelect, url::SyntaxViolation, [copy, eq]);
+
+impl ElicitPromptTree for SyntaxViolation {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a URL syntax violation:")
+                .to_string(),
+            type_name: "url::SyntaxViolation".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}

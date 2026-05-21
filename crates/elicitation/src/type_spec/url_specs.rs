@@ -126,6 +126,18 @@ mod url_impls {
     #[cfg(not(kani))]
     impl crate::ElicitComplete for url::Url {}
 
+    impl crate::ElicitSpec for url::SyntaxViolation {
+        fn type_spec() -> crate::TypeSpec {
+            <crate::SyntaxViolationSelect as crate::ElicitSpec>::type_spec()
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "url::SyntaxViolation",
+        <url::SyntaxViolation as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<url::SyntaxViolation>
+    ));
+
     impl crate::ElicitSpec for crate::SyntaxViolationSelect {
         fn type_spec() -> crate::TypeSpec {
             TypeSpecBuilder::default()
