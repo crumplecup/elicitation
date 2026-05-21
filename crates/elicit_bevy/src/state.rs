@@ -4,7 +4,7 @@
 //! deriving `States` can be registered with the Bevy app and transitioned via
 //! [`NextState<S>`](bevy::state::state::NextState).
 //!
-//! Use the [`StatesTools`](crate::trait_factories::StatesTools) factory from
+//! Use the `StatesTools` factory from
 //! `trait_factories.rs` to expose state transitions for any concrete state type.
 //!
 //! ## Schedules: `OnEnter` / `OnExit` / `OnTransition`
@@ -36,7 +36,7 @@
 /// module is non-empty and provides a stable re-export surface for doc-tests.
 ///
 /// For concrete state transitions, register your `States` type with the
-/// [`StatesTools`](crate::trait_factories::StatesTools) factory.
+/// `StatesTools` factory.
 pub struct StateTransitionDoc;
 
 impl StateTransitionDoc {

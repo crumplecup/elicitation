@@ -267,7 +267,7 @@ impl Contract for PrustiF64Finite {
 // Option<T> Contracts (Phase 5.1)
 // ============================================================================
 
-/// Prusti-verified Option<T> must be Some contract.
+/// Prusti-verified `Option<T>` must be Some contract.
 pub struct PrustiOptionIsSome<T> {
     _phantom: std::marker::PhantomData<T>,
 }
@@ -348,7 +348,7 @@ where
 // Vec<T> Contracts (Phase 5.3)
 // ============================================================================
 
-/// Prusti-verified Vec<T> non-empty contract.
+/// Prusti-verified `Vec<T>` non-empty contract.
 pub struct PrustiVecNonEmpty<T> {
     _phantom: std::marker::PhantomData<T>,
 }

@@ -790,7 +790,7 @@ async fn emit(ctx: Arc<EguiWinitCtx>, p: EguiWinitEmitParams) -> Result<CallTool
 
 /// MCP plugin providing `egui_winit__*` tools for native egui + winit app scaffolding.
 ///
-/// Mirrors the structure of `egui_winit` just as [`crate::axum_ssr::LeptosAxumPlugin`]
+/// Mirrors the structure of `egui_winit` just as `elicit_leptos::LeptosAxumPlugin`
 /// mirrors `leptos_axum` in `elicit_leptos`. All tools emit Rust code; no windows
 /// or GPU devices are created in the MCP server process.
 ///

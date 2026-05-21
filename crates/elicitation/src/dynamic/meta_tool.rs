@@ -1,6 +1,6 @@
 //! Factory meta-tool generation for [`DynamicToolRegistry`](super::DynamicToolRegistry).
 //!
-//! Each [`AnyToolFactory`](super::AnyToolFactory) gets one meta-tool automatically
+//! Each [`AnyToolFactory`] gets one meta-tool automatically
 //! registered in `list_tools`.  Agents call these to trigger instantiation of
 //! dynamic tools for a specific registered prefix.
 //!

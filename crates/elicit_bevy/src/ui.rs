@@ -27,19 +27,19 @@ impl Val {
         format!("{:?}", *self.0)
     }
 
-    /// Returns `true` if this is [`Val::Auto`].
+    /// Returns `true` if this is `Val::Auto`.
     #[tracing::instrument(skip(self))]
     pub fn is_auto(&self) -> bool {
         matches!(*self.0, bevy::ui::Val::Auto)
     }
 
-    /// Returns `true` if this is [`Val::Px`].
+    /// Returns `true` if this is `Val::Px`.
     #[tracing::instrument(skip(self))]
     pub fn is_px(&self) -> bool {
         matches!(*self.0, bevy::ui::Val::Px(_))
     }
 
-    /// Returns the pixel value if this is [`Val::Px`].
+    /// Returns the pixel value if this is `Val::Px`.
     #[tracing::instrument(skip(self))]
     pub fn get_px(&self) -> Option<f32> {
         if let bevy::ui::Val::Px(v) = *self.0 {
@@ -49,7 +49,7 @@ impl Val {
         }
     }
 
-    /// Returns the percent value if this is [`Val::Percent`].
+    /// Returns the percent value if this is `Val::Percent`.
     #[tracing::instrument(skip(self))]
     pub fn get_percent(&self) -> Option<f32> {
         if let bevy::ui::Val::Percent(v) = *self.0 {
@@ -59,7 +59,7 @@ impl Val {
         }
     }
 
-    /// Returns the vw value if this is [`Val::Vw`].
+    /// Returns the vw value if this is `Val::Vw`.
     #[tracing::instrument(skip(self))]
     pub fn get_vw(&self) -> Option<f32> {
         if let bevy::ui::Val::Vw(v) = *self.0 {
@@ -69,7 +69,7 @@ impl Val {
         }
     }
 
-    /// Returns the vh value if this is [`Val::Vh`].
+    /// Returns the vh value if this is `Val::Vh`.
     #[tracing::instrument(skip(self))]
     pub fn get_vh(&self) -> Option<f32> {
         if let bevy::ui::Val::Vh(v) = *self.0 {
@@ -79,31 +79,31 @@ impl Val {
         }
     }
 
-    /// Constructs [`Val::Px`] (ignores self).
+    /// Constructs `Val::Px` (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn px(&self, v: f32) -> Val {
         Val::from(bevy::ui::Val::Px(v))
     }
 
-    /// Constructs [`Val::Percent`] (ignores self).
+    /// Constructs `Val::Percent` (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn percent(&self, v: f32) -> Val {
         Val::from(bevy::ui::Val::Percent(v))
     }
 
-    /// Constructs [`Val::Vw`] (ignores self).
+    /// Constructs `Val::Vw` (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn vw(&self, v: f32) -> Val {
         Val::from(bevy::ui::Val::Vw(v))
     }
 
-    /// Constructs [`Val::Vh`] (ignores self).
+    /// Constructs `Val::Vh` (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn vh(&self, v: f32) -> Val {
         Val::from(bevy::ui::Val::Vh(v))
     }
 
-    /// Constructs [`Val::Auto`] (ignores self).
+    /// Constructs `Val::Auto` (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn auto_val(&self) -> Val {
         Val::from(bevy::ui::Val::Auto)
@@ -390,19 +390,19 @@ impl Display {
         }
     }
 
-    /// Returns `true` if this is [`Display::Flex`].
+    /// Returns `true` if this is `Display::Flex`.
     #[tracing::instrument(skip(self))]
     pub fn is_flex(&self) -> bool {
         matches!(*self.0, bevy::ui::Display::Flex)
     }
 
-    /// Returns `true` if this is [`Display::Grid`].
+    /// Returns `true` if this is `Display::Grid`.
     #[tracing::instrument(skip(self))]
     pub fn is_grid(&self) -> bool {
         matches!(*self.0, bevy::ui::Display::Grid)
     }
 
-    /// Returns `true` if this is [`Display::None`].
+    /// Returns `true` if this is `Display::None`.
     #[tracing::instrument(skip(self))]
     pub fn is_none(&self) -> bool {
         matches!(*self.0, bevy::ui::Display::None)
@@ -473,13 +473,13 @@ impl PositionType {
         }
     }
 
-    /// Returns `true` if this is [`PositionType::Relative`].
+    /// Returns `true` if this is `PositionType::Relative`.
     #[tracing::instrument(skip(self))]
     pub fn is_relative(&self) -> bool {
         matches!(*self.0, bevy::ui::PositionType::Relative)
     }
 
-    /// Returns `true` if this is [`PositionType::Absolute`].
+    /// Returns `true` if this is `PositionType::Absolute`.
     #[tracing::instrument(skip(self))]
     pub fn is_absolute(&self) -> bool {
         matches!(*self.0, bevy::ui::PositionType::Absolute)
@@ -559,13 +559,13 @@ impl FlexDirection {
         }
     }
 
-    /// Returns `true` if this is [`FlexDirection::Row`].
+    /// Returns `true` if this is `FlexDirection::Row`.
     #[tracing::instrument(skip(self))]
     pub fn is_row(&self) -> bool {
         matches!(*self.0, bevy::ui::FlexDirection::Row)
     }
 
-    /// Returns `true` if this is [`FlexDirection::Column`].
+    /// Returns `true` if this is `FlexDirection::Column`.
     #[tracing::instrument(skip(self))]
     pub fn is_column(&self) -> bool {
         matches!(*self.0, bevy::ui::FlexDirection::Column)
@@ -643,7 +643,7 @@ impl FlexWrap {
         }
     }
 
-    /// Returns `true` if this is [`FlexWrap::Wrap`] or [`FlexWrap::WrapReverse`].
+    /// Returns `true` if this is `FlexWrap::Wrap` or `FlexWrap::WrapReverse`.
     #[tracing::instrument(skip(self))]
     pub fn is_wrap(&self) -> bool {
         !matches!(*self.0, bevy::ui::FlexWrap::NoWrap)
@@ -746,7 +746,7 @@ impl JustifyContent {
         }
     }
 
-    /// Returns `true` if this is [`JustifyContent::Center`].
+    /// Returns `true` if this is `JustifyContent::Center`.
     #[tracing::instrument(skip(self))]
     pub fn justify_content_is_center(&self) -> bool {
         matches!(*self.0, bevy::ui::JustifyContent::Center)
@@ -843,13 +843,13 @@ impl AlignItems {
         }
     }
 
-    /// Returns `true` if this is [`AlignItems::Center`].
+    /// Returns `true` if this is `AlignItems::Center`.
     #[tracing::instrument(skip(self))]
     pub fn align_items_is_center(&self) -> bool {
         matches!(*self.0, bevy::ui::AlignItems::Center)
     }
 
-    /// Returns `true` if this is [`AlignItems::Stretch`].
+    /// Returns `true` if this is `AlignItems::Stretch`.
     #[tracing::instrument(skip(self))]
     pub fn is_stretch(&self) -> bool {
         matches!(*self.0, bevy::ui::AlignItems::Stretch)
@@ -1273,7 +1273,7 @@ impl OverflowAxis {
         }
     }
 
-    /// Returns `true` if this is [`OverflowAxis::Visible`].
+    /// Returns `true` if this is `OverflowAxis::Visible`.
     #[tracing::instrument(skip(self))]
     pub fn is_visible(&self) -> bool {
         matches!(*self.0, bevy::ui::OverflowAxis::Visible)
@@ -1435,13 +1435,13 @@ impl From<FocusPolicy> for bevy::ui::FocusPolicy {
 
 #[reflect_methods]
 impl FocusPolicy {
-    /// Returns `true` if this is [`FocusPolicy::Block`].
+    /// Returns `true` if this is `FocusPolicy::Block`.
     #[tracing::instrument(skip(self))]
     pub fn is_block(&self) -> bool {
         matches!(*self.0, bevy::ui::FocusPolicy::Block)
     }
 
-    /// Returns `true` if this is [`FocusPolicy::Pass`].
+    /// Returns `true` if this is `FocusPolicy::Pass`.
     #[tracing::instrument(skip(self))]
     pub fn is_pass(&self) -> bool {
         matches!(*self.0, bevy::ui::FocusPolicy::Pass)
@@ -1481,13 +1481,13 @@ impl From<BoxSizing> for bevy::ui::BoxSizing {
 
 #[reflect_methods]
 impl BoxSizing {
-    /// Returns `true` if this is [`BoxSizing::BorderBox`].
+    /// Returns `true` if this is `BoxSizing::BorderBox`.
     #[tracing::instrument(skip(self))]
     pub fn is_border_box(&self) -> bool {
         matches!(*self.0, bevy::ui::BoxSizing::BorderBox)
     }
 
-    /// Returns `true` if this is [`BoxSizing::ContentBox`].
+    /// Returns `true` if this is `BoxSizing::ContentBox`.
     #[tracing::instrument(skip(self))]
     pub fn is_content_box(&self) -> bool {
         matches!(*self.0, bevy::ui::BoxSizing::ContentBox)

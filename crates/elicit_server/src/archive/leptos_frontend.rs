@@ -2,7 +2,7 @@
 //!
 //! Exposes a REST-ish HTTP API backed by the same plugin functions used by the
 //! ratatui and egui frontends.  Every HTML response is gated on an
-//! [`Established<IrSourced>`] proof token minted by
+//! `Established<IrSourced>` proof token minted by
 //! [`ArchiveNavModel::to_verified_tree`], preserving the IR-sourced contract
 //! across all three frontends.
 //!

@@ -330,19 +330,19 @@ mod emit_impls {
 
     /// Function is marked `PARALLEL SAFE` — safe for parallel query workers.
     ///
-    /// Source: ISO/IEC 9075-4 §<routine characteristics>; PostgreSQL §37.7 — parallel safety
+    /// Source: ISO/IEC 9075-4 §`<routine characteristics>`; PostgreSQL §37.7 — parallel safety
     pub struct FunctionParallelSafe;
     structural_prop!(FunctionParallelSafe, "FunctionParallelSafe");
 
     /// Function is marked `PARALLEL RESTRICTED` — only allowed in the parallel leader.
     ///
-    /// Source: ISO/IEC 9075-4 §<routine characteristics>; PostgreSQL §37.7 — parallel safety
+    /// Source: ISO/IEC 9075-4 §`<routine characteristics>`; PostgreSQL §37.7 — parallel safety
     pub struct FunctionParallelRestricted;
     structural_prop!(FunctionParallelRestricted, "FunctionParallelRestricted");
 
     /// Function is marked `PARALLEL UNSAFE` — prevents parallel plan generation.
     ///
-    /// Source: ISO/IEC 9075-4 §<routine characteristics>; PostgreSQL §37.7 — parallel safety
+    /// Source: ISO/IEC 9075-4 §`<routine characteristics>`; PostgreSQL §37.7 — parallel safety
     pub struct FunctionParallelUnsafe;
     structural_prop!(FunctionParallelUnsafe, "FunctionParallelUnsafe");
 

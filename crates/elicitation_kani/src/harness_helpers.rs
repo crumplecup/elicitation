@@ -1,6 +1,6 @@
 //! Harness helper utilities for writing Kani proof harnesses.
 //!
-//! Provides bounded-length string/vec generators and the [`kani_arbitrary!`]
+//! Provides bounded-length string/vec generators and the `kani_arbitrary!`
 //! macro for implementing `kani::Arbitrary` on types that contain `String` or
 //! `Vec<T>` fields (which Kani 0.67 does not support natively).
 

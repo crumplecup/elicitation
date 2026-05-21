@@ -425,7 +425,7 @@ mod emit_impls {
     /// All four ACID properties are jointly established for the completed transaction.
     ///
     /// Composite proposition — requires [`Atomic`], [`Consistent`], [`Durable`], and an
-    /// isolation level of at least [`SerializableIsolation`].  Used as the credential in
+    /// isolation level of at least [`crate::SerializableIsolation`].  Used as the credential in
     /// ProvableFrom chains that enforce full transaction correctness.
     ///
     /// Source: ISO/IEC 9075-2 §4.33 — Atomicity, Consistency, Isolation, Durability

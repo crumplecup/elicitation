@@ -186,10 +186,10 @@
 //!
 //! ## Composition Functions
 //!
-//! - [`both(p, q)`][]: Combine two proofs into conjunction
-//! - [`fst(pq)`][]: Project left proof from conjunction
-//! - [`snd(pq)`][]: Project right proof from conjunction
-//! - [`downcast(refined)`][]: Safe downcast from refined type to base
+//! - [`both(p, q)`](crate::both): Combine two proofs into conjunction
+//! - `fst(pq)` — Project left proof from conjunction
+//! - `snd(pq)` — Project right proof from conjunction
+//! - `downcast(refined)` — Safe downcast from refined type to base
 //!
 //! # Advanced Patterns
 //!

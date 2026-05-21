@@ -1087,7 +1087,7 @@ impl Default for RowEditState {
 ///
 /// The raw connection URL is never stored directly; instead, `url_env_key`
 /// names the environment variable that holds it (e.g. `"DATABASE_URL"`).
-/// At runtime, [`ConnectionSet`] resolves the key via `std::env::var`.
+/// At runtime, [`crate::archive::ConnectionSet`] resolves the key via `std::env::var`.
 /// SSL connection mode, matching PostgreSQL `sslmode` parameter semantics.
 #[cfg_attr(kani, derive(kani::Arbitrary))]
 #[derive(
@@ -1758,7 +1758,7 @@ impl kani::Arbitrary for ErdEdge {
 /// A complete entity-relationship diagram for a single schema.
 ///
 /// Produced by [`fetch_erd`](crate::archive::nav_tree::fetch_erd) and
-/// cached in [`PanelMode::ErdPanel`].
+/// cached in a `PanelMode::ErdPanel` variant.
 #[derive(
     Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1880,7 +1880,7 @@ impl ErdLayout {
 
 /// Descriptor for a single KV table in an embedded redb store.
 ///
-/// Produced by [`ArchiveKvPlugin`] and consumed by the display layer.
+/// Produced by [`crate::archive::ArchiveKvPlugin`] and consumed by the display layer.
 #[derive(
     Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1934,7 +1934,7 @@ pub struct KvScanResult {
 
 /// Descriptor for a durable KV snapshot (persistent savepoint).
 ///
-/// Produced by [`ArchiveKvPlugin`] snapshot operations.
+/// Produced by [`crate::archive::ArchiveKvPlugin`] snapshot operations.
 #[derive(
     Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]
@@ -1947,7 +1947,7 @@ pub struct KvSnapshotDescriptor {
 
 /// Storage-level statistics for the embedded redb database.
 ///
-/// Produced by [`ArchiveKvPlugin`] and displayed in the KV panel.
+/// Produced by [`crate::archive::ArchiveKvPlugin`] and displayed in the KV panel.
 #[derive(
     Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit, KaniCompose,
 )]

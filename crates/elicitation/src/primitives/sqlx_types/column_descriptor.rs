@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 /// Serializable SQL column metadata.
 ///
-/// Bridges [`sqlx::any::AnyColumn`] to the MCP boundary.
+/// Bridges `sqlx::any::AnyColumn` to the MCP boundary.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ColumnDescriptor {
     /// Zero-based position of this column in the result set.

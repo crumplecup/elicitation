@@ -1096,9 +1096,9 @@ mod emit_impls {
 
     /// Composite: all WCAG Principle 1 (Perceivable) Level AA criteria satisfied.
     ///
-    /// Produced by [`WcagPerceivedFactory::build_perceivable`] when all required
+    /// Produced by [`WcagPerceivedFactory::build_perceivable`](crate::WcagPerceivedFactory::build_perceivable) when all required
     /// leaf-factory proofs (contrast, labels, structure, etc.) are supplied as
-    /// evidence.  Consumed by [`LevelAaEvidence::perceived`].
+    /// evidence.  Consumed by `LevelAaEvidence::perceived`.
     ///
     /// Source: WCAG 2.2 Principle 1 — Perceivable
     pub struct WcagPerceivedValid;
@@ -1106,7 +1106,7 @@ mod emit_impls {
 
     /// Composite: all WCAG Principle 2 (Operable) Level AA criteria satisfied.
     ///
-    /// Produced by [`WcagOperableFactory::build_operable`].
+    /// Produced by [`WcagOperableFactory::build_operable`](crate::WcagOperableFactory::build_operable).
     ///
     /// Source: WCAG 2.2 Principle 2 — Operable
     pub struct WcagOperableValid;
@@ -1114,7 +1114,7 @@ mod emit_impls {
 
     /// Composite: all WCAG Principle 3 (Understandable) Level AA criteria satisfied.
     ///
-    /// Produced by [`WcagUnderstandableFactory::build_understandable`].
+    /// Produced by [`WcagUnderstandableFactory::build_understandable`](crate::WcagUnderstandableFactory::build_understandable).
     ///
     /// Source: WCAG 2.2 Principle 3 — Understandable
     pub struct WcagUnderstandableValid;
@@ -1122,7 +1122,7 @@ mod emit_impls {
 
     /// Composite: all WCAG Principle 4 (Robust) criteria satisfied.
     ///
-    /// Produced by [`WcagRobustFactory::build_robust`].
+    /// Produced by [`WcagRobustFactory::build_robust`](crate::WcagRobustFactory::build_robust).
     ///
     /// Source: WCAG 2.2 Principle 4 — Robust
     pub struct WcagRobustValid;

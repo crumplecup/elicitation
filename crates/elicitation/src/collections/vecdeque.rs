@@ -1,4 +1,4 @@
-//! VecDeque<T> implementation for double-ended queue elicitation.
+//! `VecDeque<T>` implementation for double-ended queue elicitation.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::VecDeque;

@@ -3,7 +3,7 @@
 //! Transforms a handler body [`TokenStream`] for use as an `EmitCode` body:
 //! - `p . <field>` → `# __<field>` (quote! interpolation point)
 //! - `ctx . <field>` → declared replacement expression
-//! - `ErrorData :: <method> ( msg_expr , .. )` → `Box::<dyn Error>::from(io::Error::new(Other, msg_expr))` (converts to Box<dyn Error>)
+//! - `ErrorData :: <method> ( msg_expr , .. )` → `` `Box<dyn Error>` `` via `io::Error::new(Other, msg_expr)` (converts to boxed error)
 //! - `Ok ( <group_containing_CallToolResult> )` → `println!("{}", <content>)` (strip MCP result)
 //!
 //! Unrecognised patterns pass through unchanged (fail-safe).

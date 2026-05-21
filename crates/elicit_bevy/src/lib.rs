@@ -35,16 +35,16 @@
 //! | [`render`] | Msaa, Hdr, ColorGrading, ColorGradingGlobal, ColorGradingSection, NoAutomaticBatching, MipBias, OcclusionCulling |
 //! | [`scene`] | Scene / DynamicScene documentation |
 //! | [`state`] | States factory documentation |
-//! | [`derive_plugin`] | `bevy_derive__*` fragment tools for derive codegen |
-//! | [`ecs_plugin`] | `bevy_ecs__*` fragment tools for ECS/app wiring |
-//! | [`app_plugin`] | `bevy_app__*` descriptor-registry tools for app assembly |
-//! | [`scene_plugin`] | `bevy_scene__*` descriptor-registry tools for scene manifests |
-//! | [`query_plugin`] | `bevy_query__*` factory/codegen tools for generic ECS params |
-//! | [`render_plugin`] | `bevy_render__*` core render/material descriptor tools |
-//! | [`render_atmosphere_workflow_plugin`] | `bevy_render_atmosphere_workflow__*` stateful atmosphere tools |
-//! | [`render_mesh_workflow_plugin`] | `bevy_render_mesh_workflow__*` stateful mesh-authoring tools |
-//! | [`render_workflow_plugin`] | `bevy_render_workflow__*` stateful camera-authoring tools |
-//! | [`ui_plugin`] | `bevy_ui__*` layout and widget descriptor tools |
+//! | `derive_plugin` | `bevy_derive__*` fragment tools for derive codegen |
+//! | `ecs_plugin` | `bevy_ecs__*` fragment tools for ECS/app wiring |
+//! | `app_plugin` | `bevy_app__*` descriptor-registry tools for app assembly |
+//! | `scene_plugin` | `bevy_scene__*` descriptor-registry tools for scene manifests |
+//! | `query_plugin` | `bevy_query__*` factory/codegen tools for generic ECS params |
+//! | `render_plugin` | `bevy_render__*` core render/material descriptor tools |
+//! | `render_atmosphere_workflow_plugin` | `bevy_render_atmosphere_workflow__*` stateful atmosphere tools |
+//! | `render_mesh_workflow_plugin` | `bevy_render_mesh_workflow__*` stateful mesh-authoring tools |
+//! | `render_workflow_plugin` | `bevy_render_workflow__*` stateful camera-authoring tools |
+//! | `ui_plugin` | `bevy_ui__*` layout and widget descriptor tools |
 //! | [`trait_factories`] | Component, Resource, Asset, Bundle, Event, States factories |
 
 #![forbid(unsafe_code)]

@@ -1,4 +1,4 @@
-//! Vec<T> implementation for collection elicitation.
+//! `Vec<T>` implementation for collection elicitation.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 

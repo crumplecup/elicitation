@@ -39,7 +39,7 @@ const MAX_ATTEMPTS: usize = 3;
 /// is asked to produce a matching JSON object — one prompt instead of N field prompts.
 ///
 /// Re-prompts with the parse error message if deserialization fails, up to
-/// [`MAX_ATTEMPTS`] times.
+/// 3 times.
 pub trait ElicitJson: Sized {
     /// Elicit a value by presenting the JSON schema and parsing the response.
     fn elicit_json<C: ElicitCommunicator>(

@@ -58,7 +58,7 @@ fn parse_terminal_id(id: &str) -> Result<Uuid, Box<CallToolResult>> {
 // terminal_create
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_create`].
+/// Parameters for `terminal_create`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalCreateParams {
     /// Optional window title.
@@ -111,7 +111,7 @@ async fn terminal_create(p: TerminalCreateParams) -> Result<CallToolResult, Erro
 // terminal_destroy
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_destroy`].
+/// Parameters for `terminal_destroy`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalDestroyParams {
     /// Terminal ID returned by `terminal_create`.
@@ -158,7 +158,7 @@ async fn terminal_destroy(p: TerminalDestroyParams) -> Result<CallToolResult, Er
 // terminal_clear
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_clear`].
+/// Parameters for `terminal_clear`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalClearParams {
     /// Terminal ID returned by `terminal_create`.
@@ -200,7 +200,7 @@ async fn terminal_clear(p: TerminalClearParams) -> Result<CallToolResult, ErrorD
 // terminal_size
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_size`].
+/// Parameters for `terminal_size`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalSizeParams {
     /// Terminal ID returned by `terminal_create`.
@@ -243,7 +243,7 @@ async fn terminal_size(p: TerminalSizeParams) -> Result<CallToolResult, ErrorDat
 // terminal_hide_cursor
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_hide_cursor`].
+/// Parameters for `terminal_hide_cursor`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalHideCursorParams {
     /// Terminal ID returned by `terminal_create`.
@@ -285,7 +285,7 @@ async fn terminal_hide_cursor(p: TerminalHideCursorParams) -> Result<CallToolRes
 // terminal_show_cursor
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_show_cursor`].
+/// Parameters for `terminal_show_cursor`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalShowCursorParams {
     /// Terminal ID returned by `terminal_create`.
@@ -327,7 +327,7 @@ async fn terminal_show_cursor(p: TerminalShowCursorParams) -> Result<CallToolRes
 // terminal_set_cursor
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_set_cursor`].
+/// Parameters for `terminal_set_cursor`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalSetCursorParams {
     /// Terminal ID returned by `terminal_create`.
@@ -373,7 +373,7 @@ async fn terminal_set_cursor(p: TerminalSetCursorParams) -> Result<CallToolResul
 // terminal_draw
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`terminal_draw`].
+/// Parameters for `terminal_draw`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TerminalDrawParams {
     /// Terminal ID returned by `terminal_create`.
@@ -425,8 +425,8 @@ async fn terminal_draw(p: TerminalDrawParams) -> Result<CallToolResult, ErrorDat
 
 /// Recursively render a `TuiNode` tree into a ratatui frame.
 ///
-/// Callers with a `TuiNode` tree (e.g. from [`tui_node_to_tree_update`] /
-/// [`tree_update_to_tui_node`] or built directly) can call this to drive a
+/// Callers with a `TuiNode` tree (e.g. from `tui_node_to_tree_update` /
+/// `tree_update_to_tui_node` or built directly) can call this to drive a
 /// `ratatui::Frame` without re-implementing the layout/widget dispatch.
 pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
     match node {

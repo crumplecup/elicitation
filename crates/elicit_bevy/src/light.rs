@@ -62,19 +62,19 @@ impl ShadowFilteringMethod {
         }
     }
 
-    /// Returns `true` if this is [`ShadowFilteringMethod::Hardware2x2`].
+    /// Returns `true` if this is `ShadowFilteringMethod::Hardware2x2`.
     #[tracing::instrument(skip(self))]
     pub fn is_hardware(&self) -> bool {
         matches!(*self.0, bevy::light::ShadowFilteringMethod::Hardware2x2)
     }
 
-    /// Returns `true` if this is [`ShadowFilteringMethod::Gaussian`].
+    /// Returns `true` if this is `ShadowFilteringMethod::Gaussian`.
     #[tracing::instrument(skip(self))]
     pub fn is_gaussian(&self) -> bool {
         matches!(*self.0, bevy::light::ShadowFilteringMethod::Gaussian)
     }
 
-    /// Returns `true` if this is [`ShadowFilteringMethod::Temporal`].
+    /// Returns `true` if this is `ShadowFilteringMethod::Temporal`.
     #[tracing::instrument(skip(self))]
     pub fn is_temporal(&self) -> bool {
         matches!(*self.0, bevy::light::ShadowFilteringMethod::Temporal)

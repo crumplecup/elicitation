@@ -32,19 +32,19 @@ impl<'de> serde::Deserialize<'de> for ColorChoice {
 
 #[reflect_methods]
 impl ColorChoice {
-    /// Returns `true` if this is [`ColorChoice::Auto`].
+    /// Returns `true` if this is `ColorChoice::Auto`.
     #[tracing::instrument(skip(self))]
     pub fn is_auto(&self) -> bool {
         matches!(*self.0, clap::ColorChoice::Auto)
     }
 
-    /// Returns `true` if this is [`ColorChoice::Always`].
+    /// Returns `true` if this is `ColorChoice::Always`.
     #[tracing::instrument(skip(self))]
     pub fn is_always(&self) -> bool {
         matches!(*self.0, clap::ColorChoice::Always)
     }
 
-    /// Returns `true` if this is [`ColorChoice::Never`].
+    /// Returns `true` if this is `ColorChoice::Never`.
     #[tracing::instrument(skip(self))]
     pub fn is_never(&self) -> bool {
         matches!(*self.0, clap::ColorChoice::Never)

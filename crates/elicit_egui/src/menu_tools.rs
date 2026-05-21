@@ -119,7 +119,7 @@ fn menu_result(action: &MenuActionJson) -> CallToolResult {
 // Context menus
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_context_menu`].
+/// Parameters for `egui_context_menu`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ContextMenuParams {
     /// Identifier for the region to attach the context menu to.
@@ -141,7 +141,7 @@ async fn egui_context_menu(p: ContextMenuParams) -> Result<CallToolResult, Error
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_context_menu_item`].
+/// Parameters for `egui_context_menu_item`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ContextMenuItemParams {
     /// Display label for the menu item.
@@ -187,7 +187,7 @@ async fn egui_context_menu_separator(p: EmptyMenuParams) -> Result<CallToolResul
 // Popups
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_popup`].
+/// Parameters for `egui_popup`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct MenuPopupParams {
     /// Popup identifier.
@@ -215,7 +215,7 @@ async fn egui_popup(p: MenuPopupParams) -> Result<CallToolResult, ErrorData> {
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_popup_below_widget`].
+/// Parameters for `egui_popup_below_widget`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct PopupBelowWidgetParams {
     /// Identifier of the anchor widget.
@@ -258,7 +258,7 @@ async fn egui_close_popup(p: EmptyMenuParams) -> Result<CallToolResult, ErrorDat
 // Tooltips
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_tooltip`].
+/// Parameters for `egui_tooltip`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct MenuTooltipParams {
     /// Identifier of the widget to attach the tooltip to.
@@ -283,7 +283,7 @@ async fn egui_tooltip(p: MenuTooltipParams) -> Result<CallToolResult, ErrorData>
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_tooltip_rich`].
+/// Parameters for `egui_tooltip_rich`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct TooltipRichParams {
     /// Identifier of the widget to attach the tooltip to.
@@ -308,7 +308,7 @@ async fn egui_tooltip_rich(p: TooltipRichParams) -> Result<CallToolResult, Error
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_tooltip_at_pointer`].
+/// Parameters for `egui_tooltip_at_pointer`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct TooltipAtPointerParams {
     /// Tooltip text.
@@ -332,7 +332,7 @@ async fn egui_tooltip_at_pointer(p: TooltipAtPointerParams) -> Result<CallToolRe
 // Modals / Dialogs
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_modal`].
+/// Parameters for `egui_modal`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ModalParams {
     /// Dialog title.
@@ -360,7 +360,7 @@ async fn egui_modal(p: ModalParams) -> Result<CallToolResult, ErrorData> {
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_confirm_dialog`].
+/// Parameters for `egui_confirm_dialog`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ConfirmDialogParams {
     /// Dialog title.
@@ -385,7 +385,7 @@ async fn egui_confirm_dialog(p: ConfirmDialogParams) -> Result<CallToolResult, E
     Ok(menu_result(&a))
 }
 
-/// Parameters for [`egui_alert_dialog`].
+/// Parameters for `egui_alert_dialog`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AlertDialogParams {
     /// Dialog title.
@@ -414,7 +414,7 @@ async fn egui_alert_dialog(p: AlertDialogParams) -> Result<CallToolResult, Error
 // Notification / Toast
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_notification`].
+/// Parameters for `egui_notification`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct NotificationParams {
     /// Notification text.

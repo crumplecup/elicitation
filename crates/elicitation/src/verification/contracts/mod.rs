@@ -414,7 +414,7 @@ impl Contract for F64Finite {
 // Option<T> Contracts (Phase 5.1)
 // ============================================================================
 
-/// Contract for Option<T> that must be Some (not None).
+/// Contract for `Option<T>` that must be Some (not None).
 ///
 /// Verifies that an Option contains a value. Does not verify the inner value.
 ///
@@ -463,7 +463,7 @@ where
     }
 }
 
-/// Contract for Option<T> with inner value contract.
+/// Contract for `Option<T>` with inner value contract.
 ///
 /// Verifies both that Option is Some and that the inner value satisfies a contract.
 ///
@@ -615,7 +615,7 @@ where
 // Vec<T> Contracts (Phase 5.3)
 // ============================================================================
 
-/// Contract for Vec<T> that must be non-empty.
+/// Contract for `Vec<T>` that must be non-empty.
 ///
 /// Verifies that a vector contains at least one element.
 #[derive(Debug, Clone, Copy)]
@@ -654,7 +654,7 @@ where
     }
 }
 
-/// Contract for Vec<T> with maximum length.
+/// Contract for `Vec<T>` with maximum length.
 ///
 /// Verifies that a vector does not exceed a maximum length.
 #[derive(Debug, Clone, Copy)]
@@ -693,7 +693,7 @@ where
     }
 }
 
-/// Contract for Vec<T> with element contract.
+/// Contract for `Vec<T>` with element contract.
 ///
 /// Verifies that all elements in the vector satisfy a contract.
 #[derive(Debug, Clone, Copy)]

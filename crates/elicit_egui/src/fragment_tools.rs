@@ -42,7 +42,7 @@ fn to_snake(s: &str) -> String {
 // App scaffolding
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_fragment_native_app`].
+/// Parameters for `egui_fragment_native_app`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct NativeAppParams {
     /// Application struct name (e.g. `MyApp`).
@@ -140,7 +140,7 @@ impl eframe::App for {app_name} {{
     }
 }
 
-/// Parameters for [`egui_fragment_web_app`].
+/// Parameters for `egui_fragment_web_app`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct WebAppParams {
     /// Application struct name (e.g. `MyWebApp`).
@@ -221,7 +221,7 @@ pub struct FormFieldDef {
     pub label: String,
 }
 
-/// Parameters for [`egui_fragment_form`].
+/// Parameters for `egui_fragment_form`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct FormParams {
     /// Struct name for the form state (e.g. `UserForm`).
@@ -343,7 +343,7 @@ pub struct TableColumnDef {
     pub header: String,
 }
 
-/// Parameters for [`egui_fragment_table`].
+/// Parameters for `egui_fragment_table`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct TableParams {
     /// Widget struct name (e.g. `UserTable`).
@@ -445,7 +445,7 @@ pub struct SettingsSectionDef {
     pub fields: Vec<SettingsFieldDef>,
 }
 
-/// Parameters for [`egui_fragment_settings_panel`].
+/// Parameters for `egui_fragment_settings_panel`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct SettingsPanelParams {
     /// Panel title shown at the top.
@@ -564,7 +564,7 @@ impl SettingsPanel {{
 // Layout code generation
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_fragment_sidebar_layout`].
+/// Parameters for `egui_fragment_sidebar_layout`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct SidebarLayoutParams {
     /// Sidebar width in logical pixels.
@@ -647,7 +647,7 @@ pub struct TabDef {
     pub label: String,
 }
 
-/// Parameters for [`egui_fragment_tab_panel`].
+/// Parameters for `egui_fragment_tab_panel`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct TabPanelParams {
     /// Tabs to generate.
@@ -748,7 +748,7 @@ pub struct ToolbarButtonDef {
     pub tooltip: String,
 }
 
-/// Parameters for [`egui_fragment_toolbar`].
+/// Parameters for `egui_fragment_toolbar`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ToolbarParams {
     /// Buttons to include in the toolbar.
@@ -825,7 +825,7 @@ pub struct StateFieldDef {
     pub default_value: String,
 }
 
-/// Parameters for [`egui_fragment_app_state`].
+/// Parameters for `egui_fragment_app_state`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AppStateParams {
     /// Struct name (e.g. `AppState`).
@@ -902,7 +902,7 @@ pub struct MessageVariantDef {
     pub payload_type: Option<String>,
 }
 
-/// Parameters for [`egui_fragment_message_enum`].
+/// Parameters for `egui_fragment_message_enum`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct MessageEnumParams {
     /// Enum name (e.g. `AppMessage`).

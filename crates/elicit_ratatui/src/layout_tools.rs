@@ -32,7 +32,7 @@ fn constraint_result(constraint: &ConstraintJson) -> CallToolResult {
 // Layout — vertical
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`layout_vertical`].
+/// Parameters for `layout_vertical`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LayoutVerticalParams {
     /// Size constraints for each child slot.
@@ -63,7 +63,7 @@ async fn layout_vertical(p: LayoutVerticalParams) -> Result<CallToolResult, Erro
 // Layout — horizontal
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`layout_horizontal`].
+/// Parameters for `layout_horizontal`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LayoutHorizontalParams {
     /// Size constraints for each child slot.
@@ -94,7 +94,7 @@ async fn layout_horizontal(p: LayoutHorizontalParams) -> Result<CallToolResult, 
 // Constraint — length
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_length`].
+/// Parameters for `constraint_length`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintLengthParams {
     /// Exact length in rows or columns.
@@ -117,7 +117,7 @@ async fn constraint_length(p: ConstraintLengthParams) -> Result<CallToolResult, 
 // Constraint — percentage
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_percentage`].
+/// Parameters for `constraint_percentage`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintPercentageParams {
     /// Percentage of available space (0–100).
@@ -140,7 +140,7 @@ async fn constraint_percentage(p: ConstraintPercentageParams) -> Result<CallTool
 // Constraint — min
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_min`].
+/// Parameters for `constraint_min`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintMinParams {
     /// Minimum length in rows or columns.
@@ -163,7 +163,7 @@ async fn constraint_min(p: ConstraintMinParams) -> Result<CallToolResult, ErrorD
 // Constraint — max
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_max`].
+/// Parameters for `constraint_max`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintMaxParams {
     /// Maximum length in rows or columns.
@@ -186,7 +186,7 @@ async fn constraint_max(p: ConstraintMaxParams) -> Result<CallToolResult, ErrorD
 // Constraint — fill
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_fill`].
+/// Parameters for `constraint_fill`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintFillParams {
     /// Fill weight (higher = more remaining space).
@@ -209,7 +209,7 @@ async fn constraint_fill(p: ConstraintFillParams) -> Result<CallToolResult, Erro
 // Constraint — ratio
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`constraint_ratio`].
+/// Parameters for `constraint_ratio`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ConstraintRatioParams {
     /// Numerator.

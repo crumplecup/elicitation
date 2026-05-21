@@ -1,10 +1,10 @@
-//! Bridge from a [`LeptosAxumPlugin`] descriptor to an [`AxumRouterPlugin`] descriptor.
+//! Bridge from a [`LeptosAxumPlugin`] descriptor to an `elicit_axum::AxumRouterPlugin` descriptor.
 //!
 //! [`LeptosAxumBridgePlugin`] holds shared references to both a
-//! [`LeptosAxumCtx`] and an [`elicit_axum::router::AxumRouterCtx`].
+//! [`LeptosAxumCtx`] and an `elicit_axum::router::AxumRouterCtx`.
 //! Its single tool — `leptos_axum_bridge__from_config` — reads a
-//! [`LeptosAxumDescriptor`] by UUID and injects an equivalent
-//! [`elicit_axum::AxumRouterDescriptor`] into the axum registry.
+//! `LeptosAxumDescriptor` by UUID and injects an equivalent
+//! `elicit_axum::AxumRouterDescriptor` into the axum registry.
 //!
 //! The returned UUID is immediately composable with all `axum_router__*` and
 //! `axum_serve__*` tools, so the entire pipeline remains verified tool calls:

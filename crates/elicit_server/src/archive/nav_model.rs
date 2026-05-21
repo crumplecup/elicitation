@@ -875,7 +875,7 @@ impl ArchiveNavModel {
 
     /// Return the SQL text of the currently-focused saved query, if any.
     ///
-    /// Used by frontends to implement [`ArchiveAction::SavedBrowserSelect`].
+    /// Used by frontends to implement [`crate::archive::ArchiveAction::SavedBrowserSelect`].
     pub fn load_focused_saved_query_text(&self) -> Option<String> {
         if let ArchiveOverlayState::SavedBrowserOpen { entries, idx } = &self.overlay_state {
             entries.get(*idx).map(|q| q.sql.clone())
@@ -889,7 +889,7 @@ impl ArchiveNavModel {
     /// Returns `(id, name)` of the removed entry so the caller can enqueue a
     /// deletion on the persistent store.  Returns `None` if the cache is empty.
     ///
-    /// Used by frontends to implement [`ArchiveAction::SavedBrowserDelete`].
+    /// Used by frontends to implement [`crate::archive::ArchiveAction::SavedBrowserDelete`].
     pub fn remove_focused_saved_query(&mut self) -> Option<(i64, String)> {
         let idx = match &self.overlay_state {
             ArchiveOverlayState::SavedBrowserOpen { idx, .. } => *idx,
@@ -1778,7 +1778,7 @@ impl ArchiveNavModel {
 
     // ── IR pipeline ───────────────────────────────────────────────────────────
 
-    /// Build a fully-described [`VerifiedTree`] from the current model state.
+    /// Build a fully-described [`elicit_ui::VerifiedTree`] from the current model state.
     ///
     /// This is the **only** authorised way to obtain an
     /// [`elicit_ui::IrSourced`] proof token.  Every frontend renderer must

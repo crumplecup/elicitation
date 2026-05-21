@@ -478,7 +478,7 @@ shadow_elicitation!(ImageSamplerDescriptor);
 
 /// Shadow for [`bevy::image::ImageSampler`].
 ///
-/// Set on an [`Image`] asset to override the default sampler from `ImagePlugin`.
+/// Set on an `Image` asset to override the default sampler from `ImagePlugin`.
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum ImageSampler {
     /// Use the default sampler from `ImagePlugin` configuration.

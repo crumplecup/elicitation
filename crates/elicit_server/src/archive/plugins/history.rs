@@ -61,7 +61,7 @@ impl HistoryStore {
         Ok(Self { pool })
     }
 
-    /// Append a new entry and prune old rows beyond [`MAX_HISTORY`].
+    /// Append a new entry and prune old rows beyond the history limit.
     #[instrument(skip(self, sql))]
     pub async fn append(
         &self,

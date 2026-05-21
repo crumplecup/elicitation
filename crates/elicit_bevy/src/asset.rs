@@ -124,7 +124,7 @@ impl LoadState {
         }
     }
 
-    /// Returns the error message if the state is [`LoadState::Failed`],
+    /// Returns the error message if the state is `LoadState::Failed`,
     /// otherwise `None`.
     #[tracing::instrument(skip(self))]
     pub fn error_message(&self) -> Option<String> {

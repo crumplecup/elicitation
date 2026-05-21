@@ -33,7 +33,7 @@ fn code_result(code: &str) -> CallToolResult {
 pub struct AppFieldJson {
     /// Field name.
     pub name: String,
-    /// Rust type as string (e.g. "Vec<String>", "usize", "bool").
+    /// Rust type as string (e.g. `"Vec<String>"`, `"usize"`, `"bool"`).
     pub field_type: String,
     /// Default value expression as string (e.g. "0", "true", "Vec::new()").
     #[serde(default)]
@@ -53,7 +53,7 @@ pub struct KeyHandlerJson {
 // emit_cargo_toml
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_cargo_toml`].
+/// Parameters for `emit_cargo_toml`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitCargoTomlParams {
     /// Package name (e.g. "my-tui-app").
@@ -100,7 +100,7 @@ crossterm = "{crossterm_ver}"
 // emit_main_rs
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_main_rs`].
+/// Parameters for `emit_main_rs`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitMainRsParams {
     /// Application module name (default "app").
@@ -154,7 +154,7 @@ fn main() -> Result<(), Box<dyn Error>> {{
 // emit_app_struct
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_app_struct`].
+/// Parameters for `emit_app_struct`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitAppStructParams {
     /// Struct name (e.g. "App").
@@ -218,7 +218,7 @@ fn default_for_type(ty: &str) -> &str {
 // emit_draw_fn
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_draw_fn`].
+/// Parameters for `emit_draw_fn`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitDrawFnParams {
     /// Root TUI node tree to render.
@@ -433,7 +433,7 @@ fn constraint_to_code(c: &ConstraintJson) -> String {
 // emit_event_handler
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_event_handler`].
+/// Parameters for `emit_event_handler`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitEventHandlerParams {
     /// Quit key (default "q").
@@ -509,7 +509,7 @@ fn key_to_match_arm(key: &str) -> String {
 // emit_app_loop
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`emit_app_loop`].
+/// Parameters for `emit_app_loop`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EmitAppLoopParams {
     /// Application struct name (e.g. "App").
@@ -550,7 +550,7 @@ pub fn run_app(
 // assemble_ratatui_app
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`assemble_ratatui_app`].
+/// Parameters for `assemble_ratatui_app`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct AssembleRatatuiAppParams {
     /// Application/package name.

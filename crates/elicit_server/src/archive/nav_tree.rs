@@ -515,7 +515,7 @@ async fn fetch_pg_triggers(pool: &sqlx::AnyPool, schema: &str) -> Vec<TriggerDes
         .collect()
 }
 
-/// Build an [`ErdDiagram`] for `schema` by querying all tables and their FK
+/// Build an [`crate::archive::ErdDiagram`] for `schema` by querying all tables and their FK
 /// relationships.
 ///
 /// Uses [`DbTableManager::list_tables`] for node data and a raw

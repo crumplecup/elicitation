@@ -36,7 +36,7 @@ fn wrong_variant(expected: &str, widget: &WidgetJson) -> CallToolResult {
 // Block properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`block_set_title`].
+/// Parameters for `block_set_title`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetTitleParams {
     /// The widget to modify (must be a Block variant).
@@ -63,7 +63,7 @@ async fn block_set_title(p: BlockSetTitleParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`block_set_borders`].
+/// Parameters for `block_set_borders`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetBordersParams {
     /// The widget to modify (must be a Block variant).
@@ -90,7 +90,7 @@ async fn block_set_borders(p: BlockSetBordersParams) -> Result<CallToolResult, E
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`block_set_border_type`].
+/// Parameters for `block_set_border_type`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetBorderTypeParams {
     /// The widget to modify (must be a Block variant).
@@ -117,7 +117,7 @@ async fn block_set_border_type(p: BlockSetBorderTypeParams) -> Result<CallToolRe
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`block_set_style`].
+/// Parameters for `block_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetStyleParams {
     /// The widget to modify (must be a Block variant).
@@ -144,7 +144,7 @@ async fn block_set_style(p: BlockSetStyleParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`block_set_border_style`].
+/// Parameters for `block_set_border_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetBorderStyleParams {
     /// The widget to modify (must be a Block variant).
@@ -171,7 +171,7 @@ async fn block_set_border_style(p: BlockSetBorderStyleParams) -> Result<CallTool
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`block_set_padding`].
+/// Parameters for `block_set_padding`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockSetPaddingParams {
     /// The widget to modify (must be a Block variant).
@@ -202,7 +202,7 @@ async fn block_set_padding(p: BlockSetPaddingParams) -> Result<CallToolResult, E
 // Paragraph properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`paragraph_set_style`].
+/// Parameters for `paragraph_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphSetStyleParams {
     /// The widget to modify (must be a Paragraph variant).
@@ -229,7 +229,7 @@ async fn paragraph_set_style(p: ParagraphSetStyleParams) -> Result<CallToolResul
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`paragraph_set_wrap`].
+/// Parameters for `paragraph_set_wrap`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphSetWrapParams {
     /// The widget to modify (must be a Paragraph variant).
@@ -256,7 +256,7 @@ async fn paragraph_set_wrap(p: ParagraphSetWrapParams) -> Result<CallToolResult,
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`paragraph_set_scroll`].
+/// Parameters for `paragraph_set_scroll`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphSetScrollParams {
     /// The widget to modify (must be a Paragraph variant).
@@ -285,7 +285,7 @@ async fn paragraph_set_scroll(p: ParagraphSetScrollParams) -> Result<CallToolRes
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`paragraph_set_alignment`].
+/// Parameters for `paragraph_set_alignment`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphSetAlignmentParams {
     /// The widget to modify (must be a Paragraph variant).
@@ -314,7 +314,7 @@ async fn paragraph_set_alignment(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`paragraph_set_block`].
+/// Parameters for `paragraph_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphSetBlockParams {
     /// The widget to modify (must be a Paragraph variant).
@@ -345,7 +345,7 @@ async fn paragraph_set_block(p: ParagraphSetBlockParams) -> Result<CallToolResul
 // List properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`list_set_block`].
+/// Parameters for `list_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSetBlockParams {
     /// The widget to modify (must be a List variant).
@@ -372,7 +372,7 @@ async fn list_set_block(p: ListSetBlockParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`list_set_style`].
+/// Parameters for `list_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSetStyleParams {
     /// The widget to modify (must be a List variant).
@@ -399,7 +399,7 @@ async fn list_set_style(p: ListSetStyleParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`list_set_highlight_style`].
+/// Parameters for `list_set_highlight_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSetHighlightStyleParams {
     /// The widget to modify (must be a List variant).
@@ -430,7 +430,7 @@ async fn list_set_highlight_style(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`list_set_highlight_symbol`].
+/// Parameters for `list_set_highlight_symbol`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSetHighlightSymbolParams {
     /// The widget to modify (must be a List variant).
@@ -461,7 +461,7 @@ async fn list_set_highlight_symbol(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`list_set_state`].
+/// Parameters for `list_set_state`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListSetStateParams {
     /// The widget to modify (must be a List variant).
@@ -492,7 +492,7 @@ async fn list_set_state(p: ListSetStateParams) -> Result<CallToolResult, ErrorDa
 // Table properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`table_set_header`].
+/// Parameters for `table_set_header`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetHeaderParams {
     /// The widget to modify (must be a Table variant).
@@ -519,7 +519,7 @@ async fn table_set_header(p: TableSetHeaderParams) -> Result<CallToolResult, Err
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`table_set_block`].
+/// Parameters for `table_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetBlockParams {
     /// The widget to modify (must be a Table variant).
@@ -546,7 +546,7 @@ async fn table_set_block(p: TableSetBlockParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`table_set_highlight_style`].
+/// Parameters for `table_set_highlight_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetHighlightStyleParams {
     /// The widget to modify (must be a Table variant).
@@ -577,7 +577,7 @@ async fn table_set_highlight_style(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`table_set_highlight_symbol`].
+/// Parameters for `table_set_highlight_symbol`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetHighlightSymbolParams {
     /// The widget to modify (must be a Table variant).
@@ -608,7 +608,7 @@ async fn table_set_highlight_symbol(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`table_set_column_spacing`].
+/// Parameters for `table_set_column_spacing`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetColumnSpacingParams {
     /// The widget to modify (must be a Table variant).
@@ -637,7 +637,7 @@ async fn table_set_column_spacing(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`table_set_state`].
+/// Parameters for `table_set_state`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableSetStateParams {
     /// The widget to modify (must be a Table variant).
@@ -668,7 +668,7 @@ async fn table_set_state(p: TableSetStateParams) -> Result<CallToolResult, Error
 // Gauge properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`gauge_set_label`].
+/// Parameters for `gauge_set_label`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GaugeSetLabelParams {
     /// The widget to modify (must be a Gauge variant).
@@ -695,7 +695,7 @@ async fn gauge_set_label(p: GaugeSetLabelParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`gauge_set_block`].
+/// Parameters for `gauge_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GaugeSetBlockParams {
     /// The widget to modify (must be a Gauge variant).
@@ -722,7 +722,7 @@ async fn gauge_set_block(p: GaugeSetBlockParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`gauge_set_style`].
+/// Parameters for `gauge_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GaugeSetStyleParams {
     /// The widget to modify (must be a Gauge variant).
@@ -749,7 +749,7 @@ async fn gauge_set_style(p: GaugeSetStyleParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`gauge_set_gauge_style`].
+/// Parameters for `gauge_set_gauge_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GaugeSetGaugeStyleParams {
     /// The widget to modify (must be a Gauge variant).
@@ -780,7 +780,7 @@ async fn gauge_set_gauge_style(p: GaugeSetGaugeStyleParams) -> Result<CallToolRe
 // Sparkline properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`sparkline_set_block`].
+/// Parameters for `sparkline_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SparklineSetBlockParams {
     /// The widget to modify (must be a Sparkline variant).
@@ -807,7 +807,7 @@ async fn sparkline_set_block(p: SparklineSetBlockParams) -> Result<CallToolResul
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`sparkline_set_style`].
+/// Parameters for `sparkline_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SparklineSetStyleParams {
     /// The widget to modify (must be a Sparkline variant).
@@ -834,7 +834,7 @@ async fn sparkline_set_style(p: SparklineSetStyleParams) -> Result<CallToolResul
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`sparkline_set_max`].
+/// Parameters for `sparkline_set_max`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SparklineSetMaxParams {
     /// The widget to modify (must be a Sparkline variant).
@@ -861,7 +861,7 @@ async fn sparkline_set_max(p: SparklineSetMaxParams) -> Result<CallToolResult, E
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`sparkline_set_direction`].
+/// Parameters for `sparkline_set_direction`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SparklineSetDirectionParams {
     /// The widget to modify (must be a Sparkline variant).
@@ -894,7 +894,7 @@ async fn sparkline_set_direction(
 // Tabs properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`tabs_set_selected`].
+/// Parameters for `tabs_set_selected`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsSetSelectedParams {
     /// The widget to modify (must be a Tabs variant).
@@ -921,7 +921,7 @@ async fn tabs_set_selected(p: TabsSetSelectedParams) -> Result<CallToolResult, E
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`tabs_set_block`].
+/// Parameters for `tabs_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsSetBlockParams {
     /// The widget to modify (must be a Tabs variant).
@@ -948,7 +948,7 @@ async fn tabs_set_block(p: TabsSetBlockParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`tabs_set_style`].
+/// Parameters for `tabs_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsSetStyleParams {
     /// The widget to modify (must be a Tabs variant).
@@ -975,7 +975,7 @@ async fn tabs_set_style(p: TabsSetStyleParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`tabs_set_highlight_style`].
+/// Parameters for `tabs_set_highlight_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsSetHighlightStyleParams {
     /// The widget to modify (must be a Tabs variant).
@@ -1006,7 +1006,7 @@ async fn tabs_set_highlight_style(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`tabs_set_divider`].
+/// Parameters for `tabs_set_divider`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsSetDividerParams {
     /// The widget to modify (must be a Tabs variant).
@@ -1037,7 +1037,7 @@ async fn tabs_set_divider(p: TabsSetDividerParams) -> Result<CallToolResult, Err
 // BarChart properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`bar_chart_set_block`].
+/// Parameters for `bar_chart_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetBlockParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1064,7 +1064,7 @@ async fn bar_chart_set_block(p: BarChartSetBlockParams) -> Result<CallToolResult
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_max_value`].
+/// Parameters for `bar_chart_set_max_value`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetMaxValueParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1093,7 +1093,7 @@ async fn bar_chart_set_max_value(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_bar_width`].
+/// Parameters for `bar_chart_set_bar_width`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetBarWidthParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1122,7 +1122,7 @@ async fn bar_chart_set_bar_width(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_bar_gap`].
+/// Parameters for `bar_chart_set_bar_gap`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetBarGapParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1149,7 +1149,7 @@ async fn bar_chart_set_bar_gap(p: BarChartSetBarGapParams) -> Result<CallToolRes
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_bar_style`].
+/// Parameters for `bar_chart_set_bar_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetBarStyleParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1178,7 +1178,7 @@ async fn bar_chart_set_bar_style(
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_style`].
+/// Parameters for `bar_chart_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetStyleParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1205,7 +1205,7 @@ async fn bar_chart_set_style(p: BarChartSetStyleParams) -> Result<CallToolResult
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`bar_chart_set_direction`].
+/// Parameters for `bar_chart_set_direction`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartSetDirectionParams {
     /// The widget to modify (must be a BarChart variant).
@@ -1238,7 +1238,7 @@ async fn bar_chart_set_direction(
 // Chart properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`chart_set_block`].
+/// Parameters for `chart_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartSetBlockParams {
     /// The widget to modify (must be a Chart variant).
@@ -1265,7 +1265,7 @@ async fn chart_set_block(p: ChartSetBlockParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`chart_set_x_axis`].
+/// Parameters for `chart_set_x_axis`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartSetXAxisParams {
     /// The widget to modify (must be a Chart variant).
@@ -1292,7 +1292,7 @@ async fn chart_set_x_axis(p: ChartSetXAxisParams) -> Result<CallToolResult, Erro
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`chart_set_y_axis`].
+/// Parameters for `chart_set_y_axis`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartSetYAxisParams {
     /// The widget to modify (must be a Chart variant).
@@ -1319,7 +1319,7 @@ async fn chart_set_y_axis(p: ChartSetYAxisParams) -> Result<CallToolResult, Erro
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`chart_set_style`].
+/// Parameters for `chart_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartSetStyleParams {
     /// The widget to modify (must be a Chart variant).
@@ -1346,7 +1346,7 @@ async fn chart_set_style(p: ChartSetStyleParams) -> Result<CallToolResult, Error
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`chart_set_legend_position`].
+/// Parameters for `chart_set_legend_position`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartSetLegendPositionParams {
     /// The widget to modify (must be a Chart variant).
@@ -1381,7 +1381,7 @@ async fn chart_set_legend_position(
 // LineGauge properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`line_gauge_set_label`].
+/// Parameters for `line_gauge_set_label`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LineGaugeSetLabelParams {
     /// The widget to modify (must be a LineGauge variant).
@@ -1408,7 +1408,7 @@ async fn line_gauge_set_label(p: LineGaugeSetLabelParams) -> Result<CallToolResu
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`line_gauge_set_block`].
+/// Parameters for `line_gauge_set_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LineGaugeSetBlockParams {
     /// The widget to modify (must be a LineGauge variant).
@@ -1435,7 +1435,7 @@ async fn line_gauge_set_block(p: LineGaugeSetBlockParams) -> Result<CallToolResu
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`line_gauge_set_style`].
+/// Parameters for `line_gauge_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LineGaugeSetStyleParams {
     /// The widget to modify (must be a LineGauge variant).
@@ -1466,7 +1466,7 @@ async fn line_gauge_set_style(p: LineGaugeSetStyleParams) -> Result<CallToolResu
 // Scrollbar properties
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`scrollbar_set_style`].
+/// Parameters for `scrollbar_set_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ScrollbarSetStyleParams {
     /// The widget to modify (must be a Scrollbar variant).
@@ -1493,7 +1493,7 @@ async fn scrollbar_set_style(p: ScrollbarSetStyleParams) -> Result<CallToolResul
     Ok(widget_result(&widget))
 }
 
-/// Parameters for [`scrollbar_set_state`].
+/// Parameters for `scrollbar_set_state`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ScrollbarSetStateParams {
     /// The widget to modify (must be a Scrollbar variant).

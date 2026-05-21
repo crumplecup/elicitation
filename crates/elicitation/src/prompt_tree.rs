@@ -126,7 +126,7 @@
 //!
 //! Behind the `prompt-tree-accesskit` feature, every [`PromptTree`] can be
 //! converted to an [`accesskit::TreeUpdate`] via
-//! [`PromptTree::to_accesskit_tree`]. The AccessKit tree is self-contained — no
+//! `PromptTree::to_accesskit_tree`. The AccessKit tree is self-contained — no
 //! live UI context, no async — and maps each node to the semantically closest
 //! accessibility role:
 //!
@@ -153,7 +153,7 @@
 //! | Feature | What it enables |
 //! |---|---|
 //! | `prompt-tree` | This entire module; required for all uses |
-//! | `prompt-tree-accesskit` | [`PromptTree::to_accesskit_tree`]; implies `prompt-tree` |
+//! | `prompt-tree-accesskit` | `PromptTree::to_accesskit_tree`; implies `prompt-tree` |
 //!
 //! # Quick Start
 //!

@@ -128,7 +128,7 @@ use crate::{ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation};
 /// requires a type to be interactively elicitable, structurally introspectable,
 /// formally verified, and wire-serialisable.
 ///
-/// See the [module documentation][self] for the full design rationale, the
+/// See the module documentation for the full design rationale, the
 /// proof composition guarantee, and the step-by-step guide for adding new types.
 pub trait ElicitComplete:
     Elicitation

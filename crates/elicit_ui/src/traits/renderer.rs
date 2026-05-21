@@ -1127,7 +1127,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         _: Established<SectionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>);
 
-    /// Section-level heading container (distinct from [`bridge_heading`]).
+    /// Section-level heading container (distinct from [`Self::bridge_heading`]).
     fn bridge_section_header(
         &self,
         node: &Node,
@@ -1376,7 +1376,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         )
     }
 
-    /// Option within a [`bridge_list_box`].
+    /// Option within a [`Self::bridge_list_box`].
     ///
     /// Default: delegates to [`Self::bridge_list_item`].
     fn bridge_list_box_option(

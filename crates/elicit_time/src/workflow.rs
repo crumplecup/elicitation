@@ -175,28 +175,28 @@ impl UnvalidatedPrimitiveStr {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for [`TimeWorkflowPlugin::parse_offset_datetime`].
+/// Parameters for `parse_offset_datetime`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParseOffsetParams {
     /// RFC 3339 datetime string (e.g. `"2025-03-05T12:00:00Z"`).
     pub datetime: String,
 }
 
-/// Parameters for [`TimeWorkflowPlugin::parse_primitive_datetime`].
+/// Parameters for `parse_primitive_datetime`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParsePrimitiveParams {
     /// ISO 8601 local datetime string (e.g. `"2025-03-05T12:00:00"`).
     pub datetime: String,
 }
 
-/// Parameters for [`TimeWorkflowPlugin::assert_future`].
+/// Parameters for `assert_future`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AssertFutureParams {
     /// RFC 3339 datetime string to check.
     pub datetime: String,
 }
 
-/// Parameters for [`TimeWorkflowPlugin::compute_duration`].
+/// Parameters for `compute_duration`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ComputeDurationParams {
     /// RFC 3339 start datetime. Assumes: valid, before `to`.
@@ -205,7 +205,7 @@ pub struct ComputeDurationParams {
     pub to: String,
 }
 
-/// Parameters for [`TimeWorkflowPlugin::add_seconds`].
+/// Parameters for `add_seconds`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AddSecondsParams {
     /// RFC 3339 base datetime.

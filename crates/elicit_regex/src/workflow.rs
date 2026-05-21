@@ -117,14 +117,14 @@ impl CompiledPattern {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for [`RegexWorkflowPlugin::compile`].
+/// Parameters for `compile`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct CompileParams {
     /// The regex pattern to compile (e.g. `"^hello\\s+world$"`).
     pub pattern: String,
 }
 
-/// Parameters for [`RegexWorkflowPlugin::is_match`].
+/// Parameters for `is_match`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct IsMatchParams {
     /// The regex pattern.
@@ -133,7 +133,7 @@ pub struct IsMatchParams {
     pub text: String,
 }
 
-/// Parameters for [`RegexWorkflowPlugin::find_all`].
+/// Parameters for `find_all`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct FindAllParams {
     /// The regex pattern.
@@ -142,7 +142,7 @@ pub struct FindAllParams {
     pub text: String,
 }
 
-/// Parameters for [`RegexWorkflowPlugin::replace_all`].
+/// Parameters for `replace_all`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ReplaceAllParams {
     /// The regex pattern.
@@ -153,7 +153,7 @@ pub struct ReplaceAllParams {
     pub replacement: String,
 }
 
-/// Parameters for [`RegexWorkflowPlugin::capture_groups`].
+/// Parameters for `capture_groups`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct CaptureGroupsParams {
     /// The regex pattern (must contain at least one capture group).

@@ -15,9 +15,9 @@
 //! | Module | Purpose |
 //! |--------|---------|
 //! | [`types`] | `ElicitComplete` descriptor types for DB objects |
-//! | [`errors`] | `ArchiveError` / `ArchiveErrorKind` |
+//! | `errors` | `ArchiveError` / `ArchiveErrorKind` |
 //! | [`display`] | `ArchiveDisplay` trait + `DisplayMode` enums |
-//! | [`plugins`] | Verified workflow plugins (`browse`, `query`, `spatial`, `render`) |
+//! | `plugins` | Verified workflow plugins (`browse`, `query`, `spatial`, `render`) |
 
 pub mod actions;
 mod backend;

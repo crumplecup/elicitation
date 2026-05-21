@@ -55,7 +55,7 @@ pub enum LeptosClientMode {
 )]
 #[serde(rename_all = "snake_case")]
 pub enum LeptosAxumMode {
-    /// Serve pre-rendered HTML strings via [`elicit_leptos::LeptosRenderer`].
+    /// Serve pre-rendered HTML strings via `elicit_leptos::LeptosRenderer`.
     ///
     /// No live `leptos` runtime required.  The server builds a `VerifiedTree`
     /// per-request, calls `LeptosRenderer::html()`, and returns

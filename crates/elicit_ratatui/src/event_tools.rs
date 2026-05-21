@@ -123,7 +123,7 @@ fn event_to_json(ev: &Event) -> EventJson {
 // event_poll
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`event_poll`].
+/// Parameters for `event_poll`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EventPollParams {
     /// Timeout in milliseconds to wait for an event.
@@ -153,7 +153,7 @@ async fn event_poll(p: EventPollParams) -> Result<CallToolResult, ErrorData> {
 // event_read
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`event_read`].
+/// Parameters for `event_read`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EventReadParams {
     /// Optional timeout in milliseconds. If absent, blocks indefinitely.
@@ -200,7 +200,7 @@ async fn event_read(p: EventReadParams) -> Result<CallToolResult, ErrorData> {
 // event_read_key
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`event_read_key`].
+/// Parameters for `event_read_key`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct EventReadKeyParams {}
 

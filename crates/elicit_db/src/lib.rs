@@ -1,8 +1,8 @@
 //! `elicit_db` — Database contract interface crate.
 //!
-//! Provides a standards-anchored vocabulary of database propositions ([`contracts`]),
-//! typestate markers ([`typestate`]), and a complete family of object-safe async
-//! traits ([`traits`]) for pgAdmin-style database management.
+//! Provides a standards-anchored vocabulary of database propositions (`contracts`),
+//! typestate markers (`typestate`), and a complete family of object-safe async
+//! traits (`traits`) for pgAdmin-style database management.
 //!
 //! # Design
 //!

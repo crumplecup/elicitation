@@ -1,8 +1,8 @@
 //! `elicit_gis` — Geospatial contract interface crate.
 //!
 //! Provides a standards-anchored vocabulary of geospatial propositions
-//! ([`contracts`]), domain types ([`types`]), and object-safe async traits
-//! ([`traits`]) for geospatial framework boundaries.
+//! (`contracts`), domain types (`types`), and object-safe async traits
+//! (`traits`) for geospatial framework boundaries.
 //!
 //! # Design
 //!

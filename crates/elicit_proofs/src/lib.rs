@@ -3,11 +3,11 @@
 //! Proof harnesses are generated at build time by `build.rs`.
 //! Each verifier's harnesses live in their own feature-gated module:
 //!
-//! | Feature   | Module     | Verifier                     |
-//! |-----------|------------|------------------------------|
-//! | `kani`    | [`kani`]   | [Kani model checker]         |
-//! | `creusot` | [`creusot`]| [Creusot deductive verifier] |
-//! | `verus`   | [`verus`]  | [Verus verifier]             |
+//! | Feature   | Module    | Verifier                     |
+//! |-----------|-----------|------------------------------|
+//! | `kani`    | `kani`    | [Kani model checker]         |
+//! | `creusot` | `creusot` | [Creusot deductive verifier] |
+//! | `verus`   | `verus`   | [Verus verifier]             |
 //!
 //! # Usage
 //!

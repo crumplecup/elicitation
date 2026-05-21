@@ -5,18 +5,18 @@
 //!
 //! # Structure
 //!
-//! - [`principles`] — 15 core GAAP principles and assumptions (ASC 105 + related)
-//! - [`asc_200`] — ASC 205–280: presentation, income statement, cash flows, EPS, segment, interim
-//! - [`asc_300`] — ASC 310–360: receivables, investments, inventory, intangibles, PP&E
-//! - [`asc_400`] — ASC 405–480: liabilities, contingencies, debt, equity classification
-//! - [`asc_500`] — ASC 505: stockholders' equity, treasury stock, OCI, dividends
-//! - [`asc_606`] — ASC 606: revenue from contracts (full 5-step model)
-//! - [`asc_700`] — ASC 718/740: stock compensation and income taxes
-//! - [`asc_800`] — ASC 805/810/815/820/825/830/835/842: business combinations, derivatives, FV, leases
-//! - [`disclosure`] — All §50 footnote and supplemental disclosure requirements
-//! - [`internal_controls`] — SOX 302/404, ICFR, audit trail, segregation of duties
-//! - [`mathematical`] — Accounting equation invariants and rollforward identities
-//! - [`temporal`] — Period cut-off, accrual/deferral timing, and commencement date props
+//! - `principles` — 15 core GAAP principles and assumptions (ASC 105 + related)
+//! - `asc_200` — ASC 205–280: presentation, income statement, cash flows, EPS, segment, interim
+//! - `asc_300` — ASC 310–360: receivables, investments, inventory, intangibles, PP&E
+//! - `asc_400` — ASC 405–480: liabilities, contingencies, debt, equity classification
+//! - `asc_500` — ASC 505: stockholders' equity, treasury stock, OCI, dividends
+//! - `asc_606` — ASC 606: revenue from contracts (full 5-step model)
+//! - `asc_700` — ASC 718/740: stock compensation and income taxes
+//! - `asc_800` — ASC 805/810/815/820/825/830/835/842: business combinations, derivatives, FV, leases
+//! - `disclosure` — All §50 footnote and supplemental disclosure requirements
+//! - `internal_controls` — SOX 302/404, ICFR, audit trail, segregation of duties
+//! - `mathematical` — Accounting equation invariants and rollforward identities
+//! - `temporal` — Period cut-off, accrual/deferral timing, and commencement date props
 //!
 //! # References
 //!

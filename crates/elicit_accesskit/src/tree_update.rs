@@ -30,7 +30,7 @@ pub struct TreeUpdateJson {
 
     /// The tree this update applies to.
     ///
-    /// Use [`TreeId::ROOT`] for the main tree. Required on the first update
+    /// Use `TreeId::ROOT` for the main tree. Required on the first update
     /// for a subtree.
     pub tree_id: TreeId,
 

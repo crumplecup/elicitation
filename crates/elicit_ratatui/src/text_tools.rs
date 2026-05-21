@@ -40,7 +40,7 @@ fn line_result(line: &LineJson) -> CallToolResult {
 // Text — raw
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`text_raw`].
+/// Parameters for `text_raw`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextRawParams {
     /// Plain text content.
@@ -74,7 +74,7 @@ async fn text_raw(p: TextRawParams) -> Result<CallToolResult, ErrorData> {
 // Text — styled
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`text_styled`].
+/// Parameters for `text_styled`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextStyledParams {
     /// Text content.
@@ -110,7 +110,7 @@ async fn text_styled(p: TextStyledParams) -> Result<CallToolResult, ErrorData> {
 // Span — raw
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`span_raw`].
+/// Parameters for `span_raw`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SpanRawParams {
     /// Span text content.
@@ -136,7 +136,7 @@ async fn span_raw(p: SpanRawParams) -> Result<CallToolResult, ErrorData> {
 // Span — styled
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`span_styled`].
+/// Parameters for `span_styled`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SpanStyledParams {
     /// Span text content.
@@ -164,7 +164,7 @@ async fn span_styled(p: SpanStyledParams) -> Result<CallToolResult, ErrorData> {
 // Line from spans
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`line_from_spans`].
+/// Parameters for `line_from_spans`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LineFromSpansParams {
     /// Spans composing the line.
@@ -197,7 +197,7 @@ async fn line_from_spans(p: LineFromSpansParams) -> Result<CallToolResult, Error
 // Text from lines
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`text_from_lines`].
+/// Parameters for `text_from_lines`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextFromLinesParams {
     /// Lines composing the text.

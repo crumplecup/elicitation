@@ -31,7 +31,7 @@ pub struct EmptyLayoutParams {}
 // Basic layouts
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`layout_horizontal`].
+/// Parameters for `layout_horizontal`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct HorizontalParams {
     /// Cross-axis (vertical) alignment.
@@ -50,7 +50,7 @@ async fn layout_horizontal(p: HorizontalParams) -> Result<CallToolResult, ErrorD
     Ok(layout_result(&l))
 }
 
-/// Parameters for [`layout_vertical`].
+/// Parameters for `layout_vertical`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct VerticalParams {
     /// Cross-axis (horizontal) alignment.
@@ -137,7 +137,7 @@ async fn layout_horizontal_wrapped(p: EmptyLayoutParams) -> Result<CallToolResul
 // Columns and grid
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`layout_columns`].
+/// Parameters for `layout_columns`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColumnsParams {
     /// Number of columns.
@@ -156,7 +156,7 @@ async fn layout_columns(p: ColumnsParams) -> Result<CallToolResult, ErrorData> {
     Ok(layout_result(&l))
 }
 
-/// Parameters for [`layout_grid`].
+/// Parameters for `layout_grid`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GridParams {
     /// Grid identifier.
@@ -197,7 +197,7 @@ async fn layout_grid(p: GridParams) -> Result<CallToolResult, ErrorData> {
 // Spacing and indentation
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`layout_indent`].
+/// Parameters for `layout_indent`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct IndentParams {
     /// Indentation amount in logical pixels.
@@ -216,7 +216,7 @@ async fn layout_indent(p: IndentParams) -> Result<CallToolResult, ErrorData> {
     Ok(layout_result(&l))
 }
 
-/// Parameters for [`layout_add_space`].
+/// Parameters for `layout_add_space`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct AddSpaceParams {
     /// Space amount in logical pixels.

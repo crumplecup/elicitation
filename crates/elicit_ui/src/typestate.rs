@@ -270,7 +270,7 @@ impl Layout<Verified> {
         &self.nodes
     }
 
-    /// Extract a [`VerifiedTree`] snapshot for rendering.
+    /// Extract a [`VerifiedTree`](crate::VerifiedTree) snapshot for rendering.
     ///
     /// Converts the typestate layout into a plain data snapshot that
     /// can be passed to any frontend bridge.
@@ -282,10 +282,10 @@ impl Layout<Verified> {
         }
     }
 
-    /// Render this layout using any [`UiNodeBridge`] frontend.
+    /// Render this layout using any [`UiNodeBridge`](crate::UiNodeBridge) frontend.
     ///
-    /// Returns the [`VerifiedTree`] (for further inspection or diffing) and
-    /// [`RenderStats`] from the DFS render pass.
+    /// Returns the [`VerifiedTree`](crate::VerifiedTree) (for further inspection or diffing) and
+    /// [`RenderStats`](crate::RenderStats) from the DFS render pass.
     ///
     /// # Errors
     ///

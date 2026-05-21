@@ -44,7 +44,7 @@ crate::default_style!(NaiveDateTimeGenerationMode => NaiveDateTimeGenerationMode
 // DateTime<Utc> Generator
 // ============================================================================
 
-/// Generation mode for chrono::DateTime<Utc>.
+/// Generation mode for `chrono::DateTime<Utc>`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DateTimeUtcGenerationMode {
     /// Use current UTC time.
@@ -161,7 +161,7 @@ impl ElicitIntrospect for DateTimeUtcGenerationMode {
     }
 }
 
-/// Generator for creating DateTime<Utc> values.
+/// Generator for creating `DateTime<Utc>` values.
 #[derive(Debug, Clone, Copy)]
 pub struct DateTimeUtcGenerator {
     mode: DateTimeUtcGenerationMode,
@@ -169,7 +169,7 @@ pub struct DateTimeUtcGenerator {
 }
 
 impl DateTimeUtcGenerator {
-    /// Create a new DateTime<Utc> generator.
+    /// Create a new `DateTime<Utc>` generator.
     pub fn new(mode: DateTimeUtcGenerationMode) -> Self {
         Self {
             mode,

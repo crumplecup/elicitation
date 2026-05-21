@@ -17,7 +17,7 @@ use elicitation_derive::instrumented_impl;
 use chrono::{DateTime, NaiveDateTime, Utc};
 
 // DateTimeUtcAfter - DateTime<Utc> after a threshold
-/// A DateTime<Utc> that is guaranteed to be after a threshold time.
+/// A `DateTime<Utc>` that is guaranteed to be after a threshold time.
 ///
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
@@ -88,7 +88,7 @@ impl DateTimeUtcAfter {
         panic!("threshold() not supported in Kani verification")
     }
 
-    /// Unwrap into the inner DateTime<Utc>.
+    /// Unwrap into the inner `DateTime<Utc>`.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
         self.value
@@ -149,7 +149,7 @@ impl Elicitation for DateTimeUtcAfter {
 }
 
 // DateTimeUtcBefore - DateTime<Utc> before a threshold
-/// A DateTime<Utc> that is guaranteed to be before a threshold time.
+/// A `DateTime<Utc>` that is guaranteed to be before a threshold time.
 ///
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
@@ -216,7 +216,7 @@ impl DateTimeUtcBefore {
         panic!("threshold() not supported in Kani verification")
     }
 
-    /// Unwrap into the inner DateTime<Utc>.
+    /// Unwrap into the inner `DateTime<Utc>`.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
         self.value

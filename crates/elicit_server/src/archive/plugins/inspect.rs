@@ -472,7 +472,7 @@ pub async fn get_column_stats_direct(
 
 /// Run `EXPLAIN (ANALYZE, FORMAT JSON)` on a SQL string and parse the plan.
 ///
-/// Returns an [`ExplainPlan`] arena rooted at the top-level plan node.
+/// Returns an [`crate::archive::ExplainPlan`] arena rooted at the top-level plan node.
 #[instrument(skip(url, sql))]
 pub async fn explain_sql_direct(
     url: &str,

@@ -1,6 +1,6 @@
 //! Bevy picking shadow types.
 //!
-//! Covers [`bevy::picking::mesh_picking::ray_cast::SimplifiedMesh`] and the
+//! Covers `bevy::picking::mesh_picking::ray_cast::SimplifiedMesh` and the
 //! core picking enums [`Pickable`], [`PickingInteraction`].
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};

@@ -1,7 +1,7 @@
 //! Bevy application exit status wrapper.
 //!
-//! The [`App`] struct itself is stateful and non-instantiable over MCP.
-//! Only [`AppExit`] is wrapped here. Full `App` access should be handled
+//! The `App` struct itself is stateful and non-instantiable over MCP.
+//! Only `AppExit` is wrapped here. Full `App` access should be handled
 //! through a custom Phase 3C workflow plugin.
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
@@ -75,19 +75,19 @@ impl From<AppExit> for bevy::app::AppExit {
 
 #[reflect_methods]
 impl AppExit {
-    /// Returns `true` if this is [`AppExit::Success`].
+    /// Returns `true` if this is `AppExit::Success`.
     #[tracing::instrument(skip(self))]
     pub fn is_success(&self) -> bool {
         self.0.is_success()
     }
 
-    /// Returns `true` if this is [`AppExit::Error`].
+    /// Returns `true` if this is `AppExit::Error`.
     #[tracing::instrument(skip(self))]
     pub fn is_error(&self) -> bool {
         self.0.is_error()
     }
 
-    /// Returns the error code if this is [`AppExit::Error`], otherwise `None`.
+    /// Returns the error code if this is `AppExit::Error`, otherwise `None`.
     #[tracing::instrument(skip(self))]
     pub fn error_code(&self) -> Option<u8> {
         match *self.0 {
@@ -96,7 +96,7 @@ impl AppExit {
         }
     }
 
-    /// Construct an [`AppExit::Success`] value.
+    /// Construct an `AppExit::Success` value.
     ///
     /// The `&self` receiver is ignored; this is a factory constructor.
     #[tracing::instrument(skip(self))]
@@ -104,7 +104,7 @@ impl AppExit {
         AppExit(Arc::new(bevy::app::AppExit::Success))
     }
 
-    /// Construct an [`AppExit::Error`] with exit code 1.
+    /// Construct an `AppExit::Error` with exit code 1.
     ///
     /// The `&self` receiver is ignored; this is a factory constructor.
     #[tracing::instrument(skip(self))]
@@ -112,10 +112,10 @@ impl AppExit {
         AppExit(Arc::new(bevy::app::AppExit::error()))
     }
 
-    /// Construct an [`AppExit`] from a numeric exit code.
+    /// Construct an `AppExit` from a numeric exit code.
     ///
-    /// Code 0 maps to [`AppExit::Success`]; non-zero maps to
-    /// [`AppExit::Error`] carrying that code.
+    /// Code 0 maps to `AppExit::Success`; non-zero maps to
+    /// `AppExit::Error` carrying that code.
     ///
     /// The `&self` receiver is ignored; this is a factory constructor.
     #[tracing::instrument(skip(self))]

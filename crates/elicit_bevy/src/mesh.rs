@@ -67,13 +67,13 @@ impl PrimitiveTopology {
         }
     }
 
-    /// Returns `true` if this is [`PrimitiveTopology::TriangleList`].
+    /// Returns `true` if this is `PrimitiveTopology::TriangleList`.
     #[tracing::instrument(skip(self))]
     pub fn is_triangle_list(&self) -> bool {
         matches!(*self.0, bevy::mesh::PrimitiveTopology::TriangleList)
     }
 
-    /// Returns `true` if this is [`PrimitiveTopology::LineList`].
+    /// Returns `true` if this is `PrimitiveTopology::LineList`.
     #[tracing::instrument(skip(self))]
     pub fn is_line_list(&self) -> bool {
         matches!(*self.0, bevy::mesh::PrimitiveTopology::LineList)

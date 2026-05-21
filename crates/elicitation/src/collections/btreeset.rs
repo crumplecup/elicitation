@@ -1,4 +1,4 @@
-//! BTreeSet<T> implementation for ordered unique item collection.
+//! `BTreeSet<T>` implementation for ordered unique item collection.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::BTreeSet;

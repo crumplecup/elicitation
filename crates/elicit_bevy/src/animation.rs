@@ -1,7 +1,7 @@
 //! Bevy animation shadow types.
 //!
 //! Covers [`bevy::animation::RepeatAnimation`], [`bevy::animation::AnimationTargetId`],
-//! [`bevy::animation::AnimationPlayer`], and [`bevy::animation::AnimationTransitions`].
+//! [`bevy::animation::AnimationPlayer`], and `bevy::animation::AnimationTransitions`.
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
@@ -249,7 +249,7 @@ shadow_elicitation!(AnimationPlayer);
 
 // ── AnimationTransitions ──────────────────────────────────────────────────────
 
-/// Shadow for [`bevy::animation::AnimationTransitions`].
+/// Shadow for `bevy::animation::AnimationTransitions`.
 ///
 /// `AnimationTransitions` holds private transition state managed by Bevy's
 /// animation system. Users always add it as `AnimationTransitions::default()`

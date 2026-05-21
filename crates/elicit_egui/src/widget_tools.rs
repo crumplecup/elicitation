@@ -31,7 +31,7 @@ fn widget_result(widget: &WidgetJson) -> CallToolResult {
 // Basic display widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_label`].
+/// Parameters for `widget_label`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LabelParams {
     /// Display text.
@@ -59,7 +59,7 @@ async fn widget_label(p: LabelParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_heading`].
+/// Parameters for `widget_heading`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct HeadingParams {
     /// Heading text.
@@ -78,7 +78,7 @@ async fn widget_heading(p: HeadingParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_monospace`].
+/// Parameters for `widget_monospace`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct MonospaceParams {
     /// Text content.
@@ -97,7 +97,7 @@ async fn widget_monospace(p: MonospaceParams) -> Result<CallToolResult, ErrorDat
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_code`].
+/// Parameters for `widget_code`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CodeParams {
     /// Code text content.
@@ -161,7 +161,7 @@ async fn widget_weak(p: SimpleTextParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_colored_label`].
+/// Parameters for `widget_colored_label`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColoredLabelParams {
     /// Text content.
@@ -189,7 +189,7 @@ async fn widget_colored_label(p: ColoredLabelParams) -> Result<CallToolResult, E
 // Interactive widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_button`].
+/// Parameters for `widget_button`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ButtonParams {
     /// Button label text.
@@ -231,7 +231,7 @@ async fn widget_button(p: ButtonParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_small_button`].
+/// Parameters for `widget_small_button`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SmallButtonParams {
     /// Button label text.
@@ -250,7 +250,7 @@ async fn widget_small_button(p: SmallButtonParams) -> Result<CallToolResult, Err
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_checkbox`].
+/// Parameters for `widget_checkbox`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CheckboxParams {
     /// Label text beside the checkbox.
@@ -275,7 +275,7 @@ async fn widget_checkbox(p: CheckboxParams) -> Result<CallToolResult, ErrorData>
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_radio_value`].
+/// Parameters for `widget_radio_value`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RadioValueParams {
     /// Label text.
@@ -300,7 +300,7 @@ async fn widget_radio_value(p: RadioValueParams) -> Result<CallToolResult, Error
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_selectable_label`].
+/// Parameters for `widget_selectable_label`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SelectableLabelParams {
     /// Label text.
@@ -325,7 +325,7 @@ async fn widget_selectable_label(p: SelectableLabelParams) -> Result<CallToolRes
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_hyperlink`].
+/// Parameters for `widget_hyperlink`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct HyperlinkParams {
     /// Display text.
@@ -378,7 +378,7 @@ async fn widget_spinner(p: EmptyParams) -> Result<CallToolResult, ErrorData> {
 // Text input widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_text_edit_singleline`].
+/// Parameters for `widget_text_edit_singleline`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextEditSinglelineParams {
     /// Current text value.
@@ -412,7 +412,7 @@ async fn widget_text_edit_singleline(
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_text_edit_multiline`].
+/// Parameters for `widget_text_edit_multiline`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextEditMultilineParams {
     /// Current text value.
@@ -442,7 +442,7 @@ async fn widget_text_edit_multiline(
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_code_editor`].
+/// Parameters for `widget_code_editor`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CodeEditorParams {
     /// Current code text.
@@ -474,7 +474,7 @@ async fn widget_code_editor(p: CodeEditorParams) -> Result<CallToolResult, Error
 // Numeric widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_slider`].
+/// Parameters for `widget_slider`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SliderParams {
     /// Current value.
@@ -527,7 +527,7 @@ async fn widget_slider(p: SliderParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_drag_value`].
+/// Parameters for `widget_drag_value`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct DragValueParams {
     /// Current value.
@@ -566,7 +566,7 @@ async fn widget_drag_value(p: DragValueParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_progress_bar`].
+/// Parameters for `widget_progress_bar`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ProgressBarParams {
     /// Progress fraction (0.0 = empty, 1.0 = full).
@@ -603,7 +603,7 @@ async fn widget_progress_bar(p: ProgressBarParams) -> Result<CallToolResult, Err
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_image`].
+/// Parameters for `widget_image`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ImageParams {
     /// Image URI.
@@ -641,7 +641,7 @@ async fn widget_image(p: ImageParams) -> Result<CallToolResult, ErrorData> {
 // Link & navigation
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_link`].
+/// Parameters for `widget_link`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LinkParams {
     /// Link display text.
@@ -664,7 +664,7 @@ async fn widget_link(p: LinkParams) -> Result<CallToolResult, ErrorData> {
 // Toggle & radio variants
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_toggle_value`].
+/// Parameters for `widget_toggle_value`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ToggleValueParams {
     /// Label text.
@@ -689,7 +689,7 @@ async fn widget_toggle_value(p: ToggleValueParams) -> Result<CallToolResult, Err
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_radio`].
+/// Parameters for `widget_radio`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RadioParams {
     /// Label text.
@@ -718,7 +718,7 @@ async fn widget_radio(p: RadioParams) -> Result<CallToolResult, ErrorData> {
 // Angle drag widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_drag_angle`].
+/// Parameters for `widget_drag_angle`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct DragAngleParams {
     /// Angle value in radians.
@@ -737,7 +737,7 @@ async fn widget_drag_angle(p: DragAngleParams) -> Result<CallToolResult, ErrorDa
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_drag_angle_tau`].
+/// Parameters for `widget_drag_angle_tau`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct DragAngleTauParams {
     /// Angle value in radians.
@@ -760,7 +760,7 @@ async fn widget_drag_angle_tau(p: DragAngleTauParams) -> Result<CallToolResult, 
 // Colour picker widgets
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_color_edit_button_srgba`].
+/// Parameters for `widget_color_edit_button_srgba`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColorEditButtonSrgbaParams {
     /// Current colour value.
@@ -787,7 +787,7 @@ async fn widget_color_edit_button_srgba(
     Ok(widget_result(&w))
 }
 
-/// Parameters for [`widget_color_edit_button_hsva`].
+/// Parameters for `widget_color_edit_button_hsva`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColorEditButtonHsvaParams {
     /// Current colour as RGBA (converted to HSVA internally).
@@ -818,7 +818,7 @@ async fn widget_color_edit_button_hsva(
 // Slider variants
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_slider_vertical`].
+/// Parameters for `widget_slider_vertical`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SliderVerticalParams {
     /// Current value.

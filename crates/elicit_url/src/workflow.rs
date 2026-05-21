@@ -162,21 +162,21 @@ impl SecureUrlState {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for [`UrlWorkflowPlugin::parse_url`].
+/// Parameters for `parse_url`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParseUrlParams {
     /// Raw URL string to parse. Assumes: non-empty string.
     pub url: String,
 }
 
-/// Parameters for [`UrlWorkflowPlugin::assert_https`].
+/// Parameters for `assert_https`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AssertHttpsParams {
     /// Raw URL string. Assumes: syntactically valid URL.
     pub url: String,
 }
 
-/// Parameters for [`UrlWorkflowPlugin::validate_scheme`].
+/// Parameters for `validate_scheme`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ValidateSchemeParams {
     /// Raw URL string. Assumes: syntactically valid URL.
@@ -185,7 +185,7 @@ pub struct ValidateSchemeParams {
     pub allowed_schemes: Vec<String>,
 }
 
-/// Parameters for [`UrlWorkflowPlugin::build_url`].
+/// Parameters for `build_url`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct BuildUrlParams {
     /// Base URL string. Assumes: syntactically valid URL.
@@ -196,7 +196,7 @@ pub struct BuildUrlParams {
     pub params: Option<HashMap<String, String>>,
 }
 
-/// Parameters for [`UrlWorkflowPlugin::join_url`].
+/// Parameters for `join_url`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct JoinUrlParams {
     /// Base URL string. Assumes: syntactically valid URL.

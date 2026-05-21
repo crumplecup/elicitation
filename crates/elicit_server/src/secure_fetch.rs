@@ -94,7 +94,7 @@ fn default_get() -> String {
 /// Tools are registered at link time via `#[elicit_tool(plugin = "secure_fetch")]`
 /// on each handler; no manual wiring required.
 ///
-/// The shared `reqwest::Client` inside the [`SecureFetchContext`] is reused across
+/// The shared `reqwest::Client` inside the `SecureFetchContext` is reused across
 /// all tool calls, keeping the connection pool alive for the plugin's lifetime.
 #[derive(ElicitPlugin)]
 #[plugin(name = "secure_fetch")]

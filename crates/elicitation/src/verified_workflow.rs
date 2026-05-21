@@ -225,7 +225,7 @@ use crate::contracts::{And, Prop};
 /// satisfies [`Prop`] with non-empty proof methods. Use it as the single
 /// bound in generic code that requires a formally-proven typestate marker.
 ///
-/// See the [module documentation][self] for the full design rationale,
+/// See the module documentation for the full design rationale,
 /// the proof composition guarantee, and the step-by-step guide for adding
 /// new propositions.
 pub trait VerifiedWorkflow: Prop {

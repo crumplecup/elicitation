@@ -207,28 +207,28 @@ impl ParsedZoned {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for [`JiffWorkflowPlugin::parse_timestamp`].
+/// Parameters for `parse_timestamp`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParseTimestampParams {
     /// ISO 8601 timestamp string (e.g. `"2025-03-05T12:00:00Z"`).
     pub timestamp: String,
 }
 
-/// Parameters for [`JiffWorkflowPlugin::parse_zoned`].
+/// Parameters for `parse_zoned`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParseZonedParams {
     /// Zoned datetime string (e.g. `"2025-03-05T12:00:00[America/New_York]"`).
     pub zoned: String,
 }
 
-/// Parameters for [`JiffWorkflowPlugin::assert_future`].
+/// Parameters for `assert_future`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AssertFutureParams {
     /// ISO 8601 timestamp string to check.
     pub timestamp: String,
 }
 
-/// Parameters for [`JiffWorkflowPlugin::convert_tz`].
+/// Parameters for `convert_tz`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ConvertTzParams {
     /// Zoned datetime string. Assumes: valid jiff Zoned string.
@@ -237,7 +237,7 @@ pub struct ConvertTzParams {
     pub timezone: String,
 }
 
-/// Parameters for [`JiffWorkflowPlugin::compute_span`].
+/// Parameters for `compute_span`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ComputeSpanParams {
     /// ISO 8601 start timestamp. Assumes: valid, before `to`.

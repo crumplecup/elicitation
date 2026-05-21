@@ -46,7 +46,7 @@ pub fn extract_value(result: rmcp::model::CallToolResult) -> ElicitResult<Value>
 ///
 /// # Type Parameters
 ///
-/// * `T` - Target integer type (must support TryFrom<i64>)
+/// * `T` - Target integer type (must support `TryFrom<i64>`)
 ///
 /// # Arguments
 ///

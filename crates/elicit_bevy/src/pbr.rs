@@ -132,25 +132,25 @@ impl AlphaMode {
         }
     }
 
-    /// Returns `true` if this is [`AlphaMode::Opaque`].
+    /// Returns `true` if this is `AlphaMode::Opaque`.
     #[tracing::instrument(skip(self))]
     pub fn is_opaque(&self) -> bool {
         matches!(*self.0, bevy::render::alpha::AlphaMode::Opaque)
     }
 
-    /// Returns `true` if this is [`AlphaMode::Mask`].
+    /// Returns `true` if this is `AlphaMode::Mask`.
     #[tracing::instrument(skip(self))]
     pub fn is_mask(&self) -> bool {
         matches!(*self.0, bevy::render::alpha::AlphaMode::Mask(_))
     }
 
-    /// Returns `true` if this is [`AlphaMode::Blend`].
+    /// Returns `true` if this is `AlphaMode::Blend`.
     #[tracing::instrument(skip(self))]
     pub fn is_blend(&self) -> bool {
         matches!(*self.0, bevy::render::alpha::AlphaMode::Blend)
     }
 
-    /// Returns the mask threshold if this is [`AlphaMode::Mask`].
+    /// Returns the mask threshold if this is `AlphaMode::Mask`.
     #[tracing::instrument(skip(self))]
     pub fn get_mask_threshold(&self) -> Option<f32> {
         if let bevy::render::alpha::AlphaMode::Mask(c) = *self.0 {
@@ -160,19 +160,19 @@ impl AlphaMode {
         }
     }
 
-    /// Constructs an [`AlphaMode::Opaque`].
+    /// Constructs an `AlphaMode::Opaque`.
     #[tracing::instrument(skip(self))]
     pub fn opaque(&self) -> AlphaMode {
         AlphaMode::from(bevy::render::alpha::AlphaMode::Opaque)
     }
 
-    /// Constructs an [`AlphaMode::Mask`] with the given threshold.
+    /// Constructs an `AlphaMode::Mask` with the given threshold.
     #[tracing::instrument(skip(self))]
     pub fn mask(&self, threshold: f32) -> AlphaMode {
         AlphaMode::from(bevy::render::alpha::AlphaMode::Mask(threshold))
     }
 
-    /// Constructs an [`AlphaMode::Blend`].
+    /// Constructs an `AlphaMode::Blend`.
     #[tracing::instrument(skip(self))]
     pub fn blend(&self) -> AlphaMode {
         AlphaMode::from(bevy::render::alpha::AlphaMode::Blend)
@@ -290,13 +290,13 @@ impl Tonemapping {
         }
     }
 
-    /// Returns `true` if this is [`Tonemapping::None`].
+    /// Returns `true` if this is `Tonemapping::None`.
     #[tracing::instrument(skip(self))]
     pub fn is_none(&self) -> bool {
         matches!(*self.0, bevy::core_pipeline::tonemapping::Tonemapping::None)
     }
 
-    /// Returns `true` if this is [`Tonemapping::AcesFitted`].
+    /// Returns `true` if this is `Tonemapping::AcesFitted`.
     #[tracing::instrument(skip(self))]
     pub fn is_aces(&self) -> bool {
         matches!(
@@ -305,7 +305,7 @@ impl Tonemapping {
         )
     }
 
-    /// Returns `true` if this is [`Tonemapping::AgX`].
+    /// Returns `true` if this is `Tonemapping::AgX`.
     #[tracing::instrument(skip(self))]
     pub fn is_agx(&self) -> bool {
         matches!(*self.0, bevy::core_pipeline::tonemapping::Tonemapping::AgX)
@@ -372,13 +372,13 @@ impl UvChannel {
         }
     }
 
-    /// Returns `true` if this is [`UvChannel::Uv0`].
+    /// Returns `true` if this is `UvChannel::Uv0`.
     #[tracing::instrument(skip(self))]
     pub fn is_uv0(&self) -> bool {
         matches!(*self.0, bevy::pbr::UvChannel::Uv0)
     }
 
-    /// Returns `true` if this is [`UvChannel::Uv1`].
+    /// Returns `true` if this is `UvChannel::Uv1`.
     #[tracing::instrument(skip(self))]
     pub fn is_uv1(&self) -> bool {
         matches!(*self.0, bevy::pbr::UvChannel::Uv1)
@@ -486,19 +486,19 @@ impl ParallaxMappingMethod {
         }
     }
 
-    /// Returns `true` if this is [`ParallaxMappingMethod::Occlusion`].
+    /// Returns `true` if this is `ParallaxMappingMethod::Occlusion`.
     #[tracing::instrument(skip(self))]
     pub fn is_occlusion(&self) -> bool {
         matches!(*self.0, bevy::pbr::ParallaxMappingMethod::Occlusion)
     }
 
-    /// Returns `true` if this is [`ParallaxMappingMethod::Relief`].
+    /// Returns `true` if this is `ParallaxMappingMethod::Relief`.
     #[tracing::instrument(skip(self))]
     pub fn is_relief(&self) -> bool {
         matches!(*self.0, bevy::pbr::ParallaxMappingMethod::Relief { .. })
     }
 
-    /// Returns the `max_steps` value if this is [`ParallaxMappingMethod::Relief`].
+    /// Returns the `max_steps` value if this is `ParallaxMappingMethod::Relief`.
     #[tracing::instrument(skip(self))]
     pub fn get_max_steps(&self) -> Option<u32> {
         if let bevy::pbr::ParallaxMappingMethod::Relief { max_steps } = *self.0 {
@@ -582,13 +582,13 @@ impl OpaqueRendererMethod {
         }
     }
 
-    /// Returns `true` if this is [`OpaqueRendererMethod::Forward`].
+    /// Returns `true` if this is `OpaqueRendererMethod::Forward`.
     #[tracing::instrument(skip(self))]
     pub fn is_forward(&self) -> bool {
         matches!(*self.0, bevy::pbr::OpaqueRendererMethod::Forward)
     }
 
-    /// Returns `true` if this is [`OpaqueRendererMethod::Deferred`].
+    /// Returns `true` if this is `OpaqueRendererMethod::Deferred`.
     #[tracing::instrument(skip(self))]
     pub fn is_deferred(&self) -> bool {
         matches!(*self.0, bevy::pbr::OpaqueRendererMethod::Deferred)

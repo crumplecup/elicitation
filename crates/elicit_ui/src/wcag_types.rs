@@ -162,7 +162,7 @@ pub struct ErrorDescriptor {
 
 /// A colour pair that has been proven to meet a WCAG contrast threshold.
 ///
-/// Only constructible through a [`WcagContrastFactory`] method; its existence
+/// Only constructible through a [`WcagContrastFactory`](crate::WcagContrastFactory) method; its existence
 /// constitutes evidence of the associated contrast proposition.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ContrastPair {
@@ -176,7 +176,7 @@ pub struct ContrastPair {
 
 /// A widget that has been proven to have an accessible name.
 ///
-/// Only constructible through a [`WcagLabelFactory`] method.
+/// Only constructible through a [`WcagLabelFactory`](crate::WcagLabelFactory) method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LabeledElement {
     /// Widget identifier.
@@ -187,7 +187,7 @@ pub struct LabeledElement {
 
 /// A focus indicator that has been proven to meet the WCAG 2.4.11 appearance thresholds.
 ///
-/// Only constructible through a [`WcagFocusFactory`] method.
+/// Only constructible through a [`WcagFocusFactory`](crate::WcagFocusFactory) method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FocusIndicator {
     /// Widget identifier.
@@ -200,7 +200,7 @@ pub struct FocusIndicator {
 
 /// A widget that has been proven to be reachable via keyboard navigation.
 ///
-/// Only constructible through a [`WcagKeyboardFactory`] method.
+/// Only constructible through a [`WcagKeyboardFactory`](crate::WcagKeyboardFactory) method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct KeyboardPath {
     /// Widget identifier.
@@ -211,7 +211,7 @@ pub struct KeyboardPath {
 
 /// A timed element whose time controls have been proven to meet WCAG 2.2.
 ///
-/// Only constructible through a [`WcagTimingFactory`] method.
+/// Only constructible through a [`WcagTimingFactory`](crate::WcagTimingFactory) method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TimedElement {
     /// Widget identifier.
@@ -222,7 +222,7 @@ pub struct TimedElement {
 
 /// A pointer target that has been proven to meet the WCAG 2.5.8 minimum size.
 ///
-/// Only constructible through a [`WcagTargetFactory`] method.
+/// Only constructible through a [`WcagTargetFactory`](crate::WcagTargetFactory) method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PointerTarget {
     /// Widget identifier.
@@ -235,7 +235,7 @@ pub struct PointerTarget {
 
 /// A widget whose semantic structure has been proven to be programmatically determinable.
 ///
-/// Only constructible through a [`WcagStructureFactory`] method.
+/// Only constructible through a [`WcagStructureFactory`](crate::WcagStructureFactory) method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct StructuredElement {
     /// Widget identifier.
@@ -246,7 +246,7 @@ pub struct StructuredElement {
 
 /// A media element proven to have synchronised captions.
 ///
-/// Only constructible through a [`WcagMediaFactory`] method.
+/// Only constructible through a [`WcagMediaFactory`](crate::WcagMediaFactory) method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CaptionedMedia {
     /// Widget identifier.
@@ -255,7 +255,7 @@ pub struct CaptionedMedia {
 
 /// A page proven to have a programmatically identified language.
 ///
-/// Only constructible through a [`WcagLanguageFactory`] method.
+/// Only constructible through a [`WcagLanguageFactory`](crate::WcagLanguageFactory) method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LanguagePage {
     /// BCP-47 language tag.
@@ -264,7 +264,7 @@ pub struct LanguagePage {
 
 /// A form field proven to have a descriptive error message.
 ///
-/// Only constructible through a [`WcagErrorFactory`] method.
+/// Only constructible through a [`WcagErrorFactory`](crate::WcagErrorFactory) method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ErrorField {
     /// Widget identifier.
@@ -275,7 +275,7 @@ pub struct ErrorField {
 
 /// A UI surface proven to satisfy all WCAG Principle 1 (Perceivable) Level AA criteria.
 ///
-/// Only constructible through [`WcagPerceivedFactory::build_perceivable`].
+/// Only constructible through [`WcagPerceivedFactory::build_perceivable`](crate::WcagPerceivedFactory::build_perceivable).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PerceivedSection {
     /// Number of elements included in the validation sweep.
@@ -284,7 +284,7 @@ pub struct PerceivedSection {
 
 /// A UI surface proven to satisfy all WCAG Principle 2 (Operable) Level AA criteria.
 ///
-/// Only constructible through [`WcagOperableFactory::build_operable`].
+/// Only constructible through [`WcagOperableFactory::build_operable`](crate::WcagOperableFactory::build_operable).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct OperableInterface {
     /// Number of interactive elements included in the validation sweep.
@@ -293,7 +293,7 @@ pub struct OperableInterface {
 
 /// A UI surface proven to satisfy all WCAG Principle 3 (Understandable) Level AA criteria.
 ///
-/// Only constructible through [`WcagUnderstandableFactory::build_understandable`].
+/// Only constructible through [`WcagUnderstandableFactory::build_understandable`](crate::WcagUnderstandableFactory::build_understandable).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct UnderstandableInterface {
     /// Number of elements included in the validation sweep.
@@ -302,7 +302,7 @@ pub struct UnderstandableInterface {
 
 /// A UI surface proven to satisfy all WCAG Principle 4 (Robust) criteria.
 ///
-/// Only constructible through [`WcagRobustFactory::build_robust`].
+/// Only constructible through [`WcagRobustFactory::build_robust`](crate::WcagRobustFactory::build_robust).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RobustWidget {
     /// Number of widgets included in the validation sweep.
@@ -321,7 +321,7 @@ pub struct RobustWidget {
 ///
 /// Collect by running the relevant leaf factories for every element in the
 /// UI surface, then pass the bundle to
-/// [`WcagPerceivedFactory::build_perceivable`].
+/// [`WcagPerceivedFactory::build_perceivable`](crate::WcagPerceivedFactory::build_perceivable).
 #[derive(Debug, Clone, Copy)]
 pub struct PerceivedEvidence {
     /// Normal text meets WCAG 1.4.3 contrast (4.5:1).
@@ -343,7 +343,7 @@ pub struct PerceivedEvidence {
 /// Evidence required to prove WCAG Principle 2 (Operable) Level AA.
 ///
 /// Collect by running the relevant leaf factories, then pass to
-/// [`WcagOperableFactory::build_operable`].
+/// [`WcagOperableFactory::build_operable`](crate::WcagOperableFactory::build_operable).
 #[derive(Debug, Clone, Copy)]
 pub struct OperableEvidence {
     /// All functionality is operable via keyboard (WCAG 2.1.1).
@@ -371,7 +371,7 @@ pub struct OperableEvidence {
 /// Evidence required to prove WCAG Principle 3 (Understandable) Level AA.
 ///
 /// Collect by running the relevant leaf factories, then pass to
-/// [`WcagUnderstandableFactory::build_understandable`].
+/// [`WcagUnderstandableFactory::build_understandable`](crate::WcagUnderstandableFactory::build_understandable).
 #[derive(Debug, Clone, Copy)]
 pub struct UnderstandableEvidence {
     /// Page language is programmatically identified (WCAG 3.1.1).
@@ -395,7 +395,7 @@ pub struct UnderstandableEvidence {
 /// Evidence required to prove WCAG Principle 4 (Robust).
 ///
 /// Collect by running the relevant leaf factories, then pass to
-/// [`WcagRobustFactory::build_robust`].
+/// [`WcagRobustFactory::build_robust`](crate::WcagRobustFactory::build_robust).
 #[derive(Debug, Clone, Copy)]
 pub struct RobustEvidence {
     /// Name, role, and value are programmatically determinable (WCAG 4.1.2).
@@ -407,17 +407,17 @@ pub struct RobustEvidence {
 /// Evidence required to produce a full [`WcagLevelAAValid`] proof.
 ///
 /// Assemble by running all four section factories, then pass to
-/// [`WcagBackend::build_level_aa`].
+/// [`WcagBackend::build_level_aa`](crate::WcagBackend::build_level_aa).
 ///
 /// [`WcagLevelAAValid`]: crate::WcagLevelAAValid
 #[derive(Debug, Clone, Copy)]
 pub struct LevelAaEvidence {
-    /// Principle 1 proof from [`WcagPerceivedFactory::build_perceivable`].
+    /// Principle 1 proof from [`WcagPerceivedFactory::build_perceivable`](crate::WcagPerceivedFactory::build_perceivable).
     pub perceived: Established<WcagPerceivedValid>,
-    /// Principle 2 proof from [`WcagOperableFactory::build_operable`].
+    /// Principle 2 proof from [`WcagOperableFactory::build_operable`](crate::WcagOperableFactory::build_operable).
     pub operable: Established<WcagOperableValid>,
-    /// Principle 3 proof from [`WcagUnderstandableFactory::build_understandable`].
+    /// Principle 3 proof from [`WcagUnderstandableFactory::build_understandable`](crate::WcagUnderstandableFactory::build_understandable).
     pub understandable: Established<WcagUnderstandableValid>,
-    /// Principle 4 proof from [`WcagRobustFactory::build_robust`].
+    /// Principle 4 proof from [`WcagRobustFactory::build_robust`](crate::WcagRobustFactory::build_robust).
     pub robust: Established<WcagRobustValid>,
 }

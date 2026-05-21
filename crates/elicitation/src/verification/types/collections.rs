@@ -91,8 +91,8 @@ impl<T: Elicitation + Send> Elicitation for VecNonEmpty<T> {
 // VecAllSatisfy - Vec where all elements satisfy a contract
 /// A Vec where every element is a contract type C.
 ///
-/// **Compositional verification:** If C is a valid contract, and all elements
-/// are C, then VecAllSatisfy<C> is automatically valid.
+/// **Compositional verification:** If `C` is a valid contract, and all elements
+/// are `C`, then `VecAllSatisfy<C>` is automatically valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct VecAllSatisfy<C>(Vec<C>);
 
@@ -283,7 +283,7 @@ impl<T: Elicitation + Send> Elicitation for ResultOk<T> {
 // BoxSatisfies - Box wrapping a contract type
 /// A Box wrapping a contract type C.
 ///
-/// **Compositional verification:** If C is valid, Box<C> is valid.
+/// **Compositional verification:** If `C` is valid, `Box<C>` is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BoxSatisfies<C>(Box<C>);
 
@@ -338,7 +338,7 @@ impl<C: Elicitation + Send> Elicitation for BoxSatisfies<C> {
 // ArcSatisfies - Arc wrapping a contract type
 /// An Arc wrapping a contract type C.
 ///
-/// **Compositional verification:** If C is valid, Arc<C> is valid.
+/// **Compositional verification:** If `C` is valid, `Arc<C>` is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ArcSatisfies<C>(Arc<C>);
 
@@ -393,7 +393,7 @@ impl<C: Elicitation + Send> Elicitation for ArcSatisfies<C> {
 // RcSatisfies - Rc wrapping a contract type
 /// An Rc wrapping a contract type C.
 ///
-/// **Compositional verification:** If C is valid, Rc<C> is valid.
+/// **Compositional verification:** If `C` is valid, `Rc<C>` is valid.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RcSatisfies<C>(Rc<C>);
 
@@ -1462,7 +1462,7 @@ mod extended_tests {
 // Smart Pointer NonNull Types (for Prusti proofs)
 // ============================================================================
 
-/// Contract type for non-null Box<T>.
+/// Contract type for non-null `Box<T>`.
 #[derive(Debug, Clone)]
 pub struct BoxNonNull<T>(Box<T>);
 
@@ -1483,7 +1483,7 @@ impl<T> BoxNonNull<T> {
     }
 }
 
-/// Contract type for non-null Arc<T>.
+/// Contract type for non-null `Arc<T>`.
 #[derive(Debug, Clone)]
 pub struct ArcNonNull<T>(std::sync::Arc<T>);
 
@@ -1504,7 +1504,7 @@ impl<T> ArcNonNull<T> {
     }
 }
 
-/// Contract type for non-null Rc<T>.
+/// Contract type for non-null `Rc<T>`.
 #[derive(Debug, Clone)]
 pub struct RcNonNull<T>(std::rc::Rc<T>);
 

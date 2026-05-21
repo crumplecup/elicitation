@@ -318,7 +318,7 @@ pub struct EmptyStyleParams {}
 // Style tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`style_spacing`].
+/// Parameters for `style_spacing`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SpacingParams {
     /// Space between widgets.
@@ -373,7 +373,7 @@ async fn style_light_mode(p: EmptyStyleParams) -> Result<CallToolResult, ErrorDa
     Ok(style_result(&StyleJson::LightMode))
 }
 
-/// Parameters for [`style_visual`].
+/// Parameters for `style_visual`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct VisualParams {
     /// Which visual property to set.
@@ -397,7 +397,7 @@ async fn style_visual(p: VisualParams) -> Result<CallToolResult, ErrorData> {
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_window_rounding`].
+/// Parameters for `style_window_rounding`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct WindowRoundingParams {
     /// Corner radius.
@@ -418,7 +418,7 @@ async fn style_window_rounding(p: WindowRoundingParams) -> Result<CallToolResult
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_window_shadow`].
+/// Parameters for `style_window_shadow`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct WindowShadowParams {
     /// Shadow x-offset.
@@ -448,7 +448,7 @@ async fn style_window_shadow(p: WindowShadowParams) -> Result<CallToolResult, Er
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_widget_visuals`].
+/// Parameters for `style_widget_visuals`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct WidgetVisualsParams {
     /// Which widget state to override.
@@ -484,7 +484,7 @@ async fn style_widget_visuals(p: WidgetVisualsParams) -> Result<CallToolResult, 
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_selection`].
+/// Parameters for `style_selection`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SelectionParams {
     /// Background colour for selected items.
@@ -508,7 +508,7 @@ async fn style_selection(p: SelectionParams) -> Result<CallToolResult, ErrorData
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_text_cursor`].
+/// Parameters for `style_text_cursor`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TextCursorParams {
     /// Cursor colour.
@@ -536,7 +536,7 @@ async fn style_text_cursor(p: TextCursorParams) -> Result<CallToolResult, ErrorD
 // Font management tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_fonts`].
+/// Parameters for `egui_set_fonts`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct SetFontsParams {
     /// Font family to configure.
@@ -560,7 +560,7 @@ async fn egui_set_fonts(p: SetFontsParams) -> Result<CallToolResult, ErrorData> 
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_override_text_style`].
+/// Parameters for `egui_override_text_style`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct OverrideTextStyleParams {
     /// Which text style to override.
@@ -587,7 +587,7 @@ async fn egui_override_text_style(p: OverrideTextStyleParams) -> Result<CallTool
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_text_valign`].
+/// Parameters for `egui_set_text_valign`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct SetTextValignParams {
     /// Vertical text alignment.
@@ -610,7 +610,7 @@ async fn egui_set_text_valign(p: SetTextValignParams) -> Result<CallToolResult, 
 // Interaction settings tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_interaction`].
+/// Parameters for `egui_set_interaction`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct InteractionParams {
     /// Time window for a click (seconds).
@@ -640,7 +640,7 @@ async fn egui_set_interaction(p: InteractionParams) -> Result<CallToolResult, Er
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_animation_time`].
+/// Parameters for `egui_set_animation_time`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AnimationTimeParams {
     /// Animation duration in seconds.
@@ -665,7 +665,7 @@ async fn egui_set_animation_time(p: AnimationTimeParams) -> Result<CallToolResul
 // Debug settings tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_debug_options`].
+/// Parameters for `egui_set_debug_options`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct DebugOptionsParams {
     /// Show widget hit-test rectangles.
@@ -808,7 +808,7 @@ async fn egui_set_error_fg_color(p: ColorOverrideParams) -> Result<CallToolResul
 // Stroke customisation tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_widget_stroke`].
+/// Parameters for `egui_set_widget_stroke`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct WidgetStrokeParams {
     /// Which widget state to set stroke for.
@@ -836,7 +836,7 @@ async fn egui_set_widget_stroke(p: WidgetStrokeParams) -> Result<CallToolResult,
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_window_stroke`].
+/// Parameters for `egui_set_window_stroke`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct WindowStrokeParams {
     /// Window border stroke (width + colour).
@@ -859,7 +859,7 @@ async fn egui_set_window_stroke(p: WindowStrokeParams) -> Result<CallToolResult,
 // Margin / padding tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_menu_margin`].
+/// Parameters for `egui_set_menu_margin`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct MenuMarginParams {
     /// Menu margin (left, right, top, bottom).
@@ -878,7 +878,7 @@ async fn egui_set_menu_margin(p: MenuMarginParams) -> Result<CallToolResult, Err
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_button_padding`].
+/// Parameters for `egui_set_button_padding`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ButtonPaddingParams {
     /// Button padding (x = horizontal, y = vertical).
@@ -902,7 +902,7 @@ async fn egui_set_button_padding(p: ButtonPaddingParams) -> Result<CallToolResul
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_indent`].
+/// Parameters for `egui_set_indent`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct StyleIndentParams {
     /// Indentation distance in logical pixels.
@@ -930,7 +930,7 @@ async fn egui_set_indent(p: StyleIndentParams) -> Result<CallToolResult, ErrorDa
 // Miscellaneous style tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_set_scroll_bar_width`].
+/// Parameters for `egui_set_scroll_bar_width`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ScrollBarWidthParams {
     /// Scroll bar track width (logical pixels).
@@ -963,7 +963,7 @@ async fn egui_set_scroll_bar_width(p: ScrollBarWidthParams) -> Result<CallToolRe
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_resize_grip_size`].
+/// Parameters for `egui_set_resize_grip_size`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ResizeGripSizeParams {
     /// Size of the resize grip corner (logical pixels).
@@ -982,7 +982,7 @@ async fn egui_set_resize_grip_size(p: ResizeGripSizeParams) -> Result<CallToolRe
     Ok(style_result(&s))
 }
 
-/// Parameters for [`egui_set_text_cursor_width`].
+/// Parameters for `egui_set_text_cursor_width`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct TextCursorBlinkParams {
     /// Cursor width (logical pixels).

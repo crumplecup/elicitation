@@ -224,8 +224,8 @@ fn is_valid_escape(b: u8) -> bool {
 
 /// Validates quantifiers follow atoms.
 ///
-/// Valid: a*, (ab)+, [xyz]?, x{3,5}
-/// Invalid: **, +?, {3,2}
+/// Valid: `a*`, `(ab)+`, `[xyz]?`, `x{3,5}`
+/// Invalid: `**`, `+?`, `{3,2}`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValidQuantifiers<const MAX_LEN: usize> {
     escapes: ValidEscapes<MAX_LEN>,
@@ -357,8 +357,8 @@ fn validate_quantifier_range(bytes: &[u8], start: usize, end: usize) -> bool {
 
 /// Validates character class contents.
 ///
-/// Valid: [abc], [a-z], [^0-9], [\d\w]
-/// Invalid: [z-a], [[]
+/// Valid: `[abc]`, `[a-z]`, `[^0-9]`, `[\d\w]`
+/// Invalid: `[z-a]`, `[[]`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValidCharClass<const MAX_LEN: usize> {
     quantifiers: ValidQuantifiers<MAX_LEN>,

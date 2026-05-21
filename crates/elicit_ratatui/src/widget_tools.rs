@@ -28,7 +28,7 @@ fn widget_result(widget: &WidgetJson) -> CallToolResult {
 // Block
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_block`].
+/// Parameters for `widget_block`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BlockParams {
     /// Block title text.
@@ -75,7 +75,7 @@ async fn widget_block(p: BlockParams) -> Result<CallToolResult, ErrorData> {
 // Paragraph
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_paragraph`].
+/// Parameters for `widget_paragraph`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphParams {
     /// Display text — either a plain string or a richly-styled `TextJson` object.
@@ -123,7 +123,7 @@ async fn widget_paragraph(p: ParagraphParams) -> Result<CallToolResult, ErrorDat
 // List
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_list`].
+/// Parameters for `widget_list`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ListParams {
     /// List item texts.
@@ -168,7 +168,7 @@ async fn widget_list(p: ListParams) -> Result<CallToolResult, ErrorData> {
 // Table
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_table`].
+/// Parameters for `widget_table`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TableParams {
     /// Data rows.
@@ -220,7 +220,7 @@ async fn widget_table(p: TableParams) -> Result<CallToolResult, ErrorData> {
 // Gauge
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_gauge`].
+/// Parameters for `widget_gauge`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GaugeParams {
     /// Progress ratio (0.0–1.0).
@@ -261,7 +261,7 @@ async fn widget_gauge(p: GaugeParams) -> Result<CallToolResult, ErrorData> {
 // Sparkline
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_sparkline`].
+/// Parameters for `widget_sparkline`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SparklineParams {
     /// Data points.
@@ -302,7 +302,7 @@ async fn widget_sparkline(p: SparklineParams) -> Result<CallToolResult, ErrorDat
 // Tabs
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_tabs`].
+/// Parameters for `widget_tabs`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TabsParams {
     /// Tab title texts.
@@ -347,7 +347,7 @@ async fn widget_tabs(p: TabsParams) -> Result<CallToolResult, ErrorData> {
 // Clear
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_clear`].
+/// Parameters for `widget_clear`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ClearParams;
 
@@ -366,7 +366,7 @@ async fn widget_clear(_p: ClearParams) -> Result<CallToolResult, ErrorData> {
 // BarChart
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_bar_chart`].
+/// Parameters for `widget_bar_chart`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BarChartParams {
     /// Bar groups.
@@ -431,7 +431,7 @@ async fn widget_bar_chart(p: BarChartParams) -> Result<CallToolResult, ErrorData
 // Chart
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_chart`].
+/// Parameters for `widget_chart`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ChartParams {
     /// Datasets to plot.
@@ -476,7 +476,7 @@ async fn widget_chart(p: ChartParams) -> Result<CallToolResult, ErrorData> {
 // LineGauge
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_line_gauge`].
+/// Parameters for `widget_line_gauge`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LineGaugeParams {
     /// Progress ratio (0.0–1.0).
@@ -521,7 +521,7 @@ async fn widget_line_gauge(p: LineGaugeParams) -> Result<CallToolResult, ErrorDa
 // Scrollbar
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`widget_scrollbar`].
+/// Parameters for `widget_scrollbar`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ScrollbarParams {
     /// Scrollbar orientation.

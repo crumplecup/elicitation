@@ -11,7 +11,7 @@
 //!
 //! # Example
 //!
-//! ```rust,ignore
+//! ```text
 //! // Agent asks: what categories does I32Positive have?
 //! // → "requires (1), ensures (1)"
 //!

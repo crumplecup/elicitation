@@ -31,7 +31,7 @@ fn color_result(color: &ColorJson) -> CallToolResult {
 // Style tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`style_fg`].
+/// Parameters for `style_fg`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct StyleFgParams {
     /// Foreground colour.
@@ -53,7 +53,7 @@ async fn style_fg(p: StyleFgParams) -> Result<CallToolResult, ErrorData> {
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_bg`].
+/// Parameters for `style_bg`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct StyleBgParams {
     /// Background colour.
@@ -75,7 +75,7 @@ async fn style_bg(p: StyleBgParams) -> Result<CallToolResult, ErrorData> {
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_modifier`].
+/// Parameters for `style_modifier`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ModifierParams {
     /// Text modifier to apply.
@@ -97,7 +97,7 @@ async fn style_modifier(p: ModifierParams) -> Result<CallToolResult, ErrorData> 
     Ok(style_result(&s))
 }
 
-/// Parameters for [`style_reset`].
+/// Parameters for `style_reset`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct StyleResetParams;
 
@@ -116,7 +116,7 @@ async fn style_reset(_p: StyleResetParams) -> Result<CallToolResult, ErrorData> 
 // Colour tools
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`color_rgb`].
+/// Parameters for `color_rgb`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColorRgbParams {
     /// Red channel (0–255).
@@ -143,7 +143,7 @@ async fn color_rgb(p: ColorRgbParams) -> Result<CallToolResult, ErrorData> {
     Ok(color_result(&c))
 }
 
-/// Parameters for [`color_indexed`].
+/// Parameters for `color_indexed`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColorIndexedParams {
     /// 256-colour palette index (0–255).
@@ -162,7 +162,7 @@ async fn color_indexed(p: ColorIndexedParams) -> Result<CallToolResult, ErrorDat
     Ok(color_result(&c))
 }
 
-/// Parameters for [`color_named`].
+/// Parameters for `color_named`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ColorNamedParams {
     /// Named colour: "Red", "Green", "Blue", "Yellow", "Magenta", "Cyan",

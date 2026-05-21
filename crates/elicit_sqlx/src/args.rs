@@ -45,7 +45,7 @@ use serde::Serialize;
 
 /// Convert `self` into a flat list of positional SQL argument values.
 ///
-/// Implemented automatically for all types that derive [`Elicitation`].
+/// Implemented automatically for all types that derive `Elicitation`.
 /// The return value is suitable for direct use as the `args` field in
 /// `*__execute`, `*__fetch_all`, `*__fetch_one`, and `*__fetch_optional`
 /// driver tools.

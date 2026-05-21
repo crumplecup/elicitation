@@ -173,21 +173,21 @@ impl RangedDateTimeState {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for [`ChronoWorkflowPlugin::parse_datetime`].
+/// Parameters for `parse_datetime`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ParseDateTimeParams {
     /// RFC 3339 datetime string (e.g. `"2025-03-05T12:00:00Z"`).
     pub datetime: String,
 }
 
-/// Parameters for [`ChronoWorkflowPlugin::assert_future`].
+/// Parameters for `assert_future`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AssertFutureParams {
     /// RFC 3339 datetime string to check.
     pub datetime: String,
 }
 
-/// Parameters for [`ChronoWorkflowPlugin::assert_in_range`].
+/// Parameters for `assert_in_range`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AssertInRangeParams {
     /// RFC 3339 datetime to check.
@@ -198,7 +198,7 @@ pub struct AssertInRangeParams {
     pub end: String,
 }
 
-/// Parameters for [`ChronoWorkflowPlugin::compute_duration`].
+/// Parameters for `compute_duration`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ComputeDurationParams {
     /// RFC 3339 start datetime. Assumes: valid, before `to`.
@@ -207,7 +207,7 @@ pub struct ComputeDurationParams {
     pub to: String,
 }
 
-/// Parameters for [`ChronoWorkflowPlugin::add_seconds`].
+/// Parameters for `add_seconds`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct AddSecondsParams {
     /// RFC 3339 base datetime.

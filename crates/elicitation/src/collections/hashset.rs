@@ -1,4 +1,4 @@
-//! HashSet<T> implementation for unique item collection.
+//! `HashSet<T>` implementation for unique item collection.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::HashSet;

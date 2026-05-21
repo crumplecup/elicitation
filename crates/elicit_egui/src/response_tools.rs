@@ -158,7 +158,7 @@ async fn response_secondary_clicked(p: EmptyResponseParams) -> Result<CallToolRe
     Ok(query_result(&ResponseQueryJson::SecondaryClicked))
 }
 
-/// Parameters for [`response_clicked_n`].
+/// Parameters for `response_clicked_n`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ClickedNParams {
     /// Click count to check.
@@ -349,7 +349,7 @@ async fn response_hover_pos(p: EmptyResponseParams) -> Result<CallToolResult, Er
 // Actions
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`response_show_tooltip`].
+/// Parameters for `response_show_tooltip`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ShowTooltipParams {
     /// Tooltip text.
@@ -368,7 +368,7 @@ async fn response_show_tooltip(p: ShowTooltipParams) -> Result<CallToolResult, E
     Ok(query_result(&q))
 }
 
-/// Parameters for [`response_set_enabled`].
+/// Parameters for `response_set_enabled`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SetEnabledParams {
     /// Whether the widget is enabled.

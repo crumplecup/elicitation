@@ -61,7 +61,7 @@ impl From<Arc<sqlx::any::AnyRow>> for AnyRow {
 
 #[reflect_methods]
 impl AnyRow {
-    /// Returns the columns of this row as elicitation-enabled [`AnyColumn`] wrappers.
+    /// Returns the columns of this row as elicitation-enabled [`crate::AnyColumn`] wrappers.
     #[instrument(skip(self))]
     pub fn columns(&self) -> Vec<crate::AnyColumn> {
         self.0

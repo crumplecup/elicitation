@@ -106,7 +106,7 @@ pub struct EmptyInputParams {}
 // Keyboard
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`egui_key_pressed`].
+/// Parameters for `egui_key_pressed`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct KeyParams {
     /// Key name (e.g. "A", "Enter", "Space", "Escape").
@@ -185,7 +185,7 @@ async fn egui_pointer_pos(p: EmptyInputParams) -> Result<CallToolResult, ErrorDa
     Ok(input_result(&InputActionJson::PointerPos))
 }
 
-/// Parameters for [`egui_pointer_button_pressed`].
+/// Parameters for `egui_pointer_button_pressed`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct PointerButtonParams {
     /// Mouse button name ("primary", "secondary", "middle").
@@ -265,7 +265,7 @@ async fn egui_clipboard_get(p: EmptyInputParams) -> Result<CallToolResult, Error
     Ok(input_result(&InputActionJson::ClipboardGet))
 }
 
-/// Parameters for [`egui_clipboard_set`].
+/// Parameters for `egui_clipboard_set`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ClipboardSetParams {
     /// Text to copy to clipboard.

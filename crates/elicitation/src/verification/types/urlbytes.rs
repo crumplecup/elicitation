@@ -87,7 +87,7 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
 
 /// URL authority with bounded length (e.g., "example.com:8080").
 ///
-/// RFC 3986: authority = [ userinfo "@" ] host [ ":" port ]
+/// RFC 3986: `authority = [ userinfo "@" ] host [ ":" port ]`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthorityBytes<const MAX_LEN: usize = 256> {
     utf8: Utf8Bytes<MAX_LEN>,

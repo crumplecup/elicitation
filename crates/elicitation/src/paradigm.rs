@@ -10,7 +10,7 @@ use crate::Prompt;
 ///
 /// # Owned Returns for Flexibility
 ///
-/// All methods return owned data (Vec<T>, Vec<String>) rather than static slices.
+/// All methods return owned data (`Vec<T>`, `Vec<String>`) rather than static slices.
 /// This allows implementations for both compile-time enums and runtime collections
 /// like `Vec<T>` and `HashMap<K, V>`.
 ///

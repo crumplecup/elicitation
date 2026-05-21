@@ -1,6 +1,6 @@
 //! [`AnyToolSlot`] — type-erased bounded container for a registered concrete type.
 //!
-//! A slot is created once per [`DynamicToolRegistry::register_type`] call.
+//! A slot is created once per [`DynamicToolRegistry::register_type`](crate::DynamicToolRegistry::register_type) call.
 //! It carries the type's prefix string and, in the concrete [`TypedSlot<T>`]
 //! implementation, a monomorphized vtable that closures can capture.
 
@@ -13,7 +13,7 @@ use crate::traits::Elicitation;
 
 /// Object-safe wrapper representing one registered concrete type.
 ///
-/// Created via [`DynamicToolRegistry::register_type`].  Factories receive a
+/// Created via [`DynamicToolRegistry::register_type`](crate::DynamicToolRegistry::register_type).  Factories receive a
 /// `&dyn AnyToolSlot` and call [`TypedSlot::downcast_ref`] to recover the
 /// typed slot for their specific vtable.
 pub trait AnyToolSlot: Any + Send + Sync + 'static {

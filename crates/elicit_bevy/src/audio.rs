@@ -56,25 +56,25 @@ impl PlaybackMode {
         }
     }
 
-    /// Returns `true` if this is [`PlaybackMode::Once`].
+    /// Returns `true` if this is `PlaybackMode::Once`.
     #[tracing::instrument(skip(self))]
     pub fn is_once(&self) -> bool {
         matches!(*self.0, bevy::audio::PlaybackMode::Once)
     }
 
-    /// Returns `true` if this is [`PlaybackMode::Loop`].
+    /// Returns `true` if this is `PlaybackMode::Loop`.
     #[tracing::instrument(skip(self))]
     pub fn is_loop(&self) -> bool {
         matches!(*self.0, bevy::audio::PlaybackMode::Loop)
     }
 
-    /// Returns `true` if this is [`PlaybackMode::Despawn`].
+    /// Returns `true` if this is `PlaybackMode::Despawn`.
     #[tracing::instrument(skip(self))]
     pub fn is_despawn(&self) -> bool {
         matches!(*self.0, bevy::audio::PlaybackMode::Despawn)
     }
 
-    /// Returns `true` if this is [`PlaybackMode::Remove`].
+    /// Returns `true` if this is `PlaybackMode::Remove`.
     #[tracing::instrument(skip(self))]
     pub fn is_remove(&self) -> bool {
         matches!(*self.0, bevy::audio::PlaybackMode::Remove)
@@ -181,25 +181,25 @@ impl Volume {
         self.0.to_decibels()
     }
 
-    /// Returns `true` if this is [`Volume::Linear`].
+    /// Returns `true` if this is `Volume::Linear`.
     #[tracing::instrument(skip(self))]
     pub fn is_linear(&self) -> bool {
         matches!(*self.0, bevy::audio::Volume::Linear(_))
     }
 
-    /// Returns `true` if this is [`Volume::Decibels`].
+    /// Returns `true` if this is `Volume::Decibels`.
     #[tracing::instrument(skip(self))]
     pub fn is_decibels(&self) -> bool {
         matches!(*self.0, bevy::audio::Volume::Decibels(_))
     }
 
-    /// Constructs a [`Volume::Linear`] from a linear scale value (ignores self).
+    /// Constructs a `Volume::Linear` from a linear scale value (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn from_linear_volume(&self, v: f32) -> Volume {
         Volume::from(bevy::audio::Volume::Linear(v))
     }
 
-    /// Constructs a [`Volume::Decibels`] from a decibel value (ignores self).
+    /// Constructs a `Volume::Decibels` from a decibel value (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn from_db_volume(&self, db: f32) -> Volume {
         Volume::from(bevy::audio::Volume::Decibels(db))

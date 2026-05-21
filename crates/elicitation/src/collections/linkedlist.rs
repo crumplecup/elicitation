@@ -1,4 +1,4 @@
-//! LinkedList<T> implementation for linked list elicitation.
+//! `LinkedList<T>` implementation for linked list elicitation.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::LinkedList;

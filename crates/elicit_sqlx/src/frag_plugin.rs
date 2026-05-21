@@ -28,7 +28,7 @@ pub struct SqlxFragPlugin;
 
 /// Proposition: a `sqlx::query!(sql, params…)` source fragment was emitted.
 ///
-/// Established by [`emit_query`] after [`EmitCode::emit_code`] succeeds.
+/// Established by `emit_query` after [`EmitCode::emit_code`] succeeds.
 /// The fragment contains a valid macro invocation; it does NOT guarantee
 /// that the emitted binary will compile (requires `DATABASE_URL` at
 /// consumer build time).
@@ -73,7 +73,7 @@ impl VerifiedWorkflow for QueryFragmentEmitted {}
 
 /// Proposition: a `sqlx::query_as!(Type, sql, params…)` source fragment was emitted.
 ///
-/// Established by [`emit_query_as`] after [`EmitCode::emit_code`] succeeds.
+/// Established by `emit_query_as` after [`EmitCode::emit_code`] succeeds.
 #[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct QueryAsFragmentEmitted;
 impl Prop for QueryAsFragmentEmitted {
@@ -115,7 +115,7 @@ impl VerifiedWorkflow for QueryAsFragmentEmitted {}
 
 /// Proposition: a `sqlx::query_scalar!(sql, params…)` source fragment was emitted.
 ///
-/// Established by [`emit_query_scalar`] after [`EmitCode::emit_code`] succeeds.
+/// Established by `emit_query_scalar` after [`EmitCode::emit_code`] succeeds.
 #[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct QueryScalarFragmentEmitted;
 impl Prop for QueryScalarFragmentEmitted {
@@ -157,7 +157,7 @@ impl VerifiedWorkflow for QueryScalarFragmentEmitted {}
 
 /// Proposition: a `sqlx::migrate!(path).run(&pool).await?` source fragment was emitted.
 ///
-/// Established by [`emit_migrate`] after [`EmitCode::emit_code`] succeeds.
+/// Established by `emit_migrate` after [`EmitCode::emit_code`] succeeds.
 #[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct MigrateFragmentEmitted;
 impl Prop for MigrateFragmentEmitted {

@@ -69,7 +69,7 @@
 //!
 //! Calling `register_contextual` a second time with the same prefix **replaces**
 //! the previously generated tools.  Pair this with
-//! [`DynamicToolRegistry::notify_tool_list_changed`] to push the updated tool
+//! [`DynamicToolRegistry::notify_tool_list_changed`](crate::DynamicToolRegistry::notify_tool_list_changed) to push the updated tool
 //! list to connected agents immediately.
 //!
 //! # Relationship to `AnyToolFactory`
@@ -104,7 +104,7 @@ pub trait ContextualFactory {
 
     /// Produce [`DynamicToolDescriptor`]s for the given prefix and context.
     ///
-    /// Called immediately by [`DynamicToolRegistry::register_contextual`].
+    /// Called immediately by [`DynamicToolRegistry::register_contextual`](crate::DynamicToolRegistry::register_contextual).
     /// The returned descriptors replace any tools previously registered under
     /// the same prefix.
     ///

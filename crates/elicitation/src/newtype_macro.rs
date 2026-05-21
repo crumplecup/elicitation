@@ -59,7 +59,7 @@
 ///   `PartialEq`, `Eq`, `Hash`, `PartialOrd`, `Ord`, `Display`, `FromStr`
 /// - `Copy` is intentionally absent — `Arc<T>` is never `Copy`
 ///
-/// Use [`elicit_newtype_traits!`] after this macro to forward standard comparison,
+/// Use `elicit_newtype_traits!` after this macro to forward standard comparison,
 /// display, and parsing traits for inner types that support them.
 ///
 /// # Companion Crate Pattern
@@ -762,7 +762,7 @@ macro_rules! elicit_newtype_traits {
 
 /// Generates one group of standard trait impls for a newtype wrapper.
 ///
-/// Called by [`elicit_newtype_traits!`]; not intended for direct use.
+/// Called by `elicit_newtype_traits!`; not intended for direct use.
 #[doc(hidden)]
 #[macro_export]
 macro_rules! elicit_newtype_trait_flag {

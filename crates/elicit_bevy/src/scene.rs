@@ -58,7 +58,7 @@ impl From<SceneInstanceReady> for bevy::scene::SceneInstanceReady {
 impl SceneInstanceReady {
     /// Returns the bits of the entity whose scene instance is ready.
     ///
-    /// Pass this value to [`Entity::from_bits_constructor`] to reconstruct the entity.
+    /// Pass this value to `Entity::from_bits_constructor` to reconstruct the entity.
     #[tracing::instrument(skip(self))]
     pub fn entity_bits(&self) -> u64 {
         self.0.entity.to_bits()

@@ -78,7 +78,7 @@ pub struct ContrastViolation {
 
 /// A verified, owned snapshot of the UI tree ready for rendering.
 ///
-/// Produced from `Layout<Verified>` via [`Layout::into_verified_tree`].
+/// Produced from `Layout<Verified>` via [`Layout::into_verified_tree`](crate::Layout::into_verified_tree).
 /// Carries the AccessKit nodes without the typestate machinery.
 #[derive(Debug, Clone)]
 pub struct VerifiedTree {

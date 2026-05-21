@@ -182,8 +182,8 @@
 //!
 //! Tools communicate via tagged enums that serialize to compact JSON:
 //! [`WidgetJson`], [`ContainerJson`], [`LayoutJson`],
-//! [`StyleJson`](style_tools::StyleJson), and
-//! [`ResponseQueryJson`](response_tools::ResponseQueryJson).
+//! [`StyleJson`], and
+//! [`ResponseQueryJson`].
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

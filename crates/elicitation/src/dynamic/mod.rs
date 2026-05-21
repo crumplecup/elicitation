@@ -437,7 +437,7 @@ impl DynamicToolRegistry {
     /// Returns `Some(Err(...))` if the tool handler returns an error.
     ///
     /// Useful for testing and for programmatic invocation without a live MCP
-    /// connection (no [`rmcp::RequestContext`] required).
+    /// connection (no `rmcp::RequestContext` required).
     pub async fn invoke_dynamic(
         &self,
         name: &str,

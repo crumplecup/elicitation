@@ -1056,7 +1056,7 @@ shadow_elicitation!(ScreenSpaceTransmissionQuality);
 pub struct Camera3d {
     /// Depth clear operation for the main 3D pass.
     pub depth_load_op: Camera3dDepthLoadOp,
-    /// Raw [`TextureUsages`] bitflags for the depth texture.
+    /// Raw `TextureUsages` bitflags for the depth texture.
     pub depth_texture_usages: u32,
     /// Number of transmissive-pass steps (layers of transparency).
     pub screen_space_specular_transmission_steps: usize,

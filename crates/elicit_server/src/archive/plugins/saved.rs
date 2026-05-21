@@ -21,7 +21,7 @@ pub struct SavedQueryStore {
 
 impl SavedQueryStore {
     /// Open (or create) the database and ensure the `saved_queries` table
-    /// exists.  Reuses the same path as [`HistoryStore`].
+    /// exists.  Reuses the same path as [`crate::archive::HistoryStore`].
     #[instrument]
     pub async fn open() -> ArchiveResult<Self> {
         let path = saved_db_path()?;

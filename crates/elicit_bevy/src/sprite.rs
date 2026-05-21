@@ -549,7 +549,7 @@ impl SpriteImageMode {
         }
     }
 
-    /// Returns the scaling mode if this is [`SpriteImageMode::Scale`].
+    /// Returns the scaling mode if this is `SpriteImageMode::Scale`.
     #[tracing::instrument(skip(self))]
     pub fn get_scale_mode(&self) -> Option<SpriteScalingMode> {
         if let bevy::sprite::SpriteImageMode::Scale(m) = *self.0 {

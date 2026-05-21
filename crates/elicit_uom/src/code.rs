@@ -684,7 +684,7 @@ impl UomCodePlugin {
         Self(Arc::new(UomCodeCtx::new(new_bus())))
     }
 
-    /// Create a `UomCodePlugin` that shares a bus with a [`UomQuantityPlugin`].
+    /// Create a `UomCodePlugin` that shares a bus with a [`crate::UomQuantityPlugin`].
     pub fn with_bus(bus: QuantityBus) -> Self {
         Self(Arc::new(UomCodeCtx::new(bus)))
     }

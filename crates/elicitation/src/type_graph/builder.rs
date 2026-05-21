@@ -1,4 +1,4 @@
-//! Type graph builder — walks the [`TypeGraphKey`] registry from a root type.
+//! Type graph builder — walks the [`TypeGraphKey`](crate::TypeGraphKey) registry from a root type.
 //!
 //! Produces a [`TypeGraph`] (nodes + edges) that renderers consume. The walk
 //! is depth-first with a visited set; cycle safety is guaranteed by marking
@@ -27,7 +27,7 @@ pub struct GraphNode {
     pub kind: NodeKind,
     /// Optional prompt text from the type's `Prompt` implementation.
     ///
-    /// Populated from [`TypeMetadata::description`] for registered types;
+    /// Populated from [`TypeMetadata::description`](crate::TypeMetadata::description) for registered types;
     /// `None` for primitives, generic placeholders, and unit variant nodes.
     pub prompt: Option<String>,
 }

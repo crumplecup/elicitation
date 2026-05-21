@@ -11,7 +11,7 @@
 //! They compose with `both()` / `And<A, B>` for richer invariants.
 //!
 //! GAAP bridges (`ProvableFrom` impls connecting these tokens to canonical
-//! GAAP propositions) live in [`crate::gaap::proof_composition`].
+//! GAAP propositions) live in `crate::gaap::proof_composition`.
 
 use elicitation::{VerifiedWorkflow, contracts::And};
 

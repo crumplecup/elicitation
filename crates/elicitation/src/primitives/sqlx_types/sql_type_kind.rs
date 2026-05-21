@@ -75,7 +75,7 @@ impl std::fmt::Display for SqlTypeKind {
     }
 }
 
-/// Convert from sqlx's [`AnyTypeInfoKind`] to our serializable [`SqlTypeKind`].
+/// Convert from sqlx's `AnyTypeInfoKind` to our serializable [`SqlTypeKind`].
 impl From<sqlx::any::AnyTypeInfoKind> for SqlTypeKind {
     fn from(kind: sqlx::any::AnyTypeInfoKind) -> Self {
         use sqlx::any::AnyTypeInfoKind as K;
@@ -93,7 +93,7 @@ impl From<sqlx::any::AnyTypeInfoKind> for SqlTypeKind {
     }
 }
 
-/// Convert back from [`SqlTypeKind`] to sqlx's [`AnyTypeInfoKind`].
+/// Convert back from [`SqlTypeKind`] to sqlx's `AnyTypeInfoKind`.
 impl From<SqlTypeKind> for sqlx::any::AnyTypeInfoKind {
     fn from(kind: SqlTypeKind) -> Self {
         use sqlx::any::AnyTypeInfoKind as K;

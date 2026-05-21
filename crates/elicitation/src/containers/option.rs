@@ -1,4 +1,4 @@
-//! Option<T> implementation for optional value elicitation.
+//! `Option<T>` implementation for optional value elicitation.
 
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 

@@ -18,7 +18,7 @@
 //! - [`sqlx::any::AnyQueryResult`] — rows_affected + last_insert_id
 //! - [`ColumnDescriptor`] — serializable column metadata (name + ordinal + type_kind)
 //! - [`ColumnEntry`] — serializable column name/value pair
-//! - [`RowData`] — serializable SQL row (Vec<ColumnEntry>)
+//! - [`RowData`] — serializable SQL row (`Vec<ColumnEntry>`)
 //!
 //! # Enabled by the `sqlx-types` feature
 

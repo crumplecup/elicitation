@@ -7,7 +7,7 @@
 //! registrations from inventory and uses them to:
 //!
 //! 1. Expose factory meta-tools in `list_tools` (always visible).
-//! 2. Instantiate [`DynamicToolDescriptor`](super::DynamicToolDescriptor)s when
+//! 2. Instantiate [`DynamicToolDescriptor`]s when
 //!    an agent calls the meta-tool.
 
 use super::{DynamicToolDescriptor, slot::AnyToolSlot};

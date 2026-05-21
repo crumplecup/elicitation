@@ -46,25 +46,25 @@ impl JustifyText {
         }
     }
 
-    /// Returns `true` if this is [`Justify::Left`].
+    /// Returns `true` if this is `Justify::Left`.
     #[tracing::instrument(skip(self))]
     pub fn is_left(&self) -> bool {
         matches!(*self.0, bevy::text::Justify::Left)
     }
 
-    /// Returns `true` if this is [`Justify::Center`].
+    /// Returns `true` if this is `Justify::Center`.
     #[tracing::instrument(skip(self))]
     pub fn is_center(&self) -> bool {
         matches!(*self.0, bevy::text::Justify::Center)
     }
 
-    /// Returns `true` if this is [`Justify::Right`].
+    /// Returns `true` if this is `Justify::Right`.
     #[tracing::instrument(skip(self))]
     pub fn is_right(&self) -> bool {
         matches!(*self.0, bevy::text::Justify::Right)
     }
 
-    /// Returns `true` if this is [`Justify::Justified`].
+    /// Returns `true` if this is `Justify::Justified`.
     #[tracing::instrument(skip(self))]
     pub fn is_justified(&self) -> bool {
         matches!(*self.0, bevy::text::Justify::Justified)
@@ -138,19 +138,19 @@ impl LineBreak {
         }
     }
 
-    /// Returns `true` if this is [`LineBreak::WordBoundary`].
+    /// Returns `true` if this is `LineBreak::WordBoundary`.
     #[tracing::instrument(skip(self))]
     pub fn is_word(&self) -> bool {
         matches!(*self.0, bevy::text::LineBreak::WordBoundary)
     }
 
-    /// Returns `true` if this is [`LineBreak::AnyCharacter`].
+    /// Returns `true` if this is `LineBreak::AnyCharacter`.
     #[tracing::instrument(skip(self))]
     pub fn is_char(&self) -> bool {
         matches!(*self.0, bevy::text::LineBreak::AnyCharacter)
     }
 
-    /// Returns `true` if this is [`LineBreak::NoWrap`].
+    /// Returns `true` if this is `LineBreak::NoWrap`.
     #[tracing::instrument(skip(self))]
     pub fn is_no_wrap(&self) -> bool {
         matches!(*self.0, bevy::text::LineBreak::NoWrap)
@@ -217,13 +217,13 @@ impl FontSmoothing {
         }
     }
 
-    /// Returns `true` if this is [`FontSmoothing::AntiAliased`].
+    /// Returns `true` if this is `FontSmoothing::AntiAliased`.
     #[tracing::instrument(skip(self))]
     pub fn is_antialiased(&self) -> bool {
         matches!(*self.0, bevy::text::FontSmoothing::AntiAliased)
     }
 
-    /// Returns `true` if this is [`FontSmoothing::None`] (no antialiasing).
+    /// Returns `true` if this is `FontSmoothing::None` (no antialiasing).
     #[tracing::instrument(skip(self))]
     pub fn is_none(&self) -> bool {
         matches!(*self.0, bevy::text::FontSmoothing::None)

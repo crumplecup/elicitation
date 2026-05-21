@@ -158,7 +158,7 @@ async fn context_create(
 // context_destroy
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`context_destroy`].
+/// Parameters for `context_destroy`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SessionIdParams {
     /// Session UUID string.
@@ -231,7 +231,7 @@ async fn context_list(
 // context_run_frame
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`context_run_frame`].
+/// Parameters for `context_run_frame`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RunFrameParams {
     /// Session UUID string.
@@ -313,7 +313,7 @@ async fn context_run_frame(
 // context_apply_style
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`context_apply_style`].
+/// Parameters for `context_apply_style`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ApplyStyleParams {
     /// Session UUID string.

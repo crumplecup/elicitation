@@ -11,9 +11,9 @@
 //!
 //! # Marker traits
 //!
-//! [`bevy::ecs::component::Component`], [`bevy::ecs::system::Resource`],
-//! [`bevy::asset::Asset`], [`bevy::ecs::bundle::Bundle`],
-//! [`bevy::ecs::event::Event`], [`bevy::state::state::States`], and
+//! `bevy::ecs::component::Component`, `bevy::ecs::system::Resource`,
+//! `bevy::asset::Asset`, [`bevy::ecs::bundle::Bundle`],
+//! `bevy::ecs::event::Event`, [`bevy::state::state::States`], and
 //! [`bevy::app::Plugin`] are pure marker traits — they expose no MCP-safe
 //! static methods.  The `#[reflect_trait]` macro requires at least one method
 //! body, so these factories are written by hand.  Their `prime::<T>()` methods

@@ -58,7 +58,7 @@
 //! **Fix:** introduce a free helper function with a **concrete**
 //! `Pin<Box<dyn Future<Output = …> + Send>>` return type:
 //!
-//! ```rust,ignore
+//! ```text
 //! fn elicit_toml_value_inner<C: ElicitCommunicator>(
 //!     comm: C,
 //!     depth: usize,
@@ -90,7 +90,7 @@
 //! | Recursion kind | Root cause | Sufficient fix |
 //! |----------------|------------|----------------|
 //! | Mutual (A ↔ B) | `async fn` / `instrument` wraps return in new opaque future | Remove `instrument`; `Box::pin` on the collection side |
-//! | Direct self (A → Vec<A>) | Generic `async fn` body re-enters A via T | Concrete `Pin<Box<dyn Future + Send>>` helper + bypass generic Vec impl |
+//! | Direct self (A → `Vec<A>`) | Generic `async fn` body re-enters A via T | Concrete `Pin<Box<dyn Future + Send>>` helper + bypass generic Vec impl |
 //!
 //! ## New patterns (relative to C1–C23)
 //!

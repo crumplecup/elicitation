@@ -385,15 +385,12 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
     method_reflection::expand(attr, item)
 }
 
-/// Generate a [`ToolDescriptor`] companion function from an async tool handler.
+/// Generate a `ToolDescriptor` companion function from an async tool handler.
 ///
 /// Place this attribute on an `async fn` that accepts a typed params struct and
 /// returns `Result<CallToolResult, ErrorData>`.  The macro emits the original
 /// function unchanged plus a companion `{fn_name}_descriptor() -> ToolDescriptor`
-/// constructor, ready for use in a [`DescriptorPlugin`].
-///
-/// [`ToolDescriptor`]: elicitation::plugin::ToolDescriptor
-/// [`DescriptorPlugin`]: elicitation::plugin::DescriptorPlugin
+/// constructor, ready for use in a `DescriptorPlugin`.
 ///
 /// # Arguments
 ///
@@ -420,7 +417,7 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 /// // Generates: pub fn ping_descriptor() -> elicitation::plugin::ToolDescriptor { ... }
 /// ```
 ///
-/// The descriptor can then be returned from a [`DescriptorPlugin::descriptors`] impl:
+/// The descriptor can then be returned from a `DescriptorPlugin::descriptors` impl:
 ///
 /// ```rust,ignore
 /// impl DescriptorPlugin for MyPlugin {
@@ -428,15 +425,12 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     fn descriptors(&self) -> &[ToolDescriptor] { &self.tools }
 /// }
 /// ```
-/// Derive an [`ElicitPlugin`] implementation for a unit struct using inventory.
+/// Derive an `ElicitPlugin` implementation for a unit struct using inventory.
 ///
 /// Requires `#[plugin(name = "...")]` on the struct.  At runtime, iterates all
-/// [`PluginToolRegistration`]s submitted via `#[elicit_tool(plugin = "...")]`
+/// `PluginToolRegistration`s submitted via `#[elicit_tool(plugin = "...")]`
 /// and filters by plugin name — eliminating all handwritten `list_tools` and
 /// `call_tool` dispatch.
-///
-/// [`ElicitPlugin`]: elicitation::plugin::ElicitPlugin
-/// [`PluginToolRegistration`]: elicitation::plugin::PluginToolRegistration
 ///
 /// # Example
 ///
@@ -487,9 +481,8 @@ pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// The `contracts = [...]` argument is optional. The macro adds a doc
 /// annotation and emits a `#[cfg(kani)] #[kani::proof]` harness.
-/// Type enforcement is already provided by the [`FormalMethod`] blanket impl.
+/// Type enforcement is already provided by the `FormalMethod` blanket impl.
 ///
-/// [`FormalMethod`]: elicitation::contracts::FormalMethod
 #[proc_macro_attribute]
 pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
     formal_method::expand(args.into(), item.into())
@@ -497,7 +490,7 @@ pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
         .into()
 }
 
-/// Derive the [`Prop`](elicitation::contracts::Prop) trait for a zero-cost typestate marker.
+/// Derive the `Prop` trait for a zero-cost typestate marker.
 ///
 /// Generates trivial but non-empty, uniquely-named proof harnesses
 /// (`kani_proof`, `verus_proof`, `creusot_proof`) for the proposition.
@@ -603,7 +596,7 @@ pub fn derive_verified_state_machine(input: TokenStream) -> TokenStream {
     derive_vsm::expand(input)
 }
 
-/// Derive [`KaniVariantState`](elicitation::KaniVariantState) for a VSM state enum.
+/// Derive `KaniVariantState` for a VSM state enum.
 ///
 /// Generates a `kani_variant_constructions()` method returning one
 /// `(&'static str, &'static str)` pair per variant: the snake_case suffix and

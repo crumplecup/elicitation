@@ -1,6 +1,6 @@
 //! Elicitation-enabled sqlx type wrappers.
 //!
-//! Provides newtypes for sqlx types with [`JsonSchema`], MCP reflect methods,
+//! Provides newtypes for sqlx types with `JsonSchema`, MCP reflect methods,
 //! runtime database tools, and fragment tools for sqlx compile-time macros.
 
 #![forbid(unsafe_code)]

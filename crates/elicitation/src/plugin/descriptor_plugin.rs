@@ -1,6 +1,6 @@
 //! [`DescriptorPlugin`] — blanket [`StatefulPlugin`] impl for descriptor-based plugins.
 //!
-//! Implement this trait instead of [`ElicitPlugin`] or [`StatefulPlugin`] directly when
+//! Implement this trait instead of [`ElicitPlugin`](crate::ElicitPlugin) or [`StatefulPlugin`] directly when
 //! your plugin exposes a static slice of [`ToolDescriptor`]s.  The blanket impl routes
 //! through [`StatefulPlugin`] (with [`NoContext`]) and provides `list_tools` and
 //! `call_tool` for free.
@@ -12,7 +12,7 @@ use crate::plugin::context::NoContext;
 
 /// A plugin that exposes a static slice of [`ToolDescriptor`]s.
 ///
-/// Implement this instead of [`ElicitPlugin`] to eliminate manual
+/// Implement this instead of [`ElicitPlugin`](crate::ElicitPlugin) to eliminate manual
 /// `list_tools` and `call_tool` dispatch.  A blanket impl provides
 /// both for free.
 ///

@@ -19,7 +19,7 @@ pub struct QuantityBusEntry {
 
 /// Thread-safe UUID-keyed store of all created quantity values.
 ///
-/// Shared between [`UomQuantityPlugin`] and [`UomCodePlugin`] to enable
+/// Shared between [`crate::UomQuantityPlugin`] and [`crate::UomCodePlugin`] to enable
 /// cross-registration arithmetic and code emission.
 pub type QuantityBus = Arc<Mutex<HashMap<Uuid, QuantityBusEntry>>>;
 

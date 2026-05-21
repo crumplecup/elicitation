@@ -221,11 +221,25 @@ lint package='':
             exit 1
         fi
         rm -f "$LOG_FILE"
+        echo "📖 Checking documentation"
+        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
     else
         echo "🔍 Linting {{package}}"
         if ! cargo clippy -p {{package}} --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
+        echo "📖 Checking documentation for {{package}}"
+        if ! RUSTDOCFLAGS="-D warnings" cargo doc -p {{package}} --no-deps 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
             exit 1
         fi
         rm -f "$LOG_FILE"
@@ -381,7 +395,7 @@ semver-check:
 # ====================
 
 # Run the complete CI pipeline locally
-ci: fmt-check lint test-full audit
+ci: fmt-check lint doc-check test-full audit
     @echo "✅ CI pipeline completed successfully!"
 
 # Prepare for commit (format, lint, tests, feature checks)
@@ -489,9 +503,9 @@ release level="patch":
 doc:
     cargo doc --workspace --no-deps --open
 
-# Check documentation for issues
+# Check documentation for issues (warnings treated as errors)
 doc-check:
-    cargo doc --workspace --no-deps
+    RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 
 # Build and view documentation for a specific crate
 doc-crate crate:

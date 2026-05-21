@@ -1,6 +1,6 @@
 //! Kani model checker adapter for formal verification.
 //!
-//! This module adapts the generic [`Contract`](super::Contract) trait for use
+//! This module adapts the generic [`Contract`] trait for use
 //! with the [Kani Rust Verifier](https://github.com/model-checking/kani).
 //!
 //! # Kani Integration

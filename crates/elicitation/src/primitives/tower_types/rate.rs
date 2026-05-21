@@ -1,11 +1,11 @@
-//! [`tower::limit::Rate`] elicitation — serializable config trenchcoat.
+//! `tower::limit::Rate` elicitation — serializable config trenchcoat.
 
 use crate::{
     ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
     PatternDetails, Prompt, TypeMetadata,
 };
 
-/// Serializable mirror for [`tower::limit::Rate`].
+/// Serializable mirror for `tower::limit::Rate`.
 ///
 /// Stores the rate as `num` requests per `per_millis` milliseconds so the
 /// fields remain plain `u64` values that satisfy all `ElicitComplete` bounds.

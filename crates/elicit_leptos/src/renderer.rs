@@ -5,7 +5,7 @@
 //! Leptos `view!` macro source code (for CSR/WASM or codegen pipelines).
 //!
 //! Each [`accesskit::Role`] maps to one `bridge_*` method that returns a
-//! `String` fragment.  The blanket [`UiTreeRenderer`] impl assembles the
+//! `String` fragment.  The blanket `UiTreeRenderer` impl assembles the
 //! full tree via DFS — parents receive pre-rendered child strings.
 //!
 //! # Example

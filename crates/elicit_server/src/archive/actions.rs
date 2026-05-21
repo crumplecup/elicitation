@@ -13,7 +13,7 @@
 //! a new action to [`ArchiveAction`] produces compile errors in all frontends
 //! until they are updated.
 //!
-//! [`StatusBarDescriptor`][elicit_accesskit::StatusBarDescriptor] chips and
+//! [`StatusBarDescriptor`] chips and
 //! the browser-frontend JavaScript keyboard listener are both **derived** from
 //! the key map — single source of truth, no per-frontend duplication.
 

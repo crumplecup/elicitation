@@ -32,7 +32,7 @@ pub struct EmptyContainerParams {}
 // Window
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`container_window`].
+/// Parameters for `container_window`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct WindowParams {
     /// Window title.
@@ -83,7 +83,7 @@ async fn container_window(p: WindowParams) -> Result<CallToolResult, ErrorData> 
 // Panels
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`container_left_panel`].
+/// Parameters for `container_left_panel`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct LeftPanelParams {
     /// Panel identifier.
@@ -117,7 +117,7 @@ async fn container_left_panel(p: LeftPanelParams) -> Result<CallToolResult, Erro
     Ok(container_result(&c))
 }
 
-/// Parameters for [`container_right_panel`].
+/// Parameters for `container_right_panel`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RightPanelParams {
     /// Panel identifier.
@@ -145,7 +145,7 @@ async fn container_right_panel(p: RightPanelParams) -> Result<CallToolResult, Er
     Ok(container_result(&c))
 }
 
-/// Parameters for [`container_top_panel`].
+/// Parameters for `container_top_panel`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TopPanelParams {
     /// Panel identifier.
@@ -173,7 +173,7 @@ async fn container_top_panel(p: TopPanelParams) -> Result<CallToolResult, ErrorD
     Ok(container_result(&c))
 }
 
-/// Parameters for [`container_bottom_panel`].
+/// Parameters for `container_bottom_panel`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct BottomPanelParams {
     /// Panel identifier.
@@ -217,7 +217,7 @@ async fn container_central_panel(p: EmptyContainerParams) -> Result<CallToolResu
 // Scroll area
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`container_scroll_area`].
+/// Parameters for `container_scroll_area`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ScrollAreaParams {
     /// Enable vertical scrolling.
@@ -261,7 +261,7 @@ async fn container_scroll_area(p: ScrollAreaParams) -> Result<CallToolResult, Er
 // Collapsing, group, frame
 // ---------------------------------------------------------------------------
 
-/// Parameters for [`container_collapsing`].
+/// Parameters for `container_collapsing`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CollapsingParams {
     /// Header text.
@@ -299,7 +299,7 @@ async fn container_group(p: EmptyContainerParams) -> Result<CallToolResult, Erro
     Ok(container_result(&ContainerJson::Group))
 }
 
-/// Parameters for [`container_frame`].
+/// Parameters for `container_frame`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct FrameParams {
     /// Optional fill colour.
@@ -349,7 +349,7 @@ async fn container_menu_bar(p: EmptyContainerParams) -> Result<CallToolResult, E
     Ok(container_result(&ContainerJson::MenuBar))
 }
 
-/// Parameters for [`container_menu`].
+/// Parameters for `container_menu`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct MenuParams {
     /// Menu title.
@@ -368,7 +368,7 @@ async fn container_menu(p: MenuParams) -> Result<CallToolResult, ErrorData> {
     Ok(container_result(&c))
 }
 
-/// Parameters for [`container_tooltip`].
+/// Parameters for `container_tooltip`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TooltipParams {
     /// Tooltip text.
@@ -387,7 +387,7 @@ async fn container_tooltip(p: TooltipParams) -> Result<CallToolResult, ErrorData
     Ok(container_result(&c))
 }
 
-/// Parameters for [`container_popup`].
+/// Parameters for `container_popup`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct PopupParams {
     /// Popup identifier.
