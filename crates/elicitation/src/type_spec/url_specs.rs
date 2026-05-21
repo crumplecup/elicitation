@@ -105,4 +105,24 @@ mod url_impls {
     impl crate::ElicitComplete for UrlWithHost {}
     #[cfg(not(kani))]
     impl crate::ElicitComplete for UrlCanBeBase {}
+
+    impl crate::ElicitSpec for url::Url {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("url::Url".to_string())
+                .summary("A syntactically valid URL (RFC 3986).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "url::Url",
+        <url::Url as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<url::Url>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for url::Url {}
 }

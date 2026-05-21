@@ -1193,3 +1193,70 @@ impl ToCodeLiteral for Month {
 
 crate::select_trenchcoat!(chrono::Month, as MonthSelect, serde);
 crate::select_trenchcoat_traits!(MonthSelect, chrono::Month, [copy, eq, hash]);
+
+// ============================================================================
+// TimeDelta (chrono::Duration alias)
+// ============================================================================
+
+crate::default_style!(Duration => TimeDeltaStyle);
+
+impl Prompt for Duration {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter duration in whole seconds (can be negative):")
+    }
+}
+
+impl Elicitation for Duration {
+    type Style = TimeDeltaStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting TimeDelta");
+        let params = mcp::number_params(
+            Self::prompt().unwrap_or("Enter duration in seconds:"),
+            i64::MIN,
+            i64::MAX,
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let secs = mcp::parse_integer::<i64>(value)?;
+        Duration::try_seconds(secs).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Duration out of range: {secs} seconds"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
+impl ElicitIntrospect for Duration {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "chrono::TimeDelta",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+

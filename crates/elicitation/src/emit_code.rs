@@ -1083,6 +1083,44 @@ impl ToCodeLiteral for chrono::NaiveDateTime {
     }
 }
 
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::DateTime<chrono::FixedOffset> {
+    fn to_code_literal(&self) -> TokenStream {
+        let s = self.to_rfc3339();
+        quote::quote! {
+            chrono::DateTime::parse_from_rfc3339(#s)
+                .expect("valid RFC3339 datetime")
+        }
+    }
+
+    fn type_tokens() -> TokenStream {
+        quote::quote! { chrono::DateTime<chrono::FixedOffset> }
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::TimeDelta {
+    fn to_code_literal(&self) -> TokenStream {
+        let secs = self.num_seconds();
+        let sub_nanos = self.subsec_nanos();
+        if sub_nanos == 0 {
+            quote::quote! {
+                chrono::TimeDelta::try_seconds(#secs).expect("valid seconds")
+            }
+        } else {
+            // Build as whole-second base + nanosecond remainder
+            quote::quote! {
+                chrono::TimeDelta::try_seconds(#secs).expect("valid seconds")
+                    + chrono::TimeDelta::nanoseconds(#sub_nanos as i64)
+            }
+        }
+    }
+
+    fn type_tokens() -> TokenStream {
+        quote::quote! { chrono::TimeDelta }
+    }
+}
+
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::OffsetDateTime {
     fn to_code_literal(&self) -> TokenStream {

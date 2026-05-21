@@ -1268,10 +1268,11 @@ mod verification_impls {
     #[cfg(feature = "chrono")]
     mod chrono_primitive_impls {
         use super::*;
-        use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
+        use chrono::{DateTime, Duration, FixedOffset, NaiveDateTime, Utc};
         leaf_impl!(DateTime<Utc>, "DateTime<Utc>");
         leaf_impl!(DateTime<FixedOffset>, "DateTime<FixedOffset>");
         leaf_impl!(NaiveDateTime, "NaiveDateTime");
+        leaf_impl!(Duration, "chrono::TimeDelta");
     }
 
     // Contract types use PhantomData stubs under kani — gate them out.
@@ -1304,6 +1305,7 @@ mod verification_impls {
     mod url_impls {
         use super::*;
         use crate::verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
+        leaf_impl!(url::Url, "url::Url");
         leaf_impl!(UrlValid, "UrlValid");
         leaf_impl!(UrlHttps, "UrlHttps");
         leaf_impl!(UrlHttp, "UrlHttp");

@@ -174,6 +174,66 @@ mod chrono_specs {
     #[cfg(not(kani))]
     impl crate::ElicitComplete for chrono::NaiveDateTime {}
 
+    impl crate::ElicitSpec for chrono::DateTime<chrono::Utc> {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::DateTime<Utc>".to_string())
+                .summary("A UTC datetime with timezone (RFC 3339 / ISO 8601).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::DateTime<Utc>",
+        <chrono::DateTime<chrono::Utc> as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::DateTime<chrono::Utc>>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::DateTime<chrono::Utc> {}
+
+    impl crate::ElicitSpec for chrono::DateTime<chrono::FixedOffset> {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::DateTime<FixedOffset>".to_string())
+                .summary("A datetime with a fixed UTC offset (RFC 3339 / ISO 8601).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::DateTime<FixedOffset>",
+        <chrono::DateTime<chrono::FixedOffset> as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::DateTime<chrono::FixedOffset>>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::DateTime<chrono::FixedOffset> {}
+
+    impl crate::ElicitSpec for chrono::TimeDelta {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("chrono::TimeDelta".to_string())
+                .summary("A signed duration (seconds + nanoseconds). Also aliased as chrono::Duration.".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "chrono::TimeDelta",
+        <chrono::TimeDelta as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<chrono::TimeDelta>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for chrono::TimeDelta {}
+
     impl crate::ElicitSpec for chrono::Month {
         fn type_spec() -> crate::TypeSpec {
             crate::TypeSpecBuilder::default()
