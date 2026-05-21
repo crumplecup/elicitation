@@ -125,4 +125,24 @@ mod url_impls {
 
     #[cfg(not(kani))]
     impl crate::ElicitComplete for url::Url {}
+
+    impl crate::ElicitSpec for crate::SyntaxViolationSelect {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("url::SyntaxViolation".to_string())
+                .summary("A URL syntax violation kind (non-fatal deviation from the WHATWG URL Standard).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "url::SyntaxViolation",
+        <crate::SyntaxViolationSelect as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<crate::SyntaxViolationSelect>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for crate::SyntaxViolationSelect {}
 }

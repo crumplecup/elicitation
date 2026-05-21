@@ -474,6 +474,8 @@ pub use verification::types::{ValueArray, ValueNonNull, ValueObject};
 // URLs (feature-gated)
 #[cfg(feature = "url")]
 pub use verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
+#[cfg(feature = "url")]
+pub use primitives::url::{SyntaxViolationSelect, SyntaxViolationStyle};
 
 // Regexes (feature-gated)
 #[cfg(feature = "regex")]
