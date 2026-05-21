@@ -264,16 +264,12 @@ impl Prompt for LeptosViewNode {
 crate::default_style!(LeptosViewNode => LeptosViewNodeStyle);
 impl Elicitation for LeptosViewNode {
     type Style = LeptosViewNodeStyle;
-    fn elicit<C: ElicitCommunicator>(
-        communicator: &C,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Self>> + Send + '_>> {
-        Box::pin(async move {
-            tracing::debug!("Eliciting LeptosViewNode");
-            let tag = String::elicit(communicator).await?;
-            let text = Option::<String>::elicit(communicator).await?;
-            let reactive_expr = Option::<String>::elicit(communicator).await?;
-            Ok(Self { tag, attrs: vec![], on_events: vec![], children: vec![], text, reactive_expr })
-        })
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting LeptosViewNode");
+        let tag = String::elicit(communicator).await?;
+        let text = Option::<String>::elicit(communicator).await?;
+        let reactive_expr = Option::<String>::elicit(communicator).await?;
+        Ok(Self { tag, attrs: vec![], on_events: vec![], children: vec![], text, reactive_expr })
     }
     fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
     fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
@@ -321,15 +317,11 @@ impl Prompt for LeptosRouteDescriptor {
 crate::default_style!(LeptosRouteDescriptor => LeptosRouteDescriptorStyle);
 impl Elicitation for LeptosRouteDescriptor {
     type Style = LeptosRouteDescriptorStyle;
-    fn elicit<C: ElicitCommunicator>(
-        communicator: &C,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Self>> + Send + '_>> {
-        Box::pin(async move {
-            tracing::debug!("Eliciting LeptosRouteDescriptor");
-            let path = String::elicit(communicator).await?;
-            let view = String::elicit(communicator).await?;
-            Ok(Self { path, view, nested: vec![] })
-        })
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting LeptosRouteDescriptor");
+        let path = String::elicit(communicator).await?;
+        let view = String::elicit(communicator).await?;
+        Ok(Self { path, view, nested: vec![] })
     }
     fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
     fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }

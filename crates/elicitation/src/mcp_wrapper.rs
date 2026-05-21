@@ -4,6 +4,7 @@
 //! Enum types generate `"enum": [...]` schemas without a type field, causing
 //! validation failures. This wrapper ensures ALL types produce object schemas.
 
+use proc_macro2::TokenStream;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -93,6 +94,95 @@ impl<T> AsMut<T> for ElicitToolOutput<T> {
     fn as_mut(&mut self) -> &mut T {
         &mut self.value
     }
+}
+
+impl<T> crate::Prompt for ElicitToolOutput<T> {
+    fn prompt() -> Option<&'static str> {
+        Some("Elicit the wrapped value:")
+    }
+}
+
+/// Default-only style for [`ElicitToolOutput`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct ElicitToolOutputStyle;
+
+impl crate::Prompt for ElicitToolOutputStyle {
+    fn prompt() -> Option<&'static str> { None }
+}
+impl crate::Elicitation for ElicitToolOutputStyle {
+    type Style = ElicitToolOutputStyle;
+    async fn elicit<C: crate::ElicitCommunicator>(_: &C) -> crate::ElicitResult<Self> {
+        Ok(Self)
+    }
+    fn kani_proof() -> TokenStream { TokenStream::new() }
+    fn verus_proof() -> TokenStream { TokenStream::new() }
+    fn creusot_proof() -> TokenStream { TokenStream::new() }
+}
+impl crate::style::ElicitationStyle for ElicitToolOutputStyle {}
+impl crate::ElicitPromptTree for ElicitToolOutputStyle {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf { prompt: "default".to_string(), type_name: "ElicitToolOutputStyle".to_string() }
+    }
+}
+
+impl<T> crate::Elicitation for ElicitToolOutput<T>
+where
+    T: crate::Elicitation + Send,
+{
+    type Style = ElicitToolOutputStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: crate::ElicitCommunicator>(communicator: &C) -> crate::ElicitResult<Self> {
+        tracing::debug!("Eliciting ElicitToolOutput<T>");
+        let value = T::elicit(communicator).await?;
+        Ok(Self { value })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        T::kani_proof()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        T::verus_proof()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        T::creusot_proof()
+    }
+}
+
+impl<T: crate::ElicitIntrospect + Send> crate::ElicitIntrospect for ElicitToolOutput<T> {
+    fn pattern() -> crate::ElicitationPattern {
+        T::pattern()
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        T::metadata()
+    }
+}
+
+impl<T: crate::ElicitPromptTree> crate::ElicitPromptTree for ElicitToolOutput<T> {
+    fn prompt_tree() -> crate::PromptTree {
+        T::prompt_tree()
+    }
+}
+
+impl<T: crate::emit_code::ToCodeLiteral> crate::emit_code::ToCodeLiteral for ElicitToolOutput<T> {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let inner = self.value.to_code_literal();
+        quote::quote! { elicitation::ElicitToolOutput { value: #inner } }
+    }
+}
+
+impl<T: crate::ElicitSpec + 'static> crate::ElicitSpec for ElicitToolOutput<T> {
+    fn type_spec() -> crate::TypeSpec {
+        T::type_spec()
+    }
+}
+
+impl<T> crate::ElicitComplete for ElicitToolOutput<T> where
+    T: crate::ElicitComplete + Send
+{
 }
 
 #[cfg(test)]

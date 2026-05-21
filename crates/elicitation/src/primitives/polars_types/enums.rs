@@ -148,7 +148,7 @@ pub enum PolarsPipelineOp {
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, FieldInfo, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
+    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
     mcp,
 };
 
