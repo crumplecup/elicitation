@@ -819,6 +819,34 @@ impl EmitCode for time::OffsetDateTime {
     }
 }
 
+/// `time::PrimitiveDateTime`
+#[cfg(feature = "time")]
+impl EmitCode for time::PrimitiveDateTime {
+    fn emit_code(&self) -> TokenStream {
+        let s = self
+            .format(&time::format_description::well_known::Iso8601::DEFAULT)
+            .unwrap_or_default();
+        quote::quote! {
+            time::PrimitiveDateTime::parse(#s, &time::format_description::well_known::Iso8601::DEFAULT)
+                .expect("valid PrimitiveDateTime")
+        }
+    }
+}
+
+/// `time::Time`
+#[cfg(feature = "time")]
+impl EmitCode for time::Time {
+    fn emit_code(&self) -> TokenStream {
+        let h = self.hour();
+        let m = self.minute();
+        let s = self.second();
+        let ns = self.nanosecond();
+        quote::quote! {
+            time::Time::from_hms_nano(#h, #m, #s, #ns).expect("valid Time")
+        }
+    }
+}
+
 /// `jiff::Timestamp`
 #[cfg(feature = "jiff")]
 impl EmitCode for jiff::Timestamp {
@@ -826,6 +854,28 @@ impl EmitCode for jiff::Timestamp {
         let s = self.to_string();
         quote::quote! {
             #s.parse::<jiff::Timestamp>().expect("valid Timestamp")
+        }
+    }
+}
+
+/// `jiff::Zoned` — emits parse from its Display representation.
+#[cfg(feature = "jiff")]
+impl EmitCode for jiff::Zoned {
+    fn emit_code(&self) -> TokenStream {
+        let s = self.to_string();
+        quote::quote! {
+            #s.parse::<jiff::Zoned>().expect("valid Zoned")
+        }
+    }
+}
+
+/// `jiff::civil::DateTime`
+#[cfg(feature = "jiff")]
+impl EmitCode for jiff::civil::DateTime {
+    fn emit_code(&self) -> TokenStream {
+        let s = self.to_string();
+        quote::quote! {
+            #s.parse::<jiff::civil::DateTime>().expect("valid civil DateTime")
         }
     }
 }
@@ -1154,8 +1204,36 @@ impl ToCodeLiteral for time::OffsetDateTime {
     }
 }
 
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::PrimitiveDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::Time {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
 #[cfg(feature = "jiff")]
 impl ToCodeLiteral for jiff::Timestamp {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "jiff")]
+impl ToCodeLiteral for jiff::Zoned {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "jiff")]
+impl ToCodeLiteral for jiff::civil::DateTime {
     fn to_code_literal(&self) -> TokenStream {
         EmitCode::emit_code(self)
     }

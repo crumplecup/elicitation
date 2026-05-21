@@ -1289,6 +1289,8 @@ mod verification_impls {
     mod time_impls {
         use super::*;
         use crate::verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+        leaf_impl!(time::OffsetDateTime, "time::OffsetDateTime");
+        leaf_impl!(time::PrimitiveDateTime, "time::PrimitiveDateTime");
         leaf_impl!(OffsetDateTimeAfter, "OffsetDateTimeAfter");
         leaf_impl!(OffsetDateTimeBefore, "OffsetDateTimeBefore");
     }
@@ -1297,6 +1299,9 @@ mod verification_impls {
     mod jiff_impls {
         use super::*;
         use crate::verification::types::{TimestampAfter, TimestampBefore};
+        leaf_impl!(jiff::Timestamp, "jiff::Timestamp");
+        leaf_impl!(jiff::Zoned, "jiff::Zoned");
+        leaf_impl!(jiff::civil::DateTime, "jiff::civil::DateTime");
         leaf_impl!(TimestampAfter, "TimestampAfter");
         leaf_impl!(TimestampBefore, "TimestampBefore");
     }

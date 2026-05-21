@@ -289,6 +289,66 @@ mod jiff_specs {
         requires = [("before", "Timestamp must be strictly less than the threshold.", "value < threshold")],
         related  = "jiff::Timestamp",
     );
+
+    impl crate::ElicitSpec for jiff::Timestamp {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("jiff::Timestamp".to_string())
+                .summary("A nanosecond-precision Unix timestamp (UTC).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "jiff::Timestamp",
+        <jiff::Timestamp as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<jiff::Timestamp>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for jiff::Timestamp {}
+
+    impl crate::ElicitSpec for jiff::Zoned {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("jiff::Zoned".to_string())
+                .summary("A nanosecond-precision datetime with a time zone.".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "jiff::Zoned",
+        <jiff::Zoned as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<jiff::Zoned>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for jiff::Zoned {}
+
+    impl crate::ElicitSpec for jiff::civil::DateTime {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("jiff::civil::DateTime".to_string())
+                .summary("A naive datetime without a time zone (calendar date + wall clock time).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "jiff::civil::DateTime",
+        <jiff::civil::DateTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<jiff::civil::DateTime>
+    ));
+
+    #[cfg(not(kani))]
+    impl crate::ElicitComplete for jiff::civil::DateTime {}
 }
 
 // ── time ──────────────────────────────────────────────────────────────────────
@@ -313,4 +373,55 @@ mod time_specs {
         requires = [("before", "Value must be strictly before the threshold.", "value < threshold")],
         related  = "time::OffsetDateTime",
     );
+
+    impl crate::ElicitSpec for time::OffsetDateTime {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::OffsetDateTime".to_string())
+                .summary("An RFC 3339 datetime with timezone offset.".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::OffsetDateTime",
+        <time::OffsetDateTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::OffsetDateTime>
+    ));
+
+    impl crate::ElicitSpec for time::PrimitiveDateTime {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::PrimitiveDateTime".to_string())
+                .summary("An ISO 8601 local datetime without a timezone offset.".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::PrimitiveDateTime",
+        <time::PrimitiveDateTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::PrimitiveDateTime>
+    ));
+
+    impl crate::ElicitSpec for time::Time {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::Time".to_string())
+                .summary("A wall clock time of day.".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::Time",
+        <time::Time as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::Time>
+    ));
 }
