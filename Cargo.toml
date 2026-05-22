@@ -253,6 +253,7 @@ time = { version = "0.3", features = [
   "formatting",
   "macros",
   "serde",
+  "serde-human-readable",
   "serde-well-known",
 ] }
 jiff = { version = "0.2", features = ["serde"] }
