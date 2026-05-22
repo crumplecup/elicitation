@@ -253,6 +253,7 @@ time = { version = "0.3", features = [
   "formatting",
   "macros",
   "serde",
+  "serde-well-known",
 ] }
 jiff = { version = "0.2", features = ["serde"] }
 
@@ -298,7 +299,7 @@ bevy = { version = "0.18", default-features = false }
 tiff = "0.9.1"
 
 # ── Well-Known Text ───────────────────────────────────────────────────────────
-wkt = { version = "0.14", features = ["geo-types"] }
+wkt = { version = "0.14", features = ["geo-types", "serde"] }
 wkb = "0.9"
 
 # ── CSS / Color / Layout ──────────────────────────────────────────────────────
