@@ -213,4 +213,102 @@ mod georaster_impls {
             ("samples", "Number of samples per pixel"),
         ]
     );
+
+    // `GeoTiffReader<R>` and `Pixels<'a, R>` are I/O resource types — no inventory
+    // submission since `TypeId` requires `'static` and these are generic over `R`.
+    impl<R: std::io::Read + std::io::Seek> ElicitSpec for georaster::geotiff::GeoTiffReader<R> {
+        fn type_spec() -> TypeSpec {
+            let description = SpecCategoryBuilder::default()
+                .name("description".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("kind".to_string())
+                        .description(
+                            "Runtime I/O resource — wraps a GeoTIFF file decoder. \
+                             Cannot be elicited interactively; open via GeoTiffReader::open."
+                                .to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            let source = SpecCategoryBuilder::default()
+                .name("source".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("crate".to_string())
+                        .description("georaster 0.2.x — GeoTIFF/COG file reader".to_string())
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("pattern".to_string())
+                        .description(
+                            "Primitive — opaque I/O handle, not interactively elicitable"
+                                .to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            TypeSpecBuilder::default()
+                .type_name("georaster::geotiff::GeoTiffReader".to_string())
+                .summary(
+                    "GeoTIFF file reader — a runtime I/O resource generic over any Read+Seek."
+                        .to_string(),
+                )
+                .categories(vec![description, source])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    impl<'a, R: std::io::Read + std::io::Seek> ElicitSpec for georaster::geotiff::Pixels<'a, R> {
+        fn type_spec() -> TypeSpec {
+            let description = SpecCategoryBuilder::default()
+                .name("description".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("kind".to_string())
+                        .description(
+                            "Runtime pixel iterator tied to a GeoTiffReader by lifetime. \
+                             Cannot be elicited interactively; obtain via GeoTiffReader::pixels."
+                                .to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            let source = SpecCategoryBuilder::default()
+                .name("source".to_string())
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("crate".to_string())
+                        .description("georaster 0.2.x — GeoTIFF/COG pixel iterator".to_string())
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("pattern".to_string())
+                        .description(
+                            "Primitive — opaque I/O iterator, not interactively elicitable"
+                                .to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
+                .build()
+                .expect("valid SpecCategory");
+            TypeSpecBuilder::default()
+                .type_name("georaster::geotiff::Pixels".to_string())
+                .summary(
+                    "GeoTIFF pixel iterator — a runtime I/O resource yielding (x, y, RasterValue)."
+                        .to_string(),
+                )
+                .categories(vec![description, source])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
 }

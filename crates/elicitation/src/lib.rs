@@ -473,9 +473,9 @@ pub use verification::types::{ValueArray, ValueNonNull, ValueObject};
 
 // URLs (feature-gated)
 #[cfg(feature = "url")]
-pub use verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
-#[cfg(feature = "url")]
 pub use primitives::url::{SyntaxViolationSelect, SyntaxViolationStyle};
+#[cfg(feature = "url")]
+pub use verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 
 // Regexes (feature-gated)
 #[cfg(feature = "regex")]
@@ -624,8 +624,9 @@ pub use primitives::geo_types::{
 // georaster types (feature-gated on georaster-types)
 #[cfg(feature = "georaster-types")]
 pub use primitives::georaster_types::{
-    GeoRasterCoordinateStyle, GeoRasterImageInfoStyle, GeoRasterRasterValueStyle,
-    TiffColorTypeStyle, TiffPhotometricInterpretationStyle, TiffPlanarConfigurationStyle,
+    GeoRasterCoordinateStyle, GeoRasterGeoTiffReaderStyle, GeoRasterImageInfoStyle,
+    GeoRasterRasterValueStyle, TiffColorTypeStyle, TiffPhotometricInterpretationStyle,
+    TiffPlanarConfigurationStyle,
 };
 
 // proj types (feature-gated on proj-types)
