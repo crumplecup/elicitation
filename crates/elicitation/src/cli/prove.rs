@@ -73,7 +73,7 @@ pub struct ProveConfig {
 
     /// `-p <package>` for Creusot.
     pub creusot_package: Option<String>,
-    /// Extra flags passed verbatim to `cargo creusot prove`.
+    /// Extra Cargo flags passed after `--` to `cargo creusot prove`.
     pub creusot_flags: Vec<String>,
     /// Directory prepended to `PATH` containing `why3find` etc.
     pub creusot_bin_dir: PathBuf,
@@ -866,10 +866,6 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     let mut cmd = Command::new("cargo");
     cmd.arg("creusot").arg("prove");
 
-    for flag in &config.creusot_flags {
-        cmd.arg(flag);
-    }
-
     cmd.arg("--");
 
     if let Some(pkg) = &config.creusot_package {
@@ -878,6 +874,10 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
         anyhow::bail!(
             "No package for Creusot — set CREUSOT_PACKAGE or PROVE_PACKAGE in .env, or pass --package"
         );
+    }
+
+    for flag in &config.creusot_flags {
+        cmd.arg(flag);
     }
 
     // Augment PATH so why3find is discoverable.
