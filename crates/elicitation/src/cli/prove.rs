@@ -880,8 +880,6 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
         );
     }
 
-    cmd.arg("--features").arg("creusot");
-
     // Augment PATH so why3find is discoverable.
     let current_path = std::env::var("PATH").unwrap_or_default();
     let new_path = format!("{}:{}", config.creusot_bin_dir.display(), current_path);
