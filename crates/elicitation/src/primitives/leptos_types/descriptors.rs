@@ -144,14 +144,16 @@ impl LeptosAppDescriptor {
 // ============================================================================
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 // --- LeptosPropDescriptor ---------------------------------------------------
 
 impl Prompt for LeptosPropDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe a Leptos component prop:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a Leptos component prop:")
+    }
 }
 crate::default_style!(LeptosPropDescriptor => LeptosPropDescriptorStyle);
 impl Elicitation for LeptosPropDescriptor {
@@ -164,25 +166,61 @@ impl Elicitation for LeptosPropDescriptor {
         let optional = bool::elicit(communicator).await?;
         let default_value = Option::<String>::elicit(communicator).await?;
         let into = bool::elicit(communicator).await?;
-        Ok(Self { name, ty, optional, default_value, into })
+        Ok(Self {
+            name,
+            ty,
+            optional,
+            default_value,
+            into,
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosPropDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosPropDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "name", type_name: "String", prompt: None },
-                FieldInfo { name: "ty", type_name: "String", prompt: None },
-                FieldInfo { name: "optional", type_name: "bool", prompt: None },
-                FieldInfo { name: "default_value", type_name: "Option<String>", prompt: None },
-                FieldInfo { name: "into", type_name: "bool", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "name",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "ty",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "optional",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "default_value",
+                        type_name: "Option<String>",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "into",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -205,7 +243,9 @@ impl crate::ElicitPromptTree for LeptosPropDescriptor {
 // --- LeptosComponentDescriptor ----------------------------------------------
 
 impl Prompt for LeptosComponentDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe a Leptos component:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a Leptos component:")
+    }
 }
 crate::default_style!(LeptosComponentDescriptor => LeptosComponentDescriptorStyle);
 impl Elicitation for LeptosComponentDescriptor {
@@ -218,25 +258,61 @@ impl Elicitation for LeptosComponentDescriptor {
         let has_children = bool::elicit(communicator).await?;
         let island = bool::elicit(communicator).await?;
         let body = String::elicit(communicator).await?;
-        Ok(Self { name, props, has_children, island, body })
+        Ok(Self {
+            name,
+            props,
+            has_children,
+            island,
+            body,
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosComponentDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosComponentDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "name", type_name: "String", prompt: None },
-                FieldInfo { name: "props", type_name: "Vec<LeptosPropDescriptor>", prompt: None },
-                FieldInfo { name: "has_children", type_name: "bool", prompt: None },
-                FieldInfo { name: "island", type_name: "bool", prompt: None },
-                FieldInfo { name: "body", type_name: "String", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "name",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "props",
+                        type_name: "Vec<LeptosPropDescriptor>",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "has_children",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "island",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "body",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -247,7 +323,10 @@ impl crate::ElicitPromptTree for LeptosComponentDescriptor {
             type_name: "LeptosComponentDescriptor".to_string(),
             fields: vec![
                 ("name".to_string(), Box::new(String::prompt_tree())),
-                ("props".to_string(), Box::new(LeptosPropDescriptor::prompt_tree())),
+                (
+                    "props".to_string(),
+                    Box::new(LeptosPropDescriptor::prompt_tree()),
+                ),
                 ("has_children".to_string(), Box::new(bool::prompt_tree())),
                 ("island".to_string(), Box::new(bool::prompt_tree())),
                 ("body".to_string(), Box::new(String::prompt_tree())),
@@ -259,7 +338,9 @@ impl crate::ElicitPromptTree for LeptosComponentDescriptor {
 // --- LeptosViewNode (recursive) ---------------------------------------------
 
 impl Prompt for LeptosViewNode {
-    fn prompt() -> Option<&'static str> { Some("Describe a Leptos view node:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a Leptos view node:")
+    }
 }
 crate::default_style!(LeptosViewNode => LeptosViewNodeStyle);
 impl Elicitation for LeptosViewNode {
@@ -269,23 +350,52 @@ impl Elicitation for LeptosViewNode {
         let tag = String::elicit(communicator).await?;
         let text = Option::<String>::elicit(communicator).await?;
         let reactive_expr = Option::<String>::elicit(communicator).await?;
-        Ok(Self { tag, attrs: vec![], on_events: vec![], children: vec![], text, reactive_expr })
+        Ok(Self {
+            tag,
+            attrs: vec![],
+            on_events: vec![],
+            children: vec![],
+            text,
+            reactive_expr,
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosViewNode {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosViewNode",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "tag", type_name: "String", prompt: None },
-                FieldInfo { name: "text", type_name: "Option<String>", prompt: None },
-                FieldInfo { name: "reactive_expr", type_name: "Option<String>", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "tag",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "text",
+                        type_name: "Option<String>",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "reactive_expr",
+                        type_name: "Option<String>",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -312,7 +422,9 @@ impl crate::emit_code::ToCodeLiteral for LeptosViewNode {
 // --- LeptosRouteDescriptor (recursive) --------------------------------------
 
 impl Prompt for LeptosRouteDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe a Leptos route:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a Leptos route:")
+    }
 }
 crate::default_style!(LeptosRouteDescriptor => LeptosRouteDescriptorStyle);
 impl Elicitation for LeptosRouteDescriptor {
@@ -321,22 +433,44 @@ impl Elicitation for LeptosRouteDescriptor {
         tracing::debug!("Eliciting LeptosRouteDescriptor");
         let path = String::elicit(communicator).await?;
         let view = String::elicit(communicator).await?;
-        Ok(Self { path, view, nested: vec![] })
+        Ok(Self {
+            path,
+            view,
+            nested: vec![],
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosRouteDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosRouteDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "path", type_name: "String", prompt: None },
-                FieldInfo { name: "view", type_name: "String", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "path",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "view",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -365,7 +499,9 @@ impl crate::emit_code::ToCodeLiteral for LeptosRouteDescriptor {
 // --- LeptosAppDescriptor ----------------------------------------------------
 
 impl Prompt for LeptosAppDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe the top-level Leptos application:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe the top-level Leptos application:")
+    }
 }
 crate::default_style!(LeptosAppDescriptor => LeptosAppDescriptorStyle);
 impl Elicitation for LeptosAppDescriptor {
@@ -377,24 +513,55 @@ impl Elicitation for LeptosAppDescriptor {
         let mode = crate::LeptosMode::elicit(communicator).await?;
         let components = Vec::<LeptosComponentDescriptor>::elicit(communicator).await?;
         let routes = Vec::<LeptosRouteDescriptor>::elicit(communicator).await?;
-        Ok(Self { package_name, mode, components, routes })
+        Ok(Self {
+            package_name,
+            mode,
+            components,
+            routes,
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosAppDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosAppDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "package_name", type_name: "String", prompt: None },
-                FieldInfo { name: "mode", type_name: "LeptosMode", prompt: None },
-                FieldInfo { name: "components", type_name: "Vec<LeptosComponentDescriptor>", prompt: None },
-                FieldInfo { name: "routes", type_name: "Vec<LeptosRouteDescriptor>", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "package_name",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "mode",
+                        type_name: "LeptosMode",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "components",
+                        type_name: "Vec<LeptosComponentDescriptor>",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "routes",
+                        type_name: "Vec<LeptosRouteDescriptor>",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -405,9 +572,18 @@ impl crate::ElicitPromptTree for LeptosAppDescriptor {
             type_name: "LeptosAppDescriptor".to_string(),
             fields: vec![
                 ("package_name".to_string(), Box::new(String::prompt_tree())),
-                ("mode".to_string(), Box::new(crate::LeptosMode::prompt_tree())),
-                ("components".to_string(), Box::new(LeptosComponentDescriptor::prompt_tree())),
-                ("routes".to_string(), Box::new(LeptosRouteDescriptor::prompt_tree())),
+                (
+                    "mode".to_string(),
+                    Box::new(crate::LeptosMode::prompt_tree()),
+                ),
+                (
+                    "components".to_string(),
+                    Box::new(LeptosComponentDescriptor::prompt_tree()),
+                ),
+                (
+                    "routes".to_string(),
+                    Box::new(LeptosRouteDescriptor::prompt_tree()),
+                ),
             ],
         }
     }

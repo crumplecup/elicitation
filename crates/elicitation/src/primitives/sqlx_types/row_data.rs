@@ -221,7 +221,10 @@ impl crate::ElicitPromptTree for ColumnEntry {
             type_name: "ColumnEntry".to_string(),
             fields: vec![
                 ("name".to_string(), Box::new(String::prompt_tree())),
-                ("value".to_string(), Box::new(crate::ColumnValue::prompt_tree())),
+                (
+                    "value".to_string(),
+                    Box::new(crate::ColumnValue::prompt_tree()),
+                ),
             ],
         }
     }
@@ -232,9 +235,10 @@ impl crate::ElicitPromptTree for RowData {
         crate::PromptTree::Survey {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "RowData".to_string(),
-            fields: vec![
-                ("columns".to_string(), Box::new(crate::ColumnEntry::prompt_tree())),
-            ],
+            fields: vec![(
+                "columns".to_string(),
+                Box::new(crate::ColumnEntry::prompt_tree()),
+            )],
         }
     }
 }

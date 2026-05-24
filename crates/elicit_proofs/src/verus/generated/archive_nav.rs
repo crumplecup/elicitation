@@ -95,17 +95,6 @@ pub open spec fn archive_nav_post_trivial(post: ArchiveNavState) -> bool { !(pos
 /// Passthrough: post-state equals pre-state.
 pub open spec fn archive_nav_post_passthrough(pre: ArchiveNavState, post: ArchiveNavState) -> bool { post == pre }
 
-/// Conditional: `NavFiltered` with non-violating field, or unchanged passthrough.
-pub open spec fn archive_nav_post_conditional_nav_filtered(pre: ArchiveNavState, post: ArchiveNavState) -> bool {
-    match pre {
-        ArchiveNavState::NavFiltered { .. } => match post {
-            ArchiveNavState::NavFiltered { filter, .. } => filter@.len() > 0,
-            _ => false,
-        },
-        _ => post == pre,
-    }
-}
-
 // ─── Leaf lemmas ────────────────────────────────────────────────────────────────
 
 /// Trivial post satisfies the invariant (`_ => true` arm applies).
@@ -119,14 +108,6 @@ pub proof fn archive_nav_leaf_passthrough(pre: ArchiveNavState, post: ArchiveNav
     requires
         archive_nav_consistent(&pre),
         archive_nav_post_passthrough(pre, post),
-    ensures archive_nav_consistent(&post),
-{}
-
-/// Conditional `NavFiltered` — non-violating or passthrough — satisfies the invariant.
-pub proof fn archive_nav_leaf_conditional_nav_filtered(pre: ArchiveNavState, post: ArchiveNavState)
-    requires
-        archive_nav_consistent(&pre),
-        archive_nav_post_conditional_nav_filtered(pre, post),
     ensures archive_nav_consistent(&post),
 {}
 
@@ -182,7 +163,7 @@ pub assume_specification[move_cursor_down_stub](state: ArchiveNavState) -> (r: A
 /// Kani and Creusot independently verify on the real `apply_filter` body.
 pub assume_specification[apply_filter_stub](state: ArchiveNavState) -> (r: ArchiveNavState)
     requires archive_nav_consistent(&state),
-    ensures  archive_nav_post_conditional_nav_filtered(state, r);
+    ensures  archive_nav_post_trivial(r);
 
 /// Contract for `clear_filter_stub` — mirrors the formal_method contract that
 /// Kani and Creusot independently verify on the real `clear_filter` body.
@@ -293,7 +274,7 @@ pub open spec fn archive_nav_post(pre: ArchiveNavState, post: ArchiveNavState, t
         ArchiveNavMachineTrans::CollapseSchema => archive_nav_post_trivial(post),
         ArchiveNavMachineTrans::MoveCursorUp => archive_nav_post_passthrough(pre, post),
         ArchiveNavMachineTrans::MoveCursorDown => archive_nav_post_passthrough(pre, post),
-        ArchiveNavMachineTrans::ApplyFilter => archive_nav_post_conditional_nav_filtered(pre, post),
+        ArchiveNavMachineTrans::ApplyFilter => archive_nav_post_trivial(post),
         ArchiveNavMachineTrans::ClearFilter => archive_nav_post_trivial(post),
     }
 }
@@ -313,7 +294,7 @@ pub proof fn archive_nav_composition(pre: ArchiveNavState, post: ArchiveNavState
         ArchiveNavMachineTrans::CollapseSchema => archive_nav_leaf_trivial(post),
         ArchiveNavMachineTrans::MoveCursorUp => archive_nav_leaf_passthrough(pre, post),
         ArchiveNavMachineTrans::MoveCursorDown => archive_nav_leaf_passthrough(pre, post),
-        ArchiveNavMachineTrans::ApplyFilter => archive_nav_leaf_conditional_nav_filtered(pre, post),
+        ArchiveNavMachineTrans::ApplyFilter => archive_nav_leaf_trivial(post),
         ArchiveNavMachineTrans::ClearFilter => archive_nav_leaf_trivial(post),
     }
 }

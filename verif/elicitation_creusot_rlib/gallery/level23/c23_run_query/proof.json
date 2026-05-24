@@ -2,8 +2,8 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_c23_run_query": { "prover": "cvc5", "time": 0.05 },
-      "vc_elim_SqlEditor": { "prover": "cvc5", "time": 0.017 }
+      "vc_c23_run_query": { "prover": "cvc5@1.3.1", "time": 0.049 },
+      "vc_elim_SqlEditor": { "prover": "cvc5@1.3.1", "time": 0.017 }
     }
   }
 }

@@ -157,7 +157,9 @@ impl ElicitIntrospect for DriverKind {
 impl crate::ElicitPromptTree for DriverKind {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose the SQL database driver:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SQL database driver:")
+                .to_string(),
             type_name: "DriverKind".to_string(),
             options: Self::labels(),
             branches: Self::labels().iter().map(|_| None).collect(),

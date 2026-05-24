@@ -13,7 +13,9 @@ use crate::{
 
 impl Prompt for TreeUpdate {
     fn prompt() -> Option<&'static str> {
-        Some("Specify an accessibility tree update (nodes, optional tree metadata, tree ID, and focus):")
+        Some(
+            "Specify an accessibility tree update (nodes, optional tree metadata, tree ID, and focus):",
+        )
     }
 }
 
@@ -30,7 +32,12 @@ impl Elicitation for TreeUpdate {
         let uuid = Uuid::elicit(communicator).await?;
         let tree_id = TreeId(uuid);
         let focus = NodeId::elicit(communicator).await?;
-        Ok(Self { nodes, tree, tree_id, focus })
+        Ok(Self {
+            nodes,
+            tree,
+            tree_id,
+            focus,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -101,7 +108,10 @@ impl crate::ElicitPromptTree for TreeUpdate {
             prompt: Self::prompt().map(str::to_string),
             type_name: "accesskit::TreeUpdate".to_string(),
             fields: vec![
-                ("nodes".to_string(), Box::new(<Vec<(NodeId, Node)>>::prompt_tree())),
+                (
+                    "nodes".to_string(),
+                    Box::new(<Vec<(NodeId, Node)>>::prompt_tree()),
+                ),
                 ("tree".to_string(), Box::new(<Option<Tree>>::prompt_tree())),
                 ("tree_id".to_string(), Box::new(Uuid::prompt_tree())),
                 ("focus".to_string(), Box::new(NodeId::prompt_tree())),

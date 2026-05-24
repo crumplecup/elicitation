@@ -183,8 +183,8 @@ fn extra_string_arg_emitted_correctly() {
     );
     let out = generate_kani_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
-        out.contains("::std::string::String::new()"),
-        "expected String::new() for StringArg, got:\n{out}"
+        out.contains("<::std::string::String as ::elicitation::KaniCompose>::kani_depth1()"),
+        "expected kani_depth1() for StringArg, got:\n{out}"
     );
 }
 

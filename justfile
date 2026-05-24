@@ -20,7 +20,7 @@ setup:
     cargo install git-cliff || true
     cargo install omnibor-cli || true
     cargo install cargo-hack || true
-    cargo install cargo-nextest || true
+    cargo install --locked cargo-nextest || true
     cargo install cargo-semver-checks || true
     @echo "✅ All development tools installed"
     @echo ""
@@ -51,44 +51,23 @@ setup-verifiers install_dir="~/repos":
         # Check for opam
         if ! command -v opam &> /dev/null; then
             echo "  📦 Installing opam (OCaml package manager)..."
-            sudo apt-get update && sudo apt-get install -y opam
+            if command -v pacman &> /dev/null; then
+                sudo pacman -Sy --needed --noconfirm opam
+            elif command -v apt-get &> /dev/null; then
+                sudo apt-get update && sudo apt-get install -y opam
+            elif command -v brew &> /dev/null; then
+                brew install opam
+            else
+                echo "  ❌ Could not find a supported package manager to install opam."
+                echo "     Install opam manually, then re-run: just setup-verifiers"
+                exit 1
+            fi
         fi
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/creusot-rs/creusot.git || true
         cd {{install_dir}}/creusot && ./INSTALL
     fi
     echo ""
-    
-    # Prusti (requires Java)
-    if command -v cargo-prusti &> /dev/null; then
-        echo "✅ Prusti already installed"
-    else
-        echo "📦 Installing Prusti..."
-        # Check for Java
-        if ! command -v java &> /dev/null; then
-            echo "  ⚠️  Java not found. Install with:"
-            echo "      Arch/Manjaro: sudo pacman -S jdk-openjdk"
-            echo "      Ubuntu/Debian: sudo apt-get install default-jdk"
-            echo "      Then set JAVA_HOME and re-run"
-            exit 1
-        fi
-        # Set JAVA_HOME if not set
-        if [ -z "${JAVA_HOME:-}" ]; then
-            export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-        fi
-        mkdir -p {{install_dir}}
-        cd {{install_dir}} && git clone https://github.com/viperproject/prusti-dev.git || true
-        cd {{install_dir}}/prusti-dev && ./x.py setup && ./x.py build --release
-        # Symlink to cargo bin directory
-        mkdir -p ~/.cargo/bin
-        ln -sf {{install_dir}}/prusti-dev/target/release/cargo-prusti ~/.cargo/bin/cargo-prusti
-        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-driver ~/.cargo/bin/prusti-driver
-        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-rustc ~/.cargo/bin/prusti-rustc
-        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-server ~/.cargo/bin/prusti-server
-        echo "  ✅ Symlinked Prusti binaries to ~/.cargo/bin"
-    fi
-    echo ""
-    
     # Verus
     if command -v verus &> /dev/null; then
         echo "✅ Verus already installed"
@@ -96,11 +75,15 @@ setup-verifiers install_dir="~/repos":
         echo "📦 Installing Verus..."
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/verus-lang/verus.git || true
-        cd {{install_dir}}/verus/source && ../tools/get-z3.sh && source ../tools/activate && vargo build --release
+        cd {{install_dir}}/verus/source
+        ./tools/get-z3.sh
+        source ../tools/activate
+        vargo build --release
         # Symlink to cargo bin directory
         mkdir -p ~/.cargo/bin
         ln -sf {{install_dir}}/verus/source/target-verus/release/verus ~/.cargo/bin/verus
         ln -sf {{install_dir}}/verus/source/target-verus/release/rust_verify ~/.cargo/bin/rust_verify
+        ln -sf {{install_dir}}/verus/source/target-verus/release/vargo ~/.cargo/bin/vargo
         echo "  ✅ Symlinked Verus binaries to ~/.cargo/bin"
     fi
     echo ""
@@ -582,7 +565,6 @@ verify-status:
     @echo "===================================="
     @just _status-kani
     @just _status-creusot
-    @just _status-prusti
     @just _status-verus
     @echo ""
 
@@ -604,12 +586,11 @@ _status-creusot:
         echo "❌ Creusot: Not installed"
     fi
 
-# Show Prusti status
 # Show Verus status
 _status-verus:
     #!/usr/bin/env bash
     if command -v verus &> /dev/null; then
-        echo "✅ Verus: Installed"
+        echo "✅ Verus: $(verus --version)"
     else
         echo "❌ Verus: Not installed"
     fi

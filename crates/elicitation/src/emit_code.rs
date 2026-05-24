@@ -825,13 +825,15 @@ impl EmitCode for time::PrimitiveDateTime {
     fn emit_code(&self) -> TokenStream {
         // Iso8601::DEFAULT uses FormattedComponents::DateTimeOffset, which PrimitiveDateTime
         // cannot provide. Use a DateTime-only config instead.
-        const PRIM_FMT: time::format_description::well_known::Iso8601<{
-            time::format_description::well_known::iso8601::Config::DEFAULT
+        const PRIM_FMT: time::format_description::well_known::Iso8601<
+            {
+                time::format_description::well_known::iso8601::Config::DEFAULT
                 .set_formatted_components(
                     time::format_description::well_known::iso8601::FormattedComponents::DateTime,
                 )
                 .encode()
-        }> = time::format_description::well_known::Iso8601;
+            },
+        > = time::format_description::well_known::Iso8601;
         let s = self.format(&PRIM_FMT).unwrap_or_default();
         quote::quote! {
             {

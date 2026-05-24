@@ -1,8 +1,0 @@
-{
-  "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_verify_overflow_origin_fits": { "prover": "cvc5", "time": 0.021 }
-    }
-  }
-}

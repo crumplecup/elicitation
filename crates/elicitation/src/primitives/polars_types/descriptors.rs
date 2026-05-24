@@ -34,8 +34,8 @@ pub struct PolarsPipelineDescriptor {
 // ============================================================================
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 // --- PolarsPipelineStep ------------------------------------------------------
@@ -71,15 +71,25 @@ impl Elicitation for PolarsPipelineStep {
 }
 
 impl ElicitIntrospect for PolarsPipelineStep {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::PolarsPipelineStep",
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "step_id", type_name: "Uuid", prompt: Some("Step UUID:") },
-                    FieldInfo { name: "op", type_name: "PolarsPipelineOp", prompt: Some("Pipeline operation:") },
+                    FieldInfo {
+                        name: "step_id",
+                        type_name: "Uuid",
+                        prompt: Some("Step UUID:"),
+                    },
+                    FieldInfo {
+                        name: "op",
+                        type_name: "PolarsPipelineOp",
+                        prompt: Some("Pipeline operation:"),
+                    },
                 ],
             },
         }
@@ -118,7 +128,11 @@ impl Elicitation for PolarsPipelineDescriptor {
         let pipeline_id = uuid::Uuid::elicit(communicator).await?;
         let name = String::elicit(communicator).await?;
         let steps = Vec::<PolarsPipelineStep>::elicit(communicator).await?;
-        Ok(Self { pipeline_id, name, steps })
+        Ok(Self {
+            pipeline_id,
+            name,
+            steps,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -133,16 +147,30 @@ impl Elicitation for PolarsPipelineDescriptor {
 }
 
 impl ElicitIntrospect for PolarsPipelineDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::PolarsPipelineDescriptor",
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "pipeline_id", type_name: "Uuid", prompt: Some("Pipeline UUID:") },
-                    FieldInfo { name: "name", type_name: "String", prompt: Some("Pipeline name:") },
-                    FieldInfo { name: "steps", type_name: "Vec<PolarsPipelineStep>", prompt: Some("Pipeline steps:") },
+                    FieldInfo {
+                        name: "pipeline_id",
+                        type_name: "Uuid",
+                        prompt: Some("Pipeline UUID:"),
+                    },
+                    FieldInfo {
+                        name: "name",
+                        type_name: "String",
+                        prompt: Some("Pipeline name:"),
+                    },
+                    FieldInfo {
+                        name: "steps",
+                        type_name: "Vec<PolarsPipelineStep>",
+                        prompt: Some("Pipeline steps:"),
+                    },
                 ],
             },
         }
@@ -155,7 +183,10 @@ impl crate::ElicitPromptTree for PolarsPipelineDescriptor {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "PolarsPipelineDescriptor".to_string(),
             fields: vec![
-                ("pipeline_id".to_string(), Box::new(uuid::Uuid::prompt_tree())),
+                (
+                    "pipeline_id".to_string(),
+                    Box::new(uuid::Uuid::prompt_tree()),
+                ),
                 ("name".to_string(), Box::new(String::prompt_tree())),
                 ("steps".to_string(), Box::new(String::prompt_tree())),
             ],

@@ -80,7 +80,10 @@ impl crate::ElicitPromptTree for TextPosition {
             type_name: "accesskit::TextPosition".to_string(),
             fields: vec![
                 ("node".to_string(), Box::new(NodeId::prompt_tree())),
-                ("character_index".to_string(), Box::new(usize::prompt_tree())),
+                (
+                    "character_index".to_string(),
+                    Box::new(usize::prompt_tree()),
+                ),
             ],
         }
     }

@@ -38,8 +38,8 @@ impl From<TypeName> for redb::TypeName {
 }
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 impl Prompt for TypeName {
@@ -83,13 +83,11 @@ impl ElicitIntrospect for TypeName {
             type_name: "elicitation::RedbTypeName",
             description: Self::prompt(),
             details: PatternDetails::Survey {
-                fields: vec![
-                    FieldInfo {
-                        name: "name",
-                        type_name: "String",
-                        prompt: Some("Fully-qualified type name:"),
-                    },
-                ],
+                fields: vec![FieldInfo {
+                    name: "name",
+                    type_name: "String",
+                    prompt: Some("Fully-qualified type name:"),
+                }],
             },
         }
     }
@@ -100,9 +98,7 @@ impl crate::ElicitPromptTree for TypeName {
         crate::PromptTree::Survey {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "RedbTypeName".to_string(),
-            fields: vec![
-                ("name".to_string(), Box::new(String::prompt_tree())),
-            ],
+            fields: vec![("name".to_string(), Box::new(String::prompt_tree()))],
         }
     }
 }

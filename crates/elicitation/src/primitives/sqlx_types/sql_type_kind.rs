@@ -228,7 +228,9 @@ impl ElicitIntrospect for SqlTypeKind {
 impl crate::ElicitPromptTree for SqlTypeKind {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose the SQL column type:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose the SQL column type:")
+                .to_string(),
             type_name: "SqlTypeKind".to_string(),
             options: Self::labels(),
             branches: Self::labels().iter().map(|_| None).collect(),
@@ -239,15 +241,15 @@ impl crate::ElicitPromptTree for SqlTypeKind {
 impl crate::emit_code::ToCodeLiteral for SqlTypeKind {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            SqlTypeKind::Null     => quote::quote! { elicitation::SqlTypeKind::Null },
-            SqlTypeKind::Bool     => quote::quote! { elicitation::SqlTypeKind::Bool },
+            SqlTypeKind::Null => quote::quote! { elicitation::SqlTypeKind::Null },
+            SqlTypeKind::Bool => quote::quote! { elicitation::SqlTypeKind::Bool },
             SqlTypeKind::SmallInt => quote::quote! { elicitation::SqlTypeKind::SmallInt },
-            SqlTypeKind::Integer  => quote::quote! { elicitation::SqlTypeKind::Integer },
-            SqlTypeKind::BigInt   => quote::quote! { elicitation::SqlTypeKind::BigInt },
-            SqlTypeKind::Real     => quote::quote! { elicitation::SqlTypeKind::Real },
-            SqlTypeKind::Double   => quote::quote! { elicitation::SqlTypeKind::Double },
-            SqlTypeKind::Text     => quote::quote! { elicitation::SqlTypeKind::Text },
-            SqlTypeKind::Blob     => quote::quote! { elicitation::SqlTypeKind::Blob },
+            SqlTypeKind::Integer => quote::quote! { elicitation::SqlTypeKind::Integer },
+            SqlTypeKind::BigInt => quote::quote! { elicitation::SqlTypeKind::BigInt },
+            SqlTypeKind::Real => quote::quote! { elicitation::SqlTypeKind::Real },
+            SqlTypeKind::Double => quote::quote! { elicitation::SqlTypeKind::Double },
+            SqlTypeKind::Text => quote::quote! { elicitation::SqlTypeKind::Text },
+            SqlTypeKind::Blob => quote::quote! { elicitation::SqlTypeKind::Blob },
         }
     }
 }

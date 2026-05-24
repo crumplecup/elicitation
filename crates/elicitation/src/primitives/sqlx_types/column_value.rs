@@ -194,7 +194,9 @@ impl ElicitIntrospect for ColumnValue {
 impl crate::ElicitPromptTree for ColumnValue {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose SQL value type:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose SQL value type:")
+                .to_string(),
             type_name: "ColumnValue".to_string(),
             options: Self::labels(),
             branches: Self::labels().iter().map(|_| None).collect(),
@@ -205,15 +207,17 @@ impl crate::ElicitPromptTree for ColumnValue {
 impl crate::emit_code::ToCodeLiteral for ColumnValue {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            ColumnValue::Null        => quote::quote! { elicitation::ColumnValue::Null },
-            ColumnValue::Bool(v)     => quote::quote! { elicitation::ColumnValue::Bool(#v) },
+            ColumnValue::Null => quote::quote! { elicitation::ColumnValue::Null },
+            ColumnValue::Bool(v) => quote::quote! { elicitation::ColumnValue::Bool(#v) },
             ColumnValue::SmallInt(v) => quote::quote! { elicitation::ColumnValue::SmallInt(#v) },
-            ColumnValue::Integer(v)  => quote::quote! { elicitation::ColumnValue::Integer(#v) },
-            ColumnValue::BigInt(v)   => quote::quote! { elicitation::ColumnValue::BigInt(#v) },
-            ColumnValue::Real(v)     => quote::quote! { elicitation::ColumnValue::Real(#v) },
-            ColumnValue::Double(v)   => quote::quote! { elicitation::ColumnValue::Double(#v) },
-            ColumnValue::Text(v)     => quote::quote! { elicitation::ColumnValue::Text(#v.to_string()) },
-            ColumnValue::Blob(v)     => quote::quote! { elicitation::ColumnValue::Blob(vec![#(#v),*]) },
+            ColumnValue::Integer(v) => quote::quote! { elicitation::ColumnValue::Integer(#v) },
+            ColumnValue::BigInt(v) => quote::quote! { elicitation::ColumnValue::BigInt(#v) },
+            ColumnValue::Real(v) => quote::quote! { elicitation::ColumnValue::Real(#v) },
+            ColumnValue::Double(v) => quote::quote! { elicitation::ColumnValue::Double(#v) },
+            ColumnValue::Text(v) => {
+                quote::quote! { elicitation::ColumnValue::Text(#v.to_string()) }
+            }
+            ColumnValue::Blob(v) => quote::quote! { elicitation::ColumnValue::Blob(vec![#(#v),*]) },
         }
     }
 }

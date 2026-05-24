@@ -37,8 +37,13 @@ Key differences from Creusot:
 git clone https://github.com/verus-lang/verus ~/repos/verus
 cd ~/repos/verus/source
 ./tools/get-z3.sh
-source ./tools/activate
+source ../tools/activate
 vargo build --release
+
+mkdir -p ~/.cargo/bin
+ln -sf ~/repos/verus/source/target-verus/release/verus ~/.cargo/bin/verus
+ln -sf ~/repos/verus/source/target-verus/release/rust_verify ~/.cargo/bin/rust_verify
+ln -sf ~/repos/verus/source/target-verus/release/vargo ~/.cargo/bin/vargo
 ```
 
 Set `VERUS_PATH` in `.env`:

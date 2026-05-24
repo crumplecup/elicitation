@@ -59,7 +59,9 @@ impl ElicitIntrospect for CustomAction {
                     FieldInfo {
                         name: "id",
                         type_name: "i32",
-                        prompt: Some("Action ID (matches CustomAction::id in the accessibility tree):"),
+                        prompt: Some(
+                            "Action ID (matches CustomAction::id in the accessibility tree):",
+                        ),
                     },
                     FieldInfo {
                         name: "description",

@@ -47,6 +47,9 @@ The `justfile` automates this:
 just setup  # installs creusot among other tools
 ```
 
+On Arch/Manjaro, `just setup` installs the `opam` prerequisite via `pacman`
+when it is missing.
+
 ### 2. Verify the Install
 
 ```bash

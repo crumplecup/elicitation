@@ -5,7 +5,7 @@ use crate::{
     ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree, Select,
     TypeMetadata, VariantMetadata, mcp,
 };
-use url::{SyntaxViolation};
+use url::SyntaxViolation;
 
 // Generate default-only style enum
 crate::default_style!(url::Url => UrlStyle);
@@ -131,8 +131,10 @@ impl Elicitation for SyntaxViolation {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting url::SyntaxViolation");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose SyntaxViolation:"), &Self::labels());
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose SyntaxViolation:"),
+            &Self::labels(),
+        );
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -149,10 +151,7 @@ impl Elicitation for SyntaxViolation {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper(
-            "url::SyntaxViolation",
-            "Backslash",
-        )
+        crate::verification::proof_helpers::kani_select_wrapper("url::SyntaxViolation", "Backslash")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {

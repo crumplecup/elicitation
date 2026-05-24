@@ -1,6 +1,6 @@
 {
   "profile": [],
   "proofs": {
-    "Coma": { "vc_c11_save": { "prover": "cvc5", "time": 0.017 } }
+    "Coma": { "vc_c11_save": { "prover": "cvc5@1.3.1", "time": 0.016 } }
   }
 }

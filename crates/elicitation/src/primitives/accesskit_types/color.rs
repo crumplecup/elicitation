@@ -69,10 +69,26 @@ impl ElicitIntrospect for Color {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "red", type_name: "u8", prompt: Some("Red channel (0–255):") },
-                    FieldInfo { name: "green", type_name: "u8", prompt: Some("Green channel (0–255):") },
-                    FieldInfo { name: "blue", type_name: "u8", prompt: Some("Blue channel (0–255):") },
-                    FieldInfo { name: "alpha", type_name: "u8", prompt: Some("Alpha channel (0=transparent, 255=opaque):") },
+                    FieldInfo {
+                        name: "red",
+                        type_name: "u8",
+                        prompt: Some("Red channel (0–255):"),
+                    },
+                    FieldInfo {
+                        name: "green",
+                        type_name: "u8",
+                        prompt: Some("Green channel (0–255):"),
+                    },
+                    FieldInfo {
+                        name: "blue",
+                        type_name: "u8",
+                        prompt: Some("Blue channel (0–255):"),
+                    },
+                    FieldInfo {
+                        name: "alpha",
+                        type_name: "u8",
+                        prompt: Some("Alpha channel (0=transparent, 255=opaque):"),
+                    },
                 ],
             },
         }

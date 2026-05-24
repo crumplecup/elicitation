@@ -2,8 +2,8 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_close_overlay": { "prover": "cvc5", "time": 0.015 },
-      "vc_close_overlay_creusot": { "prover": "cvc5", "time": 0.013 }
+      "vc_close_overlay": { "prover": "cvc5@1.3.1", "time": 0.011 },
+      "vc_close_overlay_creusot": { "prover": "cvc5@1.3.1", "time": 0.013 }
     }
   }
 }

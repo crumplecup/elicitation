@@ -2,10 +2,10 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_c9_consume": { "prover": "cvc5", "time": 0.015 },
-      "vc_c9_increment": { "prover": "cvc5", "time": 0.014 },
-      "vc_c9_pipeline": { "prover": "cvc5", "time": 0.018 },
-      "vc_c9_produce": { "prover": "cvc5", "time": 0.012 }
+      "vc_c9_consume": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_c9_increment": { "prover": "cvc5@1.3.1", "time": 0.014 },
+      "vc_c9_pipeline": { "prover": "cvc5@1.3.1", "time": 0.014 },
+      "vc_c9_produce": { "prover": "cvc5@1.3.1", "time": 0.013 }
     }
   }
 }

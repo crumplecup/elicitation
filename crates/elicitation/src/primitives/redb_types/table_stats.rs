@@ -39,8 +39,8 @@ impl From<redb::TableStats> for TableStats {
 }
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 impl Prompt for TableStats {
@@ -63,7 +63,14 @@ impl Elicitation for TableStats {
         let stored_bytes = u64::elicit(communicator).await?;
         let metadata_bytes = u64::elicit(communicator).await?;
         let fragmented_bytes = u64::elicit(communicator).await?;
-        Ok(Self { tree_height, leaf_pages, branch_pages, stored_bytes, metadata_bytes, fragmented_bytes })
+        Ok(Self {
+            tree_height,
+            leaf_pages,
+            branch_pages,
+            stored_bytes,
+            metadata_bytes,
+            fragmented_bytes,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -90,12 +97,36 @@ impl ElicitIntrospect for TableStats {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "tree_height", type_name: "u32", prompt: Some("B-tree height:") },
-                    FieldInfo { name: "leaf_pages", type_name: "u64", prompt: Some("Leaf pages:") },
-                    FieldInfo { name: "branch_pages", type_name: "u64", prompt: Some("Branch pages:") },
-                    FieldInfo { name: "stored_bytes", type_name: "u64", prompt: Some("Stored bytes:") },
-                    FieldInfo { name: "metadata_bytes", type_name: "u64", prompt: Some("Metadata bytes:") },
-                    FieldInfo { name: "fragmented_bytes", type_name: "u64", prompt: Some("Fragmented bytes:") },
+                    FieldInfo {
+                        name: "tree_height",
+                        type_name: "u32",
+                        prompt: Some("B-tree height:"),
+                    },
+                    FieldInfo {
+                        name: "leaf_pages",
+                        type_name: "u64",
+                        prompt: Some("Leaf pages:"),
+                    },
+                    FieldInfo {
+                        name: "branch_pages",
+                        type_name: "u64",
+                        prompt: Some("Branch pages:"),
+                    },
+                    FieldInfo {
+                        name: "stored_bytes",
+                        type_name: "u64",
+                        prompt: Some("Stored bytes:"),
+                    },
+                    FieldInfo {
+                        name: "metadata_bytes",
+                        type_name: "u64",
+                        prompt: Some("Metadata bytes:"),
+                    },
+                    FieldInfo {
+                        name: "fragmented_bytes",
+                        type_name: "u64",
+                        prompt: Some("Fragmented bytes:"),
+                    },
                 ],
             },
         }

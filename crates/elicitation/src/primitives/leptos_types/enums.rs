@@ -164,12 +164,18 @@ use strum::IntoEnumIterator;
 // --- LeptosMode --------------------------------------------------------------
 
 impl Prompt for LeptosMode {
-    fn prompt() -> Option<&'static str> { Some("Choose the Leptos rendering mode:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Choose the Leptos rendering mode:")
+    }
 }
 
 impl Select for LeptosMode {
-    fn options() -> Vec<Self> { LeptosMode::iter().collect() }
-    fn labels() -> Vec<String> { LeptosMode::iter().map(|v| v.to_string()).collect() }
+    fn options() -> Vec<Self> {
+        LeptosMode::iter().collect()
+    }
+    fn labels() -> Vec<String> {
+        LeptosMode::iter().map(|v| v.to_string()).collect()
+    }
     fn from_label(label: &str) -> Option<Self> {
         LeptosMode::iter().find(|v| v.to_string() == label)
     }
@@ -183,15 +189,20 @@ impl Elicitation for LeptosMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LeptosMode");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose Leptos mode:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose Leptos mode:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid LeptosMode: {label}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid LeptosMode: {label}"
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -206,14 +217,20 @@ impl Elicitation for LeptosMode {
 }
 
 impl ElicitIntrospect for LeptosMode {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -234,12 +251,18 @@ impl crate::ElicitPromptTree for LeptosMode {
 // --- LeptosHtmlTag -----------------------------------------------------------
 
 impl Prompt for LeptosHtmlTag {
-    fn prompt() -> Option<&'static str> { Some("Choose an HTML element tag:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Choose an HTML element tag:")
+    }
 }
 
 impl Select for LeptosHtmlTag {
-    fn options() -> Vec<Self> { LeptosHtmlTag::iter().collect() }
-    fn labels() -> Vec<String> { LeptosHtmlTag::iter().map(|v| v.to_string()).collect() }
+    fn options() -> Vec<Self> {
+        LeptosHtmlTag::iter().collect()
+    }
+    fn labels() -> Vec<String> {
+        LeptosHtmlTag::iter().map(|v| v.to_string()).collect()
+    }
     fn from_label(label: &str) -> Option<Self> {
         LeptosHtmlTag::iter().find(|v| v.to_string() == label)
     }
@@ -253,15 +276,20 @@ impl Elicitation for LeptosHtmlTag {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LeptosHtmlTag");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose HTML tag:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose HTML tag:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid LeptosHtmlTag: {label}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid LeptosHtmlTag: {label}"
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -276,14 +304,20 @@ impl Elicitation for LeptosHtmlTag {
 }
 
 impl ElicitIntrospect for LeptosHtmlTag {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosHtmlTag",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }

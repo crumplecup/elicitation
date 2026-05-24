@@ -39,8 +39,8 @@ impl From<redb::CacheStats> for CacheStats {
 }
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 impl Prompt for CacheStats {
@@ -63,7 +63,14 @@ impl Elicitation for CacheStats {
         let write_hits = u64::elicit(communicator).await?;
         let write_misses = u64::elicit(communicator).await?;
         let cached_bytes = u64::elicit(communicator).await?;
-        Ok(Self { evictions, read_hits, read_misses, write_hits, write_misses, cached_bytes })
+        Ok(Self {
+            evictions,
+            read_hits,
+            read_misses,
+            write_hits,
+            write_misses,
+            cached_bytes,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -90,12 +97,36 @@ impl ElicitIntrospect for CacheStats {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "evictions", type_name: "u64", prompt: Some("Cache evictions:") },
-                    FieldInfo { name: "read_hits", type_name: "u64", prompt: Some("Read cache hits:") },
-                    FieldInfo { name: "read_misses", type_name: "u64", prompt: Some("Read cache misses:") },
-                    FieldInfo { name: "write_hits", type_name: "u64", prompt: Some("Write cache hits:") },
-                    FieldInfo { name: "write_misses", type_name: "u64", prompt: Some("Write cache misses:") },
-                    FieldInfo { name: "cached_bytes", type_name: "u64", prompt: Some("Bytes currently cached:") },
+                    FieldInfo {
+                        name: "evictions",
+                        type_name: "u64",
+                        prompt: Some("Cache evictions:"),
+                    },
+                    FieldInfo {
+                        name: "read_hits",
+                        type_name: "u64",
+                        prompt: Some("Read cache hits:"),
+                    },
+                    FieldInfo {
+                        name: "read_misses",
+                        type_name: "u64",
+                        prompt: Some("Read cache misses:"),
+                    },
+                    FieldInfo {
+                        name: "write_hits",
+                        type_name: "u64",
+                        prompt: Some("Write cache hits:"),
+                    },
+                    FieldInfo {
+                        name: "write_misses",
+                        type_name: "u64",
+                        prompt: Some("Write cache misses:"),
+                    },
+                    FieldInfo {
+                        name: "cached_bytes",
+                        type_name: "u64",
+                        prompt: Some("Bytes currently cached:"),
+                    },
                 ],
             },
         }

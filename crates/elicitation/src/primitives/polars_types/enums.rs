@@ -148,8 +148,7 @@ pub enum PolarsPipelineOp {
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
-    mcp,
+    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
 
 // --- PolarsJoinType ----------------------------------------------------------
@@ -163,14 +162,24 @@ impl Prompt for PolarsJoinType {
 impl Select for PolarsJoinType {
     fn options() -> Vec<Self> {
         vec![
-            PolarsJoinType::Inner, PolarsJoinType::Left, PolarsJoinType::Right,
-            PolarsJoinType::Full, PolarsJoinType::Cross, PolarsJoinType::Semi,
+            PolarsJoinType::Inner,
+            PolarsJoinType::Left,
+            PolarsJoinType::Right,
+            PolarsJoinType::Full,
+            PolarsJoinType::Cross,
+            PolarsJoinType::Semi,
             PolarsJoinType::Anti,
         ]
     }
     fn labels() -> Vec<String> {
-        Self::options().iter()
-            .map(|v| serde_json::to_string(v).unwrap().trim_matches('"').to_string())
+        Self::options()
+            .iter()
+            .map(|v| {
+                serde_json::to_string(v)
+                    .unwrap()
+                    .trim_matches('"')
+                    .to_string()
+            })
             .collect()
     }
     fn from_label(label: &str) -> Option<Self> {
@@ -186,34 +195,56 @@ impl Elicitation for PolarsJoinType {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PolarsJoinType");
-        let params = mcp::select_params(Self::prompt().unwrap_or("Choose join type:"), &Self::labels());
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select()).with_arguments(params),
-        ).await?;
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose join type:"),
+            &Self::labels(),
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
-        Self::from_label(&label).ok_or_else(|| ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid PolarsJoinType: {label}"))))
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid PolarsJoinType: {label}"
+            )))
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_multi_variant_enum("elicitation::PolarsJoinType", "inner")
+        crate::verification::proof_helpers::kani_multi_variant_enum(
+            "elicitation::PolarsJoinType",
+            "inner",
+        )
     }
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_multi_variant_enum("elicitation::PolarsJoinType")
     }
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_multi_variant_enum("elicitation::PolarsJoinType")
+        crate::verification::proof_helpers::creusot_multi_variant_enum(
+            "elicitation::PolarsJoinType",
+        )
     }
 }
 
 impl ElicitIntrospect for PolarsJoinType {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::PolarsJoinType",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] }).collect(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }
@@ -241,15 +272,28 @@ impl Prompt for PolarsDType {
 impl Select for PolarsDType {
     fn options() -> Vec<Self> {
         vec![
-            PolarsDType::Boolean, PolarsDType::Int32, PolarsDType::Int64,
-            PolarsDType::Float32, PolarsDType::Float64, PolarsDType::Utf8,
-            PolarsDType::Date, PolarsDType::Datetime, PolarsDType::Duration,
-            PolarsDType::List, PolarsDType::Struct,
+            PolarsDType::Boolean,
+            PolarsDType::Int32,
+            PolarsDType::Int64,
+            PolarsDType::Float32,
+            PolarsDType::Float64,
+            PolarsDType::Utf8,
+            PolarsDType::Date,
+            PolarsDType::Datetime,
+            PolarsDType::Duration,
+            PolarsDType::List,
+            PolarsDType::Struct,
         ]
     }
     fn labels() -> Vec<String> {
-        Self::options().iter()
-            .map(|v| serde_json::to_string(v).unwrap().trim_matches('"').to_string())
+        Self::options()
+            .iter()
+            .map(|v| {
+                serde_json::to_string(v)
+                    .unwrap()
+                    .trim_matches('"')
+                    .to_string()
+            })
             .collect()
     }
     fn from_label(label: &str) -> Option<Self> {
@@ -266,15 +310,25 @@ impl Elicitation for PolarsDType {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PolarsDType");
         let params = mcp::select_params(Self::prompt().unwrap_or("Choose dtype:"), &Self::labels());
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select()).with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
-        Self::from_label(&label).ok_or_else(|| ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid PolarsDType: {label}"))))
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid PolarsDType: {label}"
+            )))
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_multi_variant_enum("elicitation::PolarsDType", "boolean")
+        crate::verification::proof_helpers::kani_multi_variant_enum(
+            "elicitation::PolarsDType",
+            "boolean",
+        )
     }
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_multi_variant_enum("elicitation::PolarsDType")
@@ -285,14 +339,21 @@ impl Elicitation for PolarsDType {
 }
 
 impl ElicitIntrospect for PolarsDType {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::PolarsDType",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] }).collect(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }
@@ -320,33 +381,70 @@ impl Prompt for PolarsPipelineOp {
 impl Select for PolarsPipelineOp {
     fn options() -> Vec<Self> {
         vec![
-            PolarsPipelineOp::ReadCsv { path: String::new(), has_header: true },
-            PolarsPipelineOp::ReadParquet { path: String::new() },
-            PolarsPipelineOp::ReadJson { path: String::new() },
-            PolarsPipelineOp::Filter { predicate: String::new() },
+            PolarsPipelineOp::ReadCsv {
+                path: String::new(),
+                has_header: true,
+            },
+            PolarsPipelineOp::ReadParquet {
+                path: String::new(),
+            },
+            PolarsPipelineOp::ReadJson {
+                path: String::new(),
+            },
+            PolarsPipelineOp::Filter {
+                predicate: String::new(),
+            },
             PolarsPipelineOp::Select { columns: vec![] },
             PolarsPipelineOp::WithColumns { exprs: vec![] },
-            PolarsPipelineOp::GroupByAgg { by: vec![], agg: vec![] },
-            PolarsPipelineOp::Join { right_path: String::new(), left_on: vec![], right_on: vec![], how: String::new() },
-            PolarsPipelineOp::Sort { by: vec![], descending: vec![] },
+            PolarsPipelineOp::GroupByAgg {
+                by: vec![],
+                agg: vec![],
+            },
+            PolarsPipelineOp::Join {
+                right_path: String::new(),
+                left_on: vec![],
+                right_on: vec![],
+                how: String::new(),
+            },
+            PolarsPipelineOp::Sort {
+                by: vec![],
+                descending: vec![],
+            },
             PolarsPipelineOp::Unique { subset: None },
             PolarsPipelineOp::DropNulls { subset: None },
-            PolarsPipelineOp::WriteCsv { path: String::new() },
-            PolarsPipelineOp::WriteParquet { path: String::new() },
-            PolarsPipelineOp::WriteJson { path: String::new() },
+            PolarsPipelineOp::WriteCsv {
+                path: String::new(),
+            },
+            PolarsPipelineOp::WriteParquet {
+                path: String::new(),
+            },
+            PolarsPipelineOp::WriteJson {
+                path: String::new(),
+            },
         ]
     }
     fn labels() -> Vec<String> {
         vec![
-            "read_csv".to_string(), "read_parquet".to_string(), "read_json".to_string(),
-            "filter".to_string(), "select".to_string(), "with_columns".to_string(),
-            "group_by_agg".to_string(), "join".to_string(), "sort".to_string(),
-            "unique".to_string(), "drop_nulls".to_string(),
-            "write_csv".to_string(), "write_parquet".to_string(), "write_json".to_string(),
+            "read_csv".to_string(),
+            "read_parquet".to_string(),
+            "read_json".to_string(),
+            "filter".to_string(),
+            "select".to_string(),
+            "with_columns".to_string(),
+            "group_by_agg".to_string(),
+            "join".to_string(),
+            "sort".to_string(),
+            "unique".to_string(),
+            "drop_nulls".to_string(),
+            "write_csv".to_string(),
+            "write_parquet".to_string(),
+            "write_json".to_string(),
         ]
     }
     fn from_label(label: &str) -> Option<Self> {
-        Self::options().into_iter().zip(Self::labels())
+        Self::options()
+            .into_iter()
+            .zip(Self::labels())
             .find(|(_, l)| l == label)
             .map(|(v, _)| v)
     }
@@ -368,9 +466,12 @@ impl Elicitation for PolarsPipelineOp {
                 Self::prompt().unwrap_or("Choose operation:"),
                 &Self::labels(),
             );
-            let result = communicator.call_tool(
-                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select()).with_arguments(params),
-            ).await?;
+            let result = communicator
+                .call_tool(
+                    rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                        .with_arguments(params),
+                )
+                .await?;
             let label = mcp::parse_string(mcp::extract_value(result)?)?;
             tracing::debug!(variant = %label, "PolarsPipelineOp variant selected");
             match label.as_str() {
@@ -409,7 +510,12 @@ impl Elicitation for PolarsPipelineOp {
                     let left_on = Vec::<String>::elicit(communicator).await?;
                     let right_on = Vec::<String>::elicit(communicator).await?;
                     let how = String::elicit(communicator).await?;
-                    Ok(PolarsPipelineOp::Join { right_path, left_on, right_on, how })
+                    Ok(PolarsPipelineOp::Join {
+                        right_path,
+                        left_on,
+                        right_on,
+                        how,
+                    })
                 }
                 "sort" => {
                     let by = Vec::<String>::elicit(communicator).await?;
@@ -455,14 +561,21 @@ impl Elicitation for PolarsPipelineOp {
 }
 
 impl ElicitIntrospect for PolarsPipelineOp {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::PolarsPipelineOp",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] }).collect(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }

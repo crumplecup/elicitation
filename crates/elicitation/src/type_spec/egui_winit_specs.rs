@@ -18,14 +18,16 @@ impl ElicitSpec for EguiWinitRenderer {
                 SpecEntryBuilder::default()
                     .label("wgpu".to_string())
                     .description(
-                        "Cross-platform WebGPU backend (egui-wgpu). Recommended choice.".to_string(),
+                        "Cross-platform WebGPU backend (egui-wgpu). Recommended choice."
+                            .to_string(),
                     )
                     .build()
                     .expect("valid SpecEntry"),
                 SpecEntryBuilder::default()
                     .label("glow".to_string())
                     .description(
-                        "OpenGL via glow (egui-glow). Simpler setup, fewer dependencies.".to_string(),
+                        "OpenGL via glow (egui-glow). Simpler setup, fewer dependencies."
+                            .to_string(),
                     )
                     .build()
                     .expect("valid SpecEntry"),
@@ -134,7 +136,9 @@ impl ElicitSpec for EguiWinitDescriptor {
             .entries(vec![
                 SpecEntryBuilder::default()
                     .label("app_struct".to_string())
-                    .description("String — application struct name (PascalCase, e.g. \"MyApp\")".to_string())
+                    .description(
+                        "String — application struct name (PascalCase, e.g. \"MyApp\")".to_string(),
+                    )
                     .build()
                     .expect("valid SpecEntry"),
                 SpecEntryBuilder::default()
@@ -184,7 +188,9 @@ impl ElicitSpec for EguiWinitDescriptor {
                     .expect("valid SpecEntry"),
                 SpecEntryBuilder::default()
                     .label("transparent".to_string())
-                    .description("bool — transparent window background (default: false)".to_string())
+                    .description(
+                        "bool — transparent window background (default: false)".to_string(),
+                    )
                     .build()
                     .expect("valid SpecEntry"),
             ])
@@ -195,7 +201,9 @@ impl ElicitSpec for EguiWinitDescriptor {
             .entries(vec![
                 SpecEntryBuilder::default()
                     .label("pattern".to_string())
-                    .description("Survey — fill in each field to describe the application".to_string())
+                    .description(
+                        "Survey — fill in each field to describe the application".to_string(),
+                    )
                     .build()
                     .expect("valid SpecEntry"),
             ])

@@ -260,15 +260,9 @@ pub fn move_cursor_down(
     (next, proof)
 }
 
-/// Start filtering the nav tree.
-#[formal_method(contracts = [ArchiveNavConsistent])]
-#[instrument(skip(proof))]
-pub fn apply_filter(
-    state: ArchiveNavState,
-    proof: Established<ArchiveNavConsistent>,
-    filter: String,
-) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    let next = match state {
+#[cfg_attr(not(kani), instrument)]
+fn apply_filter_kernel(state: ArchiveNavState, filter: &str) -> ArchiveNavState {
+    match state {
         ArchiveNavState::NavReady { schemas, .. }
         | ArchiveNavState::NavFiltered { schemas, .. } => {
             if filter.is_empty() {
@@ -282,13 +276,24 @@ pub fn apply_filter(
             } else {
                 ArchiveNavState::NavFiltered {
                     schemas,
-                    filter,
+                    filter: filter.to_owned(),
                     cursor: 0,
                 }
             }
         }
         other => other,
-    };
+    }
+}
+
+/// Start filtering the nav tree.
+#[formal_method(contracts = [ArchiveNavConsistent])]
+#[instrument(skip(proof))]
+pub fn apply_filter(
+    state: ArchiveNavState,
+    proof: Established<ArchiveNavConsistent>,
+    filter: String,
+) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
+    let next = apply_filter_kernel(state, &filter);
     (next, proof)
 }
 
@@ -299,5 +304,6 @@ pub fn clear_filter(
     state: ArchiveNavState,
     proof: Established<ArchiveNavConsistent>,
 ) -> (ArchiveNavState, Established<ArchiveNavConsistent>) {
-    apply_filter(state, proof, String::new())
+    let next = apply_filter_kernel(state, "");
+    (next, proof)
 }

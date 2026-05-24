@@ -43,7 +43,7 @@ fn column_detail_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -60,7 +60,7 @@ fn panel_loading_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -79,7 +79,7 @@ fn panel_error_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -97,7 +97,7 @@ fn data_grid_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -117,7 +117,7 @@ fn query_complete_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -133,7 +133,7 @@ fn begin_edit_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -148,7 +148,7 @@ fn commit_edits_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -163,7 +163,7 @@ fn abort_edits_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -180,7 +180,7 @@ fn open_sql_editor_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -198,7 +198,7 @@ fn open_export_panel_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -217,7 +217,7 @@ fn open_help_panel_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -234,7 +234,7 @@ fn open_saved_panel_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -254,7 +254,7 @@ fn open_connection_editor_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -275,7 +275,7 @@ fn ddl_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -295,7 +295,7 @@ fn explain_ready_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -315,7 +315,7 @@ fn export_ready_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
     ::std::mem::forget(state);
-    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+    let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -333,7 +333,7 @@ fn history_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -353,7 +353,7 @@ fn saved_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -373,7 +373,7 @@ fn monitor_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -393,7 +393,7 @@ fn admin_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -413,7 +413,7 @@ fn erd_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -435,7 +435,7 @@ fn constraints_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -457,7 +457,7 @@ fn indexes_ready_kani_closure() {
     ::kani::assume(archive_panel_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchivePanelState =
-        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchivePanelConsistent> = {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)

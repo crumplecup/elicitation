@@ -438,11 +438,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     lets.push(let_ts.clone());
                     non_state_lets_d0.push(let_ts);
                 } else if is_string_type(ty) {
-                    // String content is irrelevant to structural invariant proofs.
-                    // from_utf8_lossy introduces a UTF-8 validation loop that makes
-                    // the state space unbounded; String::new() is bounded by construction.
+                    // String arguments participate in the depth-based induction:
+                    // depth1 yields a one-character symbolic string, which exercises
+                    // non-empty branches without collapsing proofs to the empty case.
                     let let_ts = quote! {
-                        let #pat: #ty = ::std::string::String::new();
+                        let #pat: #ty = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
                     };
                     lets.push(let_ts.clone());
                     non_state_lets_d0.push(let_ts);

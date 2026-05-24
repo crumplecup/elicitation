@@ -33,9 +33,9 @@
 //! | [`accesskit::ScrollHint`] | Select | 6 scroll hint positions |
 
 mod action;
-mod aria_current;
 mod action_data;
 mod action_request;
+mod aria_current;
 mod auto_complete;
 mod color;
 mod custom_action;

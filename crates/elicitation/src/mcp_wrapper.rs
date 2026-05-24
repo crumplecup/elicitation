@@ -107,21 +107,32 @@ impl<T> crate::Prompt for ElicitToolOutput<T> {
 pub struct ElicitToolOutputStyle;
 
 impl crate::Prompt for ElicitToolOutputStyle {
-    fn prompt() -> Option<&'static str> { None }
+    fn prompt() -> Option<&'static str> {
+        None
+    }
 }
 impl crate::Elicitation for ElicitToolOutputStyle {
     type Style = ElicitToolOutputStyle;
     async fn elicit<C: crate::ElicitCommunicator>(_: &C) -> crate::ElicitResult<Self> {
         Ok(Self)
     }
-    fn kani_proof() -> TokenStream { TokenStream::new() }
-    fn verus_proof() -> TokenStream { TokenStream::new() }
-    fn creusot_proof() -> TokenStream { TokenStream::new() }
+    fn kani_proof() -> TokenStream {
+        TokenStream::new()
+    }
+    fn verus_proof() -> TokenStream {
+        TokenStream::new()
+    }
+    fn creusot_proof() -> TokenStream {
+        TokenStream::new()
+    }
 }
 impl crate::style::ElicitationStyle for ElicitToolOutputStyle {}
 impl crate::ElicitPromptTree for ElicitToolOutputStyle {
     fn prompt_tree() -> crate::PromptTree {
-        crate::PromptTree::Leaf { prompt: "default".to_string(), type_name: "ElicitToolOutputStyle".to_string() }
+        crate::PromptTree::Leaf {
+            prompt: "default".to_string(),
+            type_name: "ElicitToolOutputStyle".to_string(),
+        }
     }
 }
 
@@ -180,10 +191,7 @@ impl<T: crate::ElicitSpec + 'static> crate::ElicitSpec for ElicitToolOutput<T> {
     }
 }
 
-impl<T> crate::ElicitComplete for ElicitToolOutput<T> where
-    T: crate::ElicitComplete + Send
-{
-}
+impl<T> crate::ElicitComplete for ElicitToolOutput<T> where T: crate::ElicitComplete + Send {}
 
 #[cfg(test)]
 mod tests {

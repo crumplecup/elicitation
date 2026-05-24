@@ -89,8 +89,14 @@ impl crate::ElicitPromptTree for Tree {
             type_name: "accesskit::Tree".to_string(),
             fields: vec![
                 ("root".to_string(), Box::new(NodeId::prompt_tree())),
-                ("toolkit_name".to_string(), Box::new(<Option<String>>::prompt_tree())),
-                ("toolkit_version".to_string(), Box::new(<Option<String>>::prompt_tree())),
+                (
+                    "toolkit_name".to_string(),
+                    Box::new(<Option<String>>::prompt_tree()),
+                ),
+                (
+                    "toolkit_version".to_string(),
+                    Box::new(<Option<String>>::prompt_tree()),
+                ),
             ],
         }
     }

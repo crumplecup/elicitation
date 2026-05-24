@@ -23,8 +23,6 @@ mod accesskit_specs;
 mod atomics;
 #[cfg(feature = "axum-types")]
 mod axum_specs;
-#[cfg(feature = "leptos-types")]
-mod leptos_specs;
 #[cfg(feature = "bevy-types")]
 mod bevy_specs;
 mod bool_contracts;
@@ -36,6 +34,8 @@ mod collections;
 mod csv_specs;
 mod datetime_specs;
 mod egui_specs;
+#[cfg(feature = "polars-types")]
+mod egui_winit_specs;
 mod elicit_spec;
 mod float_contracts;
 mod geo_specs;
@@ -46,16 +46,16 @@ mod georaster_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;
+#[cfg(feature = "leptos-types")]
+mod leptos_specs;
 mod network_specs;
 mod palette_specs;
-#[cfg(feature = "polars-types")]
-mod egui_winit_specs;
 mod polars_specs;
 mod proj_specs;
 mod ratatui_specs;
-mod regex_specs;
 #[cfg(feature = "redb-types")]
 mod redb_specs;
+mod regex_specs;
 mod registry;
 #[cfg(feature = "rstar-types")]
 mod rstar_specs;

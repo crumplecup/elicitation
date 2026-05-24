@@ -61,11 +61,16 @@ elicitation prove --kani --csv --resume
 Key `.env` settings:
 
 ```sh
-KANI_PACKAGE=elicit_proofs        # Cargo package for Kani
-CREUSOT_PACKAGE=elicit_proofs     # Cargo package for Creusot
+KANI_PACKAGE=elicit_proofs
+KANI_FLAGS="--lib --features kani -Z function-contracts -Z stubbing"
+CREUSOT_PACKAGE=elicit_proofs
 VERUS_PATH=~/repos/verus/...      # Path to Verus binary
-VERUS_FILE=crates/elicit_proofs/src/lib.rs
+VERUS_FILE=crates/elicitation_verus/src/lib.rs
 ```
+
+`elicit_proofs` is the target for the generated Kani and Creusot proof code.
+Verus does not run cleanly from the combined proofs crate, so `elicitation prove
+--verus` should point at the dedicated `elicitation_verus` crate instead.
 
 ## Induction strategy for String
 

@@ -79,20 +79,36 @@ impl Prompt for UomQuantityKind {
 impl Select for UomQuantityKind {
     fn options() -> Vec<Self> {
         vec![
-            UomQuantityKind::Length, UomQuantityKind::Mass, UomQuantityKind::Time,
-            UomQuantityKind::Temperature, UomQuantityKind::ElectricCurrent,
-            UomQuantityKind::AmountOfSubstance, UomQuantityKind::LuminousIntensity,
-            UomQuantityKind::Velocity, UomQuantityKind::Acceleration, UomQuantityKind::Force,
-            UomQuantityKind::Energy, UomQuantityKind::Power, UomQuantityKind::Pressure,
-            UomQuantityKind::Frequency, UomQuantityKind::Area, UomQuantityKind::Volume,
-            UomQuantityKind::Density, UomQuantityKind::Angle,
+            UomQuantityKind::Length,
+            UomQuantityKind::Mass,
+            UomQuantityKind::Time,
+            UomQuantityKind::Temperature,
+            UomQuantityKind::ElectricCurrent,
+            UomQuantityKind::AmountOfSubstance,
+            UomQuantityKind::LuminousIntensity,
+            UomQuantityKind::Velocity,
+            UomQuantityKind::Acceleration,
+            UomQuantityKind::Force,
+            UomQuantityKind::Energy,
+            UomQuantityKind::Power,
+            UomQuantityKind::Pressure,
+            UomQuantityKind::Frequency,
+            UomQuantityKind::Area,
+            UomQuantityKind::Volume,
+            UomQuantityKind::Density,
+            UomQuantityKind::Angle,
         ]
     }
 
     fn labels() -> Vec<String> {
         Self::options()
             .iter()
-            .map(|v| serde_json::to_string(v).unwrap().trim_matches('"').to_string())
+            .map(|v| {
+                serde_json::to_string(v)
+                    .unwrap()
+                    .trim_matches('"')
+                    .to_string()
+            })
             .collect()
     }
 
@@ -140,12 +156,16 @@ impl Elicitation for UomQuantityKind {
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_multi_variant_enum("elicitation::UomQuantityKind")
+        crate::verification::proof_helpers::creusot_multi_variant_enum(
+            "elicitation::UomQuantityKind",
+        )
     }
 }
 
 impl ElicitIntrospect for UomQuantityKind {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
@@ -154,7 +174,10 @@ impl ElicitIntrospect for UomQuantityKind {
             details: PatternDetails::Select {
                 variants: Self::labels()
                     .into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -178,24 +201,34 @@ impl crate::emit_code::ToCodeLiteral for UomQuantityKind {
         let variant = variant.trim_matches('"');
         // Convert snake_case label back to PascalCase variant name via serde
         let ident = match self {
-            UomQuantityKind::Length           => quote::quote! { elicitation::UomQuantityKind::Length },
-            UomQuantityKind::Mass             => quote::quote! { elicitation::UomQuantityKind::Mass },
-            UomQuantityKind::Time             => quote::quote! { elicitation::UomQuantityKind::Time },
-            UomQuantityKind::Temperature      => quote::quote! { elicitation::UomQuantityKind::Temperature },
-            UomQuantityKind::ElectricCurrent  => quote::quote! { elicitation::UomQuantityKind::ElectricCurrent },
-            UomQuantityKind::AmountOfSubstance => quote::quote! { elicitation::UomQuantityKind::AmountOfSubstance },
-            UomQuantityKind::LuminousIntensity => quote::quote! { elicitation::UomQuantityKind::LuminousIntensity },
-            UomQuantityKind::Velocity         => quote::quote! { elicitation::UomQuantityKind::Velocity },
-            UomQuantityKind::Acceleration     => quote::quote! { elicitation::UomQuantityKind::Acceleration },
-            UomQuantityKind::Force            => quote::quote! { elicitation::UomQuantityKind::Force },
-            UomQuantityKind::Energy           => quote::quote! { elicitation::UomQuantityKind::Energy },
-            UomQuantityKind::Power            => quote::quote! { elicitation::UomQuantityKind::Power },
-            UomQuantityKind::Pressure         => quote::quote! { elicitation::UomQuantityKind::Pressure },
-            UomQuantityKind::Frequency        => quote::quote! { elicitation::UomQuantityKind::Frequency },
-            UomQuantityKind::Area             => quote::quote! { elicitation::UomQuantityKind::Area },
-            UomQuantityKind::Volume           => quote::quote! { elicitation::UomQuantityKind::Volume },
-            UomQuantityKind::Density          => quote::quote! { elicitation::UomQuantityKind::Density },
-            UomQuantityKind::Angle            => quote::quote! { elicitation::UomQuantityKind::Angle },
+            UomQuantityKind::Length => quote::quote! { elicitation::UomQuantityKind::Length },
+            UomQuantityKind::Mass => quote::quote! { elicitation::UomQuantityKind::Mass },
+            UomQuantityKind::Time => quote::quote! { elicitation::UomQuantityKind::Time },
+            UomQuantityKind::Temperature => {
+                quote::quote! { elicitation::UomQuantityKind::Temperature }
+            }
+            UomQuantityKind::ElectricCurrent => {
+                quote::quote! { elicitation::UomQuantityKind::ElectricCurrent }
+            }
+            UomQuantityKind::AmountOfSubstance => {
+                quote::quote! { elicitation::UomQuantityKind::AmountOfSubstance }
+            }
+            UomQuantityKind::LuminousIntensity => {
+                quote::quote! { elicitation::UomQuantityKind::LuminousIntensity }
+            }
+            UomQuantityKind::Velocity => quote::quote! { elicitation::UomQuantityKind::Velocity },
+            UomQuantityKind::Acceleration => {
+                quote::quote! { elicitation::UomQuantityKind::Acceleration }
+            }
+            UomQuantityKind::Force => quote::quote! { elicitation::UomQuantityKind::Force },
+            UomQuantityKind::Energy => quote::quote! { elicitation::UomQuantityKind::Energy },
+            UomQuantityKind::Power => quote::quote! { elicitation::UomQuantityKind::Power },
+            UomQuantityKind::Pressure => quote::quote! { elicitation::UomQuantityKind::Pressure },
+            UomQuantityKind::Frequency => quote::quote! { elicitation::UomQuantityKind::Frequency },
+            UomQuantityKind::Area => quote::quote! { elicitation::UomQuantityKind::Area },
+            UomQuantityKind::Volume => quote::quote! { elicitation::UomQuantityKind::Volume },
+            UomQuantityKind::Density => quote::quote! { elicitation::UomQuantityKind::Density },
+            UomQuantityKind::Angle => quote::quote! { elicitation::UomQuantityKind::Angle },
         };
         let _ = variant; // suppress unused warning — match above is exhaustive
         ident
@@ -212,13 +245,22 @@ impl Prompt for UomUnitSystem {
 
 impl Select for UomUnitSystem {
     fn options() -> Vec<Self> {
-        vec![UomUnitSystem::Si, UomUnitSystem::Imperial, UomUnitSystem::Natural]
+        vec![
+            UomUnitSystem::Si,
+            UomUnitSystem::Imperial,
+            UomUnitSystem::Natural,
+        ]
     }
 
     fn labels() -> Vec<String> {
         Self::options()
             .iter()
-            .map(|v| serde_json::to_string(v).unwrap().trim_matches('"').to_string())
+            .map(|v| {
+                serde_json::to_string(v)
+                    .unwrap()
+                    .trim_matches('"')
+                    .to_string()
+            })
             .collect()
     }
 
@@ -271,7 +313,9 @@ impl Elicitation for UomUnitSystem {
 }
 
 impl ElicitIntrospect for UomUnitSystem {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
@@ -280,7 +324,10 @@ impl ElicitIntrospect for UomUnitSystem {
             details: PatternDetails::Select {
                 variants: Self::labels()
                     .into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -301,9 +348,9 @@ impl crate::ElicitPromptTree for UomUnitSystem {
 impl crate::emit_code::ToCodeLiteral for UomUnitSystem {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            UomUnitSystem::Si       => quote::quote! { elicitation::UomUnitSystem::Si },
+            UomUnitSystem::Si => quote::quote! { elicitation::UomUnitSystem::Si },
             UomUnitSystem::Imperial => quote::quote! { elicitation::UomUnitSystem::Imperial },
-            UomUnitSystem::Natural  => quote::quote! { elicitation::UomUnitSystem::Natural },
+            UomUnitSystem::Natural => quote::quote! { elicitation::UomUnitSystem::Natural },
         }
     }
 }

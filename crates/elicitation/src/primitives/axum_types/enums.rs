@@ -111,14 +111,24 @@ impl Prompt for AxumHttpMethod {
 impl Select for AxumHttpMethod {
     fn options() -> Vec<Self> {
         vec![
-            AxumHttpMethod::Get, AxumHttpMethod::Post, AxumHttpMethod::Put,
-            AxumHttpMethod::Delete, AxumHttpMethod::Patch, AxumHttpMethod::Head,
-            AxumHttpMethod::Options, AxumHttpMethod::Trace, AxumHttpMethod::Any,
+            AxumHttpMethod::Get,
+            AxumHttpMethod::Post,
+            AxumHttpMethod::Put,
+            AxumHttpMethod::Delete,
+            AxumHttpMethod::Patch,
+            AxumHttpMethod::Head,
+            AxumHttpMethod::Options,
+            AxumHttpMethod::Trace,
+            AxumHttpMethod::Any,
         ]
     }
     fn labels() -> Vec<String> {
-        vec!["GET","POST","PUT","DELETE","PATCH","HEAD","OPTIONS","TRACE","ANY"]
-            .into_iter().map(|s| s.to_string()).collect()
+        vec![
+            "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE", "ANY",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect()
     }
     fn from_label(label: &str) -> Option<Self> {
         match label {
@@ -144,15 +154,21 @@ impl Elicitation for AxumHttpMethod {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting AxumHttpMethod");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose HTTP method:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose HTTP method:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid AxumHttpMethod: {}", label)))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid AxumHttpMethod: {}",
+                label
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -167,14 +183,20 @@ impl Elicitation for AxumHttpMethod {
 }
 
 impl ElicitIntrospect for AxumHttpMethod {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::AxumHttpMethod",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -203,16 +225,38 @@ impl Prompt for AxumExtractorKind {
 impl Select for AxumExtractorKind {
     fn options() -> Vec<Self> {
         vec![
-            AxumExtractorKind::Path, AxumExtractorKind::Query, AxumExtractorKind::Json,
-            AxumExtractorKind::State, AxumExtractorKind::Extension, AxumExtractorKind::Form,
-            AxumExtractorKind::Headers, AxumExtractorKind::RawBody, AxumExtractorKind::RawQuery,
-            AxumExtractorKind::OriginalUri, AxumExtractorKind::MatchedPath, AxumExtractorKind::ConnectInfo,
+            AxumExtractorKind::Path,
+            AxumExtractorKind::Query,
+            AxumExtractorKind::Json,
+            AxumExtractorKind::State,
+            AxumExtractorKind::Extension,
+            AxumExtractorKind::Form,
+            AxumExtractorKind::Headers,
+            AxumExtractorKind::RawBody,
+            AxumExtractorKind::RawQuery,
+            AxumExtractorKind::OriginalUri,
+            AxumExtractorKind::MatchedPath,
+            AxumExtractorKind::ConnectInfo,
         ]
     }
     fn labels() -> Vec<String> {
-        vec!["Path","Query","Json","State","Extension","Form","Headers",
-             "RawBody","RawQuery","OriginalUri","MatchedPath","ConnectInfo"]
-            .into_iter().map(|s| s.to_string()).collect()
+        vec![
+            "Path",
+            "Query",
+            "Json",
+            "State",
+            "Extension",
+            "Form",
+            "Headers",
+            "RawBody",
+            "RawQuery",
+            "OriginalUri",
+            "MatchedPath",
+            "ConnectInfo",
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect()
     }
     fn from_label(label: &str) -> Option<Self> {
         match label {
@@ -241,15 +285,21 @@ impl Elicitation for AxumExtractorKind {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting AxumExtractorKind");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose extractor kind:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose extractor kind:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid AxumExtractorKind: {}", label)))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid AxumExtractorKind: {}",
+                label
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -264,14 +314,20 @@ impl Elicitation for AxumExtractorKind {
 }
 
 impl ElicitIntrospect for AxumExtractorKind {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::AxumExtractorKind",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -281,7 +337,9 @@ impl ElicitIntrospect for AxumExtractorKind {
 impl crate::ElicitPromptTree for AxumExtractorKind {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose extractor kind:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose extractor kind:")
+                .to_string(),
             type_name: "AxumExtractorKind".to_string(),
             options: Self::labels(),
             branches: Self::labels().iter().map(|_| None).collect(),
@@ -300,13 +358,19 @@ impl Prompt for AxumResponseKind {
 impl Select for AxumResponseKind {
     fn options() -> Vec<Self> {
         vec![
-            AxumResponseKind::Json, AxumResponseKind::Html, AxumResponseKind::Redirect,
-            AxumResponseKind::NoContent, AxumResponseKind::Status, AxumResponseKind::Custom,
+            AxumResponseKind::Json,
+            AxumResponseKind::Html,
+            AxumResponseKind::Redirect,
+            AxumResponseKind::NoContent,
+            AxumResponseKind::Status,
+            AxumResponseKind::Custom,
         ]
     }
     fn labels() -> Vec<String> {
-        vec!["Json","Html","Redirect","NoContent","Status","Custom"]
-            .into_iter().map(|s| s.to_string()).collect()
+        vec!["Json", "Html", "Redirect", "NoContent", "Status", "Custom"]
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect()
     }
     fn from_label(label: &str) -> Option<Self> {
         match label {
@@ -329,15 +393,21 @@ impl Elicitation for AxumResponseKind {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting AxumResponseKind");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose response kind:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose response kind:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid AxumResponseKind: {}", label)))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid AxumResponseKind: {}",
+                label
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -352,14 +422,20 @@ impl Elicitation for AxumResponseKind {
 }
 
 impl ElicitIntrospect for AxumResponseKind {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::AxumResponseKind",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -369,7 +445,9 @@ impl ElicitIntrospect for AxumResponseKind {
 impl crate::ElicitPromptTree for AxumResponseKind {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose response kind:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose response kind:")
+                .to_string(),
             type_name: "AxumResponseKind".to_string(),
             options: Self::labels(),
             branches: Self::labels().iter().map(|_| None).collect(),

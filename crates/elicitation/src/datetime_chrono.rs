@@ -22,14 +22,17 @@
 //! ```
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitPromptTree, ElicitationPattern, Generator, PatternDetails, Prompt, PromptTree, Select,
-    TypeMetadata, VariantMetadata,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, Generator, PatternDetails, Prompt, PromptTree,
+    Select, TypeMetadata, VariantMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     emit_code::ToCodeLiteral,
     mcp,
 };
-use chrono::{DateTime, Datelike, Duration, FixedOffset, Month, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc, Weekday};
+use chrono::{
+    DateTime, Datelike, Duration, FixedOffset, Month, NaiveDate, NaiveDateTime, NaiveTime,
+    TimeZone, Timelike, Utc, Weekday,
+};
 
 // Style enums for datetime types
 crate::default_style!(DateTime<Utc> => DateTimeUtcStyle);
@@ -1097,10 +1100,8 @@ impl Elicitation for Month {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Month");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose a month:"),
-            &Self::labels(),
-        );
+        let params =
+            mcp::select_params(Self::prompt().unwrap_or("Choose a month:"), &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -1156,9 +1157,7 @@ impl ElicitPromptTree for Month {
         let labels = Self::labels();
         let count = labels.len();
         PromptTree::Select {
-            prompt: Self::prompt()
-                .unwrap_or("Choose a month:")
-                .to_string(),
+            prompt: Self::prompt().unwrap_or("Choose a month:").to_string(),
             type_name: "chrono::Month".to_string(),
             options: labels,
             branches: vec![None; count],
@@ -1258,5 +1257,3 @@ impl ElicitIntrospect for Duration {
         }
     }
 }
-
-

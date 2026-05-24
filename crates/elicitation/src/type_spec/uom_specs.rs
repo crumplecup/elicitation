@@ -2,9 +2,8 @@
 //! implementations for uom (units of measurement) types.
 
 use crate::{
-    ElicitComplete, ElicitSpec, TypeSpec, TypeSpecBuilder, TypeSpecInventoryKey,
-    UomFormula, UomQuantityKind, UomStep, UomUnitSystem,
-    SpecCategoryBuilder, SpecEntryBuilder,
+    ElicitComplete, ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
+    TypeSpecInventoryKey, UomFormula, UomQuantityKind, UomStep, UomUnitSystem,
 };
 
 macro_rules! uom_select_spec {

@@ -277,12 +277,18 @@ use strum::IntoEnumIterator;
 // --- LeptosClientMode -------------------------------------------------------
 
 impl Prompt for LeptosClientMode {
-    fn prompt() -> Option<&'static str> { Some("Choose the Leptos client rendering mode:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Choose the Leptos client rendering mode:")
+    }
 }
 
 impl Select for LeptosClientMode {
-    fn options() -> Vec<Self> { LeptosClientMode::iter().collect() }
-    fn labels() -> Vec<String> { LeptosClientMode::iter().map(|v| v.to_string()).collect() }
+    fn options() -> Vec<Self> {
+        LeptosClientMode::iter().collect()
+    }
+    fn labels() -> Vec<String> {
+        LeptosClientMode::iter().map(|v| v.to_string()).collect()
+    }
     fn from_label(label: &str) -> Option<Self> {
         LeptosClientMode::iter().find(|v| v.to_string() == label)
     }
@@ -296,15 +302,20 @@ impl Elicitation for LeptosClientMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LeptosClientMode");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose client mode:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose client mode:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid LeptosClientMode: {label}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid LeptosClientMode: {label}"
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -319,14 +330,20 @@ impl Elicitation for LeptosClientMode {
 }
 
 impl ElicitIntrospect for LeptosClientMode {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosClientMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -347,12 +364,18 @@ impl crate::ElicitPromptTree for LeptosClientMode {
 // --- LeptosAxumMode ---------------------------------------------------------
 
 impl Prompt for LeptosAxumMode {
-    fn prompt() -> Option<&'static str> { Some("Choose the Leptos Axum rendering/serving mode:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Choose the Leptos Axum rendering/serving mode:")
+    }
 }
 
 impl Select for LeptosAxumMode {
-    fn options() -> Vec<Self> { LeptosAxumMode::iter().collect() }
-    fn labels() -> Vec<String> { LeptosAxumMode::iter().map(|v| v.to_string()).collect() }
+    fn options() -> Vec<Self> {
+        LeptosAxumMode::iter().collect()
+    }
+    fn labels() -> Vec<String> {
+        LeptosAxumMode::iter().map(|v| v.to_string()).collect()
+    }
     fn from_label(label: &str) -> Option<Self> {
         LeptosAxumMode::iter().find(|v| v.to_string() == label)
     }
@@ -366,15 +389,20 @@ impl Elicitation for LeptosAxumMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LeptosAxumMode");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose Axum mode:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose Axum mode:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid LeptosAxumMode: {label}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid LeptosAxumMode: {label}"
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -389,14 +417,20 @@ impl Elicitation for LeptosAxumMode {
 }
 
 impl ElicitIntrospect for LeptosAxumMode {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosAxumMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -417,12 +451,18 @@ impl crate::ElicitPromptTree for LeptosAxumMode {
 // --- LeptosDisplayMode ------------------------------------------------------
 
 impl Prompt for LeptosDisplayMode {
-    fn prompt() -> Option<&'static str> { Some("Choose the display shell mode:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Choose the display shell mode:")
+    }
 }
 
 impl Select for LeptosDisplayMode {
-    fn options() -> Vec<Self> { LeptosDisplayMode::iter().collect() }
-    fn labels() -> Vec<String> { LeptosDisplayMode::iter().map(|v| v.to_string()).collect() }
+    fn options() -> Vec<Self> {
+        LeptosDisplayMode::iter().collect()
+    }
+    fn labels() -> Vec<String> {
+        LeptosDisplayMode::iter().map(|v| v.to_string()).collect()
+    }
     fn from_label(label: &str) -> Option<Self> {
         LeptosDisplayMode::iter().find(|v| v.to_string() == label)
     }
@@ -436,15 +476,20 @@ impl Elicitation for LeptosDisplayMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LeptosDisplayMode");
         let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose display mode:"), &Self::labels(),
+            Self::prompt().unwrap_or("Choose display mode:"),
+            &Self::labels(),
         );
-        let result = communicator.call_tool(
-            rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params),
-        ).await?;
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
         let label = mcp::parse_string(mcp::extract_value(result)?)?;
         Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid LeptosDisplayMode: {label}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid LeptosDisplayMode: {label}"
+            )))
         })
     }
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -459,14 +504,20 @@ impl Elicitation for LeptosDisplayMode {
 }
 
 impl ElicitIntrospect for LeptosDisplayMode {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Select }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosDisplayMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                variants: Self::labels().into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -487,7 +538,9 @@ impl crate::ElicitPromptTree for LeptosDisplayMode {
 // --- LeptosCustomRouteDescriptor --------------------------------------------
 
 impl Prompt for LeptosCustomRouteDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe a custom Axum route:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a custom Axum route:")
+    }
 }
 crate::default_style!(LeptosCustomRouteDescriptor => LeptosCustomRouteDescriptorStyle);
 impl Elicitation for LeptosCustomRouteDescriptor {
@@ -498,23 +551,49 @@ impl Elicitation for LeptosCustomRouteDescriptor {
         let method = String::elicit(communicator).await?;
         let path = String::elicit(communicator).await?;
         let handler = String::elicit(communicator).await?;
-        Ok(Self { method, path, handler })
+        Ok(Self {
+            method,
+            path,
+            handler,
+        })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosCustomRouteDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosCustomRouteDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "method", type_name: "String", prompt: None },
-                FieldInfo { name: "path", type_name: "String", prompt: None },
-                FieldInfo { name: "handler", type_name: "String", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "method",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "path",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "handler",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -535,7 +614,9 @@ impl crate::ElicitPromptTree for LeptosCustomRouteDescriptor {
 // --- LeptosResponseHeaderDescriptor -----------------------------------------
 
 impl Prompt for LeptosResponseHeaderDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Describe a response header:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a response header:")
+    }
 }
 crate::default_style!(LeptosResponseHeaderDescriptor => LeptosResponseHeaderDescriptorStyle);
 impl Elicitation for LeptosResponseHeaderDescriptor {
@@ -547,20 +628,38 @@ impl Elicitation for LeptosResponseHeaderDescriptor {
         let value = String::elicit(communicator).await?;
         Ok(Self { name, value })
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosResponseHeaderDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosResponseHeaderDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "name", type_name: "String", prompt: None },
-                FieldInfo { name: "value", type_name: "String", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "name",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "value",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -580,7 +679,9 @@ impl crate::ElicitPromptTree for LeptosResponseHeaderDescriptor {
 // --- LeptosAxumDescriptor ---------------------------------------------------
 
 impl Prompt for LeptosAxumDescriptor {
-    fn prompt() -> Option<&'static str> { Some("Configure the Leptos + Axum application descriptor:") }
+    fn prompt() -> Option<&'static str> {
+        Some("Configure the Leptos + Axum application descriptor:")
+    }
 }
 crate::default_style!(LeptosAxumDescriptor => LeptosAxumDescriptorStyle);
 impl Elicitation for LeptosAxumDescriptor {
@@ -592,28 +693,55 @@ impl Elicitation for LeptosAxumDescriptor {
         let mode = LeptosAxumMode::elicit(communicator).await?;
         let site_addr = String::elicit(communicator).await?;
         let client_mode = LeptosClientMode::elicit(communicator).await?;
-        let static_file_handler = matches!(mode, LeptosAxumMode::FullSsr | LeptosAxumMode::WasmShell);
+        let static_file_handler =
+            matches!(mode, LeptosAxumMode::FullSsr | LeptosAxumMode::WasmShell);
         let mut desc = LeptosAxumDescriptor::new(app_component, mode, site_addr);
         desc.client_mode = client_mode;
         desc.static_file_handler = static_file_handler;
         Ok(desc)
     }
-    fn kani_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::kani_proof() }
-    fn verus_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::verus_proof() }
-    fn creusot_proof() -> proc_macro2::TokenStream { <String as crate::Elicitation>::creusot_proof() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as crate::Elicitation>::creusot_proof()
+    }
 }
 impl ElicitIntrospect for LeptosAxumDescriptor {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "elicitation::LeptosAxumDescriptor",
             description: Self::prompt(),
-            details: PatternDetails::Survey { fields: vec![
-                FieldInfo { name: "app_component", type_name: "String", prompt: None },
-                FieldInfo { name: "mode", type_name: "LeptosAxumMode", prompt: None },
-                FieldInfo { name: "site_addr", type_name: "String", prompt: None },
-                FieldInfo { name: "client_mode", type_name: "LeptosClientMode", prompt: None },
-            ]},
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "app_component",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "mode",
+                        type_name: "LeptosAxumMode",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "site_addr",
+                        type_name: "String",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "client_mode",
+                        type_name: "LeptosClientMode",
+                        prompt: None,
+                    },
+                ],
+            },
         }
     }
 }
@@ -626,7 +754,10 @@ impl crate::ElicitPromptTree for LeptosAxumDescriptor {
                 ("app_component".to_string(), Box::new(String::prompt_tree())),
                 ("mode".to_string(), Box::new(LeptosAxumMode::prompt_tree())),
                 ("site_addr".to_string(), Box::new(String::prompt_tree())),
-                ("client_mode".to_string(), Box::new(LeptosClientMode::prompt_tree())),
+                (
+                    "client_mode".to_string(),
+                    Box::new(LeptosClientMode::prompt_tree()),
+                ),
             ],
         }
     }

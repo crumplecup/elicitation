@@ -9,13 +9,14 @@
 //! |-----------------------|-------------------------------------------------------|----------------|
 //! | `PROVE_PACKAGE`       | *(none — required if no `-p` flag)*                  | all backends   |
 //! | `KANI_PACKAGE`        | falls back to `PROVE_PACKAGE`                         | kani           |
-//! | `KANI_FLAGS`          | `""`                                                  | kani           |
+//! | `KANI_FLAGS`          | `""` (`elicit_proofs` needs `"--lib --features kani -Z function-contracts -Z stubbing"`) | kani |
 //! | `KANI_CSV`            | `kani_verification_results.csv`                       | kani           |
 //! | `VERUS_PATH`          | `~/repos/verus/source/target-verus/release/verus`     | verus          |
 //! | `VERUS_FILE`          | *(none — required for verus if no `--verus-file`)*   | verus          |
 //! |                       | May be a **directory**: all `*.rs` files (excluding   | verus          |
 //! |                       | `mod.rs`) are verified individually, matching the     | verus          |
 //! |                       | `generate verus --out <dir>` output path.             | verus          |
+//! |                       | In this repo, point Verus at `crates/elicitation_verus/src/lib.rs`, not `elicit_proofs`. | verus |
 //! | `VERUS_FLAGS`         | `""`                                                  | verus          |
 //! | `CREUSOT_PACKAGE`     | falls back to `PROVE_PACKAGE`                         | creusot        |
 //! | `CREUSOT_FLAGS`       | `""`                                                  | creusot        |
@@ -462,31 +463,65 @@ fn build_kani_harness_cmd(config: &ProveConfig, pkg: &str, harness: &str) -> Com
     cmd
 }
 
+/// Extract the subset of `KANI_FLAGS` that `cargo kani list` accepts.
+///
+/// In practice this is the unstable `-Z <feature>` pairs such as
+/// `-Z function-contracts` and `-Z stubbing`. Cargo-target flags like `--lib`
+/// or `--features kani` are rejected by the `list` subcommand.
+fn kani_list_flags(extra_flags: &[String]) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut i = 0usize;
+    while i < extra_flags.len() {
+        if extra_flags[i] == "-Z" {
+            out.push(extra_flags[i].clone());
+            if let Some(next) = extra_flags.get(i + 1) {
+                out.push(next.clone());
+                i += 2;
+                continue;
+            }
+        }
+        i += 1;
+    }
+    out
+}
+
 /// Run `cargo kani list` from the package directory and return fully-qualified harness names.
+#[tracing::instrument(skip(extra_flags), fields(package = %pkg))]
 fn list_kani_harnesses(pkg: &str, extra_flags: &[String]) -> anyhow::Result<Vec<String>> {
     let pkg_dir = find_package_dir(pkg)?;
+    let list_flags = kani_list_flags(extra_flags);
 
     let mut cmd = Command::new("cargo");
     cmd.arg("kani").arg("list");
     cmd.current_dir(&pkg_dir);
-    for flag in extra_flags {
+    for flag in &list_flags {
         cmd.arg(flag);
     }
+    tracing::debug!(
+        cwd = %pkg_dir.display(),
+        list_flags = ?list_flags,
+        command = %format_command(&cmd),
+        "Running `cargo kani list`"
+    );
 
     // kani list writes everything to stderr; stdout may be empty or contain the table.
     let output = cmd.output().context("Failed to run `cargo kani list`")?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    tracing::debug!(
+        success = output.status.success(),
+        status = ?output.status.code(),
+        stdout = %stdout,
+        stderr = %stderr,
+        "`cargo kani list` completed"
+    );
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
         anyhow::bail!("`cargo kani list` failed:\n{stderr}");
     }
 
     // Table rows appear in stderr in Kani 0.67.
-    let combined = format!(
-        "{}{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-    );
+    let combined = format!("{stdout}{stderr}");
     parse_kani_list_output(&combined)
 }
 
@@ -981,6 +1016,63 @@ fn verus_sink_quiet() -> LineSink {
     Arc::new(Mutex::new(|_line: &str| {}))
 }
 
+/// Format a command for tracing and log headers.
+fn format_command(cmd: &Command) -> String {
+    let program = cmd.get_program().to_string_lossy();
+    let args = cmd
+        .get_args()
+        .map(|arg| arg.to_string_lossy().into_owned())
+        .collect::<Vec<_>>();
+    if args.is_empty() {
+        program.into_owned()
+    } else {
+        format!("{program} {}", args.join(" "))
+    }
+}
+
+/// Record the command, cwd, and explicit env overrides before spawning.
+fn log_command_context(
+    label: &str,
+    cmd: &Command,
+    log: &Arc<Mutex<fs::File>>,
+) -> anyhow::Result<()> {
+    let command = format_command(cmd);
+    let cwd = cmd
+        .get_current_dir()
+        .map(Path::to_path_buf)
+        .unwrap_or(std::env::current_dir().context("Failed to resolve current directory")?);
+    let env_overrides = cmd
+        .get_envs()
+        .map(|(key, value)| match value {
+            Some(value) => format!("{}={}", key.to_string_lossy(), value.to_string_lossy()),
+            None => format!("{}=<removed>", key.to_string_lossy()),
+        })
+        .collect::<Vec<_>>();
+
+    tracing::debug!(
+        label,
+        command = %command,
+        cwd = %cwd.display(),
+        env_overrides = ?env_overrides,
+        "Spawning proof command"
+    );
+
+    let mut file = log
+        .lock()
+        .map_err(|_| anyhow::anyhow!("Failed to lock command log"))?;
+    writeln!(file, "# command: {command}")?;
+    writeln!(file, "# cwd: {}", cwd.display())?;
+    if env_overrides.is_empty() {
+        writeln!(file, "# env overrides: <none>")?;
+    } else {
+        writeln!(file, "# env overrides:")?;
+        for entry in &env_overrides {
+            writeln!(file, "#   {entry}")?;
+        }
+    }
+    Ok(())
+}
+
 /// Execute a command, driving an indicatif `LineSink` instead of echoing raw
 /// output to the terminal.  All stdout+stderr is still written to `log_path`.
 /// Returns `"PASS"` / `"FAIL"` / `"TIMEOUT"` / `"DRY-RUN"`.
@@ -1006,6 +1098,7 @@ fn execute_with_progress(
             .with_context(|| format!("Failed to open log: {}", log_path.display()))?,
     ));
 
+    log_command_context(label, &cmd, &log)?;
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = cmd
@@ -1118,6 +1211,7 @@ fn execute_timed(
             .with_context(|| format!("Failed to open log: {}", log_path.display()))?,
     ));
 
+    log_command_context(label, &cmd, &log)?;
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = cmd

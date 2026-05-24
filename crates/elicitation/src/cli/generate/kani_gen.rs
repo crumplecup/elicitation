@@ -165,9 +165,9 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
     }
     lines.push(format!("    ::std::mem::forget({state_pat});"));
 
-    // Shadow 2: depth-1 state (non-empty String fields satisfy non-empty invariants).
+    // Shadow 2: depth-0 state for the actual call.
     lines.push(format!(
-        "    let {state_pat}: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth1();"
+        "    let {state_pat}: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth0();"
     ));
 
     // Proof credential and extra args.
@@ -262,7 +262,7 @@ fn emit_minimal_harness(
         assume_line,
         "    ::std::mem::forget(_state);".to_string(),
         format!(
-            "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth1();"
+            "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth0();"
         ),
     ];
     lines.extend(proof_lines);

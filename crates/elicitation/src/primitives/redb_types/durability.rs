@@ -88,10 +88,8 @@ impl Elicitation for Durability {
         );
         let result = communicator
             .call_tool(
-                rmcp::model::CallToolRequestParams::new(
-                    crate::mcp::tool_names::elicit_select(),
-                )
-                .with_arguments(params),
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(params),
             )
             .await?;
         let value = crate::mcp::extract_value(result)?;
@@ -133,7 +131,10 @@ impl ElicitIntrospect for Durability {
             details: PatternDetails::Select {
                 variants: Self::labels()
                     .into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }

@@ -142,7 +142,10 @@ impl crate::ElicitPromptTree for ColumnDescriptor {
             fields: vec![
                 ("ordinal".to_string(), Box::new(usize::prompt_tree())),
                 ("name".to_string(), Box::new(String::prompt_tree())),
-                ("type_kind".to_string(), Box::new(crate::SqlTypeKind::prompt_tree())),
+                (
+                    "type_kind".to_string(),
+                    Box::new(crate::SqlTypeKind::prompt_tree()),
+                ),
             ],
         }
     }

@@ -45,8 +45,8 @@ impl From<redb::DatabaseStats> for DatabaseStats {
 }
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 impl Prompt for DatabaseStats {
@@ -72,8 +72,14 @@ impl Elicitation for DatabaseStats {
         let fragmented_bytes = u64::elicit(communicator).await?;
         let page_size = usize::elicit(communicator).await?;
         Ok(Self {
-            tree_height, allocated_pages, leaf_pages, branch_pages,
-            stored_bytes, metadata_bytes, fragmented_bytes, page_size,
+            tree_height,
+            allocated_pages,
+            leaf_pages,
+            branch_pages,
+            stored_bytes,
+            metadata_bytes,
+            fragmented_bytes,
+            page_size,
         })
     }
 
@@ -101,14 +107,46 @@ impl ElicitIntrospect for DatabaseStats {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "tree_height", type_name: "u32", prompt: Some("B-tree height:") },
-                    FieldInfo { name: "allocated_pages", type_name: "u64", prompt: Some("Allocated pages:") },
-                    FieldInfo { name: "leaf_pages", type_name: "u64", prompt: Some("Leaf pages:") },
-                    FieldInfo { name: "branch_pages", type_name: "u64", prompt: Some("Branch pages:") },
-                    FieldInfo { name: "stored_bytes", type_name: "u64", prompt: Some("Stored bytes:") },
-                    FieldInfo { name: "metadata_bytes", type_name: "u64", prompt: Some("Metadata bytes:") },
-                    FieldInfo { name: "fragmented_bytes", type_name: "u64", prompt: Some("Fragmented bytes:") },
-                    FieldInfo { name: "page_size", type_name: "usize", prompt: Some("Page size in bytes:") },
+                    FieldInfo {
+                        name: "tree_height",
+                        type_name: "u32",
+                        prompt: Some("B-tree height:"),
+                    },
+                    FieldInfo {
+                        name: "allocated_pages",
+                        type_name: "u64",
+                        prompt: Some("Allocated pages:"),
+                    },
+                    FieldInfo {
+                        name: "leaf_pages",
+                        type_name: "u64",
+                        prompt: Some("Leaf pages:"),
+                    },
+                    FieldInfo {
+                        name: "branch_pages",
+                        type_name: "u64",
+                        prompt: Some("Branch pages:"),
+                    },
+                    FieldInfo {
+                        name: "stored_bytes",
+                        type_name: "u64",
+                        prompt: Some("Stored bytes:"),
+                    },
+                    FieldInfo {
+                        name: "metadata_bytes",
+                        type_name: "u64",
+                        prompt: Some("Metadata bytes:"),
+                    },
+                    FieldInfo {
+                        name: "fragmented_bytes",
+                        type_name: "u64",
+                        prompt: Some("Fragmented bytes:"),
+                    },
+                    FieldInfo {
+                        name: "page_size",
+                        type_name: "usize",
+                        prompt: Some("Page size in bytes:"),
+                    },
                 ],
             },
         }

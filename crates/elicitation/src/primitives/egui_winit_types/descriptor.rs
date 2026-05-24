@@ -271,7 +271,10 @@ impl ElicitIntrospect for EguiWinitRenderer {
             details: PatternDetails::Select {
                 variants: Self::labels()
                     .into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -299,7 +302,11 @@ impl Prompt for EguiWinitTheme {
 
 impl Select for EguiWinitTheme {
     fn options() -> Vec<Self> {
-        vec![EguiWinitTheme::Dark, EguiWinitTheme::Light, EguiWinitTheme::System]
+        vec![
+            EguiWinitTheme::Dark,
+            EguiWinitTheme::Light,
+            EguiWinitTheme::System,
+        ]
     }
 
     fn labels() -> Vec<String> {
@@ -327,10 +334,8 @@ impl Elicitation for EguiWinitTheme {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting EguiWinitTheme");
-        let params = crate::mcp::select_params(
-            Self::prompt().unwrap_or("Choose theme:"),
-            &Self::labels(),
-        );
+        let params =
+            crate::mcp::select_params(Self::prompt().unwrap_or("Choose theme:"), &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
@@ -376,7 +381,10 @@ impl ElicitIntrospect for EguiWinitTheme {
             details: PatternDetails::Select {
                 variants: Self::labels()
                     .into_iter()
-                    .map(|label| VariantMetadata { label, fields: vec![] })
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
                     .collect(),
             },
         }
@@ -460,17 +468,61 @@ impl ElicitIntrospect for EguiWinitDescriptor {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "app_struct", type_name: "String", prompt: Some("Application struct name (PascalCase, e.g. \"MyApp\"):") },
-                    FieldInfo { name: "title", type_name: "String", prompt: Some("Window title:") },
-                    FieldInfo { name: "width", type_name: "u32", prompt: Some("Initial window width (logical pixels):") },
-                    FieldInfo { name: "height", type_name: "u32", prompt: Some("Initial window height (logical pixels):") },
-                    FieldInfo { name: "renderer", type_name: "EguiWinitRenderer", prompt: Some("GPU rendering backend:") },
-                    FieldInfo { name: "theme", type_name: "EguiWinitTheme", prompt: Some("Colour theme:") },
-                    FieldInfo { name: "vsync", type_name: "bool", prompt: Some("Enable vertical sync?") },
-                    FieldInfo { name: "decorations", type_name: "bool", prompt: Some("Show OS window decorations?") },
-                    FieldInfo { name: "resizable", type_name: "bool", prompt: Some("Allow window resizing?") },
-                    FieldInfo { name: "maximized", type_name: "bool", prompt: Some("Start maximised?") },
-                    FieldInfo { name: "transparent", type_name: "bool", prompt: Some("Transparent window background?") },
+                    FieldInfo {
+                        name: "app_struct",
+                        type_name: "String",
+                        prompt: Some("Application struct name (PascalCase, e.g. \"MyApp\"):"),
+                    },
+                    FieldInfo {
+                        name: "title",
+                        type_name: "String",
+                        prompt: Some("Window title:"),
+                    },
+                    FieldInfo {
+                        name: "width",
+                        type_name: "u32",
+                        prompt: Some("Initial window width (logical pixels):"),
+                    },
+                    FieldInfo {
+                        name: "height",
+                        type_name: "u32",
+                        prompt: Some("Initial window height (logical pixels):"),
+                    },
+                    FieldInfo {
+                        name: "renderer",
+                        type_name: "EguiWinitRenderer",
+                        prompt: Some("GPU rendering backend:"),
+                    },
+                    FieldInfo {
+                        name: "theme",
+                        type_name: "EguiWinitTheme",
+                        prompt: Some("Colour theme:"),
+                    },
+                    FieldInfo {
+                        name: "vsync",
+                        type_name: "bool",
+                        prompt: Some("Enable vertical sync?"),
+                    },
+                    FieldInfo {
+                        name: "decorations",
+                        type_name: "bool",
+                        prompt: Some("Show OS window decorations?"),
+                    },
+                    FieldInfo {
+                        name: "resizable",
+                        type_name: "bool",
+                        prompt: Some("Allow window resizing?"),
+                    },
+                    FieldInfo {
+                        name: "maximized",
+                        type_name: "bool",
+                        prompt: Some("Start maximised?"),
+                    },
+                    FieldInfo {
+                        name: "transparent",
+                        type_name: "bool",
+                        prompt: Some("Transparent window background?"),
+                    },
                 ],
             },
         }
@@ -487,7 +539,10 @@ impl crate::ElicitPromptTree for EguiWinitDescriptor {
                 ("title".to_string(), Box::new(String::prompt_tree())),
                 ("width".to_string(), Box::new(u32::prompt_tree())),
                 ("height".to_string(), Box::new(u32::prompt_tree())),
-                ("renderer".to_string(), Box::new(EguiWinitRenderer::prompt_tree())),
+                (
+                    "renderer".to_string(),
+                    Box::new(EguiWinitRenderer::prompt_tree()),
+                ),
                 ("theme".to_string(), Box::new(EguiWinitTheme::prompt_tree())),
                 ("vsync".to_string(), Box::new(bool::prompt_tree())),
                 ("decorations".to_string(), Box::new(bool::prompt_tree())),

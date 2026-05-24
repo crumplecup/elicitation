@@ -38,8 +38,8 @@ pub struct UomFormula {
 // ============================================================================
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    FieldInfo, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 // --- UomStep -----------------------------------------------------------------
@@ -61,7 +61,11 @@ impl Elicitation for UomStep {
         let description = String::elicit(communicator).await?;
         let kind = UomQuantityKind::elicit(communicator).await?;
         let code_snippet = String::elicit(communicator).await?;
-        Ok(Self { description, kind, code_snippet })
+        Ok(Self {
+            description,
+            kind,
+            code_snippet,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -78,7 +82,9 @@ impl Elicitation for UomStep {
 }
 
 impl ElicitIntrospect for UomStep {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
@@ -86,9 +92,21 @@ impl ElicitIntrospect for UomStep {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "description", type_name: "String", prompt: Some("Step description:") },
-                    FieldInfo { name: "kind", type_name: "UomQuantityKind", prompt: Some("Quantity kind produced:") },
-                    FieldInfo { name: "code_snippet", type_name: "String", prompt: Some("Rust code snippet:") },
+                    FieldInfo {
+                        name: "description",
+                        type_name: "String",
+                        prompt: Some("Step description:"),
+                    },
+                    FieldInfo {
+                        name: "kind",
+                        type_name: "UomQuantityKind",
+                        prompt: Some("Quantity kind produced:"),
+                    },
+                    FieldInfo {
+                        name: "code_snippet",
+                        type_name: "String",
+                        prompt: Some("Rust code snippet:"),
+                    },
                 ],
             },
         }
@@ -145,7 +163,13 @@ impl Elicitation for UomFormula {
         let description = String::elicit(communicator).await?;
         let params = Vec::<(String, UomQuantityKind)>::elicit(communicator).await?;
         let result_kind = UomQuantityKind::elicit(communicator).await?;
-        Ok(Self { name, formula, description, params, result_kind })
+        Ok(Self {
+            name,
+            formula,
+            description,
+            params,
+            result_kind,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -162,7 +186,9 @@ impl Elicitation for UomFormula {
 }
 
 impl ElicitIntrospect for UomFormula {
-    fn pattern() -> ElicitationPattern { ElicitationPattern::Survey }
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
@@ -170,11 +196,31 @@ impl ElicitIntrospect for UomFormula {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "name", type_name: "String", prompt: Some("Formula name (e.g. \"KineticEnergy\"):") },
-                    FieldInfo { name: "formula", type_name: "String", prompt: Some("Symbolic formula (e.g. \"E = ½mv²\"):") },
-                    FieldInfo { name: "description", type_name: "String", prompt: Some("What the formula computes:") },
-                    FieldInfo { name: "params", type_name: "Vec<(String, UomQuantityKind)>", prompt: Some("Parameter names and their quantity kinds:") },
-                    FieldInfo { name: "result_kind", type_name: "UomQuantityKind", prompt: Some("Quantity kind of the result:") },
+                    FieldInfo {
+                        name: "name",
+                        type_name: "String",
+                        prompt: Some("Formula name (e.g. \"KineticEnergy\"):"),
+                    },
+                    FieldInfo {
+                        name: "formula",
+                        type_name: "String",
+                        prompt: Some("Symbolic formula (e.g. \"E = ½mv²\"):"),
+                    },
+                    FieldInfo {
+                        name: "description",
+                        type_name: "String",
+                        prompt: Some("What the formula computes:"),
+                    },
+                    FieldInfo {
+                        name: "params",
+                        type_name: "Vec<(String, UomQuantityKind)>",
+                        prompt: Some("Parameter names and their quantity kinds:"),
+                    },
+                    FieldInfo {
+                        name: "result_kind",
+                        type_name: "UomQuantityKind",
+                        prompt: Some("Quantity kind of the result:"),
+                    },
                 ],
             },
         }
@@ -191,7 +237,10 @@ impl crate::ElicitPromptTree for UomFormula {
                 ("formula".to_string(), Box::new(String::prompt_tree())),
                 ("description".to_string(), Box::new(String::prompt_tree())),
                 ("params".to_string(), Box::new(String::prompt_tree())),
-                ("result_kind".to_string(), Box::new(UomQuantityKind::prompt_tree())),
+                (
+                    "result_kind".to_string(),
+                    Box::new(UomQuantityKind::prompt_tree()),
+                ),
             ],
         }
     }
@@ -202,10 +251,14 @@ impl crate::emit_code::ToCodeLiteral for UomFormula {
         let name = &self.name;
         let formula = &self.formula;
         let description = &self.description;
-        let params: Vec<_> = self.params.iter().map(|(s, k)| {
-            let kind = k.to_code_literal();
-            quote::quote! { (#s.to_string(), #kind) }
-        }).collect();
+        let params: Vec<_> = self
+            .params
+            .iter()
+            .map(|(s, k)| {
+                let kind = k.to_code_literal();
+                quote::quote! { (#s.to_string(), #kind) }
+            })
+            .collect();
         let result_kind = self.result_kind.to_code_literal();
         quote::quote! {
             elicitation::UomFormula {

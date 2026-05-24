@@ -455,30 +455,54 @@ mod accesskit_impls {
             let variants = SpecCategoryBuilder::default()
                 .name("variants".to_string())
                 .entries(vec![
-                    SpecEntryBuilder::default().label("customAction".to_string())
-                        .description("CustomAction(i32) — provider-defined action by ID".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("value".to_string())
+                    SpecEntryBuilder::default()
+                        .label("customAction".to_string())
+                        .description(
+                            "CustomAction(i32) — provider-defined action by ID".to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("value".to_string())
                         .description("Value(Box<str>) — set a string value".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("numericValue".to_string())
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("numericValue".to_string())
                         .description("NumericValue(f64) — set a numeric value".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("scrollUnit".to_string())
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("scrollUnit".to_string())
                         .description("ScrollUnit(ScrollUnit) — scroll by unit".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("scrollHint".to_string())
-                        .description("ScrollHint(ScrollHint) — scroll-into-view hint position".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("scrollToPoint".to_string())
-                        .description("ScrollToPoint(Point) — scroll to absolute position".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("setScrollOffset".to_string())
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("scrollHint".to_string())
+                        .description(
+                            "ScrollHint(ScrollHint) — scroll-into-view hint position".to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("scrollToPoint".to_string())
+                        .description(
+                            "ScrollToPoint(Point) — scroll to absolute position".to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("setScrollOffset".to_string())
                         .description("SetScrollOffset(Point) — set the scroll offset".to_string())
-                        .build().expect("valid SpecEntry"),
-                    SpecEntryBuilder::default().label("setTextSelection".to_string())
-                        .description("SetTextSelection(TextSelection) — set the text selection".to_string())
-                        .build().expect("valid SpecEntry"),
+                        .build()
+                        .expect("valid SpecEntry"),
+                    SpecEntryBuilder::default()
+                        .label("setTextSelection".to_string())
+                        .description(
+                            "SetTextSelection(TextSelection) — set the text selection".to_string(),
+                        )
+                        .build()
+                        .expect("valid SpecEntry"),
                 ])
                 .build()
                 .expect("valid SpecCategory");

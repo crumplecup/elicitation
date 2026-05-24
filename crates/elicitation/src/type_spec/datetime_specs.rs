@@ -218,7 +218,10 @@ mod chrono_specs {
         fn type_spec() -> crate::TypeSpec {
             crate::TypeSpecBuilder::default()
                 .type_name("chrono::TimeDelta".to_string())
-                .summary("A signed duration (seconds + nanoseconds). Also aliased as chrono::Duration.".to_string())
+                .summary(
+                    "A signed duration (seconds + nanoseconds). Also aliased as chrono::Duration."
+                        .to_string(),
+                )
                 .categories(vec![])
                 .build()
                 .expect("valid TypeSpec")
@@ -334,7 +337,10 @@ mod jiff_specs {
         fn type_spec() -> crate::TypeSpec {
             TypeSpecBuilder::default()
                 .type_name("jiff::civil::DateTime".to_string())
-                .summary("A naive datetime without a time zone (calendar date + wall clock time).".to_string())
+                .summary(
+                    "A naive datetime without a time zone (calendar date + wall clock time)."
+                        .to_string(),
+                )
                 .categories(vec![])
                 .build()
                 .expect("valid TypeSpec")

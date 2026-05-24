@@ -79,7 +79,10 @@ impl crate::ElicitPromptTree for TextDecoration {
             prompt: Self::prompt().map(str::to_string),
             type_name: "accesskit::TextDecoration".to_string(),
             fields: vec![
-                ("style".to_string(), Box::new(TextDecorationStyle::prompt_tree())),
+                (
+                    "style".to_string(),
+                    Box::new(TextDecorationStyle::prompt_tree()),
+                ),
                 ("color".to_string(), Box::new(Color::prompt_tree())),
             ],
         }

@@ -31,7 +31,7 @@ fn begin_connect_sql_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -50,7 +50,7 @@ fn begin_connect_kv_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -68,7 +68,7 @@ fn finish_connect_sql_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -86,7 +86,7 @@ fn finish_connect_kv_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -104,7 +104,7 @@ fn disconnect_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -121,7 +121,7 @@ fn reconnect_kani_closure() {
     ::kani::assume(archive_connection_consistent(&state));
     ::std::mem::forget(state);
     let state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
@@ -138,7 +138,7 @@ fn connection_error_kani_closure() {
     ::kani::assume(archive_connection_consistent(&_state));
     ::std::mem::forget(_state);
     let _state: ArchiveConnectionState =
-        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth1();
+        <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth0();
     let proof: Established<ArchiveConnectionConsistent> = {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)

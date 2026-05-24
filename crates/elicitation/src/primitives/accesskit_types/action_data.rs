@@ -43,8 +43,14 @@ impl Select for ActionData {
             ActionData::ScrollToPoint(Point { x: 0.0, y: 0.0 }),
             ActionData::SetScrollOffset(Point { x: 0.0, y: 0.0 }),
             ActionData::SetTextSelection(TextSelection {
-                anchor: accesskit::TextPosition { node: accesskit::NodeId(1), character_index: 0 },
-                focus: accesskit::TextPosition { node: accesskit::NodeId(1), character_index: 0 },
+                anchor: accesskit::TextPosition {
+                    node: accesskit::NodeId(1),
+                    character_index: 0,
+                },
+                focus: accesskit::TextPosition {
+                    node: accesskit::NodeId(1),
+                    character_index: 0,
+                },
             }),
         ]
     }
@@ -55,7 +61,10 @@ impl Select for ActionData {
 
     fn from_label(label: &str) -> Option<Self> {
         // Returns a placeholder; real construction happens in elicit()
-        LABELS.iter().position(|&l| l == label).map(|i| Self::options()[i].clone())
+        LABELS
+            .iter()
+            .position(|&l| l == label)
+            .map(|i| Self::options()[i].clone())
     }
 }
 
@@ -67,8 +76,10 @@ impl Elicitation for ActionData {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting accesskit::ActionData variant");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose ActionData variant:"), &Self::labels());
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose ActionData variant:"),
+            &Self::labels(),
+        );
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -152,35 +163,67 @@ impl ElicitIntrospect for ActionData {
                 variants: vec![
                     VariantMetadata {
                         label: "customAction".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "i32", prompt: Some("Custom action ID:") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "i32",
+                            prompt: Some("Custom action ID:"),
+                        }],
                     },
                     VariantMetadata {
                         label: "value".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "Box<str>", prompt: Some("String value:") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "Box<str>",
+                            prompt: Some("String value:"),
+                        }],
                     },
                     VariantMetadata {
                         label: "numericValue".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "f64", prompt: Some("Numeric value:") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "f64",
+                            prompt: Some("Numeric value:"),
+                        }],
                     },
                     VariantMetadata {
                         label: "scrollUnit".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "accesskit::ScrollUnit", prompt: Some("Scroll unit:") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "accesskit::ScrollUnit",
+                            prompt: Some("Scroll unit:"),
+                        }],
                     },
                     VariantMetadata {
                         label: "scrollHint".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "accesskit::ScrollHint", prompt: Some("Scroll hint position:") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "accesskit::ScrollHint",
+                            prompt: Some("Scroll hint position:"),
+                        }],
                     },
                     VariantMetadata {
                         label: "scrollToPoint".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "accesskit::geometry::Point", prompt: Some("Target point (x, y):") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "accesskit::geometry::Point",
+                            prompt: Some("Target point (x, y):"),
+                        }],
                     },
                     VariantMetadata {
                         label: "setScrollOffset".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "accesskit::geometry::Point", prompt: Some("Scroll offset (x, y):") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "accesskit::geometry::Point",
+                            prompt: Some("Scroll offset (x, y):"),
+                        }],
                     },
                     VariantMetadata {
                         label: "setTextSelection".to_string(),
-                        fields: vec![FieldInfo { name: "0", type_name: "accesskit::TextSelection", prompt: Some("Text selection (anchor + focus):") }],
+                        fields: vec![FieldInfo {
+                            name: "0",
+                            type_name: "accesskit::TextSelection",
+                            prompt: Some("Text selection (anchor + focus):"),
+                        }],
                     },
                 ],
             },
@@ -191,7 +234,9 @@ impl ElicitIntrospect for ActionData {
 impl crate::ElicitPromptTree for ActionData {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Select {
-            prompt: Self::prompt().unwrap_or("Choose ActionData variant:").to_string(),
+            prompt: Self::prompt()
+                .unwrap_or("Choose ActionData variant:")
+                .to_string(),
             type_name: "accesskit::ActionData".to_string(),
             options: Self::labels(),
             branches: vec![
@@ -211,12 +256,16 @@ impl crate::ElicitPromptTree for ActionData {
 impl ToCodeLiteral for ActionData {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            ActionData::CustomAction(id) => quote::quote! { accesskit::ActionData::CustomAction(#id) },
+            ActionData::CustomAction(id) => {
+                quote::quote! { accesskit::ActionData::CustomAction(#id) }
+            }
             ActionData::Value(s) => {
                 let s = s.as_ref();
                 quote::quote! { accesskit::ActionData::Value(#s.to_string().into_boxed_str()) }
             }
-            ActionData::NumericValue(n) => quote::quote! { accesskit::ActionData::NumericValue(#n) },
+            ActionData::NumericValue(n) => {
+                quote::quote! { accesskit::ActionData::NumericValue(#n) }
+            }
             ActionData::ScrollUnit(u) => {
                 let u_lit = u.to_code_literal();
                 quote::quote! { accesskit::ActionData::ScrollUnit(#u_lit) }

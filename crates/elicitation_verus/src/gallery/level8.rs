@@ -62,14 +62,14 @@ impl V8Machine {
         requires
             name@.len() > 0,
             count > 0,
-        ensures self.wf(),
+        ensures final(self).wf(),
     {
         *self = V8Machine { phase: V8Phase::Active, name, count };
     }
 
     /// Deactivate: return to Idle.
     pub fn deactivate(&mut self)
-        ensures self.wf(),
+        ensures final(self).wf(),
     {
         *self = V8Machine { phase: V8Phase::Idle, count: 0, name: String::new() };
     }

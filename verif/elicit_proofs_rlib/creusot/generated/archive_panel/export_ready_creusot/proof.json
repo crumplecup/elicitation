@@ -2,8 +2,8 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_export_ready": { "prover": "cvc5", "time": 0.042 },
-      "vc_export_ready_creusot": { "prover": "cvc5", "time": 0.024 }
+      "vc_export_ready": { "prover": "cvc5@1.3.1", "time": 0.029 },
+      "vc_export_ready_creusot": { "prover": "cvc5@1.3.1", "time": 0.026 }
     }
   }
 }

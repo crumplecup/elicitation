@@ -62,8 +62,16 @@ impl ElicitIntrospect for Point {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "x", type_name: "f64", prompt: Some("X coordinate:") },
-                    FieldInfo { name: "y", type_name: "f64", prompt: Some("Y coordinate:") },
+                    FieldInfo {
+                        name: "x",
+                        type_name: "f64",
+                        prompt: Some("X coordinate:"),
+                    },
+                    FieldInfo {
+                        name: "y",
+                        type_name: "f64",
+                        prompt: Some("Y coordinate:"),
+                    },
                 ],
             },
         }
@@ -143,8 +151,16 @@ impl ElicitIntrospect for Vec2 {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "x", type_name: "f64", prompt: Some("X component:") },
-                    FieldInfo { name: "y", type_name: "f64", prompt: Some("Y component:") },
+                    FieldInfo {
+                        name: "x",
+                        type_name: "f64",
+                        prompt: Some("X component:"),
+                    },
+                    FieldInfo {
+                        name: "y",
+                        type_name: "f64",
+                        prompt: Some("Y component:"),
+                    },
                 ],
             },
         }
@@ -224,8 +240,16 @@ impl ElicitIntrospect for Size {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "width", type_name: "f64", prompt: Some("Width:") },
-                    FieldInfo { name: "height", type_name: "f64", prompt: Some("Height:") },
+                    FieldInfo {
+                        name: "width",
+                        type_name: "f64",
+                        prompt: Some("Width:"),
+                    },
+                    FieldInfo {
+                        name: "height",
+                        type_name: "f64",
+                        prompt: Some("Height:"),
+                    },
                 ],
             },
         }
@@ -313,10 +337,26 @@ impl ElicitIntrospect for Rect {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "x0", type_name: "f64", prompt: Some("Left edge (x0):") },
-                    FieldInfo { name: "y0", type_name: "f64", prompt: Some("Top edge (y0):") },
-                    FieldInfo { name: "x1", type_name: "f64", prompt: Some("Right edge (x1):") },
-                    FieldInfo { name: "y1", type_name: "f64", prompt: Some("Bottom edge (y1):") },
+                    FieldInfo {
+                        name: "x0",
+                        type_name: "f64",
+                        prompt: Some("Left edge (x0):"),
+                    },
+                    FieldInfo {
+                        name: "y0",
+                        type_name: "f64",
+                        prompt: Some("Top edge (y0):"),
+                    },
+                    FieldInfo {
+                        name: "x1",
+                        type_name: "f64",
+                        prompt: Some("Right edge (x1):"),
+                    },
+                    FieldInfo {
+                        name: "y1",
+                        type_name: "f64",
+                        prompt: Some("Bottom edge (y1):"),
+                    },
                 ],
             },
         }
@@ -409,12 +449,36 @@ impl ElicitIntrospect for Affine {
             description: Self::prompt(),
             details: PatternDetails::Survey {
                 fields: vec![
-                    FieldInfo { name: "a", type_name: "f64", prompt: Some("Coefficient a (scale x):") },
-                    FieldInfo { name: "b", type_name: "f64", prompt: Some("Coefficient b (shear y):") },
-                    FieldInfo { name: "c", type_name: "f64", prompt: Some("Coefficient c (shear x):") },
-                    FieldInfo { name: "d", type_name: "f64", prompt: Some("Coefficient d (scale y):") },
-                    FieldInfo { name: "e", type_name: "f64", prompt: Some("Coefficient e (translate x):") },
-                    FieldInfo { name: "f", type_name: "f64", prompt: Some("Coefficient f (translate y):") },
+                    FieldInfo {
+                        name: "a",
+                        type_name: "f64",
+                        prompt: Some("Coefficient a (scale x):"),
+                    },
+                    FieldInfo {
+                        name: "b",
+                        type_name: "f64",
+                        prompt: Some("Coefficient b (shear y):"),
+                    },
+                    FieldInfo {
+                        name: "c",
+                        type_name: "f64",
+                        prompt: Some("Coefficient c (shear x):"),
+                    },
+                    FieldInfo {
+                        name: "d",
+                        type_name: "f64",
+                        prompt: Some("Coefficient d (scale y):"),
+                    },
+                    FieldInfo {
+                        name: "e",
+                        type_name: "f64",
+                        prompt: Some("Coefficient e (translate x):"),
+                    },
+                    FieldInfo {
+                        name: "f",
+                        type_name: "f64",
+                        prompt: Some("Coefficient f (translate y):"),
+                    },
                 ],
             },
         }

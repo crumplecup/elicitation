@@ -27,7 +27,12 @@ impl Elicitation for ActionRequest {
         let target_tree = TreeId(uuid);
         let target_node = NodeId::elicit(communicator).await?;
         let data = <Option<ActionData>>::elicit(communicator).await?;
-        Ok(Self { action, target_tree, target_node, data })
+        Ok(Self {
+            action,
+            target_tree,
+            target_node,
+            data,
+        })
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
@@ -101,7 +106,10 @@ impl crate::ElicitPromptTree for ActionRequest {
                 ("action".to_string(), Box::new(Action::prompt_tree())),
                 ("target_tree".to_string(), Box::new(Uuid::prompt_tree())),
                 ("target_node".to_string(), Box::new(NodeId::prompt_tree())),
-                ("data".to_string(), Box::new(<Option<ActionData>>::prompt_tree())),
+                (
+                    "data".to_string(),
+                    Box::new(<Option<ActionData>>::prompt_tree()),
+                ),
             ],
         }
     }

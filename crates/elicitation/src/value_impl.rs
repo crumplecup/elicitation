@@ -324,12 +324,30 @@ impl ElicitIntrospect for Value {
             description: Self::prompt(),
             details: PatternDetails::Select {
                 variants: vec![
-                    VariantMetadata { label: "Null".to_string(), fields: vec![] },
-                    VariantMetadata { label: "Bool".to_string(), fields: vec![] },
-                    VariantMetadata { label: "Number".to_string(), fields: vec![] },
-                    VariantMetadata { label: "String".to_string(), fields: vec![] },
-                    VariantMetadata { label: "Array".to_string(), fields: vec![] },
-                    VariantMetadata { label: "Object".to_string(), fields: vec![] },
+                    VariantMetadata {
+                        label: "Null".to_string(),
+                        fields: vec![],
+                    },
+                    VariantMetadata {
+                        label: "Bool".to_string(),
+                        fields: vec![],
+                    },
+                    VariantMetadata {
+                        label: "Number".to_string(),
+                        fields: vec![],
+                    },
+                    VariantMetadata {
+                        label: "String".to_string(),
+                        fields: vec![],
+                    },
+                    VariantMetadata {
+                        label: "Array".to_string(),
+                        fields: vec![],
+                    },
+                    VariantMetadata {
+                        label: "Object".to_string(),
+                        fields: vec![],
+                    },
                 ],
             },
         }
