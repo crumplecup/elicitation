@@ -91,11 +91,11 @@ use syn::{
 // ── String helpers ─────────────────────────────────────────────────────────────
 
 /// If `block` is `{ f(args) }` (single tail-call with no semicolon), return a
-/// version rewritten to `{ f__creusot(args) }`.
+/// version rewritten to `{ f_creusot_local(args) }`.
 ///
 /// This prevents Creusot from descending into the original `f` (which may have
 /// `#[instrument]`-generated static string slices in its MIR) and instead uses
-/// the clean `f__creusot` companion that has no tracing overhead.
+/// the clean `f_creusot_local` companion that has no tracing overhead.
 fn creusot_delegation_rewrite(block: &syn::Block) -> Option<String> {
     if block.stmts.len() != 1 {
         return None;
@@ -108,7 +108,7 @@ fn creusot_delegation_rewrite(block: &syn::Block) -> Option<String> {
     };
     let mut new_path = path_expr.path.clone();
     let last = new_path.segments.last_mut()?;
-    let new_name = format!("{}__creusot", last.ident);
+    let new_name = format!("{}_creusot_local", last.ident);
     last.ident = syn::Ident::new(&new_name, last.ident.span());
     let new_func = syn::Expr::Path(syn::ExprPath {
         attrs: path_expr.attrs.clone(),
@@ -134,7 +134,7 @@ fn to_pascal_case(s: &str) -> String {
 
 // ── Attribute argument parsing ─────────────────────────────────────────────────
 
-/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...], creusot_requires = ["expr"], kani_requires = ["expr"], verus_class = "trivial")]`.
+/// Parsed arguments from `#[formal_method(contracts = [C1, C2, ...], creusot_requires = ["expr"], creusot_body = "{ ... }", kani_requires = ["expr"], verus_class = "trivial")]`.
 struct FormalMethodArgs {
     contracts: Vec<syn::Path>,
     /// Extra Pearlite expressions added as `#[requires(expr)]` to the Creusot companion only.
@@ -143,6 +143,11 @@ struct FormalMethodArgs {
     /// from the opaque `Established<P>` type — e.g. `"initial_bankroll@ > 0"` when the
     /// function accepts `bankroll_proof: Established<BankrollPositive>`.
     creusot_requires: Vec<syn::LitStr>,
+    /// Creusot-only body override for the generated companion.
+    ///
+    /// Use this when the production body is proof-hostile for same-crate Creusot
+    /// but the contract surface is still correct.
+    _creusot_body: Option<syn::LitStr>,
     /// Extra Rust expressions added as `#[kani::requires(expr)]` to the original function.
     ///
     /// Use this to express preconditions that proof tokens carry conceptually but that
@@ -166,12 +171,14 @@ impl Parse for FormalMethodArgs {
             return Ok(FormalMethodArgs {
                 contracts: Vec::new(),
                 creusot_requires: Vec::new(),
+                _creusot_body: None,
                 kani_requires: Vec::new(),
                 verus_class: None,
             });
         }
         let mut contracts = Vec::new();
         let mut creusot_requires = Vec::new();
+        let mut creusot_body = None;
         let mut kani_requires = Vec::new();
         let mut verus_class = None;
         loop {
@@ -190,6 +197,9 @@ impl Parse for FormalMethodArgs {
                     let lits = Punctuated::<syn::LitStr, Token![,]>::parse_terminated(&content)?;
                     creusot_requires = lits.into_iter().collect();
                 }
+                "creusot_body" => {
+                    creusot_body = Some(input.parse::<syn::LitStr>()?);
+                }
                 "kani_requires" => {
                     let content;
                     syn::bracketed!(content in input);
@@ -203,7 +213,7 @@ impl Parse for FormalMethodArgs {
                     return Err(syn::Error::new(
                         ident.span(),
                         format!(
-                            "unknown key `{other}`; expected `contracts`, `creusot_requires`, `kani_requires`, or `verus_class`"
+                            "unknown key `{other}`; expected `contracts`, `creusot_requires`, `creusot_body`, `kani_requires`, or `verus_class`"
                         ),
                     ));
                 }
@@ -218,6 +228,7 @@ impl Parse for FormalMethodArgs {
         Ok(FormalMethodArgs {
             contracts,
             creusot_requires,
+            _creusot_body: creusot_body,
             kani_requires,
             verus_class,
         })
@@ -343,14 +354,18 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     // unexpected_cfgs in downstream crates for attribute macros.
     let mut needs_compat_mod = false;
 
-    // ── Gate tracing instrumentation under not(kani) ──────────────────────────
+    // ── Gate tracing instrumentation under not(kani|creusot) ─────────────────
     // `#[instrument]` from tracing expands to heap-allocating Span/enter code
     // with no Kani contracts.  Under proof_for_contract, DFCC would inline the
     // entire tracing prologue/epilogue (no contracts on tracing functions),
     // inflating the proof cost from ~32s to timeout.
+    // Creusot likewise cannot translate tracing's callsite constants or its
+    // logging-level machinery, so instrumented free functions must compile to
+    // their plain bodies under `cfg(creusot)`.
     // Only relevant for free, non-async functions: methods don't get
     // proof_for_contract, so no inflation risk and no cfg_attr needed.
-    // Transform:  #[instrument(…)]  →  #[cfg_attr(not(kani), instrument(…))]
+    // Transform:
+    //   #[instrument(…)]  →  #[cfg_attr(not(any(kani, creusot)), instrument(…))]
     if !has_receiver && !is_async {
         for attr in func.attrs.iter_mut() {
             let is_instrument = attr
@@ -361,7 +376,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 .unwrap_or(false);
             if is_instrument {
                 let meta = attr.meta.clone();
-                *attr = syn::parse_quote! { #[cfg_attr(not(kani), #meta)] };
+                *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
                 needs_compat_mod = true;
             }
         }
@@ -546,13 +561,13 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         } else {
             "-> (r : ())".to_string()
         };
-        let creusot_fn_src = format!("{fn_name}__creusot");
+        let creusot_fn_src = format!("{fn_name}_creusot_local");
         let body_src = {
             let b = &func.block;
             quote!(#b).to_string()
         };
         // For Creusot: if the body is a simple delegation `{ f(args) }`, rewrite
-        // to `{ f__creusot(args) }` so Creusot uses the clean companion rather than
+        // to `{ f_creusot_local(args) }` so Creusot uses the clean companion rather than
         // the original (which may have #[instrument]-generated string literals).
         let creusot_body_src =
             creusot_delegation_rewrite(&func.block).unwrap_or_else(|| body_src.clone());
@@ -762,15 +777,18 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             #[allow(non_camel_case_types)]
             #vis struct #struct_name;
 
-            // The companion impl is gated under `not(kani)`: its methods return
-            // `proc_macro2::TokenStream` (backed by `Vec<TokenTree>`, a
-            // recursive heap type) and CBMC would inflate the SAT formula
-            // through the drop-glue for every companion in the crate.
+            // The companion impl is gated out of proof builds: its methods
+            // return `proc_macro2::TokenStream` for code generation and are
+            // irrelevant during Kani/Creusot verification.
+            //
+            // Excluding them from Creusot builds avoids feeding the prover
+            // generation-time helper impls that are never exercised at proof
+            // time.
             // Wrapped in `const _: ()` so `#[allow(unexpected_cfgs)]` suppresses
-            // the `cfg(not(kani))` lint in downstream crates.
+            // the `cfg(not(any(kani, creusot)))` lint in downstream crates.
             #[allow(unexpected_cfgs)]
             const _: () = {
-                #[cfg(not(kani))]
+                #[cfg(not(any(kani, creusot)))]
                 impl #struct_name {
                 /// Return the Kani harness `TokenStream` for this transition.
                 ///
@@ -793,7 +811,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 /// the ensures directly from the body, with no cross-crate spec dependency.
                 ///
                 /// If the body is a simple delegation `{ f(args) }`, the emitted body is
-                /// `{ f__creusot(args) }` so Creusot uses the clean companion rather than
+                /// `{ f_creusot_local(args) }` so Creusot uses the clean companion rather than
                 /// the original (which may have `#[instrument]`-generated string literals).
                 ///
                 /// When `inv_fn` is empty or this transition has no state parameter,
@@ -1028,33 +1046,78 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         (quote! {}, quote! {}, quote! {}, quote! {})
     };
 
+    let gated_kani_harness = if kani_harness.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[cfg(not(creusot))]
+            #kani_harness
+        }
+    };
+    let gated_creusot_companion = if creusot_companion.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[cfg(not(creusot))]
+            #creusot_companion
+        }
+    };
+    let gated_verus_companion = if verus_companion.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[cfg(not(creusot))]
+            #verus_companion
+        }
+    };
+    let gated_companion_struct = if companion_struct.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[cfg(not(creusot))]
+            #companion_struct
+        }
+    };
+
     // Emit the function. When cfg_attr(kani/not(kani), ...) attrs were added to
-    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it —
-    // the only pattern (gallery case K) confirmed to suppress unexpected_cfgs
-    // in downstream crates for attribute macros that modify existing functions.
+    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it for
+    // normal builds — the only pattern (gallery case K) confirmed to suppress
+    // unexpected_cfgs in downstream crates for attribute macros that modify
+    // existing functions.
+    //
+    // Creusot builds do not need that compat wrapper because `cfg(kani)` is
+    // already a declared cfg key there. Emit the fully rewritten function
+    // directly in place so Creusot still sees any gated tracing attrs and
+    // injected requires/ensures, but avoid the extra wrapper module.
     if needs_compat_mod {
         let original_vis = func.vis.clone();
         let mod_name = format_ident!("_formal_method_compat_{}", fn_name);
-        func.vis = syn::parse_quote!(pub);
+        let mut compat_func = func.clone();
+        compat_func.vis = syn::parse_quote!(pub);
         Ok(quote! {
+            #[cfg(creusot)]
+            #func
+
+            #[cfg(not(creusot))]
             #[allow(unexpected_cfgs)]
             mod #mod_name {
                 use super::*;
-                #func
+                #compat_func
             }
+            #[cfg(not(creusot))]
             #original_vis use #mod_name::#fn_name;
-            #kani_harness
-            #creusot_companion
-            #verus_companion
-            #companion_struct
+            #gated_kani_harness
+            #gated_creusot_companion
+            #gated_verus_companion
+            #gated_companion_struct
         })
     } else {
         Ok(quote! {
             #func
-            #kani_harness
-            #creusot_companion
-            #verus_companion
-            #companion_struct
+            #gated_kani_harness
+            #gated_creusot_companion
+            #gated_verus_companion
+            #gated_companion_struct
         })
     }
 }

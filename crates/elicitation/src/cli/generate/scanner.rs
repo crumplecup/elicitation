@@ -51,6 +51,66 @@ pub struct PropDescriptor {
     pub verus_state_body: Option<String>,
 }
 
+/// Extract `creusot_body = "{ ... }"` from `#[formal_method(...)]`, if present.
+fn parse_formal_method_creusot_body(f: &syn::ItemFn) -> Option<String> {
+    for attr in &f.attrs {
+        if !attr.path().is_ident("formal_method") {
+            continue;
+        }
+        let list: MetaList = match attr.meta.clone() {
+            Meta::List(l) => l,
+            _ => continue,
+        };
+        let nested = match list
+            .parse_args_with(syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated)
+        {
+            Ok(n) => n,
+            Err(_) => continue,
+        };
+        for meta in nested {
+            if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta
+                && path.is_ident("creusot_body")
+            {
+                return string_lit_value(&value);
+            }
+        }
+    }
+    None
+}
+
+/// If `block` is `{ f(args) }` (single tail-call with no semicolon), return a
+/// version rewritten to `{ f_creusot_local(args) }`.
+///
+/// This mirrors `formal_method`'s Creusot delegation rewrite so generated
+/// in-crate wrappers avoid descending into traced originals.
+fn creusot_delegation_rewrite(block: &Block) -> Option<String> {
+    if block.stmts.len() != 1 {
+        return None;
+    }
+    let syn::Stmt::Expr(syn::Expr::Call(call), None) = &block.stmts[0] else {
+        return None;
+    };
+    let syn::Expr::Path(path_expr) = call.func.as_ref() else {
+        return None;
+    };
+    let mut new_path = path_expr.path.clone();
+    let last = new_path.segments.last_mut()?;
+    let new_name = format!("{}_creusot_local", last.ident);
+    last.ident = syn::Ident::new(&new_name, last.ident.span());
+    let new_func = syn::Expr::Path(syn::ExprPath {
+        attrs: path_expr.attrs.clone(),
+        qself: path_expr.qself.clone(),
+        path: new_path,
+    });
+    let args = &call.args;
+    Some(quote::quote!({ #new_func(#args) }).to_string())
+}
+
+/// Extract the body string Creusot should use for in-crate proof generation.
+fn creusot_body_string(block: &Block) -> Option<String> {
+    Some(creusot_delegation_rewrite(block).unwrap_or_else(|| block_body_string(block)))
+}
+
 /// Classification of a single transition function parameter for harness generation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ArgKind {
@@ -69,6 +129,38 @@ pub enum ArgKind {
     OptionArg,
     /// Any other payload type — uses `<T as KaniCompose>::kani_depth0()`.
     Other,
+}
+
+/// Extract `creusot_requires = ["..."]` from `#[formal_method(...)]`, if present.
+fn parse_formal_method_creusot_requires(f: &syn::ItemFn) -> Vec<String> {
+    for attr in &f.attrs {
+        if !attr.path().is_ident("formal_method") {
+            continue;
+        }
+        let list: MetaList = match attr.meta.clone() {
+            Meta::List(l) => l,
+            _ => continue,
+        };
+        let nested = match list
+            .parse_args_with(syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated)
+        {
+            Ok(n) => n,
+            Err(_) => continue,
+        };
+        for meta in nested {
+            if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta
+                && path.is_ident("creusot_requires")
+                && let Expr::Array(array) = value
+            {
+                return array
+                    .elems
+                    .iter()
+                    .filter_map(string_lit_value)
+                    .collect();
+            }
+        }
+    }
+    Vec::new()
 }
 
 /// A single typed parameter extracted from a transition function signature.
@@ -94,6 +186,21 @@ pub struct TransitionFn {
     /// Used by the Verus generator to classify transitions (trivial / passthrough / etc.)
     /// without re-parsing the source.  `None` when the body was not captured.
     pub body: Option<String>,
+    /// Whether the source function carries a raw `#[instrument]` attribute.
+    ///
+    /// Creusot companions use this to decide when to emit a local tracing-free
+    /// `_creusot_local` clone instead of calling the traced original directly.
+    pub has_instrument: bool,
+    /// Creusot-specific body for in-crate proof generation.
+    ///
+    /// This normally matches `body`, but for simple delegation blocks like
+    /// `{ other_fn(args) }` it is rewritten to call `other_fn_creusot_local(args)`
+    /// so in-crate Creusot wrappers compose through clean companions instead of
+    /// descending into traced originals.
+    pub creusot_body: Option<String>,
+    /// Extra Pearlite expressions from `creusot_requires = ["..."]` on
+    /// `#[formal_method(...)]`.
+    pub creusot_requires: Vec<String>,
     /// Explicit `verus_class = "..."` from `#[formal_method]`, overriding body-based inference.
     ///
     /// Valid values: `"trivial"`, `"passthrough"`, `"special_false"`, `"conditional_special"`.
@@ -321,6 +428,10 @@ fn resolve_transition_fns(
                             name,
                             args,
                             body,
+                            has_instrument: has_instrument_attr(&f.attrs),
+                            creusot_body: parse_formal_method_creusot_body(f)
+                                .or_else(|| creusot_body_string(&f.block)),
+                            creusot_requires: parse_formal_method_creusot_requires(f),
                             verus_class,
                         },
                     );
@@ -393,6 +504,16 @@ fn block_body_string(block: &Block) -> String {
         },
     );
     ts.to_string()
+}
+
+fn has_instrument_attr(attrs: &[Attribute]) -> bool {
+    attrs.iter().any(|attr| {
+        attr.path()
+            .segments
+            .last()
+            .map(|segment| segment.ident == "instrument")
+            .unwrap_or(false)
+    })
 }
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
@@ -517,11 +638,17 @@ fn scan_transition_fns(file: &File, names: &[String]) -> Vec<TransitionFn> {
             }
             let args = classify_fn_args(&f.sig.inputs);
             let body = Some(block_body_string(&f.block));
+            let creusot_body =
+                parse_formal_method_creusot_body(f).or_else(|| creusot_body_string(&f.block));
+            let creusot_requires = parse_formal_method_creusot_requires(f);
             let verus_class = parse_formal_method_verus_class(f);
             result.push(TransitionFn {
                 name: fn_name,
                 args,
                 body,
+                has_instrument: has_instrument_attr(&f.attrs),
+                creusot_body,
+                creusot_requires,
                 verus_class,
             });
         }

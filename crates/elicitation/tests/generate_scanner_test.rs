@@ -230,6 +230,27 @@ fn transition_fn_string_and_option_args() {
     assert_eq!(extra[1].kind, ArgKind::OptionArg);
 }
 
+#[test]
+fn transition_fn_detects_raw_instrument_attribute() {
+    let src = r#"
+        #[instrument]
+        pub fn connect(
+            _state: ConnState,
+            proof: Established<ConnConsistent>,
+        ) -> (ConnState, Established<ConnConsistent>) {
+            (_state, proof)
+        }
+
+        #[derive(VerifiedStateMachine)]
+        #[vsm(transitions = [connect])]
+        pub struct ConnMachine;
+    "#;
+    let file: File = syn::parse_str(src).unwrap();
+    let descs = extract_vsms_from_file(&file, Path::new("conn.rs"));
+    let tf = &descs[0].transition_fns[0];
+    assert!(tf.has_instrument, "expected raw #[instrument] to be tracked");
+}
+
 // ─── Multi-file scan_vsms tests ──────────────────────────────────────────────
 
 #[test]

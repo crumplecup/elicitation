@@ -23,7 +23,7 @@ pub use scanner::{
     ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor, extract_prop_descriptor,
     extract_vsms_from_file, has_derive, scan_vsms,
 };
-pub use type_resolver::TypeResolver;
+pub use type_resolver::{ImportStyle, TypeResolver};
 
 /// Walk up from `search_from` to find the nearest `Cargo.toml` and return its
 /// `[package] name` value.
@@ -53,6 +53,21 @@ pub fn find_crate_name(search_from: &std::path::Path) -> String {
         match dir.parent() {
             Some(p) => dir = p,
             None => return "crate".to_string(),
+        }
+    }
+}
+
+/// Walk up from `search_from` to find the nearest directory containing a
+/// `Cargo.toml`.
+pub fn find_crate_root(search_from: &std::path::Path) -> Option<std::path::PathBuf> {
+    let mut dir: &std::path::Path = search_from;
+    loop {
+        if dir.join("Cargo.toml").exists() {
+            return Some(dir.to_path_buf());
+        }
+        match dir.parent() {
+            Some(p) => dir = p,
+            None => return None,
         }
     }
 }

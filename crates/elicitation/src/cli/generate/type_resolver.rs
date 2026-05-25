@@ -23,6 +23,17 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 use syn::{Item, UseTree, Visibility};
 
+/// How generated proof files should refer to items from the source crate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ImportStyle {
+    /// Generated files live in a separate crate and should use the source
+    /// crate's package name, e.g. `valinoreth::vsm::CombatState`.
+    ExternalCrate,
+    /// Generated files live inside the source crate and should use `crate::...`
+    /// paths so they compile as in-crate modules.
+    InCrate,
+}
+
 /// Resolves bare type names to fully-qualified import paths by parsing the VSM
 /// source file.
 ///
@@ -38,20 +49,24 @@ pub struct TypeResolver {
 impl TypeResolver {
     /// Build a resolver by parsing `source_file` and its ancestor modules.
     ///
-    /// `crate_name` is substituted for `crate::` in `use` paths so that the
-    /// resulting paths work from an external proof crate.
+    /// `import_style` controls whether `crate::` paths resolve to the source
+    /// crate's package name or remain `crate::...` for in-crate proof output.
     ///
     /// Resolution priority (first match wins via `or_insert`):
     /// 1. Parent `mod.rs` / `lib.rs` `pub use` re-exports → canonical public path.
     /// 2. Source file's own `use` items → external crate and sibling module types.
     /// 3. Local `pub struct/enum/type` definitions → fallback for types not re-exported.
-    pub fn build(source_file: &Path, crate_name: &str) -> Self {
+    pub fn build(source_file: &Path, crate_name: &str, import_style: ImportStyle) -> Self {
         let mut name_to_path: HashMap<String, String> = HashMap::new();
+        let import_root = match import_style {
+            ImportStyle::ExternalCrate => crate_name.to_string(),
+            ImportStyle::InCrate => "crate".to_string(),
+        };
 
         // Pass 1: walk parent mod.rs / lib.rs files upward, extracting pub use
         // re-exports. This gives the canonical public path for locally-defined
         // types (e.g. `vsm::ArchivePanelState` not the private `vsm::panel::…`).
-        scan_parent_modules(source_file, crate_name, &mut name_to_path);
+        scan_parent_modules(source_file, &import_root, &mut name_to_path);
 
         // Pass 2: parse the source file itself.
         let src = match std::fs::read_to_string(source_file) {
@@ -72,12 +87,12 @@ impl TypeResolver {
         for item in &syntax.items {
             match item {
                 Item::Use(u) => {
-                    flatten_use_tree(&u.tree, "", crate_name, &mut name_to_path);
+                    flatten_use_tree(&u.tree, "", &import_root, &mut name_to_path);
                 }
                 Item::Struct(s) if is_pub(&s.vis) => {
                     register_local(
                         &s.ident.to_string(),
-                        crate_name,
+                        &import_root,
                         &module_path,
                         &mut name_to_path,
                     );
@@ -85,7 +100,7 @@ impl TypeResolver {
                 Item::Enum(e) if is_pub(&e.vis) => {
                     register_local(
                         &e.ident.to_string(),
-                        crate_name,
+                        &import_root,
                         &module_path,
                         &mut name_to_path,
                     );
@@ -93,7 +108,7 @@ impl TypeResolver {
                 Item::Type(t) if is_pub(&t.vis) => {
                     register_local(
                         &t.ident.to_string(),
-                        crate_name,
+                        &import_root,
                         &module_path,
                         &mut name_to_path,
                     );
@@ -101,7 +116,7 @@ impl TypeResolver {
                 Item::Fn(f) if is_pub(&f.vis) => {
                     register_local(
                         &f.sig.ident.to_string(),
-                        crate_name,
+                        &import_root,
                         &module_path,
                         &mut name_to_path,
                     );
@@ -224,25 +239,25 @@ fn derive_module_path(source_file: &Path) -> String {
 
 /// Flatten a `syn::UseTree` into `name → full_path` pairs.
 ///
-/// `crate::` is substituted with `{crate_name}::` so paths work from an
-/// external proof crate.
+/// `crate::` is substituted with `{import_root}::` so paths work from either an
+/// external proof crate or in-crate generated module.
 fn flatten_use_tree(
     tree: &UseTree,
     prefix: &str,
-    crate_name: &str,
+    import_root: &str,
     out: &mut HashMap<String, String>,
 ) {
     match tree {
         UseTree::Path(p) => {
             let seg = p.ident.to_string();
             let new_prefix = if seg == "crate" {
-                crate_name.to_string()
+                import_root.to_string()
             } else if prefix.is_empty() {
                 seg
             } else {
                 format!("{prefix}::{seg}")
             };
-            flatten_use_tree(&p.tree, &new_prefix, crate_name, out);
+            flatten_use_tree(&p.tree, &new_prefix, import_root, out);
         }
         UseTree::Name(n) => {
             let name = n.ident.to_string();
@@ -271,7 +286,7 @@ fn flatten_use_tree(
         }
         UseTree::Group(g) => {
             for item in &g.items {
-                flatten_use_tree(item, prefix, crate_name, out);
+                flatten_use_tree(item, prefix, import_root, out);
             }
         }
     }
@@ -280,14 +295,14 @@ fn flatten_use_tree(
 /// Register a locally-defined `pub` type at its canonical path.
 fn register_local(
     name: &str,
-    crate_name: &str,
+    import_root: &str,
     module_path: &str,
     out: &mut HashMap<String, String>,
 ) {
     let full = if module_path.is_empty() {
-        format!("{crate_name}::{name}")
+        format!("{import_root}::{name}")
     } else {
-        format!("{crate_name}::{module_path}::{name}")
+        format!("{import_root}::{module_path}::{name}")
     };
     out.entry(name.to_string()).or_insert(full);
 }
@@ -301,7 +316,7 @@ fn register_local(
 /// already accessible via the public path (`vsm::ArchivePanelState`).
 ///
 /// Nearest parent wins because we use `or_insert` and walk inward-out.
-fn scan_parent_modules(source_file: &Path, crate_name: &str, out: &mut HashMap<String, String>) {
+fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<String, String>) {
     let mut dir = match source_file.parent() {
         Some(p) => p,
         None => return,
@@ -336,9 +351,9 @@ fn scan_parent_modules(source_file: &Path, crate_name: &str, out: &mut HashMap<S
                             extract_leaf_names(&u.tree, &mut names);
                             for name in names {
                                 let full = if module_path.is_empty() {
-                                    format!("{crate_name}::{name}")
+                                    format!("{import_root}::{name}")
                                 } else {
-                                    format!("{crate_name}::{module_path}::{name}")
+                                    format!("{import_root}::{module_path}::{name}")
                                 };
                                 out.entry(name).or_insert(full);
                             }

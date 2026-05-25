@@ -6,6 +6,59 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 
+/// Extensional boundary for generated proof-body emitters.
+///
+/// Same-crate Creusot should reason about these helpers by signature rather than
+/// descending into `TokenStream` construction internals.
+pub struct ProofEmitter;
+
+impl ProofEmitter {
+    /// Emit the Kani proof body for a trivial marker proposition.
+    pub fn kani_trivial_prop(fn_name: &str) -> TokenStream {
+        kani_trivial_prop(fn_name)
+    }
+
+    /// Emit the Verus proof body for a trivial marker proposition.
+    pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
+        verus_trivial_prop(fn_name)
+    }
+
+    /// Emit the Creusot proof body for a trivial marker proposition.
+    pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
+        creusot_trivial_prop(fn_name)
+    }
+
+    /// Emit the Kani proof body for a single-variant style enum.
+    pub fn kani_single_variant_enum(enum_name: &str) -> TokenStream {
+        kani_single_variant_enum(enum_name)
+    }
+
+    /// Emit the Verus proof body for a single-variant style enum.
+    pub fn verus_single_variant_enum(enum_name: &str) -> TokenStream {
+        verus_single_variant_enum(enum_name)
+    }
+
+    /// Emit the Creusot proof body for a single-variant style enum.
+    pub fn creusot_single_variant_enum(enum_name: &str) -> TokenStream {
+        creusot_single_variant_enum(enum_name)
+    }
+
+    /// Emit the Kani proof body for a unit-variant enum.
+    pub fn kani_first_variant_constructible(enum_name: &str, variant_name: &str) -> TokenStream {
+        kani_first_variant_constructible(enum_name, variant_name)
+    }
+
+    /// Emit the Verus proof body for a multi-variant enum.
+    pub fn verus_multi_variant_enum(enum_name: &str) -> TokenStream {
+        verus_multi_variant_enum(enum_name)
+    }
+
+    /// Emit the Creusot proof body for a multi-variant enum.
+    pub fn creusot_multi_variant_enum(enum_name: &str) -> TokenStream {
+        creusot_multi_variant_enum(enum_name)
+    }
+}
+
 // ============================================================================
 // Kani Proof Helpers
 // ============================================================================
@@ -1932,14 +1985,14 @@ pub fn verus_formal_method_spec(
 /// `fn_name` is the snake_case function name.
 /// `contracts_in` and `contracts_out` are the proposition type names.
 ///
-/// Generates `{fn_name}__creusot_spec` with `#[requires(true)]` /
+/// Generates `{fn_name}_creusot_spec` with `#[requires(true)]` /
 /// `#[ensures(result)]` / `#[trusted]` annotations.
 pub fn creusot_formal_method_spec(
     fn_name: &str,
     contracts_in: &[&str],
     contracts_out: &[&str],
 ) -> TokenStream {
-    let spec_fn = Ident::new(&format!("{fn_name}__creusot_spec"), Span::call_site());
+    let spec_fn = Ident::new(&format!("{fn_name}_creusot_spec"), Span::call_site());
     let pre = contracts_in.join(", ");
     let post = contracts_out.join(", ");
     let doc =

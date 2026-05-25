@@ -25,7 +25,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use crate::cli::generate::{
-    TypeResolver, find_crate_name,
+    ImportStyle, TypeResolver, find_crate_name,
     scanner::{ArgKind, TransitionFn, VsmDescriptor},
 };
 
@@ -68,6 +68,17 @@ pub fn generate_creusot_file(
     vsm: &VsmDescriptor,
     crate_root: impl AsRef<Path>,
 ) -> Result<String, String> {
+    generate_creusot_file_with_style(vsm, crate_root, ImportStyle::ExternalCrate)
+}
+
+/// Generate the full Creusot companion file content for `vsm` with a specific
+/// import style.
+#[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
+pub fn generate_creusot_file_with_style(
+    vsm: &VsmDescriptor,
+    crate_root: impl AsRef<Path>,
+    import_style: ImportStyle,
+) -> Result<String, String> {
     let machine = &vsm.machine;
     let state_ty = machine.replace("Machine", "State");
     let crate_root = crate_root.as_ref();
@@ -77,9 +88,10 @@ pub fn generate_creusot_file(
     let crate_name = find_crate_name(vsm_crate_root);
 
     // Resolve invariant — error only when an invariant exists without a body.
-    let inv_parts: Option<(&str, &str, &str)> = match &vsm.invariant {
+    let inv_parts: Option<(String, String, String, String)> = match &vsm.invariant {
         Some(p) => {
-            let fn_name = p.creusot_fn.as_deref().unwrap_or_else(|| p.name.as_str());
+            let source_fn_name = p.creusot_fn.as_deref().unwrap_or_else(|| p.name.as_str());
+            let generated_fn_name = format!("{source_fn_name}_creusot_logic");
             let body = p.creusot_inv_body.as_deref().ok_or_else(|| {
                 let hint_fn = p.creusot_fn.as_deref().unwrap_or("creusot_invariant_fn");
                 format!(
@@ -91,7 +103,12 @@ pub fn generate_creusot_file(
                     name = p.name,
                 )
             })?;
-            Some((fn_name, p.name.as_str(), body))
+            Some((
+                generated_fn_name,
+                source_fn_name.to_string(),
+                p.name.clone(),
+                body.to_string(),
+            ))
         }
         None => None,
     };
@@ -99,7 +116,7 @@ pub fn generate_creusot_file(
     // ── Collect the bare type names this file will reference ─────────────────
     let mut needed: BTreeSet<String> = BTreeSet::new();
     TypeResolver::collect_type(&state_ty, &mut needed);
-    if let Some((_, consistent_ty, inv_body)) = inv_parts {
+    if let Some((_, _, consistent_ty, inv_body)) = &inv_parts {
         TypeResolver::collect_type(consistent_ty, &mut needed);
         // Also scan the body for constants and other identifiers (e.g. MAX_PLAYER_HANDS).
         TypeResolver::collect_type(inv_body, &mut needed);
@@ -118,11 +135,12 @@ pub fn generate_creusot_file(
         needed.insert(name.clone());
     }
     let needs_kani_label = inv_parts
-        .map(|(_, _, body)| body.contains("kani_label"))
+        .as_ref()
+        .map(|(_, _, _, body)| body.contains("kani_label"))
         .unwrap_or(false);
 
     // ── Resolve imports ───────────────────────────────────────────────────────
-    let resolver = TypeResolver::build(&vsm.source_file, &crate_name);
+    let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);
     let resolved_imports = resolver.grouped_imports(&needed);
 
     let mut lines: Vec<String> = Vec::new();
@@ -164,7 +182,7 @@ pub fn generate_creusot_file(
     lines.push(String::new());
 
     // ── Logic invariant fn + wrappers ────────────────────────────────────────
-    if let Some((inv_fn, consistent_ty, inv_body)) = inv_parts {
+    if let Some((generated_inv_fn, _source_inv_fn, consistent_ty, inv_body)) = &inv_parts {
         lines.push("#[cfg(creusot)]".to_string());
         lines.push("#[logic]".to_string());
         // If the body already wraps itself in `pearlite! { ... }`, emit verbatim;
@@ -181,7 +199,7 @@ pub fn generate_creusot_file(
             "_state"
         };
         lines.push(format!(
-            "pub fn {inv_fn}({state_param}: &{state_ty}) -> bool {{\n    {body_expr}\n}}"
+            "pub fn {generated_inv_fn}({state_param}: &{state_ty}) -> bool {{\n    {body_expr}\n}}"
         ));
         lines.push(String::new());
 
@@ -202,8 +220,9 @@ pub fn generate_creusot_file(
                 name,
                 &state_ty,
                 consistent_ty,
-                inv_fn,
+                generated_inv_fn,
                 tf,
+                import_style,
             ));
         }
     }
@@ -241,27 +260,13 @@ fn emit_established_extern_specs() -> String {
     .join("\n")
 }
 
-/// Emit an `extern_spec!` block (trusted premise) followed by a non-trusted
-/// call-through wrapper (which Why3 actually verifies as a real VC).
-///
-/// ## Architecture
-///
-/// The `extern_spec!` is a scoped trusted axiom: it tells Creusot "assume
-/// `fn_name` satisfies this contract."  The non-trusted wrapper then calls
-/// `fn_name`, giving Why3 a real VC: "does `fn_name_creusot`'s postcondition
-/// follow from the extern_spec?"  Why3 discharges this by unfolding the extern
-/// contract — that is the actual proof obligation.
-///
-/// This is sound because:
-/// - The extern_spec axiomatises a PREMISE (cross-crate function).
-/// - The wrapper's postcondition is the CONCLUSION Why3 must prove.
-/// - Kani independently verifies the premise on the real function body.
 fn emit_creusot_transition(
     fn_name: &str,
     state_ty: &str,
     consistent_ty: &str,
     inv_fn: &str,
     tf: Option<&TransitionFn>,
+    _import_style: ImportStyle,
 ) -> String {
     let (params, call_args) = match tf {
         Some(tf) => (emit_params(tf, state_ty), emit_call_args(tf)),
@@ -271,31 +276,87 @@ fn emit_creusot_transition(
         ),
     };
     let ret = format!("({state_ty}, Established<{consistent_ty}>)");
+    let extra_requires = tf.map(|tf| tf.creusot_requires.as_slice()).unwrap_or(&[]);
+    let creusot_body = tf.and_then(|tf| {
+        if tf.has_instrument {
+            tf.creusot_body.as_deref()
+        } else {
+            None
+        }
+    });
 
+    emit_creusot_transition_external(
+        fn_name,
+        &params,
+        &ret,
+        &call_args,
+        inv_fn,
+        extra_requires,
+        creusot_body,
+    )
+}
+
+/// Emit the cross-crate Creusot pattern: trusted `extern_spec!` premise plus a
+/// non-trusted call-through wrapper that Why3 verifies.
+fn emit_creusot_transition_external(
+    fn_name: &str,
+    params: &str,
+    ret: &str,
+    call_args: &str,
+    inv_fn: &str,
+    extra_requires: &[String],
+    creusot_body: Option<&str>,
+) -> String {
     let mut lines: Vec<String> = Vec::new();
 
     // extern_spec!: scoped trusted axiom (premise)
     lines.push("#[cfg(creusot)]".to_string());
     lines.push("extern_spec! {".to_string());
     lines.push(format!("    #[requires({inv_fn}(&state))]"));
+    for req in extra_requires {
+        lines.push(format!("    #[requires({req})]"));
+    }
     lines.push(format!("    #[ensures({inv_fn}(&result.0))]"));
     lines.push(format!("    fn {fn_name}({params}) -> {ret};"));
     lines.push("}".to_string());
     lines.push(String::new());
 
+    if let Some(body) = creusot_body {
+        emit_requires_attrs(&mut lines, inv_fn, extra_requires);
+        lines.push(format!(
+            "fn {fn_name}_creusot_local({params}) -> {ret} {}",
+            format_creusot_body(body)
+        ));
+        lines.push(String::new());
+    }
+
+    emit_requires_attrs(&mut lines, inv_fn, extra_requires);
+
     // Non-trusted wrapper: real VC for Why3 (conclusion)
     lines.push("#[cfg(creusot)]".to_string());
-    lines.push(format!("#[requires({inv_fn}(&state))]"));
-    lines.push(format!("#[ensures({inv_fn}(&result.0))]"));
     // `pub` (not `pub(crate)`) avoids spurious `dead_code` warnings under
     // Creusot's compiler, where these functions serve as proof obligations
     // but have no regular Rust call sites.
+    let call_target = if creusot_body.is_some() {
+        format!("{fn_name}_creusot_local")
+    } else {
+        fn_name.to_string()
+    };
     lines.push(format!(
-        "pub fn {fn_name}_creusot({params}) -> {ret} {{ {fn_name}({call_args}) }}"
+        "pub fn {fn_name}_creusot({params}) -> {ret} {{ {call_target}({call_args}) }}"
     ));
     lines.push(String::new());
 
     lines.join("\n")
+}
+
+fn emit_requires_attrs(lines: &mut Vec<String>, inv_fn: &str, extra_requires: &[String]) {
+    lines.push("#[cfg(creusot)]".to_string());
+    lines.push(format!("#[requires({inv_fn}(&state))]"));
+    for req in extra_requires {
+        lines.push(format!("#[requires({req})]"));
+    }
+    lines.push(format!("#[ensures({inv_fn}(&result.0))]"));
 }
 
 /// Emit function parameter list: `state: State, proof: Established<T>, extra: Type, ...`
@@ -323,6 +384,15 @@ fn emit_call_args(tf: &TransitionFn) -> String {
         })
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+fn format_creusot_body(body: &str) -> String {
+    let trimmed = body.trim();
+    if trimmed.starts_with('{') {
+        trimmed.to_string()
+    } else {
+        format!("{{ {trimmed} }}")
+    }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 #![cfg(feature = "cli")]
 
 use elicitation::cli::generate::{
-    kani_gen::generate_kani_file,
+    ImportStyle, kani_gen::{generate_kani_file, generate_kani_file_with_style},
     scanner::{ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor},
 };
 use std::path::{Path, PathBuf};
@@ -74,6 +74,9 @@ fn vsm_with_transition(
             name: transition.to_string(),
             args,
             body: None,
+            has_instrument: false,
+            creusot_body: None,
+            creusot_requires: Vec::new(),
             verus_class: None,
         }],
         source_file: PathBuf::from("src/vsm/thing.rs"),
@@ -263,4 +266,30 @@ fn scan_and_generate_archive_nav() {
     assert!(out.contains("kani_depth2"), "missing depth2 shadow");
     assert!(out.contains("kani_depth0"), "missing depth0 shadow");
     assert!(out.contains("kani_proof_credential"), "missing credential");
+}
+
+#[test]
+fn scan_and_generate_archive_nav_in_crate_imports() {
+    use elicitation::cli::generate::scan_vsms;
+
+    let vsm_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("elicit_server/src/archive/vsm");
+
+    if !vsm_dir.exists() {
+        return;
+    }
+
+    let vsms = scan_vsms(&vsm_dir);
+    let nav = vsms
+        .iter()
+        .find(|v| v.machine == "ArchiveNavMachine")
+        .expect("ArchiveNavMachine should be found");
+
+    let out = generate_kani_file_with_style(nav, &vsm_dir, ImportStyle::InCrate).unwrap();
+    assert!(
+        out.contains("use crate::archive::vsm::{"),
+        "expected in-crate imports; got:\n{out}"
+    );
 }

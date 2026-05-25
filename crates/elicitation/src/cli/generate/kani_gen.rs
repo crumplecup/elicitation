@@ -12,7 +12,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 
 use crate::cli::generate::{
-    TypeResolver, find_crate_name,
+    ImportStyle, TypeResolver, find_crate_name,
     scanner::{ArgKind, TransitionFn, VsmDescriptor},
 };
 
@@ -30,6 +30,17 @@ use crate::cli::generate::{
 pub fn generate_kani_file(
     vsm: &VsmDescriptor,
     crate_root: impl AsRef<Path>,
+) -> Result<String, String> {
+    generate_kani_file_with_style(vsm, crate_root, ImportStyle::ExternalCrate)
+}
+
+/// Generate the full Kani companion file content for `vsm` with a specific
+/// import style.
+#[tracing::instrument(skip(vsm, crate_root), fields(machine = %vsm.machine))]
+pub fn generate_kani_file_with_style(
+    vsm: &VsmDescriptor,
+    crate_root: impl AsRef<Path>,
+    import_style: ImportStyle,
 ) -> Result<String, String> {
     let machine = &vsm.machine;
 
@@ -85,7 +96,7 @@ pub fn generate_kani_file(
         }
     }
 
-    let resolver = TypeResolver::build(&vsm.source_file, &crate_name);
+    let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);
     let resolved_imports = resolver.grouped_imports(&needed);
 
     let mut out = String::new();

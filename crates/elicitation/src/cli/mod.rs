@@ -2,6 +2,7 @@
 //!
 //! Provides verification orchestration, analysis, and utilities.
 
+pub mod creusot_shadow;
 pub mod generate;
 pub mod prove;
 
@@ -585,7 +586,8 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
     use crate::cli::generate::{
-        creusot_gen, foundation_gen, kani_gen, scan_elicit_types, scan_vsms, verus_gen,
+        ImportStyle, creusot_gen, find_crate_root, foundation_gen, kani_gen, scan_elicit_types,
+        scan_vsms, verus_gen,
     };
     use std::io::Write;
 
@@ -719,13 +721,52 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
         Ok(())
     }
 
+    fn absolutize(path: &std::path::Path) -> std::path::PathBuf {
+        if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            std::env::current_dir()
+                .unwrap_or_else(|_| std::path::PathBuf::from("."))
+                .join(path)
+        }
+    }
+
+    fn import_style_for_output(
+        vsm: &crate::cli::generate::VsmDescriptor,
+        crate_path: &std::path::Path,
+        out_dir: Option<&std::path::Path>,
+    ) -> ImportStyle {
+        let Some(out_dir) = out_dir else {
+            return ImportStyle::ExternalCrate;
+        };
+
+        let source_anchor = vsm.source_file.parent().unwrap_or(crate_path);
+        let source_anchor = absolutize(source_anchor);
+        let out_dir = absolutize(out_dir);
+
+        let Some(source_crate_root) = find_crate_root(&source_anchor) else {
+            return ImportStyle::ExternalCrate;
+        };
+        let Some(out_crate_root) = find_crate_root(&out_dir) else {
+            return ImportStyle::ExternalCrate;
+        };
+
+        if source_crate_root == out_crate_root && out_dir.starts_with(source_crate_root.join("src"))
+        {
+            ImportStyle::InCrate
+        } else {
+            ImportStyle::ExternalCrate
+        }
+    }
+
     if matches!(label, "kani" | "all") {
         let out_dir = match target {
             GenerateTarget::Kani { out, .. } | GenerateTarget::All { out, .. } => out.as_deref(),
             _ => None,
         };
         for vsm in &vsms {
-            let content = kani_gen::generate_kani_file(vsm, crate_path)
+            let import_style = import_style_for_output(vsm, crate_path, out_dir);
+            let content = kani_gen::generate_kani_file_with_style(vsm, crate_path, import_style)
                 .map_err(|e| std::io::Error::other(e))?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
@@ -751,7 +792,9 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             _ => None,
         };
         for vsm in &vsms {
-            let content = creusot_gen::generate_creusot_file(vsm, crate_path)
+            let import_style = import_style_for_output(vsm, crate_path, out_dir);
+            let content =
+                creusot_gen::generate_creusot_file_with_style(vsm, crate_path, import_style)
                 .map_err(|e| std::io::Error::other(e))?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;

@@ -274,7 +274,9 @@ pub fn expand(input: TokenStream) -> TokenStream {
             #where_clause
         {
             fn kani_variant_constructions() -> ::std::vec::Vec<::elicitation::KaniVariantConstruction> {
-                vec![ #(#entries),* ]
+                let mut entries = ::std::vec::Vec::new();
+                #(entries.push(#entries);)*
+                entries
             }
         }
     }
