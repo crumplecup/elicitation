@@ -2,7 +2,6 @@
 //!
 //! Provides verification orchestration, analysis, and utilities.
 
-pub mod creusot_shadow;
 pub mod generate;
 pub mod prove;
 

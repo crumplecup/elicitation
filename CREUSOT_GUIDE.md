@@ -85,11 +85,11 @@ If you clone creusot to a different location, update this path.
 
 You can run them together (`cargo creusot prove`) or separately.
 
-> **Important for downstream VSM crates:** do **not** treat `cargo creusot prove`
-> as the recommended consumer-crate workflow. For same-crate generated VSM
-> companions, use `elicitation prove --creusot`, which runs translation and
-> proving as separate steps in a shadow workspace and narrows `why3find` to the
-> generated companion roots only. See [`CREUSOT_FOR_VSMS.md`](CREUSOT_FOR_VSMS.md).
+> **Important for downstream VSM crates:** use the workspace proof-crate pattern.
+> Generate Creusot companions into a dedicated proof crate and prove that crate
+> with the normal workspace `cargo creusot prove` flow via
+> `elicitation prove --creusot`. See
+> [`CREUSOT_FOR_VSMS.md`](CREUSOT_FOR_VSMS.md).
 
 ### Required environment variables
 

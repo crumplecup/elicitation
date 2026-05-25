@@ -242,38 +242,33 @@ just generate-proofs-creusot
 
 ### Recommended path
 
-For downstream crates, use:
+For downstream crates, use a dedicated workspace proof crate and run:
 
 ```bash
 elicitation prove --creusot --csv
 ```
 
-Current behavior is:
+Current behavior is the normal workspace Creusot path:
 
-1. prepare a sanitized shadow workspace
-2. run `cargo creusot init` there if needed
-3. run `cargo creusot -- -p <pkg>` for translation only
-4. run `why3find prove` on generated companion roots only
+1. generate companions into the proof crate
+2. run `cargo creusot prove -- -p <proof-crate>`
 
-This split flow is intentional. It avoids the over-broad behavior of
-`cargo creusot prove`, which re-translates one crate but proves **everything**
-under `verif/`.
+There is no supported same-crate shadow-workspace path.
 
 ### Logs
 
-Current logs are:
+Current log is:
 
-- `prove_creusot_translate.log`
 - `prove_creusot.log`
 
-If you only see:
+If you see:
 
 ```text
 🔬 Running cargo creusot prove…
 📝 Logging to ./prove_creusot.log
 ```
 
-you are running an **old CLI binary**.
+you are on the supported workspace-proof-crate path.
 
 ### Guardrail: stale installed CLI
 
@@ -304,23 +299,13 @@ elicitation prove --creusot
 
 so regeneration must happen first.
 
-### Manual split invocation
+### Manual invocation
 
-If you need to debug manually, mimic the CLI's split flow instead of using
-`cargo creusot prove`:
+If you need to debug manually, use the normal workspace Creusot command:
 
 ```bash
-cargo creusot -- -p <pkg>
-why3find prove verif/<pkg>_rlib/proofs/creusot/generated
+cargo creusot prove -- -p <pkg>
 ```
-
-Some crates may emit to:
-
-```text
-verif/<pkg>_rlib/creusot/generated
-```
-
-The CLI checks both layouts.
 
 ---
 
