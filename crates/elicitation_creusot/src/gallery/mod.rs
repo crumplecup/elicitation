@@ -128,6 +128,7 @@ pub mod level37;
 pub mod level38;
 #[cfg(feature = "gallery-c39-kani-variant-only")]
 pub mod level39;
+pub mod level4;
 #[cfg(feature = "gallery-c40-manual-empty-proof")]
 pub mod level40;
 #[cfg(feature = "gallery-c41-manual-helper-proof")]
@@ -148,14 +149,13 @@ pub mod level47;
 pub mod level48;
 #[cfg(feature = "gallery-c49-serde-empty-bound")]
 pub mod level49;
+pub mod level5;
 #[cfg(feature = "gallery-c50-serde-inferred-bound")]
 pub mod level50;
 #[cfg(feature = "gallery-c51-serde-explicit-bounds")]
 pub mod level51;
 #[cfg(feature = "gallery-c52-jsonschema-generic")]
 pub mod level52;
-pub mod level4;
-pub mod level5;
 #[cfg(feature = "gallery-c53-generated-option-string")]
 pub mod level53;
 #[cfg(feature = "gallery-c54-generated-combat-module")]
