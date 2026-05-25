@@ -330,6 +330,25 @@ pub enum GenerateTarget {
         #[arg(short, long)]
         out: Option<PathBuf>,
     },
+
+    /// Generate a complete proof companion crate for all VSMs found in `crate_path`.
+    ///
+    /// Writes the entire crate skeleton — `Cargo.toml`, `src/lib.rs`,
+    /// backend `mod.rs` shims, and all generated proof companion files —
+    /// so users never need to maintain any proof-crate boilerplate by hand.
+    ProofCrate {
+        /// Root directory of the source crate to scan for VSM source files.
+        #[arg(short = 'p', long, default_value = ".")]
+        crate_path: PathBuf,
+
+        /// Output directory (root of the proof crate to create or update).
+        #[arg(short, long)]
+        out: PathBuf,
+
+        /// Override the generated crate name (defaults to `{source}_proofs`).
+        #[arg(long)]
+        crate_name: Option<String>,
+    },
 }
 
 /// Execute the CLI command.
@@ -585,8 +604,8 @@ fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
 #[tracing::instrument(skip(target))]
 fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
     use crate::cli::generate::{
-        ImportStyle, creusot_gen, find_crate_root, foundation_gen, kani_gen, scan_elicit_types,
-        scan_vsms, verus_gen,
+        ImportStyle, creusot_gen, find_crate_root, foundation_gen, kani_gen, proof_crate_gen,
+        scan_elicit_types, scan_vsms, verus_gen,
     };
     use std::io::Write;
 
@@ -654,6 +673,28 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             }
             let content = foundation_gen::generate_foundation_file(&types, crate_path);
             emit_content(&content, "foundation.rs", out.as_deref())?;
+            return Ok(());
+        }
+        GenerateTarget::ProofCrate {
+            crate_path,
+            out,
+            crate_name,
+        } => {
+            let vsms = scan_vsms(crate_path);
+            if vsms.is_empty() {
+                println!(
+                    "No VerifiedStateMachine structs found in {}",
+                    crate_path.display()
+                );
+                return Ok(());
+            }
+            proof_crate_gen::generate_proof_crate(
+                &vsms,
+                crate_path,
+                out,
+                crate_name.as_deref(),
+            )?;
+            println!("Proof crate written to {}", out.display());
             return Ok(());
         }
     };

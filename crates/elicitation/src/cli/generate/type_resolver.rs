@@ -20,7 +20,7 @@
 //!    locally-defined types that are not re-exported anywhere up the hierarchy.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use syn::{Item, UseTree, Visibility};
 
 /// How generated proof files should refer to items from the source crate.
@@ -315,12 +315,19 @@ fn register_local(
 /// (e.g. `vsm::panel::ArchivePanelState`) are never used when the type is
 /// already accessible via the public path (`vsm::ArchivePanelState`).
 ///
-/// Nearest parent wins because we use `or_insert` and walk inward-out.
+/// Outermost parent (lib.rs / crate root) wins: we collect all parent module
+/// files from inner to outer, then process them outer-first with `or_insert`.
+/// This means `lib.rs`'s flat `pub use vsm::{CombatState}` registers as
+/// `valinoreth::CombatState`, taking priority over the deeper
+/// `valinoreth::vsm::CombatState` that `vsm/mod.rs` would produce.
 fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<String, String>) {
     let mut dir = match source_file.parent() {
         Some(p) => p,
         None => return,
     };
+
+    // Collect (parent_file, module_path) pairs from inner to outer.
+    let mut parents: Vec<(PathBuf, String)> = Vec::new();
 
     loop {
         let mod_file = dir.join("mod.rs");
@@ -331,7 +338,6 @@ fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<
         } else if lib_file.exists() {
             lib_file
         } else {
-            // No module file here; walk up.
             match dir.parent() {
                 Some(p) => {
                     dir = p;
@@ -341,10 +347,25 @@ fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<
             }
         };
 
+        let module_path = derive_module_path(&parent_file);
+        parents.push((parent_file, module_path));
+
+        let dir_name = dir.file_name().map_or("", |s| s.to_str().unwrap_or(""));
+        if dir_name == "src" {
+            break;
+        }
+
+        match dir.parent() {
+            Some(p) => dir = p,
+            None => break,
+        }
+    }
+
+    // Process outer-first so lib.rs flat re-exports take priority over deeper paths.
+    for (parent_file, module_path) in parents.into_iter().rev() {
         if let Ok(src) = std::fs::read_to_string(&parent_file)
             && let Ok(syntax) = syn::parse_file(&src)
         {
-            let module_path = derive_module_path(&parent_file);
             for item in &syntax.items {
                 if let Item::Use(u) = item
                     && is_pub(&u.vis)
@@ -361,17 +382,6 @@ fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<
                     }
                 }
             }
-        }
-
-        // Stop after processing the `src/` directory.
-        let dir_name = dir.file_name().map_or("", |s| s.to_str().unwrap_or(""));
-        if dir_name == "src" {
-            break;
-        }
-
-        match dir.parent() {
-            Some(p) => dir = p,
-            None => break,
         }
     }
 }

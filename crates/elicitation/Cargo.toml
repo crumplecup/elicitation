@@ -183,7 +183,7 @@ clap-types = ["dep:clap"]
 sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
-cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs", "dep:dotenvy", "dep:indicatif", "dep:tracing-subscriber"]
+cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexpand", "dirs", "dep:dotenvy", "dep:indicatif", "dep:tracing-subscriber", "dep:toml"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]

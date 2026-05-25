@@ -11,9 +11,9 @@
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicit_server::archive::vsm::{
-    close_overlay, open_export_picker, open_help, open_save_prompt, open_saved_browser,
-    picker_move_down, picker_move_up, prompt_backspace, prompt_push, saved_browser_down,
-    saved_browser_up, ArchiveOverlayConsistent, ArchiveOverlayState,
+    ArchiveOverlayConsistent, ArchiveOverlayState, close_overlay, open_export_picker, open_help,
+    open_save_prompt, open_saved_browser, picker_move_down, picker_move_up, prompt_backspace,
+    prompt_push, saved_browser_down, saved_browser_up,
 };
 #[cfg(creusot)]
 use elicit_server::archive::{ExportFormat, SavedQuery};

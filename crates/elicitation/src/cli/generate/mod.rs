@@ -14,6 +14,7 @@
 pub mod creusot_gen;
 pub mod foundation_gen;
 pub mod kani_gen;
+pub mod proof_crate_gen;
 pub mod scanner;
 pub mod type_resolver;
 pub mod verus_gen;
