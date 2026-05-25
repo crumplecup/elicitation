@@ -129,6 +129,11 @@ pub fn generate_creusot_file_with_style(
                 _ => TypeResolver::collect_type(&arg.ty, &mut needed),
             }
         }
+        if import_style == ImportStyle::InCrate {
+            if let Some(body) = &tfn.creusot_body {
+                TypeResolver::collect_type(body, &mut needed);
+            }
+        }
     }
     // Import the transition functions themselves, not just their arg types.
     for name in &vsm.transitions {
@@ -137,7 +142,13 @@ pub fn generate_creusot_file_with_style(
     let needs_kani_label = inv_parts
         .as_ref()
         .map(|(_, _, _, body)| body.contains("kani_label"))
-        .unwrap_or(false);
+        .unwrap_or(false)
+        || (import_style == ImportStyle::InCrate
+            && vsm.transition_fns.iter().any(|tf| {
+                tf.creusot_body
+                    .as_deref()
+                    .is_some_and(|body| body.contains("kani_label"))
+            }));
 
     // ── Resolve imports ───────────────────────────────────────────────────────
     let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);
@@ -266,7 +277,7 @@ fn emit_creusot_transition(
     consistent_ty: &str,
     inv_fn: &str,
     tf: Option<&TransitionFn>,
-    _import_style: ImportStyle,
+    import_style: ImportStyle,
 ) -> String {
     let (params, call_args) = match tf {
         Some(tf) => (emit_params(tf, state_ty), emit_call_args(tf)),
@@ -277,13 +288,16 @@ fn emit_creusot_transition(
     };
     let ret = format!("({state_ty}, Established<{consistent_ty}>)");
     let extra_requires = tf.map(|tf| tf.creusot_requires.as_slice()).unwrap_or(&[]);
-    let creusot_body = tf.and_then(|tf| {
-        if tf.has_instrument {
-            tf.creusot_body.as_deref()
-        } else {
-            None
-        }
-    });
+    let creusot_body = match import_style {
+        ImportStyle::ExternalCrate => None,
+        ImportStyle::InCrate => tf.and_then(|tf| {
+            if tf.has_instrument {
+                tf.creusot_body.as_deref()
+            } else {
+                None
+            }
+        }),
+    };
 
     emit_creusot_transition_external(
         fn_name,

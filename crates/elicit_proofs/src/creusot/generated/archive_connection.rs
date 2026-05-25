@@ -11,8 +11,8 @@
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicit_server::archive::vsm::{
-    ArchiveConnectionConsistent, ArchiveConnectionState, begin_connect_kv, begin_connect_sql,
-    connection_error, disconnect, finish_connect_kv, finish_connect_sql, reconnect,
+    begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
+    finish_connect_sql, reconnect, ArchiveConnectionConsistent, ArchiveConnectionState,
 };
 #[cfg(creusot)]
 use elicit_server::archive::{BackendKind, DatabaseDescriptor};
@@ -21,7 +21,7 @@ use elicitation::Established;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
+pub fn archive_connection_consistent_creusot_logic(_state: &ArchiveConnectionState) -> bool {
     pearlite! { true }
 }
 
@@ -34,14 +34,15 @@ pub fn verify_archive_connection_consistent_prop_creusot() -> bool {
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn begin_connect_sql(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>, profile_name: String, backend: BackendKind) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn begin_connect_sql_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -56,14 +57,15 @@ pub fn begin_connect_sql_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn begin_connect_kv(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>, profile_name: String) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn begin_connect_kv_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -77,14 +79,15 @@ pub fn begin_connect_kv_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn finish_connect_sql(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>, db: DatabaseDescriptor) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn finish_connect_sql_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -98,14 +101,15 @@ pub fn finish_connect_sql_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn finish_connect_kv(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>, path: String) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn finish_connect_kv_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -119,14 +123,15 @@ pub fn finish_connect_kv_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn disconnect(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn disconnect_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -139,14 +144,15 @@ pub fn disconnect_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn reconnect(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn reconnect_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,
@@ -159,14 +165,15 @@ pub fn reconnect_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_connection_consistent(&state))]
-    #[ensures(archive_connection_consistent(&result.0))]
+    #[requires(archive_connection_consistent_creusot_logic(&state))]
+    #[ensures(archive_connection_consistent_creusot_logic(&result.0))]
     fn connection_error(state: ArchiveConnectionState, proof: Established<ArchiveConnectionConsistent>, message: String) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_connection_consistent(&state))]
-#[ensures(archive_connection_consistent(&result.0))]
+#[requires(archive_connection_consistent_creusot_logic(&state))]
+#[ensures(archive_connection_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn connection_error_creusot(
     state: ArchiveConnectionState,
     proof: Established<ArchiveConnectionConsistent>,

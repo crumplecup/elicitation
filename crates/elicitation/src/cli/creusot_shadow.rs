@@ -13,6 +13,7 @@
 use anyhow::Context as _;
 use proc_macro2::Span;
 use std::fs;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use syn::visit_mut::{self, VisitMut};
 use walkdir::{DirEntry, WalkDir};
@@ -72,10 +73,17 @@ pub fn prepare_shadow_workspace(workspace_root: &Path) -> anyhow::Result<PathBuf
                 fs::create_dir_all(parent)
                     .with_context(|| format!("failed to create {}", parent.display()))?;
             }
-            if src_path.extension().and_then(|ext| ext.to_str()) == Some("rs") {
+            if should_sanitize_rust_file(rel) {
                 let source = fs::read_to_string(src_path)
                     .with_context(|| format!("failed to read {}", src_path.display()))?;
-                let sanitized = sanitize_rust_source(&source)
+                let sanitized = catch_unwind(AssertUnwindSafe(|| sanitize_rust_source(&source)))
+                    .map_err(|panic| {
+                        anyhow::anyhow!(
+                            "shadow sanitizer panicked for {}: {}",
+                            src_path.display(),
+                            panic_payload_message(&panic)
+                        )
+                    })?
                     .with_context(|| format!("failed to sanitize {}", src_path.display()))?;
                 fs::write(&dst_path, sanitized)
                     .with_context(|| format!("failed to write {}", dst_path.display()))?;
@@ -111,6 +119,27 @@ fn should_descend(entry: &DirEntry, shadow_root: &Path) -> bool {
         return true;
     };
     !matches!(name, ".git" | "target" | "verif" | ".creusot-shadow")
+}
+
+fn should_sanitize_rust_file(rel: &Path) -> bool {
+    rel.extension().and_then(|ext| ext.to_str()) == Some("rs")
+        && !rel
+            .components()
+            .any(|component| component.as_os_str() == "vendor")
+        && !path_is_proc_macro_crate_source(rel)
+}
+
+fn path_is_proc_macro_crate_source(rel: &Path) -> bool {
+    let mut components = rel.components();
+    matches!(
+        (components.next(), components.next()),
+        (Some(crates), Some(crate_name))
+            if crates.as_os_str() == "crates"
+                && crate_name
+                    .as_os_str()
+                    .to_string_lossy()
+                    .ends_with("_derive")
+    )
 }
 
 struct CreusotSanitizer;
@@ -461,8 +490,7 @@ fn rewrite_vec_macro_expr(node: &syn::ExprMacro) -> Option<syn::Expr> {
 }
 
 fn block_uses_runtime_parse_helper(block: &syn::Block) -> bool {
-    let tokens = block.to_token_stream().to_string();
-    tokens.contains("from_str") || tokens.contains("to_lowercase")
+    block.stmts.iter().any(stmt_uses_runtime_parse_helper)
 }
 
 fn has_deep_model_derive(attrs: &[syn::Attribute]) -> bool {
@@ -472,6 +500,142 @@ fn has_deep_model_derive(attrs: &[syn::Attribute]) -> bool {
             .to_string()
             .contains("DeepModel")
     })
+}
+
+fn panic_payload_message(payload: &Box<dyn std::any::Any + Send>) -> String {
+    if let Some(msg) = payload.downcast_ref::<&str>() {
+        return (*msg).to_string();
+    }
+    if let Some(msg) = payload.downcast_ref::<String>() {
+        return msg.clone();
+    }
+    "non-string panic payload".to_string()
+}
+
+fn stmt_uses_runtime_parse_helper(stmt: &syn::Stmt) -> bool {
+    match stmt {
+        syn::Stmt::Local(local) => local
+            .init
+            .as_ref()
+            .is_some_and(|init| expr_uses_runtime_parse_helper(&init.expr)),
+        syn::Stmt::Item(_) => false,
+        syn::Stmt::Expr(expr, _) => expr_uses_runtime_parse_helper(expr),
+        syn::Stmt::Macro(_) => false,
+    }
+}
+
+fn expr_uses_runtime_parse_helper(expr: &syn::Expr) -> bool {
+    match expr {
+        syn::Expr::Array(array) => array.elems.iter().any(expr_uses_runtime_parse_helper),
+        syn::Expr::Assign(assign) => {
+            expr_uses_runtime_parse_helper(&assign.left)
+                || expr_uses_runtime_parse_helper(&assign.right)
+        }
+        syn::Expr::Async(async_expr) => block_uses_runtime_parse_helper(&async_expr.block),
+        syn::Expr::Await(await_expr) => expr_uses_runtime_parse_helper(&await_expr.base),
+        syn::Expr::Binary(binary) => {
+            expr_uses_runtime_parse_helper(&binary.left)
+                || expr_uses_runtime_parse_helper(&binary.right)
+        }
+        syn::Expr::Block(block) => block_uses_runtime_parse_helper(&block.block),
+        syn::Expr::Break(break_expr) => break_expr
+            .expr
+            .as_ref()
+            .is_some_and(|expr| expr_uses_runtime_parse_helper(expr)),
+        syn::Expr::Call(call) => {
+            (if let syn::Expr::Path(path) = &*call.func {
+                path.path
+                    .segments
+                    .last()
+                    .is_some_and(|segment| segment.ident == "from_str")
+            } else {
+                false
+            }) || expr_uses_runtime_parse_helper(&call.func)
+                || call.args.iter().any(expr_uses_runtime_parse_helper)
+        }
+        syn::Expr::Cast(cast) => expr_uses_runtime_parse_helper(&cast.expr),
+        syn::Expr::Closure(closure) => expr_uses_runtime_parse_helper(&closure.body),
+        syn::Expr::Field(field) => expr_uses_runtime_parse_helper(&field.base),
+        syn::Expr::ForLoop(for_loop) => {
+            expr_uses_runtime_parse_helper(&for_loop.expr)
+                || block_uses_runtime_parse_helper(&for_loop.body)
+        }
+        syn::Expr::Group(group) => expr_uses_runtime_parse_helper(&group.expr),
+        syn::Expr::If(if_expr) => {
+            expr_uses_runtime_parse_helper(&if_expr.cond)
+                || block_uses_runtime_parse_helper(&if_expr.then_branch)
+                || if_expr
+                    .else_branch
+                    .as_ref()
+                    .is_some_and(|(_, expr)| expr_uses_runtime_parse_helper(expr))
+        }
+        syn::Expr::Index(index) => {
+            expr_uses_runtime_parse_helper(&index.expr)
+                || expr_uses_runtime_parse_helper(&index.index)
+        }
+        syn::Expr::Let(let_expr) => expr_uses_runtime_parse_helper(&let_expr.expr),
+        syn::Expr::Loop(loop_expr) => block_uses_runtime_parse_helper(&loop_expr.body),
+        syn::Expr::Macro(_) => false,
+        syn::Expr::Match(match_expr) => {
+            expr_uses_runtime_parse_helper(&match_expr.expr)
+                || match_expr.arms.iter().any(|arm| {
+                    arm.guard
+                        .as_ref()
+                        .is_some_and(|(_, expr)| expr_uses_runtime_parse_helper(expr))
+                        || expr_uses_runtime_parse_helper(&arm.body)
+                })
+        }
+        syn::Expr::MethodCall(method_call) => {
+            method_call.method == "to_lowercase"
+                || expr_uses_runtime_parse_helper(&method_call.receiver)
+                || method_call.args.iter().any(expr_uses_runtime_parse_helper)
+        }
+        syn::Expr::Paren(paren) => expr_uses_runtime_parse_helper(&paren.expr),
+        syn::Expr::Path(_) => false,
+        syn::Expr::Range(range) => {
+            range
+                .start
+                .as_ref()
+                .is_some_and(|expr| expr_uses_runtime_parse_helper(expr))
+                || range
+                    .end
+                    .as_ref()
+                    .is_some_and(|expr| expr_uses_runtime_parse_helper(expr))
+        }
+        syn::Expr::Reference(reference) => expr_uses_runtime_parse_helper(&reference.expr),
+        syn::Expr::Repeat(repeat) => {
+            expr_uses_runtime_parse_helper(&repeat.expr)
+                || expr_uses_runtime_parse_helper(&repeat.len)
+        }
+        syn::Expr::Return(return_expr) => return_expr
+            .expr
+            .as_ref()
+            .is_some_and(|expr| expr_uses_runtime_parse_helper(expr)),
+        syn::Expr::Struct(struct_expr) => {
+            struct_expr
+                .fields
+                .iter()
+                .any(|field| expr_uses_runtime_parse_helper(&field.expr))
+                || struct_expr
+                    .rest
+                    .as_ref()
+                    .is_some_and(|expr| expr_uses_runtime_parse_helper(expr))
+        }
+        syn::Expr::Try(try_expr) => expr_uses_runtime_parse_helper(&try_expr.expr),
+        syn::Expr::TryBlock(try_block) => block_uses_runtime_parse_helper(&try_block.block),
+        syn::Expr::Tuple(tuple) => tuple.elems.iter().any(expr_uses_runtime_parse_helper),
+        syn::Expr::Unary(unary) => expr_uses_runtime_parse_helper(&unary.expr),
+        syn::Expr::Unsafe(unsafe_expr) => block_uses_runtime_parse_helper(&unsafe_expr.block),
+        syn::Expr::While(while_expr) => {
+            expr_uses_runtime_parse_helper(&while_expr.cond)
+                || block_uses_runtime_parse_helper(&while_expr.body)
+        }
+        syn::Expr::Yield(yield_expr) => yield_expr
+            .expr
+            .as_ref()
+            .is_some_and(|expr| expr_uses_runtime_parse_helper(expr)),
+        _ => false,
+    }
 }
 
 use quote::ToTokens;

@@ -11,9 +11,9 @@
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
 use elicit_server::archive::vsm::{
-    ArchiveOverlayConsistent, ArchiveOverlayState, close_overlay, open_export_picker, open_help,
-    open_save_prompt, open_saved_browser, picker_move_down, picker_move_up, prompt_backspace,
-    prompt_push, saved_browser_down, saved_browser_up,
+    close_overlay, open_export_picker, open_help, open_save_prompt, open_saved_browser,
+    picker_move_down, picker_move_up, prompt_backspace, prompt_push, saved_browser_down,
+    saved_browser_up, ArchiveOverlayConsistent, ArchiveOverlayState,
 };
 #[cfg(creusot)]
 use elicit_server::archive::{ExportFormat, SavedQuery};
@@ -22,7 +22,7 @@ use elicitation::Established;
 
 #[cfg(creusot)]
 #[logic]
-pub fn archive_overlay_consistent(state: &ArchiveOverlayState) -> bool {
+pub fn archive_overlay_consistent_creusot_logic(state: &ArchiveOverlayState) -> bool {
     pearlite! { match state { ArchiveOverlayState::ExportPickerOpen { idx, formats } => idx@ <= formats@.len(), ArchiveOverlayState::SavedBrowserOpen { entries, idx } => idx@ <= entries@.len(), _ => true, } }
 }
 
@@ -35,14 +35,15 @@ pub fn verify_archive_overlay_consistent_prop_creusot() -> bool {
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn close_overlay(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn close_overlay_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -52,14 +53,15 @@ pub fn close_overlay_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn open_help(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn open_help_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -69,14 +71,15 @@ pub fn open_help_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn open_export_picker(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>, formats: Vec<ExportFormat>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn open_export_picker_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -87,14 +90,15 @@ pub fn open_export_picker_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn picker_move_up(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn picker_move_up_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -104,14 +108,15 @@ pub fn picker_move_up_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn picker_move_down(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn picker_move_down_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -121,14 +126,15 @@ pub fn picker_move_down_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn open_save_prompt(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn open_save_prompt_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -138,14 +144,15 @@ pub fn open_save_prompt_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn prompt_push(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>, ch: char) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn prompt_push_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -156,14 +163,15 @@ pub fn prompt_push_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn prompt_backspace(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn prompt_backspace_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -173,14 +181,15 @@ pub fn prompt_backspace_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn open_saved_browser(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>, entries: Vec<SavedQuery>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn open_saved_browser_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -191,14 +200,15 @@ pub fn open_saved_browser_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn saved_browser_up(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn saved_browser_up_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,
@@ -208,14 +218,15 @@ pub fn saved_browser_up_creusot(
 
 #[cfg(creusot)]
 extern_spec! {
-    #[requires(archive_overlay_consistent(&state))]
-    #[ensures(archive_overlay_consistent(&result.0))]
+    #[requires(archive_overlay_consistent_creusot_logic(&state))]
+    #[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
     fn saved_browser_down(state: ArchiveOverlayState, proof: Established<ArchiveOverlayConsistent>) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>);
 }
 
 #[cfg(creusot)]
-#[requires(archive_overlay_consistent(&state))]
-#[ensures(archive_overlay_consistent(&result.0))]
+#[requires(archive_overlay_consistent_creusot_logic(&state))]
+#[ensures(archive_overlay_consistent_creusot_logic(&result.0))]
+#[cfg(creusot)]
 pub fn saved_browser_down_creusot(
     state: ArchiveOverlayState,
     proof: Established<ArchiveOverlayConsistent>,

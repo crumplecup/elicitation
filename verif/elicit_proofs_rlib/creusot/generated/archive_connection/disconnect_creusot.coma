@@ -1,15 +1,15 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 130 0 136 1 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 135 0 141 1 *)
 
-let%span sarchive_connection = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 137 4 137 28
-let%span sarchive_connection'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 131 4 131 9
-let%span sarchive_connection'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 132 4 132 9
-let%span sarchive_connection'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 128 11 128 48
-let%span sarchive_connection'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 133 5 136 1
-let%span sarchive_connection'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 129 10 129 50
-let%span sarchive_connection'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 124 18 124 23
-let%span sarchive_connection'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 124 49 124 54
-let%span sarchive_connection'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 122 15 122 52
-let%span sarchive_connection'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 123 14 123 54
+let%span sarchive_connection = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 142 4 142 28
+let%span sarchive_connection'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 136 4 136 9
+let%span sarchive_connection'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 137 4 137 9
+let%span sarchive_connection'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 132 11 132 62
+let%span sarchive_connection'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 138 5 141 1
+let%span sarchive_connection'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 133 10 133 64
+let%span sarchive_connection'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 128 18 128 23
+let%span sarchive_connection'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 128 49 128 54
+let%span sarchive_connection'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 126 15 126 66
+let%span sarchive_connection'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 127 14 127 68
 let%span sarchive_connection'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 25 16 25 20
 let%span sconnection = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/connection.rs" 202 0 208 1
 
@@ -71,7 +71,7 @@ axiom inv_axiom'1 [@rewrite]:
 
 predicate inv_Established_ArchiveConnectionConsistent (_1: t_Established_ArchiveConnectionConsistent)
 
-predicate archive_connection_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 24 0 24 77] (_state: t_ArchiveConnectionState) =
+predicate archive_connection_consistent_creusot [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 24 0 24 91] (_state: t_ArchiveConnectionState) =
   [%#sarchive_connection'9] true
 
 predicate inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent [@inline:trivial] (_1: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) =
@@ -83,11 +83,11 @@ let rec disconnect (state: t_ArchiveConnectionState) (proof: t_Established_Archi
   (return (x: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent)) =
   {[@stop_split] [@expl:disconnect requires] ([@stop_split] [@expl:disconnect 'state' type invariant] [%#sarchive_connection'5] inv_ArchiveConnectionState state)
   /\ ([@stop_split] [@expl:disconnect 'proof' type invariant] [%#sarchive_connection'6] inv_Established_ArchiveConnectionConsistent proof)
-  /\ ([@stop_split] [@expl:disconnect requires] [%#sarchive_connection'7] archive_connection_consistent state)}
+  /\ ([@stop_split] [@expl:disconnect requires] [%#sarchive_connection'7] archive_connection_consistent_creusot state)}
   any
   [ return (result: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) ->
   {[@stop_split] [@expl:disconnect ensures] ([@stop_split] [@expl:disconnect result type invariant] [%#sconnection] inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent result)
-    /\ ([@stop_split] [@expl:disconnect ensures] [%#sarchive_connection'8] archive_connection_consistent result.f0)}
+    /\ ([@stop_split] [@expl:disconnect ensures] [%#sarchive_connection'8] archive_connection_consistent_creusot result.f0)}
     (! return {result}) ]
 
 meta "compute_max_steps" 1000000
@@ -95,12 +95,12 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec disconnect_creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 130 0 136 1]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 135 0 141 1]
   (state: t_ArchiveConnectionState) (proof: t_Established_ArchiveConnectionConsistent)
   (return (x: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent)) =
   {[@stop_split] [@expl:disconnect_creusot requires] ([@stop_split] [@expl:disconnect_creusot 'state' type invariant] [%#sarchive_connection'0] inv_ArchiveConnectionState state)
   /\ ([@stop_split] [@expl:disconnect_creusot 'proof' type invariant] [%#sarchive_connection'1] inv_Established_ArchiveConnectionConsistent proof)
-  /\ ([@stop_split] [@expl:disconnect_creusot requires] [%#sarchive_connection'2] archive_connection_consistent state)}
+  /\ ([@stop_split] [@expl:disconnect_creusot requires] [%#sarchive_connection'2] archive_connection_consistent_creusot state)}
   (! bb0
   [ bb0 = s0
     [ s0 = disconnect [%#sarchive_connection] {state} {proof}
@@ -111,5 +111,5 @@ let rec disconnect_creusot
   | & proof: t_Established_ArchiveConnectionConsistent = proof ])
   [ return (result: tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent) ->
   {[@stop_split] [@expl:disconnect_creusot ensures] ([@stop_split] [@expl:disconnect_creusot result type invariant] [%#sarchive_connection'3] inv_tup2_ArchiveConnectionState_Established_ArchiveConnectionConsistent result)
-    /\ ([@stop_split] [@expl:disconnect_creusot ensures] [%#sarchive_connection'4] archive_connection_consistent result.f0)}
+    /\ ([@stop_split] [@expl:disconnect_creusot ensures] [%#sarchive_connection'4] archive_connection_consistent_creusot result.f0)}
     (! return {result}) ]

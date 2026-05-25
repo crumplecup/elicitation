@@ -1,25 +1,25 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 112 0 119 61 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 116 0 123 61 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 120 4 120 76
-let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 113 4 113 9
-let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 114 4 114 9
-let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 115 4 115 10
-let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 116 4 116 9
-let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 117 4 117 16
-let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 110 11 110 43
-let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 119 5 119 61
-let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 111 10 111 45
-let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 106 23 106 28
-let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 106 49 106 54
-let%span sarchive_panel'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 106 93 106 99
-let%span sarchive_panel'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 106 109 106 114
-let%span sarchive_panel'12 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 106 124 106 136
-let%span sarchive_panel'13 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 104 15 104 47
-let%span sarchive_panel'14 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 105 14 105 49
+let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 124 4 124 76
+let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 117 4 117 9
+let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 118 4 118 9
+let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 119 4 119 10
+let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 120 4 120 9
+let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 121 4 121 16
+let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 113 11 113 57
+let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 123 5 123 61
+let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 114 10 114 59
+let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 23 109 28
+let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 49 109 54
+let%span sarchive_panel'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 93 109 99
+let%span sarchive_panel'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 109 109 114
+let%span sarchive_panel'12 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 109 124 109 136
+let%span sarchive_panel'13 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 107 15 107 61
+let%span sarchive_panel'14 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 108 14 108 63
 let%span sarchive_panel'15 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 38 16 38 160
 let%span spanel = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/panel.rs" 360 0 367 61
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
@@ -1262,7 +1262,7 @@ axiom inv_axiom'53 [@rewrite]: forall x: t_ArchivePanelState [inv_ArchivePanelSt
 
 predicate inv_Established_ArchivePanelConsistent (_1: t_Established_ArchivePanelConsistent)
 
-predicate archive_panel_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 37 0 37 66] (state'0: t_ArchivePanelState) =
+predicate archive_panel_consistent_creusot [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 37 0 37 80] (state'0: t_ArchivePanelState) =
   [%#sarchive_panel'15] match state'0 with
     | SqlEditor'0 _ result running _ -> running
     -> match result with
@@ -1285,11 +1285,11 @@ let rec data_grid_ready (state'0: t_ArchivePanelState) (proof: t_Established_Arc
   /\ ([@stop_split] [@expl:data_grid_ready 'schema' type invariant] [%#sarchive_panel'10] inv_String schema'4)
   /\ ([@stop_split] [@expl:data_grid_ready 'table' type invariant] [%#sarchive_panel'11] inv_String table)
   /\ ([@stop_split] [@expl:data_grid_ready 'query_result' type invariant] [%#sarchive_panel'12] inv_QueryResult query_result)
-  /\ ([@stop_split] [@expl:data_grid_ready requires] [%#sarchive_panel'13] archive_panel_consistent state'0)}
+  /\ ([@stop_split] [@expl:data_grid_ready requires] [%#sarchive_panel'13] archive_panel_consistent_creusot state'0)}
   any
   [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
   {[@stop_split] [@expl:data_grid_ready ensures] ([@stop_split] [@expl:data_grid_ready result type invariant] [%#spanel] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
-    /\ ([@stop_split] [@expl:data_grid_ready ensures] [%#sarchive_panel'14] archive_panel_consistent result.f0'0)}
+    /\ ([@stop_split] [@expl:data_grid_ready ensures] [%#sarchive_panel'14] archive_panel_consistent_creusot result.f0'0)}
     (! return {result}) ]
 
 meta "compute_max_steps" 1000000
@@ -1297,7 +1297,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec data_grid_ready_creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 112 0 119 61]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 116 0 123 61]
   (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent) (schema'4: t_String) (table: t_String)
   (query_result: t_QueryResult) (display_mode: t_QueryResultMode)
   (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
@@ -1306,7 +1306,7 @@ let rec data_grid_ready_creusot
   /\ ([@stop_split] [@expl:data_grid_ready_creusot 'schema' type invariant] [%#sarchive_panel'2] inv_String schema'4)
   /\ ([@stop_split] [@expl:data_grid_ready_creusot 'table' type invariant] [%#sarchive_panel'3] inv_String table)
   /\ ([@stop_split] [@expl:data_grid_ready_creusot 'query_result' type invariant] [%#sarchive_panel'4] inv_QueryResult query_result)
-  /\ ([@stop_split] [@expl:data_grid_ready_creusot requires] [%#sarchive_panel'5] archive_panel_consistent state'0)}
+  /\ ([@stop_split] [@expl:data_grid_ready_creusot requires] [%#sarchive_panel'5] archive_panel_consistent_creusot state'0)}
   (! bb0
   [ bb0 = s0
     [ s0 = data_grid_ready [%#sarchive_panel] {state'0} {proof} {schema'4} {table} {query_result} {display_mode}
@@ -1321,5 +1321,5 @@ let rec data_grid_ready_creusot
   | & display_mode: t_QueryResultMode = display_mode ])
   [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
   {[@stop_split] [@expl:data_grid_ready_creusot ensures] ([@stop_split] [@expl:data_grid_ready_creusot result type invariant] [%#sarchive_panel'6] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
-    /\ ([@stop_split] [@expl:data_grid_ready_creusot ensures] [%#sarchive_panel'7] archive_panel_consistent result.f0'0)}
+    /\ ([@stop_split] [@expl:data_grid_ready_creusot ensures] [%#sarchive_panel'7] archive_panel_consistent_creusot result.f0'0)}
     (! return {result}) ]

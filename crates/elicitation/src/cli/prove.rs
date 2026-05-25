@@ -891,6 +891,74 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
             "No package for Creusot — set CREUSOT_PACKAGE or PROVE_PACKAGE in .env, or pass --package"
         )
     })?;
+
+    if !should_use_shadow_creusot_path(pkg) {
+        return run_creusot_legacy(config, pkg);
+    }
+
+    run_creusot_shadow(config, pkg)
+}
+
+fn should_use_shadow_creusot_path(pkg: &str) -> bool {
+    pkg != "elicit_proofs"
+}
+
+fn run_creusot_legacy(config: &ProveConfig, pkg: &str) -> anyhow::Result<()> {
+    let mut cmd = Command::new("cargo");
+    cmd.arg("creusot").arg("prove");
+    cmd.arg("--");
+    cmd.arg("-p").arg(pkg);
+
+    for flag in &config.creusot_flags {
+        cmd.arg(flag);
+    }
+
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    let new_path = format!("{}:{}", config.creusot_bin_dir.display(), current_path);
+    cmd.env("PATH", &new_path);
+    cmd.env("WHY3CONFIG", &config.why3_config);
+    cmd.env("DUNE_DIR_LOCATIONS", &config.dune_dir_locations);
+
+    let log = config.log_dir.join("prove_creusot.log");
+    println!("🔬 Running cargo creusot prove…");
+    println!("📝 Logging to {}", log.display());
+    let bar = spinner("Starting…");
+    let sink = creusot_sink(bar.clone());
+    let start = Instant::now();
+    let status = execute_with_progress(
+        "cargo creusot prove",
+        cmd,
+        config.creusot_timeout,
+        config.dry_run,
+        &log,
+        sink,
+    )?;
+    bar.finish_and_clear();
+    let elapsed_s = start.elapsed().as_secs();
+
+    if !config.dry_run
+        && let Some(csv) = &config.creusot_csv
+    {
+        write_csv_header(csv, false)?;
+        append_csv_row(csv, "creusot", "creusot", &status, elapsed_s)?;
+    }
+
+    if status == "PASS" || status == "DRY-RUN" {
+        println!(
+            "✅ cargo creusot prove PASS ({elapsed_s}s) — see {}",
+            log.display()
+        );
+        Ok(())
+    } else {
+        println!(
+            "❌ cargo creusot prove FAIL ({elapsed_s}s) — see {}",
+            log.display()
+        );
+        anyhow::bail!("cargo creusot prove failed")
+    }
+}
+
+fn run_creusot_shadow(config: &ProveConfig, pkg: &str) -> anyhow::Result<()> {
     let workspace_root = find_workspace_root(pkg)?;
     let shadow_root = if config.dry_run {
         workspace_root.join(".creusot-shadow")

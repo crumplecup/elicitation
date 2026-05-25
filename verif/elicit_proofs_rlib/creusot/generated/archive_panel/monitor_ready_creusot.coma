@@ -1,21 +1,21 @@
-(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 392 0 397 61 *)
+(* #"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 411 0 416 61 *)
 
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 87 20 87 30
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 let%span sseq = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/seq.rs" 921 20 921 91
 let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
-let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 398 4 398 55
-let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 393 4 393 9
-let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 394 4 394 9
-let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 395 4 395 12
-let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 390 11 390 43
-let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 397 5 397 61
-let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 391 10 391 45
-let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 386 21 386 26
-let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 386 47 386 52
-let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 386 91 386 99
-let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 384 15 384 47
-let%span sarchive_panel'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 385 14 385 49
+let%span sarchive_panel = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 417 4 417 55
+let%span sarchive_panel'0 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 412 4 412 9
+let%span sarchive_panel'1 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 413 4 413 9
+let%span sarchive_panel'2 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 414 4 414 12
+let%span sarchive_panel'3 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 408 11 408 57
+let%span sarchive_panel'4 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 416 5 416 61
+let%span sarchive_panel'5 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 409 10 409 59
+let%span sarchive_panel'6 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 404 21 404 26
+let%span sarchive_panel'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 404 47 404 52
+let%span sarchive_panel'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 404 91 404 99
+let%span sarchive_panel'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 402 15 402 61
+let%span sarchive_panel'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 403 14 403 63
 let%span sarchive_panel'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 38 16 38 160
 let%span spanel = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/panel.rs" 683 0 688 61
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
@@ -1258,7 +1258,7 @@ axiom inv_axiom'53 [@rewrite]: forall x: t_ArchivePanelState [inv_ArchivePanelSt
 
 predicate inv_Established_ArchivePanelConsistent (_1: t_Established_ArchivePanelConsistent)
 
-predicate archive_panel_consistent [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 37 0 37 66] (state'0: t_ArchivePanelState) =
+predicate archive_panel_consistent_creusot [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 37 0 37 80] (state'0: t_ArchivePanelState) =
   [%#sarchive_panel'11] match state'0 with
     | SqlEditor'0 _ result running _ -> running
     -> match result with
@@ -1279,11 +1279,11 @@ let rec monitor_ready (state'0: t_ArchivePanelState) (proof: t_Established_Archi
   {[@stop_split] [@expl:monitor_ready requires] ([@stop_split] [@expl:monitor_ready 'state' type invariant] [%#sarchive_panel'6] inv_ArchivePanelState state'0)
   /\ ([@stop_split] [@expl:monitor_ready 'proof' type invariant] [%#sarchive_panel'7] inv_Established_ArchivePanelConsistent proof)
   /\ ([@stop_split] [@expl:monitor_ready 'snapshot' type invariant] [%#sarchive_panel'8] inv_MonitorSnapshot snapshot)
-  /\ ([@stop_split] [@expl:monitor_ready requires] [%#sarchive_panel'9] archive_panel_consistent state'0)}
+  /\ ([@stop_split] [@expl:monitor_ready requires] [%#sarchive_panel'9] archive_panel_consistent_creusot state'0)}
   any
   [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
   {[@stop_split] [@expl:monitor_ready ensures] ([@stop_split] [@expl:monitor_ready result type invariant] [%#spanel] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
-    /\ ([@stop_split] [@expl:monitor_ready ensures] [%#sarchive_panel'10] archive_panel_consistent result.f0'0)}
+    /\ ([@stop_split] [@expl:monitor_ready ensures] [%#sarchive_panel'10] archive_panel_consistent_creusot result.f0'0)}
     (! return {result}) ]
 
 meta "compute_max_steps" 1000000
@@ -1291,13 +1291,13 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec monitor_ready_creusot
-  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 392 0 397 61]
+  [#"/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 411 0 416 61]
   (state'0: t_ArchivePanelState) (proof: t_Established_ArchivePanelConsistent) (snapshot: t_MonitorSnapshot)
   (display_mode: t_MonitorSnapshotMode) (return (x: tup2_ArchivePanelState_Established_ArchivePanelConsistent)) =
   {[@stop_split] [@expl:monitor_ready_creusot requires] ([@stop_split] [@expl:monitor_ready_creusot 'state' type invariant] [%#sarchive_panel'0] inv_ArchivePanelState state'0)
   /\ ([@stop_split] [@expl:monitor_ready_creusot 'proof' type invariant] [%#sarchive_panel'1] inv_Established_ArchivePanelConsistent proof)
   /\ ([@stop_split] [@expl:monitor_ready_creusot 'snapshot' type invariant] [%#sarchive_panel'2] inv_MonitorSnapshot snapshot)
-  /\ ([@stop_split] [@expl:monitor_ready_creusot requires] [%#sarchive_panel'3] archive_panel_consistent state'0)}
+  /\ ([@stop_split] [@expl:monitor_ready_creusot requires] [%#sarchive_panel'3] archive_panel_consistent_creusot state'0)}
   (! bb0
   [ bb0 = s0
     [ s0 = monitor_ready [%#sarchive_panel] {state'0} {proof} {snapshot} {display_mode}
@@ -1310,5 +1310,5 @@ let rec monitor_ready_creusot
   | & display_mode: t_MonitorSnapshotMode = display_mode ])
   [ return (result: tup2_ArchivePanelState_Established_ArchivePanelConsistent) ->
   {[@stop_split] [@expl:monitor_ready_creusot ensures] ([@stop_split] [@expl:monitor_ready_creusot result type invariant] [%#sarchive_panel'4] inv_tup2_ArchivePanelState_Established_ArchivePanelConsistent result)
-    /\ ([@stop_split] [@expl:monitor_ready_creusot ensures] [%#sarchive_panel'5] archive_panel_consistent result.f0'0)}
+    /\ ([@stop_split] [@expl:monitor_ready_creusot ensures] [%#sarchive_panel'5] archive_panel_consistent_creusot result.f0'0)}
     (! return {result}) ]

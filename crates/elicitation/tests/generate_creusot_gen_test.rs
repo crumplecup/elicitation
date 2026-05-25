@@ -281,12 +281,12 @@ fn instrumented_transition_emits_local_creusot_clone() {
 
     let out = generate_creusot_file(&vsm, Path::new("/repo")).unwrap();
     assert!(
-        out.contains("fn begin_creusot_local(state: ConnState, proof: Established<ConnConsistent>, profile_name: String) -> (ConnState, Established<ConnConsistent>) { begin_impl_creusot_local(state, proof, profile_name) }"),
-        "expected local tracing-free clone; got:\n{out}"
+        !out.contains("fn begin_creusot_local"),
+        "external-crate output should not emit a local clone; got:\n{out}"
     );
     assert!(
-        out.contains("pub fn begin_creusot(state: ConnState, proof: Established<ConnConsistent>, profile_name: String) -> (ConnState, Established<ConnConsistent>) { begin_creusot_local(state, proof, profile_name) }"),
-        "expected wrapper to call local clone; got:\n{out}"
+        out.contains("pub fn begin_creusot(state: ConnState, proof: Established<ConnConsistent>, profile_name: String) -> (ConnState, Established<ConnConsistent>) { begin(state, proof, profile_name) }"),
+        "expected external wrapper to call source transition; got:\n{out}"
     );
 }
 

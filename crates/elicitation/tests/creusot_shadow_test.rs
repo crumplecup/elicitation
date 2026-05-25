@@ -51,6 +51,50 @@ fn prepare_shadow_workspace_sanitizes_rust_files_in_copy() {
 }
 
 #[test]
+fn prepare_shadow_workspace_copies_vendor_rust_files_verbatim() {
+    let temp = tempdir().expect("tempdir");
+    let root = temp.path();
+    std::fs::write(
+        root.join("Cargo.toml"),
+        "[package]\nname = \"shadow-demo\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+    )
+    .expect("write Cargo.toml");
+    std::fs::create_dir_all(root.join("vendor/demo/src")).expect("mkdir vendor src");
+    let vendor_src = "#[instrument]\nfn f() { tracing::debug!(\"x\"); }\n";
+    std::fs::write(root.join("vendor/demo/src/lib.rs"), vendor_src).expect("write vendor lib.rs");
+
+    let shadow = prepare_shadow_workspace(root).expect("prepare shadow");
+    let lib = std::fs::read_to_string(shadow.join("vendor/demo/src/lib.rs"))
+        .expect("read shadow vendor lib.rs");
+    assert_eq!(lib, vendor_src);
+}
+
+#[test]
+fn prepare_shadow_workspace_copies_proc_macro_crate_sources_verbatim() {
+    let temp = tempdir().expect("tempdir");
+    let root = temp.path();
+    std::fs::write(
+        root.join("Cargo.toml"),
+        "[workspace]\nmembers = [\"crates/demo_derive\"]\nresolver = \"2\"\n",
+    )
+    .expect("write workspace Cargo.toml");
+    std::fs::create_dir_all(root.join("crates/demo_derive/src")).expect("mkdir proc-macro src");
+    std::fs::write(
+        root.join("crates/demo_derive/Cargo.toml"),
+        "[package]\nname = \"demo_derive\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[lib]\nproc-macro = true\n",
+    )
+    .expect("write proc-macro Cargo.toml");
+    let proc_macro_src = "fn camel_to_snake(s: &str) -> String { s.to_lowercase() }\n";
+    std::fs::write(root.join("crates/demo_derive/src/lib.rs"), proc_macro_src)
+        .expect("write proc-macro lib.rs");
+
+    let shadow = prepare_shadow_workspace(root).expect("prepare shadow");
+    let lib = std::fs::read_to_string(shadow.join("crates/demo_derive/src/lib.rs"))
+        .expect("read shadow proc-macro lib.rs");
+    assert_eq!(lib, proc_macro_src);
+}
+
+#[test]
 fn sanitize_rust_source_does_not_duplicate_existing_deep_model() {
     let src = r#"
 #[cfg_attr(creusot, derive(DeepModel))]
@@ -141,6 +185,21 @@ impl Demo {
     assert_eq!(out.matches("#[cfg(not(creusot))]").count(), 2);
     assert!(out.contains("pub fn from_value"));
     assert!(out.contains("pub fn from_abbr"));
+}
+
+#[test]
+fn sanitize_rust_source_does_not_gate_quoted_parse_tokens() {
+    let src = r#"
+fn build_tokens() {
+    let _tokens = quote::quote! {
+        Self::from_str(value).ok()
+    };
+}
+"#;
+
+    let out = sanitize_rust_source(src).expect("sanitized source");
+    assert!(!out.contains("#[cfg(not(creusot))]"));
+    assert!(out.contains("quote::quote!"));
 }
 
 #[test]
