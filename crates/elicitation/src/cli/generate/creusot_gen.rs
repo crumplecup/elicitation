@@ -90,7 +90,7 @@ pub fn generate_creusot_file_with_style(
     // Resolve invariant — error only when an invariant exists without a body.
     let inv_parts: Option<(String, String, String, String)> = match &vsm.invariant {
         Some(p) => {
-            let source_fn_name = p.creusot_fn.as_deref().unwrap_or_else(|| p.name.as_str());
+            let source_fn_name = p.creusot_fn.as_deref().unwrap_or(p.name.as_str());
             let generated_fn_name = format!("{source_fn_name}_creusot_logic");
             let body = p.creusot_inv_body.as_deref().ok_or_else(|| {
                 let hint_fn = p.creusot_fn.as_deref().unwrap_or("creusot_invariant_fn");

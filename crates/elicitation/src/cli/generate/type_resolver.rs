@@ -175,14 +175,14 @@ impl TypeResolver {
         let mut by_module: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
 
         for name in needed {
-            if let Some(path) = self.resolve(name) {
-                if let Some(pos) = path.rfind("::") {
-                    let module = path[..pos].to_string();
-                    let ty = path[pos + 2..].to_string();
-                    by_module.entry(module).or_default().insert(ty);
-                }
-                // Top-level names (no `::`) are already in scope — skip.
+            if let Some(path) = self.resolve(name)
+                && let Some(pos) = path.rfind("::")
+            {
+                let module = path[..pos].to_string();
+                let ty = path[pos + 2..].to_string();
+                by_module.entry(module).or_default().insert(ty);
             }
+            // Top-level names (no `::`) are already in scope — skip.
         }
 
         let mut result: Vec<String> = Vec::new();
@@ -223,14 +223,14 @@ fn derive_module_path(source_file: &Path) -> String {
         return String::new();
     }
 
-    if let Some(last) = segs.last_mut() {
-        if last.ends_with(".rs") {
-            *last = last[..last.len() - 3].to_string();
-        }
+    if let Some(last) = segs.last_mut()
+        && last.ends_with(".rs")
+    {
+        *last = last[..last.len() - 3].to_string();
     }
 
     // `mod.rs` and `lib.rs` map to the enclosing module, not a sub-module.
-    while segs.last().map_or(false, |s| s == "mod" || s == "lib") {
+    while segs.last().is_some_and(|s| s == "mod" || s == "lib") {
         segs.pop();
     }
 
@@ -341,23 +341,23 @@ fn scan_parent_modules(source_file: &Path, import_root: &str, out: &mut HashMap<
             }
         };
 
-        if let Ok(src) = std::fs::read_to_string(&parent_file) {
-            if let Ok(syntax) = syn::parse_file(&src) {
-                let module_path = derive_module_path(&parent_file);
-                for item in &syntax.items {
-                    if let Item::Use(u) = item {
-                        if is_pub(&u.vis) {
-                            let mut names: Vec<String> = Vec::new();
-                            extract_leaf_names(&u.tree, &mut names);
-                            for name in names {
-                                let full = if module_path.is_empty() {
-                                    format!("{import_root}::{name}")
-                                } else {
-                                    format!("{import_root}::{module_path}::{name}")
-                                };
-                                out.entry(name).or_insert(full);
-                            }
-                        }
+        if let Ok(src) = std::fs::read_to_string(&parent_file)
+            && let Ok(syntax) = syn::parse_file(&src)
+        {
+            let module_path = derive_module_path(&parent_file);
+            for item in &syntax.items {
+                if let Item::Use(u) = item
+                    && is_pub(&u.vis)
+                {
+                    let mut names: Vec<String> = Vec::new();
+                    extract_leaf_names(&u.tree, &mut names);
+                    for name in names {
+                        let full = if module_path.is_empty() {
+                            format!("{import_root}::{name}")
+                        } else {
+                            format!("{import_root}::{module_path}::{name}")
+                        };
+                        out.entry(name).or_insert(full);
                     }
                 }
             }

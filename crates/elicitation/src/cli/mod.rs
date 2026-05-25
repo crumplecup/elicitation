@@ -767,7 +767,7 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
         for vsm in &vsms {
             let import_style = import_style_for_output(vsm, crate_path, out_dir);
             let content = kani_gen::generate_kani_file_with_style(vsm, crate_path, import_style)
-                .map_err(|e| std::io::Error::other(e))?;
+                .map_err(std::io::Error::other)?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }
@@ -779,8 +779,8 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             _ => None,
         };
         for vsm in &vsms {
-            let content = verus_gen::generate_verus_file(vsm, crate_path)
-                .map_err(|e| std::io::Error::other(e))?;
+            let content =
+                verus_gen::generate_verus_file(vsm, crate_path).map_err(std::io::Error::other)?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }
@@ -795,7 +795,7 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             let import_style = import_style_for_output(vsm, crate_path, out_dir);
             let content =
                 creusot_gen::generate_creusot_file_with_style(vsm, crate_path, import_style)
-                .map_err(|e| std::io::Error::other(e))?;
+                    .map_err(std::io::Error::other)?;
             let filename = format!("{}.rs", machine_to_filename(&vsm.machine));
             emit_content(&content, &filename, out_dir)?;
         }

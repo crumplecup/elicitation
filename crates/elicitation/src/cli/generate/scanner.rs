@@ -152,11 +152,7 @@ fn parse_formal_method_creusot_requires(f: &syn::ItemFn) -> Vec<String> {
                 && path.is_ident("creusot_requires")
                 && let Expr::Array(array) = value
             {
-                return array
-                    .elems
-                    .iter()
-                    .filter_map(string_lit_value)
-                    .collect();
+                return array.elems.iter().filter_map(string_lit_value).collect();
             }
         }
     }
@@ -262,9 +258,7 @@ pub fn scan_vsms(root: impl AsRef<Path>) -> Vec<VsmDescriptor> {
         .follow_links(false)
         .into_iter()
         .filter_map(|e| e.ok())
-        .filter(|e| {
-            e.file_type().is_file() && e.path().extension().map_or(false, |ext| ext == "rs")
-        })
+        .filter(|e| e.file_type().is_file() && e.path().extension().is_some_and(|ext| ext == "rs"))
         .filter_map(|entry| {
             let path = entry.into_path();
             tracing::debug!(file = %path.display(), "scanning");
@@ -324,15 +318,15 @@ pub fn scan_vsms(root: impl AsRef<Path>) -> Vec<VsmDescriptor> {
     let props_with_resolved: HashMap<String, PropDescriptor> = global_props
         .into_iter()
         .map(|(name, mut prop)| {
-            if prop.verus_inv_body.is_none() {
-                if let Some(fn_name) = &prop.verus_fn {
-                    prop.verus_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
-                }
+            if prop.verus_inv_body.is_none()
+                && let Some(fn_name) = &prop.verus_fn
+            {
+                prop.verus_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
             }
-            if prop.creusot_inv_body.is_none() {
-                if let Some(fn_name) = &prop.creusot_fn {
-                    prop.creusot_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
-                }
+            if prop.creusot_inv_body.is_none()
+                && let Some(fn_name) = &prop.creusot_fn
+            {
+                prop.creusot_inv_body = resolve_inv_body(fn_name, &global_fns, &parsed);
             }
             (name, prop)
         })
@@ -473,13 +467,13 @@ fn resolve_inv_body(
     // Tier 3: cfg-gated fn exists → emit callthrough `{fn_name}(state)`.
     let gated_exists = all_files.iter().any(|pf| {
         pf.syntax.items.iter().any(|item| {
-            if let Item::Fn(f) = item {
-                if f.sig.ident == fn_name {
-                    return f
-                        .attrs
-                        .iter()
-                        .any(|a| a.path().is_ident("cfg") || a.path().is_ident("cfg_attr"));
-                }
+            if let Item::Fn(f) = item
+                && f.sig.ident == fn_name
+            {
+                return f
+                    .attrs
+                    .iter()
+                    .any(|a| a.path().is_ident("cfg") || a.path().is_ident("cfg_attr"));
             }
             false
         })
@@ -731,10 +725,10 @@ fn leading_ident(ty: &syn::Type) -> Option<String> {
 fn extract_single_generic_arg(ty: &syn::Type) -> Option<String> {
     if let syn::Type::Path(tp) = ty {
         let seg = tp.path.segments.last()?;
-        if let syn::PathArguments::AngleBracketed(ab) = &seg.arguments {
-            if let Some(syn::GenericArgument::Type(inner)) = ab.args.first() {
-                return Some(ty_to_string(inner));
-            }
+        if let syn::PathArguments::AngleBracketed(ab) = &seg.arguments
+            && let Some(syn::GenericArgument::Type(inner)) = ab.args.first()
+        {
+            return Some(ty_to_string(inner));
         }
     }
     None
@@ -783,10 +777,10 @@ fn parse_prop_attr(
 /// Extract the transition list from `#[vsm(transitions = [a, b, c])]`.
 fn extract_vsm_transitions(s: &syn::ItemStruct) -> Option<Vec<String>> {
     for attr in &s.attrs {
-        if attr.path().is_ident("vsm") {
-            if let Some(transitions) = parse_vsm_transitions_attr(attr) {
-                return Some(transitions);
-            }
+        if attr.path().is_ident("vsm")
+            && let Some(transitions) = parse_vsm_transitions_attr(attr)
+        {
+            return Some(transitions);
         }
     }
     None
@@ -804,10 +798,10 @@ fn parse_vsm_transitions_attr(attr: &Attribute) -> Option<Vec<String>> {
         .ok()?;
 
     for meta in &nested {
-        if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta {
-            if path.is_ident("transitions") {
-                return extract_ident_array(value);
-            }
+        if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta
+            && path.is_ident("transitions")
+        {
+            return extract_ident_array(value);
         }
     }
     None
@@ -884,10 +878,10 @@ fn parse_formal_method_verus_class(f: &syn::ItemFn) -> Option<String> {
             Err(_) => continue,
         };
         for meta in nested {
-            if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta {
-                if path.is_ident("verus_class") {
-                    return string_lit_value(&value);
-                }
+            if let Meta::NameValue(MetaNameValue { path, value, .. }) = meta
+                && path.is_ident("verus_class")
+            {
+                return string_lit_value(&value);
             }
         }
     }

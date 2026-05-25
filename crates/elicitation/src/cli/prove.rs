@@ -253,25 +253,25 @@ pub fn run(config: &ProveConfig) -> anyhow::Result<()> {
 
     let mut failed: Vec<&str> = Vec::new();
 
-    if config.run_kani {
-        if let Err(e) = run_kani(config) {
-            eprintln!("❌ Kani failed: {e}");
-            failed.push("kani");
-        }
+    if config.run_kani
+        && let Err(e) = run_kani(config)
+    {
+        eprintln!("❌ Kani failed: {e}");
+        failed.push("kani");
     }
 
-    if config.run_verus {
-        if let Err(e) = run_verus(config) {
-            eprintln!("❌ Verus failed: {e}");
-            failed.push("verus");
-        }
+    if config.run_verus
+        && let Err(e) = run_verus(config)
+    {
+        eprintln!("❌ Verus failed: {e}");
+        failed.push("verus");
     }
 
-    if config.run_creusot {
-        if let Err(e) = run_creusot(config) {
-            eprintln!("❌ Creusot failed: {e}");
-            failed.push("creusot");
-        }
+    if config.run_creusot
+        && let Err(e) = run_creusot(config)
+    {
+        eprintln!("❌ Creusot failed: {e}");
+        failed.push("creusot");
     }
 
     if failed.is_empty() {
@@ -737,17 +737,17 @@ fn run_verus_file(config: &ProveConfig, verus_file: &Path) -> anyhow::Result<()>
     bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
-    if !config.dry_run {
-        if let Some(csv) = &config.verus_csv {
-            write_csv_header(csv, false)?;
-            append_csv_row(
-                csv,
-                "verus",
-                verus_file.to_string_lossy().as_ref(),
-                &status,
-                elapsed_s,
-            )?;
-        }
+    if !config.dry_run
+        && let Some(csv) = &config.verus_csv
+    {
+        write_csv_header(csv, false)?;
+        append_csv_row(
+            csv,
+            "verus",
+            verus_file.to_string_lossy().as_ref(),
+            &status,
+            elapsed_s,
+        )?;
     }
 
     if status == "PASS" || status == "DRY-RUN" {
@@ -768,8 +768,7 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
         .with_context(|| format!("Cannot read Verus dir: {}", dir.display()))?
         .filter_map(|e| e.ok().map(|e| e.path()))
         .filter(|p| {
-            p.extension().map(|e| e == "rs").unwrap_or(false)
-                && p.file_name().map(|n| n != "mod.rs").unwrap_or(false)
+            p.extension().is_some_and(|e| e == "rs") && p.file_name().is_some_and(|n| n != "mod.rs")
         })
         .collect();
     files.sort();
@@ -830,10 +829,10 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
             execute_with_progress("verus", cmd, config.timeout, config.dry_run, &log, sink)?;
         let elapsed_s = start.elapsed().as_secs();
 
-        if let Some(csv) = &config.verus_csv {
-            if !config.dry_run {
-                append_csv_row(csv, "verus", &stem, &status, elapsed_s)?;
-            }
+        if let Some(csv) = &config.verus_csv
+            && !config.dry_run
+        {
+            append_csv_row(csv, "verus", &stem, &status, elapsed_s)?;
         }
 
         match status.as_str() {
@@ -986,11 +985,11 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
     prove_bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
-    if !config.dry_run {
-        if let Some(csv) = &config.creusot_csv {
-            write_csv_header(csv, false)?;
-            append_csv_row(csv, "creusot", "creusot", &prove_status, elapsed_s)?;
-        }
+    if !config.dry_run
+        && let Some(csv) = &config.creusot_csv
+    {
+        write_csv_header(csv, false)?;
+        append_csv_row(csv, "creusot", "creusot", &prove_status, elapsed_s)?;
     }
 
     if prove_status == "PASS" || prove_status == "DRY-RUN" {
@@ -1114,9 +1113,12 @@ fn creusot_sink(bar: ProgressBar) -> LineSink {
         } else if proving && t.starts_with("Goal ") {
             goals += 1;
             b.set_message(format!("🔬 Proving [{goals} goals]…"));
-        } else if t.starts_with("Warning:") || t.contains("cargo creusot clean") {
-            b.println(line);
-        } else if t.starts_with("Proved ") || t.starts_with("Error ") || t.contains("FAILED") {
+        } else if t.starts_with("Warning:")
+            || t.contains("cargo creusot clean")
+            || t.starts_with("Proved ")
+            || t.starts_with("Error ")
+            || t.contains("FAILED")
+        {
             b.println(line);
         }
     }))

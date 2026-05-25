@@ -1150,7 +1150,7 @@ impl ToCodeLiteral for url::Url {
 impl ToCodeLiteral for url::SyntaxViolation {
     fn to_code_literal(&self) -> TokenStream {
         use url::SyntaxViolation::*;
-        let variant = match self {
+        match self {
             Backslash => quote::quote! { url::SyntaxViolation::Backslash },
             C0SpaceIgnored => quote::quote! { url::SyntaxViolation::C0SpaceIgnored },
             EmbeddedCredentials => quote::quote! { url::SyntaxViolation::EmbeddedCredentials },
@@ -1167,8 +1167,7 @@ impl ToCodeLiteral for url::SyntaxViolation {
             TabOrNewlineIgnored => quote::quote! { url::SyntaxViolation::TabOrNewlineIgnored },
             UnencodedAtSign => quote::quote! { url::SyntaxViolation::UnencodedAtSign },
             _ => unreachable!("unknown SyntaxViolation variant"),
-        };
-        variant
+        }
     }
 }
 

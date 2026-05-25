@@ -33,19 +33,21 @@ pub fn find_crate_name(search_from: &std::path::Path) -> String {
     let mut dir: &std::path::Path = search_from;
     loop {
         let manifest = dir.join("Cargo.toml");
-        if manifest.exists() {
-            if let Ok(content) = std::fs::read_to_string(&manifest) {
-                for line in content.lines() {
-                    let t = line.trim();
-                    // Match `name = "foo"` or `name = 'foo'`, skip workspace
-                    // re-declarations like `name.workspace = true`.
-                    if t.starts_with("name") && t.contains('=') && !t.contains('.') {
-                        if let Some(val) = t.splitn(2, '=').nth(1) {
-                            let name = val.trim().trim_matches('"').trim_matches('\'').trim();
-                            if !name.is_empty() && !name.contains('{') {
-                                return name.to_string();
-                            }
-                        }
+        if manifest.exists()
+            && let Ok(content) = std::fs::read_to_string(&manifest)
+        {
+            for line in content.lines() {
+                let t = line.trim();
+                // Match `name = "foo"` or `name = 'foo'`, skip workspace
+                // re-declarations like `name.workspace = true`.
+                if t.starts_with("name")
+                    && t.contains('=')
+                    && !t.contains('.')
+                    && let Some((_, val)) = t.split_once('=')
+                {
+                    let name = val.trim().trim_matches('"').trim_matches('\'').trim();
+                    if !name.is_empty() && !name.contains('{') {
+                        return name.to_string();
                     }
                 }
             }
@@ -65,9 +67,6 @@ pub fn find_crate_root(search_from: &std::path::Path) -> Option<std::path::PathB
         if dir.join("Cargo.toml").exists() {
             return Some(dir.to_path_buf());
         }
-        match dir.parent() {
-            Some(p) => dir = p,
-            None => return None,
-        }
+        dir = dir.parent()?;
     }
 }

@@ -373,21 +373,13 @@ pub fn generate_verus_file(
                 "/// Contract for `{name}_stub` — mirrors the formal_method contract that\n\
                  /// Kani and Creusot independently verify on the real `{name}` body.\n"
             ));
-            if pre_needed {
-                out.push_str(&format!(
-                    "pub assume_specification[{name}_stub](state: {state_ty}) -> (r: {state_ty})\n    \
-                     requires {inv_fn}(&state),\n    \
-                     ensures  {post_pred};\n\n",
-                    inv_fn = inv.inv_fn,
-                ));
-            } else {
-                out.push_str(&format!(
-                    "pub assume_specification[{name}_stub](state: {state_ty}) -> (r: {state_ty})\n    \
-                     requires {inv_fn}(&state),\n    \
-                     ensures  {post_pred};\n\n",
-                    inv_fn = inv.inv_fn,
-                ));
-            }
+            let _ = pre_needed;
+            out.push_str(&format!(
+                "pub assume_specification[{name}_stub](state: {state_ty}) -> (r: {state_ty})\n    \
+                 requires {inv_fn}(&state),\n    \
+                 ensures  {post_pred};\n\n",
+                inv_fn = inv.inv_fn,
+            ));
         }
 
         out.push_str(
@@ -640,10 +632,10 @@ fn parse_special_variants(state_body: &str) -> Vec<String> {
             _ => current.push(ch),
         }
     }
-    if let Some(v) = first_ident(&current) {
-        if !v.is_empty() {
-            variants.push(v);
-        }
+    if let Some(v) = first_ident(&current)
+        && !v.is_empty()
+    {
+        variants.push(v);
     }
     variants
 }
