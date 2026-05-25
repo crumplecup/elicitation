@@ -32,9 +32,11 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+#[cfg(not(creusot))]
 mod factory;
 mod tree;
 
+#[cfg(not(creusot))]
 pub use factory::{
     PointDistanceFactory, RTreeObjectFactory, prime_point_distance_tree, prime_rtree_object_tree,
 };

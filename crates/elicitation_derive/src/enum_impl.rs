@@ -62,24 +62,16 @@ fn generate_elicit_spec_impl(
         if variant_count == 1 { "" } else { "s" }
     );
 
-    let variant_entries: Vec<TokenStream2> = variants
+    let variant_labels: Vec<String> = variants
         .iter()
-        .map(|v| {
-            let label = v.ident.to_string();
-            quote! {
-                elicitation::SpecEntryBuilder::default()
-                    .label(#label.to_string())
-                    .description(#label.to_string())
-                    .build()
-                    .expect("valid SpecEntry")
-            }
-        })
+        .map(|v| v.ident.to_string())
         .collect();
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let inventory = if generics.params.is_empty() {
         quote! {
+            #[cfg(not(creusot))]
             elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
                 #name_str,
                 <#name as elicitation::ElicitSpec>::type_spec,
@@ -93,17 +85,11 @@ fn generate_elicit_spec_impl(
     quote! {
         impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
             fn type_spec() -> elicitation::TypeSpec {
-                let variants_cat = elicitation::SpecCategoryBuilder::default()
-                    .name("variants".to_string())
-                    .entries(vec![#(#variant_entries),*])
-                    .build()
-                    .expect("valid SpecCategory");
-                elicitation::TypeSpecBuilder::default()
-                    .type_name(#name_str.to_string())
-                    .summary(#auto_summary.to_string())
-                    .categories(vec![variants_cat])
-                    .build()
-                    .expect("valid TypeSpec")
+                elicitation::TypeSpec::build_select(
+                    #name_str,
+                    #auto_summary,
+                    &[#(#variant_labels),*],
+                )
             }
         }
         #inventory
@@ -189,6 +175,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     let graph_key_emission = if generics.params.is_empty() {
         let name_str = name.to_string();
         quote! {
+            #[cfg(not(creusot))]
             elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
                 #name_str,
                 <#name as elicitation::ElicitIntrospect>::metadata,
@@ -272,11 +259,15 @@ fn generate_prompt_tree_impl_enum(
             });
             let variant_name = v.ident.to_string();
             quote! {
-                Some(Box::new(elicitation::PromptTree::Survey {
-                    prompt: None,
-                    type_name: #variant_name.to_string(),
-                    fields: vec![#(#field_exprs),*],
-                }))
+                {
+                    let mut fields = Vec::new();
+                    #(fields.push(#field_exprs);)*
+                    Some(Box::new(elicitation::PromptTree::Survey {
+                        prompt: None,
+                        type_name: #variant_name.to_string(),
+                        fields,
+                    }))
+                }
             }
         }
         VariantFields::Struct(fields) => {
@@ -290,11 +281,15 @@ fn generate_prompt_tree_impl_enum(
             });
             let variant_name = v.ident.to_string();
             quote! {
-                Some(Box::new(elicitation::PromptTree::Survey {
-                    prompt: None,
-                    type_name: #variant_name.to_string(),
-                    fields: vec![#(#field_exprs),*],
-                }))
+                {
+                    let mut fields = Vec::new();
+                    #(fields.push(#field_exprs);)*
+                    Some(Box::new(elicitation::PromptTree::Survey {
+                        prompt: None,
+                        type_name: #variant_name.to_string(),
+                        fields,
+                    }))
+                }
             }
         }
     });
@@ -330,11 +325,28 @@ fn generate_prompt_tree_impl_enum(
             for #name #ty_generics #where_tokens
         {
             fn prompt_tree() -> elicitation::PromptTree {
+                #[cfg(creusot)]
+                {
+                    return elicitation::PromptTree::Select {
+                        prompt: String::new(),
+                        type_name: String::new(),
+                        options: Vec::new(),
+                        branches: Vec::new(),
+                    };
+                }
+
+                #[cfg(not(creusot))]
+                {
+                let mut options = Vec::new();
+                #(options.push(#option_strs.to_string());)*
+                let mut branches = Vec::new();
+                #(branches.push(#branch_exprs);)*
                 elicitation::PromptTree::Select {
                     prompt: #prompt_expr,
                     type_name: #name_str.to_string(),
-                    options: vec![#(#option_strs.to_string()),*],
-                    branches: vec![#(#branch_exprs),*],
+                    options,
+                    branches,
+                }
                 }
             }
         }
@@ -423,17 +435,38 @@ fn generate_select_impl(
     quote! {
         impl #impl_generics elicitation::Select for #name #ty_generics #where_clause {
             fn options() -> Vec<Self> {
-                vec![#(Self::#unit_variant_idents),*]
+                let mut options = Vec::new();
+                #(options.push(Self::#unit_variant_idents);)*
+                options
             }
 
             fn labels() -> Vec<String> {
-                vec![#(#variant_labels.to_string()),*]
+                #[cfg(creusot)]
+                {
+                    return Vec::new();
+                }
+
+                #[cfg(not(creusot))]
+                {
+                let mut labels = Vec::new();
+                #(labels.push(#variant_labels.to_string());)*
+                labels
+                }
             }
 
             fn from_label(label: &str) -> Option<Self> {
-                match label {
-                    #(#variant_labels => Some(Self::#unit_variant_idents),)*
-                    _ => None,
+                #[cfg(creusot)]
+                {
+                    let _ = label;
+                    None
+                }
+
+                #[cfg(not(creusot))]
+                {
+                    match label {
+                        #(#variant_labels => Some(Self::#unit_variant_idents),)*
+                        _ => None,
+                    }
                 }
             }
         }
@@ -545,8 +578,6 @@ fn generate_elicit_impl(
     where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
-    let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
-
     // Collect all field types across all variants for kani_proof
     let mut all_field_types: Vec<&syn::Type> = Vec::new();
     for variant in variants {
@@ -629,17 +660,17 @@ fn generate_elicit_impl(
             .unwrap_or_else(|| "Default".to_string());
         quote! {
             fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::kani_first_variant_constructible(
+                elicitation::verification::proof_helpers::ProofEmitter::kani_first_variant_constructible(
                     &#name_str, &#first_variant
                 )
             }
 
             fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::verus_multi_variant_enum(&#name_str)
+                elicitation::verification::proof_helpers::ProofEmitter::verus_multi_variant_enum(&#name_str)
             }
 
             fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::creusot_multi_variant_enum(&#name_str)
+                elicitation::verification::proof_helpers::ProofEmitter::creusot_multi_variant_enum(&#name_str)
             }
         }
     } else {
@@ -676,6 +707,7 @@ fn generate_elicit_impl(
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(
                 skip(communicator),
                 fields(
@@ -695,7 +727,7 @@ fn generate_elicit_impl(
                 match selected.as_str() {
                     #(#match_arms,)*
                     _ => {
-                        let options_str = vec![#(#variant_labels.to_string()),*].join(", ");
+                        let options_str = <Self as elicitation::Select>::labels().join(", ");
                         tracing::error!(
                             selected = %selected,
                             valid_options = ?<Self as elicitation::Select>::labels(),
@@ -727,17 +759,17 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
     // this proc-macro's own `proofs` feature, not the destination crate's features.
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::verification::proof_helpers::kani_single_variant_enum(
+            elicitation::verification::proof_helpers::ProofEmitter::kani_single_variant_enum(
                 stringify!(#style_name)
             )
         }
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::verification::proof_helpers::verus_single_variant_enum(
+            elicitation::verification::proof_helpers::ProofEmitter::verus_single_variant_enum(
                 stringify!(#style_name)
             )
         }
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+            elicitation::verification::proof_helpers::ProofEmitter::creusot_single_variant_enum(
                 stringify!(#style_name)
             )
         }
@@ -745,7 +777,8 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 
     quote! {
         /// Style enum for this type (default-only for now).
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
+        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -763,7 +796,7 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
-
+            #[cfg(not(creusot))]
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
@@ -821,9 +854,13 @@ fn generate_introspect_impl(
                     .collect(),
             };
             quote! {
-                elicitation::VariantMetadata {
-                    label: #label.to_string(),
-                    fields: vec![#(#fields),*],
+                {
+                    let mut fields = Vec::new();
+                    #(fields.push(#fields);)*
+                    elicitation::VariantMetadata {
+                        label: #label.to_string(),
+                        fields,
+                    }
                 }
             }
         })
@@ -836,12 +873,28 @@ fn generate_introspect_impl(
             }
 
             fn metadata() -> elicitation::TypeMetadata {
+                #[cfg(creusot)]
+                {
+                    return elicitation::TypeMetadata {
+                        type_name: "",
+                        description: None,
+                        details: elicitation::PatternDetails::Select {
+                            variants: Vec::new(),
+                        },
+                    };
+                }
+
+                #[cfg(not(creusot))]
+                {
+                let mut variants = Vec::new();
+                #(variants.push(#variant_metadata);)*
                 elicitation::TypeMetadata {
                     type_name: #name_str,
                     description: <Self as elicitation::Prompt>::prompt(),
                     details: elicitation::PatternDetails::Select {
-                        variants: vec![#(#variant_metadata),*],
+                        variants,
                     },
+                }
                 }
             }
         }

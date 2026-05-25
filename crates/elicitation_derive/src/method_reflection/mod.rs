@@ -109,11 +109,11 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // NOTE: We use the original_item TokenStream instead of #impl_block to preserve
     // the exact original tokens and avoid any potential issues with ToTokens conversion
     TokenStream::from(quote! {
-        #(#param_structs)*
+        #(#[cfg(not(creusot))] #param_structs)*
 
         #original_item
 
-        // MCP tool wrappers
+        #[cfg(not(creusot))]
         impl #impl_type {
             #(#wrapper_methods)*
         }

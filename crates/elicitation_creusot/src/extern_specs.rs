@@ -59,6 +59,68 @@ extern_spec! {
     }
 }
 
+// Enum TypeSpec helpers are runtime metadata constructors; proof builds should
+// trust their result shape rather than descend into builder internals.
+extern_spec! {
+    impl elicitation::TypeSpec {
+        #[requires(true)]
+        fn build_select(
+            type_name: &'static str,
+            summary: &'static str,
+            variant_labels: &[&'static str],
+        ) -> elicitation::TypeSpec;
+    }
+}
+
+// Proof-body emitters are operational `TokenStream` builders. Same-crate Creusot
+// should trust these by signature and verify the surrounding semantic wrappers.
+extern_spec! {
+    impl elicitation::verification::proof_helpers::ProofEmitter {
+        #[requires(true)]
+        fn kani_trivial_prop(fn_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn verus_trivial_prop(fn_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn creusot_trivial_prop(fn_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn kani_single_variant_enum(enum_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn verus_single_variant_enum(enum_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn creusot_single_variant_enum(enum_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn kani_first_variant_constructible(
+            enum_name: &str,
+            variant_name: &str,
+        ) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn verus_multi_variant_enum(enum_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn creusot_multi_variant_enum(enum_name: &str) -> elicitation::proc_macro2::TokenStream;
+    }
+}
+
+extern_spec! {
+    impl elicitation::emit_code::CodeLiteralEmitter {
+        #[requires(true)]
+        fn type_tokens(type_name: &str) -> elicitation::proc_macro2::TokenStream;
+
+        #[requires(true)]
+        fn enum_unit_variant_literal(
+            type_name: &str,
+            variant_name: &str,
+        ) -> elicitation::proc_macro2::TokenStream;
+    }
+}
+
 // ============================================================================
 // Bool constructors
 // ============================================================================

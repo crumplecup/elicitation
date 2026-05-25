@@ -111,9 +111,27 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Errors
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
+    #[cfg(not(creusot))]
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
+
+    /// Creusot-only stub for elicitation.
+    ///
+    /// Proof builds must not lower the async MCP interaction machinery emitted by
+    /// `#[derive(Elicit)]`; Creusot cannot translate the builtin `Future`
+    /// implementation for those async blocks. During proof runs, callers still
+    /// type-check against the trait, but the operational elicitation path is
+    /// intentionally unavailable.
+    #[cfg(creusot)]
+    fn elicit<C: ElicitCommunicator>(
+        _communicator: &C,
+    ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send
+    where
+        Self: Send,
+    {
+        std::future::ready(Err(crate::ElicitErrorKind::Cancelled.into()))
+    }
 
     /// Server-side elicitation via MCP peer.
     ///

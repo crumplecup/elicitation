@@ -36,6 +36,23 @@
 
 use proc_macro2::TokenStream;
 
+/// Extensional boundary for `TokenStream` code-literal assembly.
+pub struct CodeLiteralEmitter;
+
+impl CodeLiteralEmitter {
+    /// Parse a concrete type path into tokens.
+    pub fn type_tokens(type_name: &str) -> TokenStream {
+        type_name.parse().expect("valid type tokens")
+    }
+
+    /// Parse a unit enum variant path into tokens.
+    pub fn enum_unit_variant_literal(type_name: &str, variant_name: &str) -> TokenStream {
+        format!("{type_name}::{variant_name}")
+            .parse()
+            .expect("valid unit variant literal")
+    }
+}
+
 // ── Global emit registry ──────────────────────────────────────────────────────
 
 /// An inventory entry connecting a tool name to an [`EmitCode`] constructor.

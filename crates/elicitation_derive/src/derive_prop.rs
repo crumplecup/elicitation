@@ -177,15 +177,15 @@ pub fn expand(input: TokenStream) -> TokenStream {
 
     let proof_methods = quote! {
         fn kani_proof() -> ::elicitation::proc_macro2::TokenStream {
-            ::elicitation::verification::proof_helpers::kani_trivial_prop(#snake_name)
+            ::elicitation::verification::proof_helpers::ProofEmitter::kani_trivial_prop(#snake_name)
         }
 
         fn verus_proof() -> ::elicitation::proc_macro2::TokenStream {
-            ::elicitation::verification::proof_helpers::verus_trivial_prop(#snake_name)
+            ::elicitation::verification::proof_helpers::ProofEmitter::verus_trivial_prop(#snake_name)
         }
 
         fn creusot_proof() -> ::elicitation::proc_macro2::TokenStream {
-            ::elicitation::verification::proof_helpers::creusot_trivial_prop(#snake_name)
+            ::elicitation::verification::proof_helpers::ProofEmitter::creusot_trivial_prop(#snake_name)
         }
 
         #creusot_fn_override

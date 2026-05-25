@@ -143,3 +143,36 @@ pub struct TypeSpec {
     #[builder(default)]
     categories: Vec<SpecCategory>,
 }
+
+impl TypeSpec {
+    /// Build the standard Select-pattern [`TypeSpec`] for an enum.
+    pub fn build_select(
+        type_name: &'static str,
+        summary: &'static str,
+        variant_labels: &[&'static str],
+    ) -> Self {
+        let variant_entries = variant_labels
+            .iter()
+            .map(|label| {
+                SpecEntryBuilder::default()
+                    .label((*label).to_string())
+                    .description((*label).to_string())
+                    .build()
+                    .expect("valid SpecEntry")
+            })
+            .collect();
+
+        let variants_category = SpecCategoryBuilder::default()
+            .name("variants".to_string())
+            .entries(variant_entries)
+            .build()
+            .expect("valid SpecCategory");
+
+        TypeSpecBuilder::default()
+            .type_name(type_name.to_string())
+            .summary(summary.to_string())
+            .categories(vec![variants_category])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}

@@ -319,14 +319,17 @@ fn encode_term_(term: &Term, locals: &mut Locals) -> Result<EncodingResult, Enco
             });
             Ok(EncodingResult { toks: tokens, deref_bor })
         }
-        Term::Path(path) if let Some(ident) = path.inner.path.get_ident() => {
-            Ok(if locals.is_ref_bound(ident) {
-                quote_spanned! { sp=> (*#ident) }.into()
+        Term::Path(path) => {
+            if let Some(ident) = path.inner.path.get_ident() {
+                Ok(if locals.is_ref_bound(ident) {
+                    quote_spanned! { sp=> (*#ident) }.into()
+                } else {
+                    EncodingResult { toks: quote_spanned! { sp=> #ident }, deref_bor: true }
+                })
             } else {
-                EncodingResult { toks: quote_spanned! { sp=> #ident }, deref_bor: true }
-            })
+                Ok(quote_spanned! { sp=> #path }.into())
+            }
         }
-        Term::Path(path) => Ok(quote_spanned! { sp=> #path }.into()),
         // Special case to desugar x..=y to RangeInclusive::new_log (instead of new, which is a program function)
         Term::Range(TermRange {
             from: Some(from),
@@ -654,8 +657,12 @@ fn encode_stmt_(stmt: &TermStmt, locals: &mut Locals) -> Result<TokenStream, Enc
 impl<'a> Visit<'a> for PatEncoder<'a> {
     fn visit_pat(&mut self, pat: &'a Pat) {
         match pat {
-            Pat::Path(path) if let Some(ident) = path.path.get_ident() => {
-                self.locals.bind_raw(ident)
+            Pat::Path(path) => {
+                if let Some(ident) = path.path.get_ident() {
+                    self.locals.bind_raw(ident)
+                } else {
+                    visit_pat(self, pat)
+                }
             }
             Pat::Ident(ident) => self.locals.bind_raw(&ident.ident),
             Pat::Lit(syn::ExprLit { lit: Lit::Int(_), .. }) => {

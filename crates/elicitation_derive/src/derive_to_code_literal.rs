@@ -268,6 +268,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
         },
         None => quote! { ::elicitation::quote::quote! { #name } },
     };
+    let type_tokens_literal = type_tokens_expr.to_string();
 
     let expanded = quote! {
         impl #impl_generics ::elicitation::emit_code::ToCodeLiteral
@@ -278,7 +279,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
             }
 
             fn type_tokens() -> ::elicitation::proc_macro2::TokenStream {
-                #type_tokens_expr
+                ::elicitation::emit_code::CodeLiteralEmitter::type_tokens(#type_tokens_literal)
             }
         }
     };
@@ -377,7 +378,7 @@ pub fn generate_to_code_literal_impl(
             }
 
             fn type_tokens() -> ::elicitation::proc_macro2::TokenStream {
-                ::elicitation::quote::quote! { #name }
+                ::elicitation::emit_code::CodeLiteralEmitter::type_tokens(stringify!(#name))
             }
         }
     }
@@ -1301,10 +1302,14 @@ fn gen_variant_arm(
                 )
                 .to_compile_error();
             }
-            let quote_call = wrap_in_quote(quote! { #emitted_name :: #variant_name });
+            let emitted_name_literal = emitted_name.to_string();
+            let variant_name_literal = variant_name.to_string();
             quote! {
                 #local_name::#variant_name => {
-                    #quote_call
+                    ::elicitation::emit_code::CodeLiteralEmitter::enum_unit_variant_literal(
+                        #emitted_name_literal,
+                        #variant_name_literal,
+                    )
                 }
             }
         }

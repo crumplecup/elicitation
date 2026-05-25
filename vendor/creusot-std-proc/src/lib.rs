@@ -1,4 +1,3 @@
-#![feature(if_let_guard)]
 #![cfg_attr(
     feature = "creusot",
     feature(

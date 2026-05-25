@@ -121,12 +121,34 @@
 
 use crate::{ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation};
 
+#[cfg(not(creusot))]
+#[doc(hidden)]
+pub trait ElicitCompleteWire:
+    serde::Serialize + for<'de> serde::Deserialize<'de> + schemars::JsonSchema
+{
+}
+
+#[cfg(not(creusot))]
+impl<T> ElicitCompleteWire for T
+where
+    T: serde::Serialize + for<'de> serde::Deserialize<'de> + schemars::JsonSchema,
+{
+}
+
+#[cfg(creusot)]
+#[doc(hidden)]
+pub trait ElicitCompleteWire {}
+
+#[cfg(creusot)]
+impl<T> ElicitCompleteWire for T {}
+
 /// Compiler-enforced supertrait for fully-implemented elicitation support.
 ///
 /// `impl ElicitComplete for MyType {}` compiles only when every framework
 /// obligation is satisfied. Use it as the single bound in generic code that
 /// requires a type to be interactively elicitable, structurally introspectable,
-/// formally verified, and wire-serialisable.
+/// and formally verified. Non-Creusot builds also require the full
+/// wire-serialisation surface.
 ///
 /// See the module documentation for the full design rationale, the
 /// proof composition guarantee, and the step-by-step guide for adding new types.
@@ -135,9 +157,7 @@ pub trait ElicitComplete:
     + ElicitIntrospect
     + ElicitSpec
     + ElicitPromptTree
-    + serde::Serialize
-    + for<'de> serde::Deserialize<'de>
-    + schemars::JsonSchema
+    + ElicitCompleteWire
     + crate::emit_code::ToCodeLiteral
 {
     /// Runtime check: all three proof methods return non-empty TokenStreams.

@@ -343,6 +343,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
     let elicit_spec_impl = {
         let inventory = if generics.params.is_empty() {
             quote! {
+                #[cfg(not(creusot))]
                 elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
                     #name_str,
                     <#name as elicitation::ElicitSpec>::type_spec,
@@ -355,6 +356,16 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         quote! {
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
+                    #[cfg(creusot)]
+                    {
+                        return elicitation::TypeSpecBuilder::default()
+                            .type_name(String::new())
+                            .summary(String::new())
+                            .categories(Vec::new())
+                            .build()
+                            .expect("valid TypeSpec");
+                    }
+
                     let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
                     #(
                         if let Some(cat) = #field_category_blocks {
@@ -450,12 +461,15 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
         impl #impl_generics elicitation::Survey for #name #ty_generics #where_clause {
             fn fields() -> Vec<elicitation::FieldInfo> {
-                vec![#(#field_metadata),*]
+                let mut fields = Vec::new();
+                #(fields.push(#field_metadata);)*
+                fields
             }
         }
 
         /// Style enum for this type (default-only).
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
+        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -468,6 +482,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
+            #[cfg(not(creusot))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 _communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
@@ -482,6 +497,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(skip(communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 communicator: &C,
@@ -585,6 +601,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     let elicit_spec_impl = {
         let inventory = if generics.params.is_empty() {
             quote! {
+                #[cfg(not(creusot))]
                 elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
                     #name_str,
                     <#name as elicitation::ElicitSpec>::type_spec,
@@ -597,6 +614,16 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         quote! {
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
+                    #[cfg(creusot)]
+                    {
+                        return elicitation::TypeSpecBuilder::default()
+                            .type_name(String::new())
+                            .summary(String::new())
+                            .categories(Vec::new())
+                            .build()
+                            .expect("valid TypeSpec");
+                    }
+
                     let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
                     #struct_requires_block
                     elicitation::TypeSpecBuilder::default()
@@ -662,7 +689,8 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         }
 
         /// Style enum for this type (default-only).
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
+        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -675,6 +703,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
 
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
+            #[cfg(not(creusot))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 _communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
@@ -689,6 +718,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(skip(_communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 _communicator: &C,
@@ -710,7 +740,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
                     type_name: #name_str,
                     description: <Self as elicitation::Prompt>::prompt(),
                     details: elicitation::PatternDetails::Survey {
-                        fields: vec![],
+                        fields: Vec::new(),
                     },
                 }
             }
@@ -954,7 +984,9 @@ fn generate_survey_impl(
     quote! {
         impl #impl_generics elicitation::Survey for #name #ty_generics #where_clause {
             fn fields() -> Vec<elicitation::FieldInfo> {
-                vec![#(#field_metadata),*]
+                let mut fields = Vec::new();
+                #(fields.push(#field_metadata);)*
+                fields
             }
         }
     }
@@ -1078,7 +1110,8 @@ fn generate_elicit_impl_simple(
 
     quote! {
         /// Style enum for this type (default-only).
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
+        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -1094,6 +1127,7 @@ fn generate_elicit_impl_simple(
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
+            #[cfg(not(creusot))]
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
@@ -1106,6 +1140,7 @@ fn generate_elicit_impl_simple(
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(skip(communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 communicator: &C,
@@ -1387,7 +1422,8 @@ fn generate_elicit_impl_styled(
 
     quote! {
         // Generate style selection enum
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
+        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
         enum #style_enum_name {
             #[default]
             #default_variant,
@@ -1423,6 +1459,7 @@ fn generate_elicit_impl_styled(
         impl elicitation::Elicitation for #style_enum_name {
             type Style = #style_enum_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(skip(communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 communicator: &C,
@@ -1473,6 +1510,7 @@ fn generate_elicit_impl_styled(
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_enum_name;
 
+            #[cfg(not(creusot))]
             #[tracing::instrument(skip(communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 communicator: &C,
@@ -1666,6 +1704,16 @@ fn generate_elicit_spec_impl(
     let spec_impl = quote! {
         impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
             fn type_spec() -> elicitation::TypeSpec {
+                #[cfg(creusot)]
+                {
+                    return elicitation::TypeSpecBuilder::default()
+                        .type_name(String::new())
+                        .summary(String::new())
+                        .categories(Vec::new())
+                        .build()
+                        .expect("valid TypeSpec");
+                }
+
                 let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
 
                 // Per-field sub-categories
@@ -1690,6 +1738,7 @@ fn generate_elicit_spec_impl(
 
     let inventory_submit = if emit_inventory {
         quote! {
+            #[cfg(not(creusot))]
             elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
                 #name_str,
                 <#name #ty_generics as elicitation::ElicitSpec>::type_spec,
@@ -1710,6 +1759,7 @@ fn generate_elicit_spec_impl(
 fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
     let name_str = name.to_string();
     quote! {
+        #[cfg(not(creusot))]
         elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
             #name_str,
             <#name as elicitation::ElicitIntrospect>::metadata,
@@ -1774,10 +1824,12 @@ fn generate_prompt_tree_impl_struct(
             for #name #ty_generics #where_tokens
         {
             fn prompt_tree() -> elicitation::PromptTree {
+                let mut fields = Vec::new();
+                #(fields.push(#field_exprs);)*
                 elicitation::PromptTree::Survey {
                     prompt: #prompt_expr,
                     type_name: #name_str.to_string(),
-                    fields: vec![#(#field_exprs),*],
+                    fields,
                 }
             }
         }

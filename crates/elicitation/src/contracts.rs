@@ -586,7 +586,7 @@ impl<P: Prop + crate::Elicitation> crate::Prompt for Established<P> {
     }
 }
 
-impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
+impl<P: Prop + crate::Elicitation + Send> crate::Elicitation for Established<P> {
     type Style = <P as crate::Elicitation>::Style;
 
     #[tracing::instrument(skip(communicator))]

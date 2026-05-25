@@ -287,7 +287,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
             type State     = #state_type;
             type Invariant = #invariant_type;
 
-            #[cfg(not(kani))]
+            #[cfg(not(any(kani, creusot)))]
             fn transition_harnesses() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __harnesses = ::std::vec::Vec::new();
                 for __vc in
@@ -298,7 +298,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __harnesses
             }
 
-            #[cfg(not(kani))]
+            #[cfg(not(any(kani, creusot)))]
             fn transition_creusot_contracts(
                 __inv_fn: &str,
             ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {
@@ -307,7 +307,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __contracts
             }
 
-            #[cfg(not(kani))]
+            #[cfg(not(any(kani, creusot)))]
             fn transition_verus_contracts(
                 __inv_fn: &str,
             ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {
@@ -316,14 +316,14 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 __contracts
             }
 
-            #[cfg(not(kani))]
+            #[cfg(not(any(kani, creusot)))]
             fn transition_verus_stubs() -> ::std::vec::Vec<::proc_macro2::TokenStream> {
                 let mut __stubs = ::std::vec::Vec::new();
                 #( #verus_stub_pushes )*
                 __stubs
             }
 
-            #[cfg(not(kani))]
+            #[cfg(not(any(kani, creusot)))]
             fn transition_kani_closure_proofs(
                 __inv_fn: &str,
             ) -> ::std::vec::Vec<::proc_macro2::TokenStream> {

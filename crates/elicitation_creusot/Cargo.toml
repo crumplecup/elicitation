@@ -17,6 +17,11 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }
 
 [dependencies]
 creusot-std = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+schemars = { workspace = true }
+rmcp = { workspace = true }
+proc-macro2 = { workspace = true }
 
 # Import the contract types from main crate
 elicitation = { workspace = true }
@@ -78,3 +83,37 @@ wgpu-types = ["elicitation/wgpu-types"]
 palette = ["dep:palette", "elicitation/palette"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]
 vsm-proofs = ["dep:elicit_server"]
+gallery-c31-raw-instrument = []
+gallery-c31-formal-only = []
+gallery-c31-formal-instrument = []
+gallery-c32-source-only = []
+gallery-c32-generated-only = []
+gallery-c32-name-collision = []
+gallery-c33-vsm-combat = []
+gallery-c33-one-transition = []
+gallery-c33-three-transitions = []
+gallery-c34-simple-vsm = []
+gallery-c35-formal-no-vsm = []
+gallery-c36-state-props-only = []
+gallery-c37-state-only = []
+gallery-c38-elicit-only = []
+gallery-c39-kani-variant-only = []
+gallery-c40-manual-empty-proof = []
+gallery-c41-manual-helper-proof = []
+gallery-c42-manual-async-traced = []
+gallery-c43-vec-push = []
+gallery-c44-vec-from-array = []
+gallery-c45-label-match = []
+gallery-c46-label-bytes = []
+gallery-c47-generic-param-elicit-complete = []
+gallery-c48-generic-param-wire-bounds = []
+gallery-c49-serde-empty-bound = []
+gallery-c50-serde-inferred-bound = []
+gallery-c53-generated-option-string = []
+gallery-c54-generated-combat-module = []
+gallery-c55-generated-reexport-path = []
+gallery-c56-nested-prop-bundles = []
+gallery-c57-crate-local-module-tree = []
+gallery-c58-split-module-tree = []
+gallery-c51-serde-explicit-bounds = []
+gallery-c52-jsonschema-generic = []
