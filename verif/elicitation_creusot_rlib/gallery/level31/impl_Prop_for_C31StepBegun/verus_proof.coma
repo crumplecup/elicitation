@@ -1,9 +1,9 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 58 9 58 13 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 64 9 64 13 *)
 
 (* <gallery::level31::C31StepBegun as elicitation::Prop> *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 82 19 82 23
-let%span slevel31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 58 9 58 13
+let%span slevel31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 64 9 64 13
 let%span sproof_helpers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/proof_helpers.rs" 22 4 22 59
 
 use creusot.prelude.Any
@@ -22,7 +22,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verus_proof_C31StepBegun
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 58 9 58 13]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 64 9 64 13]
   (return (x: t_TokenStream)) = (! bb0
   [ bb0 = s0
     [ s0 = [ &_2 <- [%#slevel31] "c31_step_begun" ] s1

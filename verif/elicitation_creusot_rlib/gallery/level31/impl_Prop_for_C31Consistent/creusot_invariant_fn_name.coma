@@ -1,8 +1,8 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 50 9 50 13 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 56 9 56 13 *)
 
 (* <gallery::level31::C31Consistent as elicitation::Prop> *)
 
-let%span slevel31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 50 9 50 13
+let%span slevel31 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 56 9 56 13
 
 use creusot.prelude.Any
 
@@ -11,7 +11,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec creusot_invariant_fn_name_C31Consistent
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 50 9 50 13] (return (x: string)) =
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level31.rs" 56 9 56 13] (return (x: string)) =
   (! bb0
   [ bb0 = s0 [ s0 = [ &_ret <- [%#slevel31] "c31_consistent" ] s1 | s1 = return {_ret} ] ]
   [ & _ret: string = Any.any_l () ]) [ return (result: string) -> (! return {result}) ]
