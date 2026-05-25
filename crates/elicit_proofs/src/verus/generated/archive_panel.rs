@@ -162,7 +162,7 @@ verus! {
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ArchivePanelState {
     SqlEditor { running: bool, result: Option<u64> },
     _Other,
