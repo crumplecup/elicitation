@@ -647,53 +647,39 @@ verify-kani-rand harness="" csv="rand_kani_results.csv":
 
 # Run Kani verification with CSV tracking (recommended)
 verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
-    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
+    elicitation verify run --output {{csv}} --timeout {{timeout}}
 
 # Run Kani verification for a specific module group (e.g. "kani::generated::archive_panel")
 verify-kani-group module csv="kani_verification_results.csv" timeout="600":
-    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}} --module {{module}}
+    elicitation verify run --output {{csv}} --timeout {{timeout}} --module {{module}}
 
 # Resume Kani verification (skips already-passed tests)
 verify-kani-resume csv="kani_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --resume
+    elicitation verify run --output {{csv}} --resume
 
 # Show verification summary statistics
 verify-kani-summary csv="kani_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verify summary --output {{csv}}
+    elicitation verify summary --output {{csv}}
 
 # Show failed verification tests
 verify-kani-failed csv="kani_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verify failed --output {{csv}}
+    elicitation verify failed --output {{csv}}
 
 # List all Kani proof harnesses
 verify-kani-list:
-    @cargo run --bin elicitation --quiet --features cli --release -- verify list
+    @elicitation verify list
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VSM proof generation (elicitation generate CLI — replaces build.rs)
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Regenerate all proof files for archive VSMs (Kani + Creusot + Verus)
-generate-vsm-proofs: (generate-vsm-kani) (generate-vsm-creusot) (generate-vsm-verus)
-    cargo fmt -p elicit_proofs
-
-# Regenerate Kani harnesses for archive VSMs
-generate-vsm-kani:
-    cargo run -p elicitation --features cli -- generate kani \
+# Regenerate the full elicit_proofs crate (Cargo.toml + all backends) from archive VSMs
+generate-vsm-proofs:
+    elicitation generate proof-crate \
         --crate-path crates/elicit_server/src/archive/vsm \
-        --out crates/elicit_proofs/src/kani/generated
-
-# Regenerate Creusot companions for archive VSMs
-generate-vsm-creusot:
-    cargo run -p elicitation --features cli -- generate creusot \
-        --crate-path crates/elicit_server/src/archive/vsm \
-        --out crates/elicit_proofs/src/creusot/generated
-
-# Regenerate Verus companions for archive VSMs
-generate-vsm-verus:
-    cargo run -p elicitation --features cli -- generate verus \
-        --crate-path crates/elicit_server/src/archive/vsm \
-        --out crates/elicit_proofs/src/verus/generated
+        --crate-name elicit_proofs \
+        --out crates/elicit_proofs
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VSM Kani proof tracking (elicitation prove CLI — auto-generated harnesses)
@@ -701,15 +687,15 @@ generate-vsm-verus:
 
 # Run all VSM harnesses with CSV tracking
 verify-vsm csv="vsm_kani_results.csv" timeout="300":
-    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}}
+    elicitation prove --kani --csv {{csv}} --timeout {{timeout}}
 
 # Run VSM harnesses for a specific module prefix (e.g. "kani::generated::archive_panel")
 verify-vsm-filter module csv="vsm_kani_results.csv" timeout="300":
-    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --kani-harness {{module}}
+    elicitation prove --kani --csv {{csv}} --timeout {{timeout}} --kani-harness {{module}}
 
 # Resume VSM verification (skips harnesses already recorded as PASS in the CSV)
 verify-vsm-resume csv="vsm_kani_results.csv" timeout="300":
-    cargo run -p elicitation --features cli --quiet -- prove --kani --csv {{csv}} --timeout {{timeout}} --resume
+    elicitation prove --kani --csv {{csv}} --timeout {{timeout}} --resume
 
 # Run Prusti verification (simple)
 # Run Prusti verification with CSV tracking (recommended)
@@ -758,39 +744,39 @@ verify-verus-tracked csv="verus_verification_results.csv" timeout="600":
     @echo "   CSV: {{csv}}"
     @echo "   Timeout: {{timeout}}s per proof"
     @echo ""
-    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
+    elicitation verus run --output {{csv}} --timeout {{timeout}}
 
 # Resume Verus verification (skips already-passed proofs)
 verify-verus-resume csv="verus_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --resume
+    elicitation verus run --output {{csv}} --resume
 
 # Show Verus verification summary statistics
 verify-verus-summary csv="verus_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verus summary --file {{csv}}
+    elicitation verus summary --file {{csv}}
 
 # Show failed Verus proofs
 verify-verus-failed csv="verus_verification_results.csv":
-    cargo run --bin elicitation --quiet --features cli --release -- verus failed --file {{csv}}
+    elicitation verus failed --file {{csv}}
 
 # List all Verus proof modules
 verify-verus-list:
-    @cargo run --bin elicitation --quiet --features cli --release -- verus list
+    @elicitation verus list
 
 # Run Creusot verification with CSV tracking
 verify-creusot-tracked csv="creusot_verification_results.csv":
-    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot run --output "{{csv}}"
+    elicitation creusot run --output "{{csv}}"
 
 # Show summary statistics from CSV
 verify-creusot-summary csv="creusot_verification_results.csv":
-    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot summary --file "{{csv}}"
+    elicitation creusot summary --file "{{csv}}"
 
 # List all Creusot modules
 verify-creusot-list:
-    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot list
+    elicitation creusot list
 
 # Run SMT provers and track per-goal results with timestamps
 verify-creusot-prove csv="creusot_module_results.csv" goals="creusot_goal_results.csv":
-    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot prove --output "{{csv}}" --goals "{{goals}}"
+    elicitation creusot prove --output "{{csv}}" --goals "{{goals}}"
 
 # Prove gallery C1–C6 directly via why3find (bypasses full workspace compilation)
 verify-creusot-gallery:

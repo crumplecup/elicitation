@@ -3583,13 +3583,9 @@ dependencies = [
 name = "elicit_proofs"
 version = "0.11.0"
 dependencies = [
- "chrono",
  "creusot-std",
- "elicit_db",
  "elicit_server",
  "elicitation",
- "serde_json",
- "tracing",
 ]
 
 [[package]]

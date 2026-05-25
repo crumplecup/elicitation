@@ -868,9 +868,14 @@ fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
         )
     })?;
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot").arg("prove");
+    // --no-check-version must precede the `prove` subcommand (it's a top-level flag).
+    // Without it, cargo-creusot runs `cargo metadata` without features and fails to find
+    // creusot-std when it is declared `optional = true` (the dep isn't in the resolved graph
+    // until --features creusot activates it at compile time).
+    cmd.arg("creusot").arg("--no-check-version").arg("prove");
     cmd.arg("--");
     cmd.arg("-p").arg(pkg);
+    cmd.arg("--features").arg("creusot");
 
     for flag in &config.creusot_flags {
         cmd.arg(flag);
