@@ -3,7 +3,8 @@
 #![cfg(feature = "cli")]
 
 use elicitation::cli::generate::{
-    ImportStyle, kani_gen::{generate_kani_file, generate_kani_file_with_style},
+    ImportStyle,
+    kani_gen::{generate_kani_file, generate_kani_file_with_style},
     scanner::{ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor},
 };
 use std::path::{Path, PathBuf};

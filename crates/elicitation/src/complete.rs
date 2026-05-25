@@ -129,9 +129,8 @@ pub trait ElicitCompleteWire:
 }
 
 #[cfg(not(creusot))]
-impl<T> ElicitCompleteWire for T
-where
-    T: serde::Serialize + for<'de> serde::Deserialize<'de> + schemars::JsonSchema,
+impl<T> ElicitCompleteWire for T where
+    T: serde::Serialize + for<'de> serde::Deserialize<'de> + schemars::JsonSchema
 {
 }
 

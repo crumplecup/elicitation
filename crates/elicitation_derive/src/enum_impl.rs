@@ -62,10 +62,7 @@ fn generate_elicit_spec_impl(
         if variant_count == 1 { "" } else { "s" }
     );
 
-    let variant_labels: Vec<String> = variants
-        .iter()
-        .map(|v| v.ident.to_string())
-        .collect();
+    let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 

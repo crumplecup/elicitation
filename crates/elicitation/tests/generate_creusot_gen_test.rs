@@ -3,7 +3,8 @@
 #![cfg(feature = "cli")]
 
 use elicitation::cli::generate::{
-    ImportStyle, creusot_gen::{generate_creusot_file, generate_creusot_file_with_style},
+    ImportStyle,
+    creusot_gen::{generate_creusot_file, generate_creusot_file_with_style},
     scanner::{ArgDescriptor, ArgKind, PropDescriptor, TransitionFn, VsmDescriptor},
 };
 use std::path::{Path, PathBuf};
@@ -302,8 +303,8 @@ fn in_crate_creusot_uses_copied_body_not_extern_spec() {
         }],
     );
     vsm.transition_fns[0].has_instrument = true;
-    let out = generate_creusot_file_with_style(&vsm, Path::new("/repo"), ImportStyle::InCrate)
-        .unwrap();
+    let out =
+        generate_creusot_file_with_style(&vsm, Path::new("/repo"), ImportStyle::InCrate).unwrap();
     assert!(
         out.contains("extern_spec!"),
         "current generator should still emit extern_spec; got:\n{out}"
@@ -357,8 +358,8 @@ fn in_crate_creusot_wraps_non_block_body() {
         source_file: PathBuf::from("src/vsm/combat.rs"),
     };
 
-    let out = generate_creusot_file_with_style(&vsm, Path::new("/repo"), ImportStyle::InCrate)
-        .unwrap();
+    let out =
+        generate_creusot_file_with_style(&vsm, Path::new("/repo"), ImportStyle::InCrate).unwrap();
     assert!(
         out.contains("fn begin_creusot_local(state: CombatState, proof: Established<CombatConsistent>) -> (CombatState, Established<CombatConsistent>) { (state, proof) }"),
         "expected local clone body to be wrapped in braces; got:\n{out}"
@@ -412,8 +413,7 @@ fn scan_and_generate_archive_connection_creusot() {
             "missing wrapper for transition {t}"
         );
         assert!(
-            out.contains(&format!("{{ {t}("))
-                || out.contains(&format!("{{ {t}_creusot_local(")),
+            out.contains(&format!("{{ {t}(")) || out.contains(&format!("{{ {t}_creusot_local(")),
             "missing call-through for {t}"
         );
     }

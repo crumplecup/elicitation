@@ -100,7 +100,6 @@ fn async_method_compiles_without_backends() {
     assert_send(async_method(0, Established::assert()));
 }
 
-
 #[test]
 fn proof_helpers_formal_method_harness_nonempty() {
     let ts = proof_helpers::kani_formal_method_harness(

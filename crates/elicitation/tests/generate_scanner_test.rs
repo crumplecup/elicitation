@@ -248,7 +248,10 @@ fn transition_fn_detects_raw_instrument_attribute() {
     let file: File = syn::parse_str(src).unwrap();
     let descs = extract_vsms_from_file(&file, Path::new("conn.rs"));
     let tf = &descs[0].transition_fns[0];
-    assert!(tf.has_instrument, "expected raw #[instrument] to be tracked");
+    assert!(
+        tf.has_instrument,
+        "expected raw #[instrument] to be tracked"
+    );
 }
 
 // ─── Multi-file scan_vsms tests ──────────────────────────────────────────────
