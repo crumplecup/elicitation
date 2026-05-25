@@ -142,15 +142,20 @@ pub fn generate_verus_file(
             "/// Abstract mirror of `{state_ty}` (invariant-relevant variants only).\n"
         ));
         out.push_str("#[allow(unused_imports)]\nuse vstd::prelude::SpecOrd;\n\n");
-        // Derive `Copy` only when all struct-variant field types are known to be Copy.
-        // `String`, `Vec`, etc. are not Copy, so we check the state body.
-        let is_copy = inv.state_body.as_deref().is_none_or(state_body_is_all_copy);
-        let derives = if is_copy {
-            "#[derive(Debug, Clone, Copy, PartialEq, Eq)]"
-        } else {
+        // State enums never derive `Copy` — the Trans enum (always `Copy`) would
+        // create two `Copy` impls in the same `verus! {}` block, causing a Verus
+        // internal panic at `vir/src/context.rs`.  See gallery level14.
+        //
+        // `Clone` is safe when the state has struct-variant fields (Verus issues a
+        // warning but continues).  For unit-only states (`_Unspecified` / no
+        // `verus_state_body`), `Clone` on a unit enum also triggers the panic, so
+        // we omit it entirely.
+        let state_derives = if inv.state_body.is_some() {
             "#[derive(Debug, Clone, PartialEq, Eq)]"
+        } else {
+            "#[derive(Debug, PartialEq, Eq)]"
         };
-        out.push_str(derives);
+        out.push_str(state_derives);
         out.push('\n');
         out.push_str(&format!("pub enum {state_ty} {{\n"));
         if let Some(sb) = &inv.state_body {
@@ -746,17 +751,6 @@ fn classify_transition(body: &str, state_ty: &str, special_variants: &[String]) 
 }
 
 // ─── String helpers ───────────────────────────────────────────────────────────
-
-/// Returns `true` if all struct-variant field types in `state_body` are known `Copy` types.
-///
-/// Used to decide whether to include `Copy` in the state enum `#[derive(...)]`.
-/// Types like `String`, `Vec`, `Box`, `Rc`, and `Arc` are not `Copy`, so if any appear
-/// in the state body the enum must not derive `Copy`.
-fn state_body_is_all_copy(state_body: &str) -> bool {
-    const NON_COPY_MARKERS: &[&str] = &["String", "Vec<", "Box<", "Rc<", "Arc<"];
-    !NON_COPY_MARKERS.iter().any(|t| state_body.contains(t))
-}
-
 /// Convert `PascalCase` → `snake_case`.
 fn to_snake(s: &str) -> String {
     let mut out = String::new();

@@ -517,6 +517,12 @@ fn relative_path(from_dir: &Path, to_dir: &Path) -> anyhow::Result<PathBuf> {
 }
 
 fn absolutize(path: &Path) -> PathBuf {
+    // Prefer canonicalize (resolves `..` and symlinks) when the path exists.
+    // Fall back to a simple cwd-join for paths that don't exist yet (e.g. a
+    // proof-crate output directory that hasn't been created yet).
+    if let Ok(canonical) = path.canonicalize() {
+        return canonical;
+    }
     if path.is_absolute() {
         path.to_path_buf()
     } else {
