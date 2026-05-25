@@ -1,0 +1,33 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 30 0 30 47 *)
+
+let%span scombat = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 33 47 33 48
+let%span scombat'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 32 26 32 30
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+
+type t_C58State = Idle | Active UInt32.t
+
+let rec elim_Active (_x: t_C58State) (return (round: UInt32.t)) = any
+  [ _k (round: UInt32.t) -> {Active round = _x} (! return {round})
+  | _chk -> (! {[@expl:elim Active] match _x with
+      | Active _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c58_consistent
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 30 0 30 47]
+  (state: t_C58State) (return (x: bool)) = (! bb0
+  [ bb0 = any [ br0 -> {state = Idle} (! bb4) | br1 (x0: UInt32.t) -> {state = Active x0} (! bb3) ]
+  | bb3 = s0
+    [ s0 = elim_Active {state} (fun (rround: UInt32.t) -> [ &round <- rround ] s1)
+    | s1 = [ &_ret <- UInt32.gt round ([%#scombat] (0: UInt32.t)) ] s2
+    | s2 = return {_ret} ]
+  | bb4 = s0 [ s0 = [ &_ret <- [%#scombat'0] true ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: bool = Any.any_l () | & state: t_C58State = state | & round: UInt32.t = Any.any_l () ])
+  [ return (result: bool) -> (! return {result}) ]

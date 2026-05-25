@@ -1,0 +1,27 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_c32_generated_only": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5@1.3.1", "time": 0.01 },
+                  { "prover": "cvc5@1.3.1", "time": 0.01 },
+                  null
+                ]
+              },
+              { "prover": "cvc5@1.3.1", "time": 0.014 }
+            ]
+          }
+        ]
+      },
+      "vc_c32_generated_wrapper": { "prover": "cvc5@1.3.1", "time": 0.016 }
+    }
+  }
+}

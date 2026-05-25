@@ -1,6 +1,6 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 89 0 89 64 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 881 18 881 41
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 943 18 943 41
 let%span slevel30 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 93 16 93 29
 let%span slevel30'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 89 28 89 29
 let%span slevel30'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level30.rs" 87 11 87 22

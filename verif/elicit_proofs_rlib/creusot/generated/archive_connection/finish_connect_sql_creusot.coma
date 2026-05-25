@@ -13,7 +13,7 @@ let%span sarchive_connection'8 = "/home/erik/repos/elicitation/crates/elicit_pro
 let%span sarchive_connection'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 80 15 80 52
 let%span sarchive_connection'10 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 81 14 81 54
 let%span sarchive_connection'11 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_connection.rs" 25 16 25 20
-let%span sconnection = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/connection.rs" 172 0 172 59
+let%span sconnection = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/connection.rs" 174 0 181 1
 
 use creusot.prelude.Any
 

@@ -21,7 +21,7 @@ let%span sarchive_panel'12 = "/home/erik/repos/elicitation/crates/elicit_proofs/
 let%span sarchive_panel'13 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 104 15 104 47
 let%span sarchive_panel'14 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 105 14 105 49
 let%span sarchive_panel'15 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_panel.rs" 38 16 38 160
-let%span spanel = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/panel.rs" 358 0 358 54
+let%span spanel = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/panel.rs" 360 0 367 61
 let%span sboxed = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/boxed.rs" 48 8 48 18
 
 use creusot.int.UInt64

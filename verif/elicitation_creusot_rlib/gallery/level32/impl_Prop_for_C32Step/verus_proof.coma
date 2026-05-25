@@ -1,0 +1,33 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 49 9 49 13 *)
+
+(* <gallery::level32::C32Step as elicitation::Prop> *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 82 19 82 23
+let%span sproof_helpers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/proof_helpers.rs" 22 4 22 59
+let%span slevel32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 49 9 49 13
+
+use creusot.prelude.Any
+
+type t_TokenStream
+
+predicate inv_TokenStream (_1: t_TokenStream)
+
+let rec verus_trivial_prop (fn_name: string) (return (x: t_TokenStream)) = any
+  [ return (result: t_TokenStream) ->
+  {[@stop_split] [@expl:verus_trivial_prop result type invariant] [%#sproof_helpers] inv_TokenStream result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verus_proof_C32Step
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 49 9 49 13]
+  (return (x: t_TokenStream)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_2 <- [%#slevel32] "c32_step" ] s1
+    | s1 = verus_trivial_prop [%#slevel32] {_2} (fun (_x: t_TokenStream) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ] [ & _ret: t_TokenStream = Any.any_l () | & _2: string = Any.any_l () ])
+  [ return (result: t_TokenStream) ->
+  {[@stop_split] [@expl:verus_proof result type invariant] [%#slevel32] inv_TokenStream result}
+    (! return {result}) ]

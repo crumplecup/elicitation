@@ -1,0 +1,17 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 41 9 41 13 *)
+
+(* <gallery::level32::C32Consistent as elicitation::Prop> *)
+
+let%span slevel32 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 41 9 41 13
+
+use creusot.prelude.Any
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec creusot_invariant_fn_name_C32Consistent
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level32.rs" 41 9 41 13] (return (x: string)) =
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- [%#slevel32] "c32_consistent" ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: string = Any.any_l () ]) [ return (result: string) -> (! return {result}) ]

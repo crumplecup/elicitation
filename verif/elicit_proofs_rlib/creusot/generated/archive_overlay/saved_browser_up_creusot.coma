@@ -15,7 +15,7 @@ let%span sarchive_overlay'6 = "/home/erik/repos/elicitation/crates/elicit_proofs
 let%span sarchive_overlay'7 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 194 15 194 49
 let%span sarchive_overlay'8 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 195 14 195 51
 let%span sarchive_overlay'9 = "/home/erik/repos/elicitation/crates/elicit_proofs/src/creusot/generated/archive_overlay.rs" 26 16 26 206
-let%span soverlay = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/overlay.rs" 254 0 254 85
+let%span soverlay = "/home/erik/repos/elicitation/crates/elicit_server/src/archive/vsm/overlay.rs" 256 0 259 65
 
 use creusot.int.UInt64
 use creusot.int.Int64

@@ -1,0 +1,50 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 40 0 44 43 *)
+
+let%span scombat = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/proofs/creusot/generated/combat.rs" 17 8 17 13
+let%span scombat'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/proofs/creusot/generated/combat.rs" 18 8 18 13
+let%span scombat'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/proofs/creusot/generated/combat.rs" 13 15 13 51
+let%span scombat'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 44 5 44 43
+let%span scombat'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/proofs/creusot/generated/combat.rs" 14 14 14 53
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+
+type t_C58State = Idle | Active UInt32.t
+
+type t_Established_C58Consistent
+
+type tup2_C58State_Established_C58Consistent = { f0: t_C58State; f1: t_Established_C58Consistent }
+
+type t_Established_C58Step
+
+predicate inv_Established_C58Consistent (_1: t_Established_C58Consistent)
+
+predicate inv_Established_C58Step (_1: t_Established_C58Step)
+
+predicate c58_consistent_creusot [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/proofs/creusot/generated/combat.rs" 8 0 8 62] (_state: t_C58State)
+
+predicate inv_tup2_C58State_Established_C58Consistent [@inline:trivial] (_1: tup2_C58State_Established_C58Consistent) =
+  inv_Established_C58Consistent _1.f1
+
+meta "rewrite_def" predicate inv_tup2_C58State_Established_C58Consistent
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec c58_begin
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level58/vsm/combat.rs" 40 0 44 43]
+  (state: t_C58State) (proof: t_Established_C58Consistent) (_step: t_Established_C58Step)
+  (return (x: tup2_C58State_Established_C58Consistent)) =
+  {[@stop_split] [@expl:c58_begin requires] ([@stop_split] [@expl:c58_begin 'proof' type invariant] [%#scombat] inv_Established_C58Consistent proof)
+  /\ ([@stop_split] [@expl:c58_begin '_step' type invariant] [%#scombat'0] inv_Established_C58Step _step)
+  /\ ([@stop_split] [@expl:c58_begin requires] [%#scombat'1] c58_consistent_creusot state)}
+  (! bb0
+  [ bb0 = s0 [ s0 = [ &_ret <- { f0 = state; f1 = proof } ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: tup2_C58State_Established_C58Consistent = Any.any_l ()
+  | & state: t_C58State = state
+  | & proof: t_Established_C58Consistent = proof ])
+  [ return (result: tup2_C58State_Established_C58Consistent) ->
+  {[@stop_split] [@expl:c58_begin ensures] ([@stop_split] [@expl:c58_begin result type invariant] [%#scombat'2] inv_tup2_C58State_Established_C58Consistent result)
+    /\ ([@stop_split] [@expl:c58_begin ensures] [%#scombat'3] c58_consistent_creusot result.f0)}
+    (! return {result}) ]
