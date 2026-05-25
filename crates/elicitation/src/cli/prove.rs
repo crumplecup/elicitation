@@ -39,6 +39,8 @@ use std::{
 
 use indicatif::{ProgressBar, ProgressStyle};
 
+use crate::cli::creusot_shadow;
+
 // ── Config ────────────────────────────────────────────────────────────────────
 
 /// Resolved configuration for the `prove` command.
@@ -572,6 +574,28 @@ pub fn parse_kani_list_output(output: &str) -> anyhow::Result<Vec<String>> {
     Ok(harnesses)
 }
 
+/// Locate the workspace root for the current Cargo metadata graph.
+fn find_workspace_root(_package: &str) -> anyhow::Result<PathBuf> {
+    let output = Command::new("cargo")
+        .args(["metadata", "--format-version", "1", "--no-deps"])
+        .output()
+        .context("Failed to run `cargo metadata`")?;
+
+    if !output.status.success() {
+        anyhow::bail!(
+            "`cargo metadata` failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
+    let json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).context("Invalid cargo metadata JSON")?;
+    let root = json["workspace_root"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("Could not determine workspace root"))?;
+    Ok(PathBuf::from(root))
+}
+
 /// Locate the directory of a workspace package via `cargo metadata`.
 fn find_package_dir(package: &str) -> anyhow::Result<PathBuf> {
     let output = Command::new("cargo")
@@ -863,66 +887,183 @@ fn run_verus_dir(config: &ProveConfig, dir: &Path) -> anyhow::Result<()> {
 // ── Creusot ───────────────────────────────────────────────────────────────────
 
 fn run_creusot(config: &ProveConfig) -> anyhow::Result<()> {
-    let mut cmd = Command::new("cargo");
-    cmd.arg("creusot").arg("prove");
-
-    cmd.arg("--");
-
-    if let Some(pkg) = &config.creusot_package {
-        cmd.arg("-p").arg(pkg);
-    } else {
-        anyhow::bail!(
+    let pkg = config.creusot_package.as_deref().ok_or_else(|| {
+        anyhow::anyhow!(
             "No package for Creusot — set CREUSOT_PACKAGE or PROVE_PACKAGE in .env, or pass --package"
-        );
-    }
-
-    for flag in &config.creusot_flags {
-        cmd.arg(flag);
-    }
+        )
+    })?;
+    let workspace_root = find_workspace_root(pkg)?;
+    let shadow_root = if config.dry_run {
+        workspace_root.join(".creusot-shadow")
+    } else {
+        creusot_shadow::prepare_shadow_workspace(&workspace_root)?
+    };
 
     // Augment PATH so why3find is discoverable.
     let current_path = std::env::var("PATH").unwrap_or_default();
     let new_path = format!("{}:{}", config.creusot_bin_dir.display(), current_path);
-    cmd.env("PATH", &new_path);
-    cmd.env("WHY3CONFIG", &config.why3_config);
-    cmd.env("DUNE_DIR_LOCATIONS", &config.dune_dir_locations);
+    let dune_dir_locations = expand_home_markers(&config.dune_dir_locations);
+    ensure_creusot_init(
+        &shadow_root,
+        &new_path,
+        &config.why3_config,
+        &dune_dir_locations,
+        config.dry_run,
+        &config.log_dir,
+    )?;
 
-    let log = config.log_dir.join("prove_creusot.log");
-    println!("🔬 Running cargo creusot prove…");
-    println!("📝 Logging to {}", log.display());
-    let bar = spinner("Starting…");
-    let sink = creusot_sink(bar.clone());
+    let mut translate_cmd = Command::new("cargo");
+    translate_cmd.arg("creusot");
+    translate_cmd.current_dir(&shadow_root);
+    translate_cmd.arg("--");
+    translate_cmd.arg("-p").arg(pkg);
+    for flag in &config.creusot_flags {
+        translate_cmd.arg(flag);
+    }
+    translate_cmd.env("PATH", &new_path);
+    translate_cmd.env("WHY3CONFIG", &config.why3_config);
+    translate_cmd.env("DUNE_DIR_LOCATIONS", &dune_dir_locations);
+
+    let translate_log = config.log_dir.join("prove_creusot_translate.log");
+    let prove_log = config.log_dir.join("prove_creusot.log");
+    println!("🔬 Running cargo creusot…");
+    println!("🪞 Shadow workspace: {}", shadow_root.display());
+    println!("📝 Translation log: {}", translate_log.display());
+    println!("📝 Prove log: {}", prove_log.display());
     let start = Instant::now();
-    let status = execute_with_progress(
-        "cargo creusot prove",
-        cmd,
+
+    let translate_bar = spinner("Translating…");
+    let translate_sink = creusot_sink(translate_bar.clone());
+    let translate_status = execute_with_progress(
+        "cargo creusot",
+        translate_cmd,
         config.creusot_timeout,
         config.dry_run,
-        &log,
-        sink,
+        &translate_log,
+        translate_sink,
     )?;
-    bar.finish_and_clear();
+    translate_bar.finish_and_clear();
+
+    if translate_status != "PASS" && translate_status != "DRY-RUN" {
+        println!(
+            "❌ cargo creusot FAIL ({}s) — see {}",
+            start.elapsed().as_secs(),
+            translate_log.display()
+        );
+        anyhow::bail!("cargo creusot failed");
+    }
+
+    let generated_roots = discover_generated_proof_roots(&shadow_root, pkg);
+    if generated_roots.is_empty() && !config.dry_run {
+        anyhow::bail!(
+            "no generated Creusot proof roots found under {} for package {}",
+            shadow_root.join("verif").display(),
+            pkg
+        );
+    }
+
+    let mut prove_cmd = Command::new("why3find");
+    prove_cmd.arg("prove");
+    prove_cmd.current_dir(&shadow_root);
+    for root in &generated_roots {
+        let rel = root.strip_prefix(&shadow_root).unwrap_or(root);
+        prove_cmd.arg(rel);
+    }
+    prove_cmd.env("PATH", &new_path);
+    prove_cmd.env("WHY3CONFIG", &config.why3_config);
+    prove_cmd.env("DUNE_DIR_LOCATIONS", &dune_dir_locations);
+
+    let prove_bar = spinner("Proving generated COMA…");
+    let prove_sink = creusot_sink(prove_bar.clone());
+    let prove_status = execute_with_progress(
+        "why3find prove",
+        prove_cmd,
+        config.creusot_timeout,
+        config.dry_run,
+        &prove_log,
+        prove_sink,
+    )?;
+    prove_bar.finish_and_clear();
     let elapsed_s = start.elapsed().as_secs();
 
     if !config.dry_run {
         if let Some(csv) = &config.creusot_csv {
             write_csv_header(csv, false)?;
-            append_csv_row(csv, "creusot", "creusot", &status, elapsed_s)?;
+            append_csv_row(csv, "creusot", "creusot", &prove_status, elapsed_s)?;
         }
     }
 
-    if status == "PASS" || status == "DRY-RUN" {
+    if prove_status == "PASS" || prove_status == "DRY-RUN" {
         println!(
-            "✅ cargo creusot prove PASS ({elapsed_s}s) — see {}",
-            log.display()
+            "✅ Creusot generated proofs PASS ({elapsed_s}s) — see {}",
+            prove_log.display()
         );
         Ok(())
     } else {
         println!(
-            "❌ cargo creusot prove FAIL ({elapsed_s}s) — see {}",
-            log.display()
+            "❌ Creusot generated proofs FAIL ({elapsed_s}s) — see {}",
+            prove_log.display()
         );
-        anyhow::bail!("cargo creusot prove failed")
+        anyhow::bail!("why3find prove failed")
+    }
+}
+
+fn discover_generated_proof_roots(shadow_root: &Path, pkg: &str) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+    for suffix in ["rlib", "bin"] {
+        for rel in [
+            format!("verif/{pkg}_{suffix}/proofs/creusot/generated"),
+            format!("verif/{pkg}_{suffix}/creusot/generated"),
+        ] {
+            let path = shadow_root.join(rel);
+            if path.is_dir() {
+                roots.push(path);
+            }
+        }
+    }
+    roots
+}
+
+fn expand_home_markers(value: &str) -> String {
+    let Some(home) = std::env::var_os("HOME") else {
+        return value.to_string();
+    };
+    let home = PathBuf::from(home).to_string_lossy().into_owned();
+    value
+        .replace("=~/", &format!("={home}/"))
+        .replace(":~/", &format!(":{home}/"))
+        .replace("~/", &format!("{home}/"))
+}
+
+fn ensure_creusot_init(
+    shadow_root: &Path,
+    path_env: &str,
+    why3_config: &Path,
+    dune_dir_locations: &str,
+    dry_run: bool,
+    log_dir: &Path,
+) -> anyhow::Result<()> {
+    if shadow_root.join("why3find.json").exists() {
+        return Ok(());
+    }
+
+    let mut cmd = Command::new("cargo");
+    cmd.arg("creusot").arg("init");
+    cmd.current_dir(shadow_root);
+    cmd.env("PATH", path_env);
+    cmd.env("WHY3CONFIG", why3_config);
+    cmd.env("DUNE_DIR_LOCATIONS", dune_dir_locations);
+
+    let log = log_dir.join("prove_creusot_init.log");
+    let bar = spinner("Initializing Creusot…");
+    let sink = creusot_sink(bar.clone());
+    let status = execute_with_progress("cargo creusot init", cmd, 300, dry_run, &log, sink)?;
+    bar.finish_and_clear();
+
+    if status == "PASS" || status == "DRY-RUN" {
+        Ok(())
+    } else {
+        anyhow::bail!("cargo creusot init failed")
     }
 }
 
