@@ -42,508 +42,393 @@ which variant `state` holds or how large its collection fields are.
 
 ---
 
-## 2. The Companion Pattern
+## 2. The Current Companion Pattern
 
-Creusot cannot be run directly on `elicit_server` — the production crate uses
-async code, network I/O, and sqlx which cannot be translated to WhyML. Instead,
-**companion functions** are generated in `elicit_proofs` that mirror the
-production transitions using the same types but without the async runtime.
+Creusot for downstream VSMs is now a **same-crate generated companion** flow.
+You keep the runtime transition in the consumer crate, then generate a Creusot
+companion under that same crate:
 
-Each companion:
-- Has the same signature as the production function
-- Calls through to the same implementation via `elicit_server::archive::vsm::*`
-- Carries `#[requires]` / `#[ensures]` contracts expressing the VSM invariant
-- Is gated with `#[cfg(creusot)]` so it only exists during Creusot compilation
-
-The companion name convention is `{transition_fn}__creusot`:
-
-```rust
-#[cfg(creusot)]
-#[requires(archive_panel_consistent(&state))]
-#[ensures(archive_panel_consistent(&result.0))]
-pub(crate) fn column_detail__creusot(
-    state: ArchivePanelState,
-    proof: Established<ArchivePanelConsistent>,
-) -> (ArchivePanelState, Established<ArchivePanelConsistent>) {
-    column_detail(state, proof)   // delegates to production function
-}
+```text
+src/vsm/*.rs                      # runtime transitions
+src/proofs/creusot/generated/*.rs # generated Creusot companions
+verif/{pkg}_rlib/proofs/creusot/generated/ # COMA produced by cargo creusot
 ```
 
-Companions are **auto-generated** by `crates/elicit_proofs/build.rs`. You
-never write them by hand. To regenerate after changing a VSM:
+The generated surface is:
 
-```bash
-cargo build -p elicit_proofs
-```
+1. `extern_spec!` for the production transition
+2. a local helper `{transition}_creusot_local(...)` when Creusot needs a
+   tracing-free or proof-simplified body
+3. a public wrapper `{transition}_creusot(...)` that Why3 proves
+
+Current naming matters:
+
+- public wrapper: `{transition}_creusot`
+- local helper: `{transition}_creusot_local`
+- spec helper: `{transition}_creusot_spec`
+
+Do **not** reintroduce `__creusot` names in generated code. That convention is
+obsolete.
 
 ---
 
-## 3. Problem 1 — Cross-Module `#[logic]` Opacity
+## 3. Invariant Visibility Rule
 
-### What goes wrong
+Creusot needs the invariant body to be visible in the same generated module
+that uses it. Cross-module `#[logic]` imports remain proof-hostile.
 
-The VSM invariant for each machine is a `#[logic]` predicate (e.g.
-`archive_panel_consistent`). In `vsm_invariants.rs` these are defined as pure
-Pearlite functions. The generated companions import them:
-
-```rust
-use crate::creusot::vsm_invariants::archive_panel_consistent;
-```
-
-**When a `#[logic]` function is imported from another module, its body is
-opaque in Why3/COMA.** Why3find sees:
-
-```
-predicate archive_panel_consistent (state : ArchivePanelState) (* no body *)
-```
-
-With no body, the only fact the solver has about `archive_panel_consistent` is
-its postcondition: `result = archive_panel_consistent(state)`. It cannot
-unfold the body to verify that the output state satisfies the predicate. Every
-companion fails with:
-
-```
-Goal Coma.vc_..._creusot: ✘
-```
-
-### Gallery evidence
-
-Gallery level C29 (`crates/elicitation_creusot/src/gallery/level29.rs`)
-establishes this precisely:
+Gallery level C29 still captures the core rule:
 
 | Experiment | Setup | Result |
 |---|---|---|
 | C29a | `#[logic]` fn defined in same file | ✅ proves |
-| C29b | `#[trusted] #[logic]` fn defined in same file | ✅ proves |
-| C29c | Non-trivial same-file `#[logic]` with match | ✅ proves |
 | C29d | Same `#[logic]` fn imported from another module | ✗ fails |
 
-C29d is included as a documented failure to confirm the diagnosis.
+### Current fix
 
-### The fix: inline the invariant
-
-`build.rs` defines the invariant predicates as `const &str` and embeds them
-directly in each generated companion file:
+Do **not** hand-maintain a separate Creusot invariant module for VSM proofs.
+Instead, put the Creusot invariant body on the proposition itself:
 
 ```rust
-const INV_PANEL: &str = "\
-#[cfg(creusot)]
-#[logic]
-pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
-    pearlite! {
+#[derive(Prop)]
+#[prop(
+    kani_invariant_fn = "combat_consistent",
+    creusot_invariant_fn = "combat_consistent",
+    creusot_inv_body = r#"pearlite! {
         match state {
-            ArchivePanelState::SqlEditor { running, result, .. } =>
-                *running ==> match result { None => true, Some(_) => false },
-            _ => true,
+            CombatState::Uninitialized => true,
+            CombatState::Active { combatants, turn_order, current_actor, round } =>
+                combatants@.len() > 0
+                && turn_order@.len() > 0
+                && current_actor@ < turn_order@.len()
+                && round@ > 0
+                && forall<i: Int> 0 <= i && i < turn_order@.len()
+                    ==> turn_order@[i]@ < combatants@.len(),
+            CombatState::Concluded { .. } => true,
         }
-    }
-}";
+    }"#
+)]
+pub struct CombatConsistent;
 ```
 
-This means `archive_panel_consistent` is defined in `archive_panel.rs`
-(the file that uses it), not imported from `vsm_invariants.rs`. Why3find sees
-the body and can unfold it.
+The scanner/generator turns that into an inline `#[logic]` function inside the
+generated companion file, which keeps the body visible to Why3.
 
-**Rule:** Whenever you add a new VSM machine, define its `#[logic]` invariant
-as a `const &str` in `build.rs` and pass it to `write_creusot_vsm_file`. Do
-not `use` the invariant from `vsm_invariants.rs` in the generated companion.
+### Rule
+
+- Put the Creusot invariant on `#[prop(...)]` via `creusot_inv_body`
+- Make it **real**, not `true`, unless the state is genuinely trivial
+- Do not rely on imported `#[logic]` helpers for the main invariant body
+
+Trivial `true` invariants make proofs pass for the wrong reason and are a
+regression, not a fix.
 
 ---
 
-## 4. Problem 2 — Unmodeled Stdlib Methods (`String::new()`, etc.)
+## 4. When Runtime Bodies Are Proof-Hostile
 
-### What goes wrong
+Some runtime transitions are correct but awkward for Creusot:
 
-Some VSM transitions call standard library methods that `creusot-std` does not
-model. The clearest example is `String::new()` — used in `nav_loaded` to
-initialise the `filter` field of `NavReady`.
+- traced delegation bodies
+- proof-hostile indexing / sorting loops
+- unmodeled stdlib calls
+- runtime-only details that are irrelevant to the invariant proof
 
-When Creusot encounters a method call with no model, it emits `{false} any`
-in the COMA output:
+### Preferred fix order
 
-```
-s6 = {false} any
-```
+1. Strengthen the invariant or preconditions if the proof is genuinely missing facts
+2. Add crate-local `extern_spec!` models for unmodeled library calls
+3. Use a **Creusot-only body override** for the generated local companion
 
-`{false}` is an unprovable precondition. Any VC that depends on `s6` will
-fail regardless of what the postcondition says.
+### `creusot_body` override
 
-Affected methods (not in `creusot-std` v0.10):
-
-| Method | Where used |
-|---|---|
-| `String::new()` | struct literal initialisation (`filter`, `text` fields) |
-| `String::is_empty()` | `apply_filter`, `clear_filter` |
-| `String::push()` | `prompt_push` |
-| `String::pop()` | `prompt_backspace` |
-| `str::is_empty()` | via `Deref` from `String::is_empty()` |
-
-### Gallery evidence
-
-Gallery level C30 (`crates/elicitation_creusot/src/gallery/level30.rs`)
-establishes the problem and both solutions:
-
-| Experiment | Setup | Result |
-|---|---|---|
-| C30a | Companion calling `String::new()` in body | ✗ `{false}` |
-| C30b | Same companion, marked `#[trusted]` | ✅ axiom accepted |
-| C30c | `String::new()` isolated in `#[trusted]` helper | ✅ rest verifiable |
-
-### Solution A: `extern_spec!` contracts (preferred)
-
-When you need the solver to **reason about** the result of the method call
-(e.g., `is_empty()` returns `true` iff the string has length 0), add a local
-`extern_spec!` block to the crate where the call appears.
-
-**Critical: extern specs are crate-local.** An `extern_spec!` in
-`elicitation_creusot` is NOT visible to `elicit_proofs` even if you add
-`elicitation_creusot` as a dependency. The spec must be defined in the crate
-that makes the call.
-
-`crates/elicit_proofs/src/creusot/extern_specs.rs` provides the needed specs:
+`#[formal_method(...)]` supports a Creusot-only override:
 
 ```rust
-extern_spec! {
-    impl String {
-        #[ensures(result@ == Seq::empty())]
-        fn new() -> String;
-        #[ensures(result == ((*self)@.len() == 0))]
-        fn is_empty(&self) -> bool;
-        #[ensures((^self)@ == (*self)@.push_back(ch))]
-        fn push(&mut self, ch: char);
-        #[ensures(match result {
-            Some(t) =>
-                (^self)@ == (*self)@.subsequence(0, (*self)@.len() - 1) &&
-                (*self)@ == (^self)@.push_back(t),
-            None => *self == ^self && (*self)@.len() == 0
-        })]
-        fn pop(&mut self) -> Option<char>;
-    }
-}
-
-extern_spec! {
-    impl str {
-        #[ensures(result == ((*self)@.len() == 0))]
-        fn is_empty(&self) -> bool;
-    }
+#[formal_method(
+    contracts = [CombatConsistent],
+    creusot_requires = ["combatants@.len() > 0"],
+    creusot_body = r#"{
+        let turn_order: Vec<usize> = (0..combatants.len()).collect();
+        (
+            CombatState::Active {
+                combatants,
+                turn_order,
+                current_actor: 0,
+                round: 1,
+            },
+            proof,
+        )
+    }"#
+)]
+pub fn initialize_combat(...) -> (CombatState, Established<CombatConsistent>) {
+    // runtime body can stay richer / more operational
 }
 ```
 
-These extern specs let the solver reason through the method calls. All 7
-production VSM companions that call these methods now prove.
+Use `creusot_body` when the production body is valid but not worth forcing
+through the solver. This is preferable to gutting the runtime code or weakening
+the invariant.
 
-### Solution B: `#[trusted]` companion (fallback)
+### Stdlib modeling still matters
 
-When the transition body cannot be fully modelled (e.g. it builds a complex
-struct from data the solver can't reason about), mark the companion
-`#[trusted]`. The contract becomes an axiom — Why3find accepts it without
-body analysis:
+If the proof needs semantic reasoning about a library call, add a crate-local
+`extern_spec!`. Extern specs do **not** propagate across crates.
 
-```rust
-#[cfg(creusot)]
-#[trusted]
-#[requires(archive_nav_consistent(&_state))]
-#[ensures(archive_nav_consistent(&result.0))]
-pub(crate) fn complex_transition__creusot(...) { ... }
-```
-
-**When to use `#[trusted]`:** The `ProvableFrom` type system already enforces
-that the invariant holds by construction — the canonical transition is the only
-way to mint the output `Established<P>` token. A trusted Creusot companion
-documents the contract as a formal axiom without requiring body analysis.
-
-Reserve `#[trusted]` for transitions where the body truly cannot be verified
-(complex iterator chains, opaque type constructors). Prefer `extern_spec!` for
-individual stdlib methods.
+See also the gallery guidance around string modeling and same-file logic bodies.
 
 ---
 
-## 5. The Machinery — How Companions Are Generated
+## 5. How the Current Generator Works
 
-### The pipeline
+### Source-side annotations
 
-```
-  1. #[formal_method] on each transition fn in elicit_server
-         ↓  (at proc-macro expansion time)
-  2. FooMachine::vsm_creusot_proof() → proc_macro2::TokenStream
-         ↓  (at cargo build -p elicit_proofs)
-  3. build.rs calls vsm_creusot_proof() + prepends inline inv_logic
-  4. write_creusot_vsm_file() formats and writes src/creusot/generated/*.rs
-```
+The two important source annotations are:
 
-### Stage 1: `#[formal_method]`
+1. `#[derive(Prop)] #[prop(...)]`
+2. `#[formal_method(...)]`
 
-The `#[formal_method(contracts = [MyConsistent])]` attribute on a production
-transition emits Creusot contracts on the original function via `cfg_attr`:
+`#[prop(...)]` provides:
 
-```rust
-#[cfg_attr(creusot, requires(my_consistent(&state)))]
-#[cfg_attr(creusot, ensures(my_consistent(&result.0)))]
-pub fn my_transition(state: MyState, proof: Established<MyConsistent>)
-    -> (MyState, Established<MyConsistent>)
-{ ... }
-```
+- `creusot_invariant_fn = "..."`
+- `creusot_inv_body = r#"pearlite! { ... }"#`
 
-It also generates the companion via `vsm_creusot_proof()`.
+`#[formal_method(...)]` provides:
 
-### Stage 2: `vsm_creusot_proof()`
+- `contracts = [MyConsistent]`
+- optional `creusot_requires = ["..."]`
+- optional `creusot_body = r#"{ ... }"#`
 
-`#[derive(VerifiedStateMachine)]` on the machine struct provides
-`vsm_creusot_proof()`, which collects all transition companions into a single
-`TokenStream`. Each companion function:
+### Generation pipeline
 
-- Is named `{transition}__creusot`
-- Has `#[cfg(creusot)]` gates
-- Has `#[requires]` / `#[ensures]` with the invariant predicate
-- Delegates to the production function
-
-### Stage 3: `build.rs`
-
-```rust
-write_creusot_vsm_file(
-    gen_dir,
-    "archive_nav.rs",
-    "ArchiveNavMachine",
-    INV_NAV,           // inline #[logic] predicate — see §3
-    &ArchiveNavMachine::vsm_creusot_proof(),
-);
+```text
+consumer crate source
+  └─ scan_vsms(src/vsm)
+      ├─ reads #[prop(...)] invariant metadata
+      └─ reads #[formal_method(...)] transition metadata
+           ↓
+elicitation generate creusot --crate-path src/vsm --out src/proofs/creusot/generated
+           ↓
+generated same-crate companion file
 ```
 
-`write_creusot_vsm_file` prepends:
+Important behavior:
 
-1. The `#[cfg(creusot)] use` imports
-2. The inline `#[logic]` invariant definition (`INV_*` constant)
-3. The companion function bodies from `vsm_creusot_proof()`
+- simple delegation bodies like `{ other_fn(args) }` are rewritten to call
+  `other_fn_creusot_local(args)` so Creusot does not descend into traced originals
+- local helper bodies now carry the same `#[requires]` / `#[ensures]` as the
+  wrapper, so delegated proofs compose correctly
+- if `creusot_body` is present, it wins over the scanned runtime body
 
-The output is formatted with `prettyplease` and written to
-`src/creusot/generated/{machine}.rs`. These files are committed to source
-control and are auditable.
+### Regeneration rule
 
-### Updating the invariant
+`elicitation prove --creusot` proves what is already generated; it does not
+magically refresh `src/proofs/creusot/generated/*.rs` in every consumer crate.
+If you changed a VSM source file, regenerate first:
 
-If you change the invariant logic in `vsm_invariants.rs`, you **must also
-update the corresponding `const INV_*` string in `build.rs`** — the inline
-copy in the generated file takes precedence and will become stale otherwise.
+```bash
+elicitation generate creusot --crate-path src/vsm --out src/proofs/creusot/generated
+```
+
+Or use the consumer crate's wrapper recipe, e.g.:
+
+```bash
+just generate-proofs-creusot
+```
 
 ---
 
-## 6. Running the Proofs
+## 6. Running Proofs Correctly
 
-### Using `elicitation prove`
+### Recommended path
 
-The recommended invocation wraps all environment setup automatically:
+For downstream crates, use:
 
 ```bash
 elicitation prove --creusot --csv
 ```
 
-This reads `PATH`, `WHY3CONFIG`, and `DUNE_DIR_LOCATIONS` from `.env`, runs
-`cargo creusot prove`, and writes results to `./creusot_verification_results.csv`
-with a log at `./prove_creusot.log`. The command exits non-zero on any failure.
+Current behavior is:
 
-### Consumer projects
+1. prepare a sanitized shadow workspace
+2. run `cargo creusot init` there if needed
+3. run `cargo creusot -- -p <pkg>` for translation only
+4. run `why3find prove` on generated companion roots only
 
-If you run `elicitation prove --creusot` in a crate other than `elicit_proofs`,
-your proofs crate must declare the `creusot` feature in `Cargo.toml`. The prove
-command always passes `--features creusot` to cargo:
+This split flow is intentional. It avoids the over-broad behavior of
+`cargo creusot prove`, which re-translates one crate but proves **everything**
+under `verif/`.
 
-```toml
-[features]
-kani    = []   # Marker feature — cargo kani probe
-creusot = []   # Marker feature — cargo creusot prove
-verus   = []   # Marker feature — vargo
+### Logs
+
+Current logs are:
+
+- `prove_creusot_translate.log`
+- `prove_creusot.log`
+
+If you only see:
+
+```text
+🔬 Running cargo creusot prove…
+📝 Logging to ./prove_creusot.log
 ```
 
-`creusot-std` should remain an unconditional dependency (not gated by this
-feature) since it is always needed to compile `#[cfg(creusot)]` code.
+you are running an **old CLI binary**.
 
-### Manual invocation
+### Guardrail: stale installed CLI
 
-If you need to run directly without `elicitation prove`:
-
-### Prerequisites
-
-Creusot and Why3 must be installed. The toolchain lives at:
-
-```
-~/.local/share/creusot/bin/   — why3find, why3, creusot-rustc
-~/.config/creusot/why3.conf   — solver configuration
-~/repos/creusot/              — source checkout (for creusot-std)
-```
-
-Run the full proof suite:
+If `command -v elicitation` resolves to `~/.cargo/bin/elicitation`, make sure
+it has been reinstalled after CLI changes:
 
 ```bash
-PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
-DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
-WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
-cargo creusot prove -- -p elicit_proofs
+cargo install --path crates/elicitation --features cli --bin elicitation --force
 ```
 
-The `just` recipe wraps this:
+During development, `./target/debug/elicitation prove --creusot` is the most
+reliable way to avoid accidentally using a stale installed binary.
+
+### Consumer-crate workflow
+
+Typical downstream loop:
 
 ```bash
-just prove-creusot     # full suite (both elicitation_creusot + elicit_proofs)
+just generate-proofs-creusot
+just verify-creusot
 ```
 
-### What `cargo creusot prove` does
-
-1. **Generates COMA files** — runs `cargo creusot` (Creusot's translation step)
-   which invokes `creusot-rustc` to translate Rust → Why3/COMA. Output goes to
-   `verif/{crate_name}_rlib/`.
-2. **Runs why3find prove** — invokes Alt-Ergo/CVC5/Z3 on the generated COMA
-   goals. Proof caches are stored in `verif/**/{fn_name}/proof.json`.
-
-The `-p elicit_proofs` flag regenerates `verif/elicit_proofs_rlib/` but
-**why3find proves everything in `verif/`** — including
-`elicitation_creusot_rlib/`. Pass `-p elicitation_creusot` to regenerate
-the gallery proofs.
-
-### Checking compilation without proving
+For `valinoreth`, `verify-creusot` runs:
 
 ```bash
-just check elicit_proofs
+elicitation prove --creusot
 ```
 
-This compiles the crate (including generated companions) without running
-Why3. Use this to verify that contracts parse and imports resolve before
-spending time on a full prove run.
+so regeneration must happen first.
 
-### Inspecting COMA for failures
+### Manual split invocation
 
-When a proof fails, inspect the generated COMA file to find the bad goal:
+If you need to debug manually, mimic the CLI's split flow instead of using
+`cargo creusot prove`:
 
 ```bash
-# Find the COMA file for a failing function
-ls verif/elicit_proofs_rlib/creusot/generated/archive_nav/
-
-# The file is named {fn_name}__creusot.coma (without the module prefix)
-cat verif/elicit_proofs_rlib/creusot/generated/archive_nav/nav_loaded_creusot.coma
+cargo creusot -- -p <pkg>
+why3find prove verif/<pkg>_rlib/proofs/creusot/generated
 ```
 
-Look for `{false}` at a value binding — this is the signature of an unmodeled
-call:
+Some crates may emit to:
 
-```
-s6 = {false} any    (* String::new() has no model *)
-```
-
-The surrounding context tells you which source line produced it. Cross-reference
-with the transition source to find the offending method call.
-
-### Proving a single COMA file directly
-
-```bash
-PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
-DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
-WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
-why3find prove -p creusot \
-  verif/elicit_proofs_rlib/creusot/generated/archive_nav/nav_loaded_creusot.coma
+```text
+verif/<pkg>_rlib/creusot/generated
 ```
 
-This is faster for iteration — no full cargo build, just the Why3 side.
-
-### Stale COMA cache
-
-Creusot uses `target/creusot/` separate from the regular cargo target.
-Stale fingerprints can cause COMA not to regenerate after source changes:
-
-```bash
-rm -rf target/creusot/debug/.fingerprint/elicit_proofs-*
-rm -rf target/creusot/debug/deps/libelicit_proofs*
-```
+The CLI checks both layouts.
 
 ---
 
-## 7. Expected Proof Status
+## 7. Inspecting Failures
 
-### Production VSM companions (`elicit_proofs`)
+### Generated Rust companion
 
-| Machine | Companions | Status |
-|---|---|---|
-| `ArchiveConnection` | 7 | ✅ all prove |
-| `ArchiveNav` | 8 | ✅ all prove |
-| `ArchiveOverlay` | 10 | ✅ all prove |
-| `ArchivePanel` | 23 | ✅ all prove |
+First inspect the generated Rust source:
 
-All 48 production companions prove. The pre-existing `vc_c24_two_steps (4/6)`
-gap is in the gallery (not production) and pre-dates this work.
+```bash
+sed -n '1,220p' src/proofs/creusot/generated/<machine>.rs
+```
 
-### Gallery proofs (`elicitation_creusot`)
+That shows:
 
-Gallery levels C1–C30 are proven as described in the gallery module docs.
-`vc_c24_two_steps` (4/6) is a pre-existing gap.
+- the inline `#[logic]` invariant
+- the `extern_spec!`
+- `{transition}_creusot_local`
+- `{transition}_creusot`
+
+### COMA / Why3 side
+
+Then inspect the generated COMA root:
+
+```bash
+find verif -path '*proofs/creusot/generated*' -o -path '*creusot/generated*'
+```
+
+And prove a narrowed target if needed:
+
+```bash
+why3find prove verif/<pkg>_rlib/proofs/creusot/generated
+```
+
+Look for:
+
+- `{false} any` → unmodeled call
+- wrapper passes but `_creusot_local` fails → body issue
+- wrapper fails and local passes → contract / delegation issue
+
+### Common current failure shapes
+
+1. **Index/swap obligations**
+   - usually from proof-hostile loops
+   - prefer `creusot_body` over contorting runtime code
+2. **Invariant too weak**
+   - add real structural facts to `creusot_inv_body`
+3. **Stale generated file**
+   - regenerate `src/proofs/creusot/generated` before proving
+4. **Old installed CLI**
+   - reinstall or run `./target/debug/elicitation`
 
 ---
 
-## 8. Adding a New VSM Machine
+## 8. Adding or Updating a VSM
 
-### Step 1: Implement `VerifiedStateMachine` and `#[formal_method]`
+### Step 1: write a real invariant
 
-In `elicit_server`, annotate each transition with
-`#[formal_method(contracts = [MyConsistent])]`.
-
-### Step 2: Add the invariant to `build.rs`
+Use `creusot_inv_body` on the proposition:
 
 ```rust
-const INV_MY_MACHINE: &str = "\
-#[cfg(creusot)]
-#[logic]
-pub fn my_machine_consistent(state: &MyMachineState) -> bool {
-    pearlite! { /* invariant body */ }
-}";
+#[derive(Prop)]
+#[prop(
+    creusot_invariant_fn = "my_machine_consistent",
+    creusot_inv_body = r#"pearlite! { /* real structural invariant */ }"#
+)]
+pub struct MyMachineConsistent;
 ```
 
-For trivially-true invariants (all states well-formed by construction):
+Do not default to `true` unless you can justify that all states are vacuously
+well-formed.
+
+### Step 2: annotate transitions
 
 ```rust
-const INV_MY_MACHINE: &str = concat!(
-    "#[cfg(creusot)] #[logic] pub fn my_machine_consistent",
-    "(_state: &MyMachineState) -> bool { true }",
-);
+#[formal_method(
+    contracts = [MyMachineConsistent],
+    creusot_requires = ["payload@.len() > 0"]
+)]
+pub fn my_transition(...) -> (MyState, Established<MyMachineConsistent>) { ... }
 ```
 
-**Do not** add a `use crate::creusot::vsm_invariants::my_machine_consistent`
-import to the generated file — see §3.
+If needed, add `creusot_body = r#"{ ... }"#`.
 
-### Step 3: Add the `write_creusot_vsm_file` call
-
-```rust
-write_creusot_vsm_file(
-    gen_dir,
-    "my_machine.rs",
-    "MyMachine",
-    INV_MY_MACHINE,
-    &MyMachine::vsm_creusot_proof(),
-);
-```
-
-### Step 4: Wire into `mod.rs`
-
-```rust
-// src/creusot/generated/mod.rs
-pub mod my_machine;
-```
-
-### Step 5: Run the proofs
+### Step 3: regenerate
 
 ```bash
-cargo build -p elicit_proofs   # regenerate companions
-just prove-creusot              # prove everything
+elicitation generate creusot --crate-path src/vsm --out src/proofs/creusot/generated
 ```
 
-### Step 6: Handle unmodeled methods
+### Step 4: prove
 
-If the prove run reports failures, inspect the COMA files (see §6). The most
-common causes:
+```bash
+elicitation prove --creusot
+```
 
-1. **`{false}` in a binding** — an unmodeled stdlib call. Add an `extern_spec!`
-   to `crates/elicit_proofs/src/creusot/extern_specs.rs`.
-2. **Cross-module opacity** — an imported `#[logic]` predicate (see §3). Move
-   the predicate inline to `INV_MY_MACHINE` in `build.rs`.
-3. **Complex body** — the transition builds types the solver can't reason about.
-   Mark the companion `#[trusted]` in the `TokenStream` emitted by
-   `vsm_creusot_proof()`.
+Or the crate wrapper:
+
+```bash
+just verify-creusot
+```
+
+### Step 5: debug the right layer
+
+- invariant wrong or too weak → source `#[prop(...)]`
+- body too operational → `creusot_body`
+- missing model → crate-local `extern_spec!`
+- stale behavior → regenerate or reinstall CLI
 
 ---
 
@@ -553,14 +438,14 @@ common causes:
 |---|---|---|---|
 | Proof style | Bounded model checking | Deductive (SMT via WhyML) | Deductive (Z3 directly) |
 | Coverage | All variants × bounded depth | All inputs simultaneously | All inputs simultaneously |
-| String fields | `String::new()` (bounded) | `extern_spec!` model required | `vstd` full specs built-in |
+| String fields | `String::new()` (bounded) | crate-local `extern_spec!` model may be required | `vstd` full specs built-in |
 | Async code | Not supported | Not supported | Not supported |
 | Proof artefact | `proof_for_contract` harness | COMA + Why3 session | `assume_specification` + verified callers |
 | Failure output | CBMC counterexample | Unproved goal + COMA position | Z3 counterexample |
 | Composition | `stub_verified` | Contracts inline | `assume_specification` chains |
 | Turnaround | ~30s per harness | ~5min for full suite | seconds for all files |
-| Companion source | `src/kani/generated/*.rs` | `src/creusot/generated/*.rs` | `elicitation_verus/src/generated/*.rs` |
-| Both generated by | `build.rs` | `build.rs` | `verus_gen.rs` via `elicitation generate` |
+| Companion source | `src/kani/generated/*.rs` | `src/proofs/creusot/generated/*.rs` in the consumer crate | `elicitation_verus/src/generated/*.rs` |
+| Generated by | derive + CLI pipeline | scanner + `elicitation generate creusot` | `verus_gen.rs` via `elicitation generate` |
 | Per-variant harnesses? | Yes (diagnostic) / No (production) | No | No |
 | Cross-crate fn specs | N/A | `extern_spec!` crate-local | `assume_specification` any crate |
 

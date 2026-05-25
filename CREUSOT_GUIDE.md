@@ -85,6 +85,12 @@ If you clone creusot to a different location, update this path.
 
 You can run them together (`cargo creusot prove`) or separately.
 
+> **Important for downstream VSM crates:** do **not** treat `cargo creusot prove`
+> as the recommended consumer-crate workflow. For same-crate generated VSM
+> companions, use `elicitation prove --creusot`, which runs translation and
+> proving as separate steps in a shadow workspace and narrows `why3find` to the
+> generated companion roots only. See [`CREUSOT_FOR_VSMS.md`](CREUSOT_FOR_VSMS.md).
+
 ### Required environment variables
 
 Why3 and why3find are installed under the Creusot prefix, not in your system
@@ -122,10 +128,10 @@ output to `verif/elicitation_creusot_rlib/`. No SMT solving happens. Use this
 to check that contracts parse and the crate translates cleanly before running
 a slow prove step.
 
-For VSM companions:
+For downstream VSM companions:
 
 ```bash
-cargo creusot -- -p elicit_proofs
+cargo creusot -- -p <pkg>
 ```
 
 ### Proving COMA files (SMT solving only)
@@ -146,18 +152,28 @@ no full cargo build.
 PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
 DUNE_DIR_LOCATIONS="why3find:lib:${HOME}/.local/share/creusot/share/why3find" \
 WHY3CONFIG="${HOME}/.config/creusot/why3.conf" \
-cargo creusot prove -- -p elicit_proofs
+cargo creusot prove -- -p elicitation_creusot
 ```
 
 `cargo creusot prove -- -p PKG` regenerates `verif/PKG_rlib/` then proves
-**everything in `verif/`** (both `elicitation_creusot_rlib/` and
-`elicit_proofs_rlib/`). The `-p` flag controls which crate is re-translated,
+**everything in `verif/`**. The `-p` flag controls which crate is re-translated,
 not which COMA files are proved.
+
+For downstream VSM crates this is usually too broad. Prefer:
+
+```bash
+elicitation prove --creusot
+```
+
+which performs:
+
+1. `cargo creusot init` in a sanitized shadow workspace
+2. `cargo creusot -- -p <pkg>` for translation
+3. `why3find prove` on the generated companion root only
 
 ### Checking compilation without proving
 
 ```bash
-just check elicit_proofs
 just check elicitation_creusot
 ```
 
@@ -170,15 +186,14 @@ before spending time on a full prove run.
 When `why3find` reports a goal unproved, find the COMA file:
 
 ```bash
-ls verif/elicit_proofs_rlib/creusot/generated/archive_nav/
-# nav_loaded_creusot.coma   nav_loaded_creusot/proof.json  ...
+find verif -path '*proofs/creusot/generated*' -o -path '*creusot/generated*'
 
-cat verif/elicit_proofs_rlib/creusot/generated/archive_nav/nav_loaded_creusot.coma
+cat verif/elicitation_creusot_rlib/gallery/level29/some_goal.coma
 ```
 
 Look for `{false}` in a value binding — the signature of an unmodeled call:
 
-```
+```text
 s6 = {false} any    (* String::new() has no model *)
 ```
 
@@ -191,13 +206,28 @@ Creusot uses `target/creusot/` separately from `target/`. Stale fingerprints
 can cause COMA files not to regenerate after source changes:
 
 ```bash
-rm -rf target/creusot/debug/.fingerprint/elicit_proofs-*
-rm -rf target/creusot/debug/deps/libelicit_proofs*
+rm -rf target/creusot/debug/.fingerprint/<pkg>-*
+rm -rf target/creusot/debug/deps/lib<pkg>*
 ```
 
-`cargo clean -p elicit_proofs` only cleans the regular target, not the
+`cargo clean -p <pkg>` only cleans the regular target, not the
 Creusot target. Always delete fingerprints manually when debugging missing
 or stale `.coma` files.
+
+### Guardrail: stale installed CLI
+
+If `elicitation prove --creusot` prints only:
+
+```text
+🔬 Running cargo creusot prove…
+📝 Logging to ./prove_creusot.log
+```
+
+then your shell is using an older installed `elicitation` binary. Reinstall it:
+
+```bash
+cargo install --path crates/elicitation --features cli --bin elicitation --force
+```
 
 ### Full Tracked Run (elicitation_creusot modules)
 
