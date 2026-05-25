@@ -51,6 +51,8 @@ pub fn generate_proof_crate(
 
     let source_rel = relative_path(out_dir, &source_root)?;
     let (elicitation_rel, creusot_std_rel) = find_elicitation_paths(&source_root, out_dir)?;
+    let kani_skip = read_kani_skip_features(&source_root);
+    let source_dep_extras = build_source_dep_extras(&source_root, &kani_skip);
 
     // ── Cargo.toml ───────────────────────────────────────────────────────────
     write_file(
@@ -62,6 +64,7 @@ pub fn generate_proof_crate(
             &source_rel,
             elicitation_rel.as_deref(),
             creusot_std_rel.as_deref(),
+            &source_dep_extras,
         ),
     )?;
 
@@ -163,6 +166,7 @@ fn render_cargo_toml(
     source_rel: &Path,
     elicitation_rel: Option<&Path>,
     creusot_std_rel: Option<&Path>,
+    source_dep_extras: &str,
 ) -> String {
     let elicitation_dep = match elicitation_rel {
         Some(p) => format!(r#"elicitation = {{ path = "{}" }}"#, p.display()),
@@ -191,7 +195,7 @@ creusot = []
 verus   = []
 
 [dependencies]
-{source_name} = {{ path = "{source_rel}" }}
+{source_name} = {{ path = "{source_rel}"{source_dep_extras} }}
 {elicitation_dep}
 {creusot_std_dep}
 "#,
@@ -366,7 +370,89 @@ fn write_why3find_json(dir: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Derive a `snake_case` filename stem from a PascalCase machine name.
+/// Read `[package.metadata.elicitation] kani_skip_features` from the source
+/// crate's `Cargo.toml`.  Returns an empty vec if absent or unparseable.
+fn read_kani_skip_features(source_crate_root: &Path) -> Vec<String> {
+    let cargo_toml_path = source_crate_root.join("Cargo.toml");
+    let text = match std::fs::read_to_string(&cargo_toml_path) {
+        Ok(t) => t,
+        Err(_) => return vec![],
+    };
+    let table: toml::Table = match text.parse() {
+        Ok(t) => t,
+        Err(_) => return vec![],
+    };
+    table
+        .get("package")
+        .and_then(|p| p.get("metadata"))
+        .and_then(|m| m.get("elicitation"))
+        .and_then(|e| e.get("kani_skip_features"))
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Read the `[features] default` list from the source crate's `Cargo.toml`.
+/// Returns an empty vec if absent or unparseable.
+fn read_default_features(source_crate_root: &Path) -> Vec<String> {
+    let cargo_toml_path = source_crate_root.join("Cargo.toml");
+    let text = match std::fs::read_to_string(&cargo_toml_path) {
+        Ok(t) => t,
+        Err(_) => return vec![],
+    };
+    let table: toml::Table = match text.parse() {
+        Ok(t) => t,
+        Err(_) => return vec![],
+    };
+    table
+        .get("features")
+        .and_then(|f| f.get("default"))
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Build the extra fragment for the source dep line.
+///
+/// If `kani_skip_features` is non-empty, emit `default-features = false` plus
+/// all declared `default` features minus the ones to skip.  This prevents the
+/// proof crate from pulling in Kani-incompatible transitive deps that the
+/// source crate gates behind optional features.
+///
+/// If the skip list is empty the returned string is empty (normal dep).
+fn build_source_dep_extras(source_crate_root: &Path, kani_skip: &[String]) -> String {
+    if kani_skip.is_empty() {
+        return String::new();
+    }
+    let defaults = read_default_features(source_crate_root);
+    let remaining: Vec<&String> = defaults.iter().filter(|f| !kani_skip.contains(f)).collect();
+    tracing::info!(
+        skip = ?kani_skip,
+        defaults = ?defaults,
+        remaining = ?remaining,
+        "Applying kani_skip_features to source dep"
+    );
+    if remaining.is_empty() {
+        r#", default-features = false"#.to_string()
+    } else {
+        let list = remaining
+            .iter()
+            .map(|f| format!(r#""{f}""#))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!(r#", default-features = false, features = [{list}]"#)
+    }
+}
+
+
 ///
 /// `CombatMachine` → `combat`, `ArchiveNavMachine` → `archive_nav`.
 fn machine_to_filename(machine: &str) -> String {
