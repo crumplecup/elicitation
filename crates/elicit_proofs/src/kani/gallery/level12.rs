@@ -39,9 +39,9 @@
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_panel_consistent;
 use elicit_server::archive::vsm::{
-    ArchivePanelState, column_detail, panel_loading, query_complete,
+    column_detail, panel_loading, query_complete, ArchivePanelState,
 };
-use elicitation::{KaniCompose, contracts::Established};
+use elicitation::{contracts::Established, KaniCompose};
 
 // ── Contracted functions ──────────────────────────────────────────────────────
 

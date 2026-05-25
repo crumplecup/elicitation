@@ -16,18 +16,14 @@ use elicit_server::archive::display::{
     QueryHistoryEntryMode, QueryResultMode, SavedQueryMode,
 };
 #[cfg(creusot)]
-use elicit_server::archive::vsm::{
-    ArchivePanelConsistent, ArchivePanelState, abort_edits, admin_ready, begin_edit, column_detail,
-    commit_edits, constraints_ready, data_grid_ready, ddl_ready, erd_ready, explain_ready,
-    export_ready, history_ready, indexes_ready, monitor_ready, open_connection_editor,
-    open_export_panel, open_help_panel, open_saved_panel, open_sql_editor, panel_error,
-    panel_loading, query_complete, saved_ready,
-};
-#[cfg(creusot)]
 use elicit_server::archive::{
-    AdminSnapshot, ConnectionProfile, ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout,
-    ExplainPlan, ExportResult, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult,
-    SavedQuery,
+    AdminSnapshot, ArchivePanelConsistent, ArchivePanelState, ConnectionProfile,
+    ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout, ExplainPlan, ExportResult,
+    IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, SavedQuery, abort_edits,
+    admin_ready, begin_edit, column_detail, commit_edits, constraints_ready, data_grid_ready,
+    ddl_ready, erd_ready, explain_ready, export_ready, history_ready, indexes_ready, monitor_ready,
+    open_connection_editor, open_export_panel, open_help_panel, open_saved_panel, open_sql_editor,
+    panel_error, panel_loading, query_complete, saved_ready,
 };
 #[cfg(creusot)]
 use elicitation::Established;

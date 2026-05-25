@@ -6,13 +6,13 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
-use elicit_server::archive::vsm::{
-    ArchiveOverlayConsistent, ArchiveOverlayState, archive_overlay_consistent, close_overlay,
+use elicit_server::archive::vsm::archive_overlay_consistent;
+#[cfg(kani)]
+use elicit_server::archive::{
+    ArchiveOverlayConsistent, ArchiveOverlayState, ExportFormat, SavedQuery, close_overlay,
     open_export_picker, open_help, open_save_prompt, open_saved_browser, picker_move_down,
     picker_move_up, prompt_backspace, prompt_push, saved_browser_down, saved_browser_up,
 };
-#[cfg(kani)]
-use elicit_server::archive::{ExportFormat, SavedQuery};
 #[cfg(kani)]
 use elicitation::Established;
 

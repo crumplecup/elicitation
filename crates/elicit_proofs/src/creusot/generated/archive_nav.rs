@@ -10,10 +10,8 @@
 #[cfg(creusot)]
 use ::creusot_std::prelude::*;
 #[cfg(creusot)]
-use elicit_server::archive::NavTree;
-#[cfg(creusot)]
-use elicit_server::archive::vsm::{
-    ArchiveNavConsistent, ArchiveNavState, apply_filter, clear_filter, collapse_schema,
+use elicit_server::archive::{
+    ArchiveNavConsistent, ArchiveNavState, NavTree, apply_filter, clear_filter, collapse_schema,
     expand_schema, load_nav, move_cursor_down, move_cursor_up, nav_loaded, nav_refresh,
 };
 #[cfg(creusot)]
