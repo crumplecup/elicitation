@@ -23,49 +23,82 @@ use crate::cli::generate::{
 
 /// Generate a complete proof companion crate at `out_dir`.
 ///
-/// `source_crate_path` is the root (or any directory inside) the crate being
-/// verified.  `out_dir` is the root of the proof crate to create or update.
+/// `source_crate_paths` lists one or more source crate roots (or directories
+/// inside them) to scan for VSMs.  Multiple paths are needed when VSMs live
+/// in separate workspace member crates (e.g. a game suite with one crate per
+/// game).  All source crates must belong to the same workspace.
+///
 /// `proof_crate_name` overrides the generated crate name; by default it is
-/// `{source_crate_name}_proofs`.
+/// `{first_source}_proofs`.  When supplying multiple source paths the name
+/// should always be set explicitly via `--crate-name`.
 ///
 /// All files that already exist are overwritten; new directories are created
 /// as needed.
 #[tracing::instrument(skip(vsms), fields(vsms = vsms.len(), out = %out_dir.display()))]
 pub fn generate_proof_crate(
     vsms: &[VsmDescriptor],
-    source_crate_path: &Path,
+    source_crate_paths: &[&Path],
     out_dir: &Path,
     proof_crate_name: Option<&str>,
 ) -> anyhow::Result<()> {
-    let source_name = find_crate_name(source_crate_path);
+    anyhow::ensure!(
+        !source_crate_paths.is_empty(),
+        "at least one --crate-path must be provided"
+    );
 
+    // ── Per-source metadata ───────────────────────────────────────────────────
+    struct SourceInfo {
+        name: String,
+        root: PathBuf,
+        dep_line: String,
+    }
+
+    let mut sources: Vec<SourceInfo> = Vec::new();
+    for &path in source_crate_paths {
+        let name = find_crate_name(path);
+        let root = find_crate_root(path)
+            .with_context(|| format!("No Cargo.toml found above {}", path.display()))?;
+        // Workspace dep lookup deferred until workspace_deps is available below.
+        sources.push(SourceInfo {
+            name,
+            root,
+            dep_line: String::new(), // filled in after workspace_deps resolved
+        });
+    }
+
+    let first_root = sources[0].root.clone();
     let proof_name = proof_crate_name
         .map(str::to_string)
-        .unwrap_or_else(|| format!("{source_name}_proofs"));
+        .unwrap_or_else(|| format!("{}_proofs", sources[0].name));
 
-    let source_root = find_crate_root(source_crate_path).with_context(|| {
-        format!(
-            "No Cargo.toml found above {}",
-            source_crate_path.display()
-        )
-    })?;
-
-    let source_rel = relative_path(out_dir, &source_root)?;
-    let (elicitation_rel, creusot_std_rel) = find_elicitation_paths(&source_root, out_dir)?;
-    let kani_skip = read_kani_skip_features(&source_root);
-    let source_dep_extras = build_source_dep_extras(&source_root, &kani_skip);
-    let workspace_root = find_workspace_root(&source_root);
-    let workspace_deps = workspace_root
-        .as_deref()
-        .map(read_workspace_dep_names)
-        .unwrap_or_default();
+    let (elicitation_rel, creusot_std_rel) = find_elicitation_paths(&first_root, out_dir)?;
+    let workspace_root = find_workspace_root(&first_root);
     let workspace_pkg_fields = workspace_root
         .as_deref()
         .map(read_workspace_package_fields)
         .unwrap_or_default();
-    let source_version = read_crate_version(&source_root);
-    let extra_workspace_deps =
-        collect_extra_deps(vsms, &source_name, &workspace_deps);
+    let workspace_deps = workspace_root
+        .as_deref()
+        .map(read_workspace_dep_names)
+        .unwrap_or_default();
+    let source_version = read_crate_version(&first_root);
+
+    // Build dep lines now that workspace_deps is known.
+    let in_workspace = !workspace_pkg_fields.is_empty() || !workspace_deps.is_empty();
+    for src in &mut sources {
+        let kani_skip = read_kani_skip_features(&src.root);
+        let dep_extras = build_source_dep_extras(&src.root, &kani_skip);
+        src.dep_line = if in_workspace && workspace_deps.contains(&src.name) {
+            format!("{} = {{ workspace = true{dep_extras} }}", src.name)
+        } else {
+            let rel = relative_path(out_dir, &src.root)?;
+            format!("{} = {{ path = \"{}\"{dep_extras} }}", src.name, rel.display())
+        };
+    }
+
+    let source_names: Vec<&str> = sources.iter().map(|s| s.name.as_str()).collect();
+    let source_dep_lines: Vec<&str> = sources.iter().map(|s| s.dep_line.as_str()).collect();
+    let extra_workspace_deps = collect_extra_deps(vsms, &source_names, &workspace_deps);
 
     // ── Cargo.toml ───────────────────────────────────────────────────────────
     write_file(
@@ -73,11 +106,9 @@ pub fn generate_proof_crate(
         "Cargo.toml",
         &render_cargo_toml(
             &proof_name,
-            &source_name,
-            &source_rel,
+            &source_dep_lines,
             elicitation_rel.as_deref(),
             creusot_std_rel.as_deref(),
-            &source_dep_extras,
             &workspace_pkg_fields,
             &workspace_deps,
             source_version.as_deref(),
@@ -89,7 +120,7 @@ pub fn generate_proof_crate(
     write_file(
         &out_dir.join("src"),
         "lib.rs",
-        &render_lib_rs(&source_name),
+        &render_lib_rs(&proof_name),
     )?;
 
     // ── src/{kani,creusot,verus}/mod.rs ──────────────────────────────────────
@@ -102,13 +133,16 @@ pub fn generate_proof_crate(
     }
 
     // ── Generated proof files + generated/mod.rs per backend ─────────────────
-    write_kani_files(vsms, source_crate_path, out_dir)?;
-    write_creusot_files(vsms, source_crate_path, out_dir)?;
-    write_verus_files(vsms, source_crate_path, out_dir)?;
+    // crate_root is derived from vsm.source_file inside each generator, so a
+    // placeholder is fine here.
+    let placeholder = Path::new(".");
+    write_kani_files(vsms, placeholder, out_dir)?;
+    write_creusot_files(vsms, placeholder, out_dir)?;
+    write_verus_files(vsms, placeholder, out_dir)?;
 
     // ── why3find.json at workspace root (needed by `cargo creusot prove`) ────
-    let workspace_root = workspace_root.unwrap_or(source_root);
-    write_why3find_json(&workspace_root)?;
+    let ws_root = workspace_root.unwrap_or_else(|| first_root.clone());
+    write_why3find_json(&ws_root)?;
 
     Ok(())
 }
@@ -179,11 +213,9 @@ fn write_verus_files(vsms: &[VsmDescriptor], source: &Path, out: &Path) -> anyho
 
 fn render_cargo_toml(
     proof_name: &str,
-    source_name: &str,
-    source_rel: &Path,
+    source_dep_lines: &[&str],
     elicitation_rel: Option<&Path>,
     creusot_std_rel: Option<&Path>,
-    source_dep_extras: &str,
     workspace_pkg_fields: &[String],
     workspace_deps: &[String],
     source_version: Option<&str>,
@@ -220,15 +252,6 @@ fn render_cargo_toml(
 
     let in_workspace = !workspace_pkg_fields.is_empty() || !workspace_deps.is_empty();
 
-    let source_dep = if in_workspace && workspace_deps.contains(&source_name.to_string()) {
-        format!(r#"{source_name} = {{ workspace = true{source_dep_extras} }}"#)
-    } else {
-        format!(
-            "{source_name} = {{ path = \"{src}\"{source_dep_extras} }}",
-            src = source_rel.display()
-        )
-    };
-
     let elicitation_dep = if in_workspace && workspace_deps.contains(&"elicitation".to_string()) {
         "elicitation = { workspace = true }".to_string()
     } else {
@@ -255,6 +278,8 @@ fn render_cargo_toml(
         }
     };
 
+    let sources_str = source_dep_lines.join("\n");
+
     let extra_deps_str = if extra_workspace_deps.is_empty() {
         String::new()
     } else {
@@ -279,16 +304,16 @@ verus   = []\n\
 unexpected_cfgs = {{ level = \"warn\", check-cfg = [\'cfg(creusot)\', \'cfg(kani)\', \'cfg(verus)\'] }}\n\
 \n\
 [dependencies]\n\
-{source_dep}\n\
+{sources_str}\n\
 {elicitation_dep}\n\
 {creusot_std_dep}\n\
 {extra_deps_str}"
     )
 }
 
-fn render_lib_rs(source_name: &str) -> String {
+fn render_lib_rs(proof_name: &str) -> String {
     format!(
-        r#"//! Formal verification proof harnesses for `{source_name}`.
+        r#"//! Formal verification proof harnesses for `{proof_name}`.
 //!
 //! AUTO-GENERATED by `elicitation generate proof-crate` — DO NOT EDIT.
 //!
@@ -514,7 +539,7 @@ fn write_why3find_json(dir: &Path) -> anyhow::Result<()> {
 /// crate itself (e.g. `use elicit_server::gaap::...`).
 fn collect_extra_deps(
     vsms: &[VsmDescriptor],
-    source_name: &str,
+    source_names: &[&str],
     workspace_deps: &[String],
 ) -> Vec<String> {
     // Crates already emitted explicitly by render_cargo_toml.
@@ -548,9 +573,10 @@ fn collect_extra_deps(
         for item in &syntax.items {
             if let syn::Item::Use(u) = item {
                 if let Some(root) = use_tree_root_crate(&u.tree) {
-                    // Cargo dep names use `-`; Rust crate names use `_`.
                     let cargo_name = root.replace('_', "-");
-                    let skip = root == source_name
+                    let is_source = source_names.contains(&root.as_str())
+                        || source_names.iter().any(|n| n.replace('_', "-") == cargo_name);
+                    let skip = is_source
                         || always_handled.contains(&root.as_str())
                         || always_handled.contains(&cargo_name.as_str());
                     if !skip {
@@ -561,7 +587,6 @@ fn collect_extra_deps(
         }
     }
 
-    // Keep only those that are actually declared as workspace deps.
     found
         .into_iter()
         .filter(|name| {

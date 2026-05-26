@@ -336,16 +336,25 @@ pub enum GenerateTarget {
     /// Writes the entire crate skeleton — `Cargo.toml`, `src/lib.rs`,
     /// backend `mod.rs` shims, and all generated proof companion files —
     /// so users never need to maintain any proof-crate boilerplate by hand.
+    ///
+    /// Pass `--crate-path` multiple times when VSMs live in separate workspace
+    /// member crates (e.g. a game suite with one crate per game). All source
+    /// crates must belong to the same workspace.
     ProofCrate {
-        /// Root directory of the source crate to scan for VSM source files.
-        #[arg(short = 'p', long, default_value = ".")]
-        crate_path: PathBuf,
+        /// Source crate(s) to scan for VSM source files.
+        ///
+        /// Pass once for a single-crate project or multiple times when VSMs
+        /// are spread across workspace members. Each value may be the crate
+        /// root or any directory inside it.
+        #[arg(short = 'p', long, required = true, num_args = 1..)]
+        crate_path: Vec<PathBuf>,
 
         /// Output directory (root of the proof crate to create or update).
         #[arg(short, long)]
         out: PathBuf,
 
-        /// Override the generated crate name (defaults to `{source}_proofs`).
+        /// Override the generated crate name (defaults to `{first_source}_proofs`).
+        /// Required when supplying multiple --crate-path values.
         #[arg(long)]
         crate_name: Option<String>,
     },
@@ -680,17 +689,24 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
             out,
             crate_name,
         } => {
-            let vsms = scan_vsms(crate_path);
-            if vsms.is_empty() {
-                println!(
-                    "No VerifiedStateMachine structs found in {}",
-                    crate_path.display()
-                );
+            let mut all_vsms = Vec::new();
+            let mut any_found = false;
+            for path in crate_path.iter() {
+                let vsms = scan_vsms(path);
+                if !vsms.is_empty() {
+                    any_found = true;
+                }
+                all_vsms.extend(vsms);
+            }
+            if !any_found {
+                println!("No VerifiedStateMachine structs found in any of the specified source crates");
                 return Ok(());
             }
+            let source_paths: Vec<&std::path::Path> =
+                crate_path.iter().map(|p| p.as_path()).collect();
             proof_crate_gen::generate_proof_crate(
-                &vsms,
-                crate_path,
+                &all_vsms,
+                &source_paths,
                 out,
                 crate_name.as_deref(),
             )?;
