@@ -88,6 +88,8 @@ mod mcp_wrapper; // Generic wrapper for MCP tool outputs
 mod server; // Server-side wrapper (analogous to ElicitClient)
 // Unified trait for client/server communication
 
+pub mod middleware;
+
 // Verification framework imports
 
 mod collections;
