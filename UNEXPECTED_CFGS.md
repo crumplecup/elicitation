@@ -131,12 +131,17 @@ mod _formal_method_compat_my_transition {
 // Re-exports — no cfg gate needed because both variants exist above:
 pub use _formal_method_compat_my_transition::my_transition;
 pub use _formal_method_compat_my_transition::my_transition_kani_contracted;
+// Note: the cfg(not(kani)) stub carries #[allow(dead_code)] — it is never
+// called in normal builds (it exists solely for the unconditional pub use).
 ```
 
 **Why both cfg variants of the contracted fn are needed**: If only the `#[cfg(kani)]` variant
 existed inside the mod, the `pub use` of `my_transition_kani_contracted` would fail to compile
 in a non-kani build (item doesn't exist). Having both variants means the item always exists and
-the `pub use` needs no cfg guard — zero cfg tokens escape to user module scope.
+the `pub use` needs no cfg guard — zero cfg tokens escape to user module scope. The
+`#[cfg(not(kani))]` stub carries `#[allow(dead_code)]` because it will never be called in
+normal builds — it is a kani artifact whose sole purpose is satisfying the `pub use`. This is
+semantically accurate, not a cover-up.
 
 ---
 
