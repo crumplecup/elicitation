@@ -3584,8 +3584,13 @@ name = "elicit_proofs"
 version = "0.11.0"
 dependencies = [
  "creusot-std",
+ "elicit_db",
  "elicit_server",
+ "elicit_ui",
  "elicitation",
+ "schemars",
+ "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -4210,6 +4215,7 @@ dependencies = [
  "sqlx",
  "tiff 0.9.1",
  "time",
+ "tracing",
  "url",
  "uuid",
  "wkb",
