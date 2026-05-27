@@ -37,17 +37,26 @@
 //!
 //! ```rust,ignore
 //! use tokio::sync::{mpsc, watch};
-//! use elicitation::middleware::{ObservableCommunicator, Participant};
+//! use elicitation::middleware::{ChatMessage, ObservableCommunicator, Participant};
 //! use elicitation::ElicitClient;
 //!
 //! let (prompt_tx, prompt_rx) = watch::channel(None);
 //! let (chat_tx, chat_rx) = mpsc::unbounded_channel();
 //!
+//! // Default: use elicitation's own ChatMessage, human responder
 //! let comm = ObservableCommunicator::new(ElicitClient::new(config), prompt_tx)
-//!     .with_chat(chat_tx, Participant::Agent(Some("GPT-4o".into())));
+//!     .with_chat(chat_tx, Participant::Human, |p, text| ChatMessage::new(p, text));
 //!
-//! // prompt_rx can be read by a UI widget to show in-flight prompts
-//! // chat_rx receives ChatMessage entries as exchanges complete
+//! // Custom message type, AI agent responder:
+//! let comm = ObservableCommunicator::new(ElicitClient::new(config), prompt_tx)
+//!     .with_chat(app_tx, Participant::Agent(Some("GPT-4o".into())), |participant, text| {
+//!         let sender = match participant {
+//!             Participant::Host => AppSender::Gm,
+//!             Participant::Agent(_) => AppSender::Ai,
+//!             _ => AppSender::Other,
+//!         };
+//!         AppMessage::new(sender, text)
+//!     });
 //! ```
 //!
 //! [`send_prompt`]: crate::ElicitCommunicator::send_prompt
@@ -82,6 +91,13 @@ impl std::fmt::Display for Participant {
     }
 }
 
+/// Type alias for the chat sink stored inside [`ObservableCommunicator`].
+type ChatSink<M> = (
+    mpsc::UnboundedSender<M>,
+    Participant,
+    std::sync::Arc<dyn Fn(Participant, String) -> M + Send + Sync>,
+);
+
 /// A chat message capturing one side of an elicitation exchange.
 #[derive(Debug, Clone)]
 pub struct ChatMessage {
@@ -112,19 +128,57 @@ impl ChatMessage {
 /// runtime), publishes it to a `watch` channel for in-flight display, and
 /// optionally routes it to a chat history channel.
 ///
+/// The `M` type parameter lets you use your own message type instead of the
+/// default [`ChatMessage`].  Supply a factory closure via [`with_chat`] that
+/// converts a [`Participant`] + text into `M`.  This is essential when the
+/// downstream application has its own message type (e.g. one that derives
+/// `Elicit`, `Serialize`, or carries AccessKit IR).
+///
+/// # Examples
+///
+/// Using the default [`ChatMessage`]:
+///
+/// ```rust,ignore
+/// let comm = ObservableCommunicator::new(inner, prompt_tx)
+///     .with_chat(chat_tx, |p, text| ChatMessage::new(p, text));
+/// ```
+///
+/// Using a custom downstream message type:
+///
+/// ```rust,ignore
+/// // AppMessage is defined in your crate with its own derives
+/// let comm = ObservableCommunicator::new(inner, prompt_tx)
+///     .with_chat(app_tx, |participant, text| {
+///         let sender = match participant {
+///             Participant::Host => AppSender::Host,
+///             _ => AppSender::Responder,
+///         };
+///         AppMessage::new(sender, text)
+///     });
+/// ```
+///
 /// Construct with [`ObservableCommunicator::new`], optionally attach a chat
 /// sink with [`with_chat`].
 ///
 /// [`with_chat`]: ObservableCommunicator::with_chat
-#[derive(Clone)]
-pub struct ObservableCommunicator<C> {
+pub struct ObservableCommunicator<C, M = ChatMessage> {
     inner: C,
     prompt_tx: watch::Sender<Option<String>>,
-    /// Optional chat history sink and participant identity.
-    chat: Option<(mpsc::UnboundedSender<ChatMessage>, Participant)>,
+    /// Optional chat history sink: channel, responder identity, message factory.
+    chat: Option<ChatSink<M>>,
 }
 
-impl<C> ObservableCommunicator<C> {
+impl<C: Clone, M> Clone for ObservableCommunicator<C, M> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            prompt_tx: self.prompt_tx.clone(),
+            chat: self.chat.clone(),
+        }
+    }
+}
+
+impl<C, M> ObservableCommunicator<C, M> {
     /// Wrap `inner`, publishing in-flight prompts to `prompt_tx`.
     ///
     /// Use [`with_chat`] to also route exchanges to a chat history sink.
@@ -138,22 +192,29 @@ impl<C> ObservableCommunicator<C> {
         }
     }
 
-    /// Attach a chat history sink so each exchange is appended as
-    /// [`ChatMessage`] entries.
+    /// Attach a chat history sink.
     ///
-    /// `participant` identifies who is replying (e.g. [`Participant::Human`]
-    /// or [`Participant::Agent(Some("GPT-4o".into()))`]).
+    /// `responder` identifies who is answering (e.g. [`Participant::Human`],
+    /// [`Participant::Agent`], or a custom label).  The prompt side always
+    /// receives [`Participant::Host`].
+    ///
+    /// `make_message` converts a [`Participant`] and text into your message
+    /// type `M`, letting you map to any downstream type including ones with
+    /// extra derives or domain-specific sender enums.
     pub fn with_chat(
         mut self,
-        chat_tx: mpsc::UnboundedSender<ChatMessage>,
-        participant: Participant,
+        chat_tx: mpsc::UnboundedSender<M>,
+        responder: Participant,
+        make_message: impl Fn(Participant, String) -> M + Send + Sync + 'static,
     ) -> Self {
-        self.chat = Some((chat_tx, participant));
+        self.chat = Some((chat_tx, responder, std::sync::Arc::new(make_message)));
         self
     }
 }
 
-impl<C: ElicitCommunicator> ElicitCommunicator for ObservableCommunicator<C> {
+impl<C: ElicitCommunicator, M: Send + 'static> ElicitCommunicator
+    for ObservableCommunicator<C, M>
+{
     /// Publish the prompt to the watch channel (and chat log if configured),
     /// delegate to the inner communicator, then clear the watch channel on return.
     #[instrument(skip(self), level = "debug", fields(prompt_len = prompt.len()))]
@@ -171,9 +232,8 @@ impl<C: ElicitCommunicator> ElicitCommunicator for ObservableCommunicator<C> {
             watch_tx.send(Some(prompt_owned.clone())).ok();
 
             // Append host prompt to chat history if configured.
-            if let Some((ref tx, _)) = chat {
-                tx.send(ChatMessage::new(Participant::Host, prompt_owned))
-                    .ok();
+            if let Some((ref tx, _, ref make)) = chat {
+                tx.send(make(Participant::Host, prompt_owned)).ok();
             }
 
             let result = inner_future.await;
@@ -182,11 +242,10 @@ impl<C: ElicitCommunicator> ElicitCommunicator for ObservableCommunicator<C> {
             watch_tx.send(None).ok();
 
             // Append the reply to chat history if configured.
-            if let Some((ref tx, ref participant)) = chat
+            if let Some((ref tx, ref responder, ref make)) = chat
                 && let Ok(ref response) = result
             {
-                tx.send(ChatMessage::new(participant.clone(), response.clone()))
-                    .ok();
+                tx.send(make(responder.clone(), response.clone())).ok();
             }
 
             result
@@ -212,10 +271,7 @@ impl<C: ElicitCommunicator> ElicitCommunicator for ObservableCommunicator<C> {
         self.inner.elicitation_context()
     }
 
-    fn with_style<
-        T: 'static,
-        S: StyleMarker + crate::style::ElicitationStyle + 'static,
-    >(
+    fn with_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
         &self,
         style: S,
     ) -> Self {
