@@ -278,14 +278,14 @@ pub use quote;
 // Re-export derive macros with user-friendly names
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool, formal_method};
 pub use elicitation_derive::{
-    formal_method_test_v1, formal_method_test_v2, formal_method_test_v3,
-    formal_method_test_v4, formal_method_test_v5, formal_method_test_v6,
-    formal_method_test_v7, formal_method_test_v8, formal_method_test_v9,
+    ElicitTestE1, ElicitTestE2, ElicitTestE3, ElicitTestE4, ElicitTestE5, ElicitTestE6,
+    ElicitTestE7, ElicitTestE8, ElicitTestE9, ElicitTestE10, ElicitTestE11, ElicitTestE12,
+    ElicitTestE13,
 };
 pub use elicitation_derive::{
-    ElicitTestE1, ElicitTestE2, ElicitTestE3, ElicitTestE4,
-    ElicitTestE5, ElicitTestE6, ElicitTestE7, ElicitTestE8, ElicitTestE9,
-    ElicitTestE10, ElicitTestE11, ElicitTestE12, ElicitTestE13,
+    formal_method_test_v1, formal_method_test_v2, formal_method_test_v3, formal_method_test_v4,
+    formal_method_test_v5, formal_method_test_v6, formal_method_test_v7, formal_method_test_v8,
+    formal_method_test_v9,
 };
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;

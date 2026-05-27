@@ -118,9 +118,8 @@ impl ElicitCommunicator for TuiCommunicator {
     fn call_tool(
         &self,
         params: rmcp::model::CallToolRequestParams,
-    ) -> impl std::future::Future<
-        Output = Result<CallToolResult, rmcp::service::ServiceError>,
-    > + Send {
+    ) -> impl std::future::Future<Output = Result<CallToolResult, rmcp::service::ServiceError>> + Send
+    {
         let name = params.name.to_string();
         let args = params.arguments.clone().unwrap_or_default();
         let prompt_rows = self.prompt_rows;
@@ -188,10 +187,7 @@ impl ElicitCommunicator for TuiCommunicator {
         &self.elicit_ctx
     }
 
-    fn with_style<
-        T: 'static,
-        S: StyleMarker + elicitation::style::ElicitationStyle + 'static,
-    >(
+    fn with_style<T: 'static, S: StyleMarker + elicitation::style::ElicitationStyle + 'static>(
         &self,
         style: S,
     ) -> Self {
@@ -245,12 +241,7 @@ fn render_prompt(text: &str, prompt_rows: u16, reserve_input_row: bool) {
 
     // Clear the pane.
     for row in pane_top..rows {
-        execute!(
-            stdout,
-            MoveTo(0, row),
-            Print(" ".repeat(cols as usize)),
-        )
-        .ok();
+        execute!(stdout, MoveTo(0, row), Print(" ".repeat(cols as usize)),).ok();
     }
 
     // Render lines.

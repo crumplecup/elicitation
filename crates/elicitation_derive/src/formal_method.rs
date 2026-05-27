@@ -635,8 +635,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 syn::parse_str(&inv_fn_name).expect("derived ident is valid");
             let state_pat_tokens: TokenStream =
                 state_pat_s.parse().expect("state_pat_s is valid tokens");
-            let contracted_fn_ident =
-                format_ident!("{fn_name}_kani_contracted");
+            let contracted_fn_ident = format_ident!("{fn_name}_kani_contracted");
 
             // Extra kani_requires expressions (e.g. symbolic parameter bounds).
             let extra_requires: Vec<TokenStream> = parsed_args
@@ -717,16 +716,12 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     };
                     let inv_fn_ident: syn::Ident =
                         syn::parse_str(&inv_fn_name).expect("valid ident");
-                    let state_pat_tokens: TokenStream =
-                        state_pat_s.parse().expect("valid tokens");
-                    v.push(
-                        quote! { #[::kani::requires(#inv_fn_ident(&#state_pat_tokens))] },
-                    );
+                    let state_pat_tokens: TokenStream = state_pat_s.parse().expect("valid tokens");
+                    v.push(quote! { #[::kani::requires(#inv_fn_ident(&#state_pat_tokens))] });
                     v.push(quote! { #[::kani::ensures(|result| #inv_fn_ident(&result.0))] });
                 }
                 for lit in &parsed_args.kani_requires {
-                    let expr: syn::Expr =
-                        syn::parse_str(&lit.value()).expect("kani_requires expr");
+                    let expr: syn::Expr = syn::parse_str(&lit.value()).expect("kani_requires expr");
                     v.push(quote! { #[::kani::requires(#expr)] });
                 }
                 v

@@ -177,9 +177,9 @@ pub use text_tools::{
     LineFromSpansParams, SpanRawParams, SpanStyledParams, TextFromLinesParams, TextRawParams,
     TextStyledParams,
 };
+pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 #[cfg(feature = "runtime")]
 pub use tui_communicator::TuiCommunicator;
-pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 pub use widget_tools::{
     BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
     ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,

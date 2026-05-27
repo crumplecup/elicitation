@@ -212,9 +212,7 @@ impl<C, M> ObservableCommunicator<C, M> {
     }
 }
 
-impl<C: ElicitCommunicator, M: Send + 'static> ElicitCommunicator
-    for ObservableCommunicator<C, M>
-{
+impl<C: ElicitCommunicator, M: Send + 'static> ElicitCommunicator for ObservableCommunicator<C, M> {
     /// Publish the prompt to the watch channel (and chat log if configured),
     /// delegate to the inner communicator, then clear the watch channel on return.
     #[instrument(skip(self), level = "debug", fields(prompt_len = prompt.len()))]

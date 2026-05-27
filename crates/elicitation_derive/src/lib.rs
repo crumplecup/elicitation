@@ -1211,7 +1211,8 @@ pub fn cfg_gallery_k(_attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn cfg_gallery_l(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut func = syn::parse_macro_input!(item as syn::ItemFn);
     let fn_name = func.sig.ident.clone();
-    func.attrs.push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
+    func.attrs
+        .push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
     let mut compat_func = func.clone();
     compat_func.vis = syn::parse_quote!(pub);
     let mod_name = quote::format_ident!("_gallery_l_compat_{}", fn_name);
@@ -1242,7 +1243,8 @@ pub fn cfg_gallery_m(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut func = syn::parse_macro_input!(item as syn::ItemFn);
     let fn_name = func.sig.ident.clone();
     func.vis = syn::parse_quote!(pub);
-    func.attrs.push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
+    func.attrs
+        .push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
     let mod_name = quote::format_ident!("_gallery_m_compat_{}", fn_name);
     TokenStream::from(quote::quote! {
         #[allow(unexpected_cfgs)]
@@ -1427,7 +1429,8 @@ pub fn formal_method_test_v6(_args: TokenStream, item: TokenStream) -> TokenStre
         }
     }
     // Add #[allow(unexpected_cfgs)] directly on the function
-    func.attrs.insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    func.attrs
+        .insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
     quote::quote! { #func }.into()
 }
 
@@ -1450,7 +1453,8 @@ pub fn formal_method_test_v7(_args: TokenStream, item: TokenStream) -> TokenStre
         }
     }
     // Add #[allow] both on the function and on the mod
-    func.attrs.insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    func.attrs
+        .insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
     func.vis = syn::parse_quote!(pub);
     let mod_name = quote::format_ident!("_fm_test_v7_{}", fn_name);
     quote::quote! {
@@ -1582,4 +1586,3 @@ pub fn derive_elicit_test_e12(input: TokenStream) -> TokenStream {
 pub fn derive_elicit_test_e13(input: TokenStream) -> TokenStream {
     enum_impl::expand_enum_e13(syn::parse_macro_input!(input as syn::DeriveInput))
 }
-

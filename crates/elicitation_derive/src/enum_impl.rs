@@ -911,7 +911,9 @@ fn generate_introspect_impl(
 // Each emits exactly one sub-piece of expand_enum inside the mod wrapper.
 // Used by ElicitTestE1..E8 derive macros in lib.rs for gallery isolation.
 
-fn bisect_parse(input: DeriveInput) -> (
+fn bisect_parse(
+    input: DeriveInput,
+) -> (
     syn::Ident,
     syn::Generics,
     Vec<VariantInfo>,
@@ -946,7 +948,8 @@ pub fn expand_enum_e1(input: DeriveInput) -> TokenStream {
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E2: prompt_impl only
@@ -954,11 +957,18 @@ pub fn expand_enum_e2(input: DeriveInput) -> TokenStream {
     let (name, generics, _, _, _, custom_prompt) = bisect_parse(input);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
-    let piece = generate_prompt_impl(&name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
+    let piece = generate_prompt_impl(
+        &name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E3: select_impl only
@@ -967,11 +977,19 @@ pub fn expand_enum_e3(input: DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
-    let piece = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
+    let piece = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E4: elicit_impl only
@@ -979,11 +997,18 @@ pub fn expand_enum_e4(input: DeriveInput) -> TokenStream {
     let (name, generics, variants, _, _, _) = bisect_parse(input);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
-    let piece = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let piece = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E5: introspect_impl only
@@ -991,11 +1016,18 @@ pub fn expand_enum_e5(input: DeriveInput) -> TokenStream {
     let (name, generics, variants, _, _, _) = bisect_parse(input);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
-    let piece = generate_introspect_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let piece = generate_introspect_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E6: graph_key_emission only
@@ -1018,7 +1050,8 @@ pub fn expand_enum_e6(input: DeriveInput) -> TokenStream {
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E7: prompt_tree_impl only
@@ -1026,11 +1059,19 @@ pub fn expand_enum_e7(input: DeriveInput) -> TokenStream {
     let (name, generics, variants, _, _, custom_prompt) = bisect_parse(input);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
-    let piece = generate_prompt_tree_impl_enum(&name, &variants, custom_prompt.as_deref(), &impl_generics, &ty_generics, &where_clause);
+    let piece = generate_prompt_tree_impl_enum(
+        &name,
+        &variants,
+        custom_prompt.as_deref(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E8: elicit_spec_impl only
@@ -1041,7 +1082,8 @@ pub fn expand_enum_e8(input: DeriveInput) -> TokenStream {
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #piece }
-    }.into()
+    }
+    .into()
 }
 
 /// E9: style + prompt + select + elicit_impl (minimum to satisfy Elicit bounds)
@@ -1051,13 +1093,33 @@ pub fn expand_enum_e9(input: DeriveInput) -> TokenStream {
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let style = generate_style_enum(&name);
-    let prompt = generate_prompt_impl(&name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
-    let select = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
-    let elicit = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let prompt = generate_prompt_impl(
+        &name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let select = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let elicit = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #style #prompt #select #elicit }
-    }.into()
+    }
+    .into()
 }
 
 /// E10: E9 + introspect_impl
@@ -1067,14 +1129,40 @@ pub fn expand_enum_e10(input: DeriveInput) -> TokenStream {
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let style = generate_style_enum(&name);
-    let prompt = generate_prompt_impl(&name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
-    let select = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
-    let elicit = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
-    let introspect = generate_introspect_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let prompt = generate_prompt_impl(
+        &name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let select = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let elicit = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let introspect = generate_introspect_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #style #prompt #select #elicit #introspect }
-    }.into()
+    }
+    .into()
 }
 
 /// E11: E10 + graph_key_emission
@@ -1084,10 +1172,35 @@ pub fn expand_enum_e11(input: DeriveInput) -> TokenStream {
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let style = generate_style_enum(&name);
-    let prompt = generate_prompt_impl(&name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
-    let select = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
-    let elicit = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
-    let introspect = generate_introspect_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let prompt = generate_prompt_impl(
+        &name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let select = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let elicit = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let introspect = generate_introspect_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     let graph_key = if generics.params.is_empty() {
         let name_str = name.to_string();
         quote! {
@@ -1098,11 +1211,14 @@ pub fn expand_enum_e11(input: DeriveInput) -> TokenStream {
                 <#name as elicitation::ElicitIntrospect>::metadata,
             ));
         }
-    } else { quote! {} };
+    } else {
+        quote! {}
+    };
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #style #prompt #select #elicit #introspect #graph_key }
-    }.into()
+    }
+    .into()
 }
 
 /// E12: E11 + prompt_tree_impl
@@ -1112,10 +1228,35 @@ pub fn expand_enum_e12(input: DeriveInput) -> TokenStream {
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let style = generate_style_enum(&name);
-    let prompt = generate_prompt_impl(&name, custom_prompt.clone(), &impl_generics, &ty_generics, &where_clause);
-    let select = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
-    let elicit = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
-    let introspect = generate_introspect_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let prompt = generate_prompt_impl(
+        &name,
+        custom_prompt.clone(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let select = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let elicit = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let introspect = generate_introspect_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     let graph_key = if generics.params.is_empty() {
         let name_str = name.to_string();
         quote! {
@@ -1126,8 +1267,17 @@ pub fn expand_enum_e12(input: DeriveInput) -> TokenStream {
                 <#name as elicitation::ElicitIntrospect>::metadata,
             ));
         }
-    } else { quote! {} };
-    let prompt_tree = generate_prompt_tree_impl_enum(&name, &variants, custom_prompt.as_deref(), &impl_generics, &ty_generics, &where_clause);
+    } else {
+        quote! {}
+    };
+    let prompt_tree = generate_prompt_tree_impl_enum(
+        &name,
+        &variants,
+        custom_prompt.as_deref(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]
         mod #mod_name { use super::*; #style #prompt #select #elicit #introspect #graph_key #prompt_tree }
@@ -1136,16 +1286,42 @@ pub fn expand_enum_e12(input: DeriveInput) -> TokenStream {
 
 /// E13: all enum pieces including to_code_literal and ElicitComplete (identical to full expand_enum)
 pub fn expand_enum_e13(input: DeriveInput) -> TokenStream {
-    let (name, generics, variants, unit_idents, labels, custom_prompt) = bisect_parse(input.clone());
+    let (name, generics, variants, unit_idents, labels, custom_prompt) =
+        bisect_parse(input.clone());
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let unit_refs: Vec<&syn::Ident> = unit_idents.iter().collect();
     let elicit_complete_where = elicit_complete_where(&generics);
     let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let style = generate_style_enum(&name);
-    let prompt = generate_prompt_impl(&name, custom_prompt.clone(), &impl_generics, &ty_generics, &where_clause);
-    let select = generate_select_impl(&name, &unit_refs, &labels, &impl_generics, &ty_generics, &where_clause);
-    let elicit = generate_elicit_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
-    let introspect = generate_introspect_impl(&name, &variants, &impl_generics, &ty_generics, &where_clause);
+    let prompt = generate_prompt_impl(
+        &name,
+        custom_prompt.clone(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let select = generate_select_impl(
+        &name,
+        &unit_refs,
+        &labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let elicit = generate_elicit_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let introspect = generate_introspect_impl(
+        &name,
+        &variants,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     let graph_key = if generics.params.is_empty() {
         let name_str = name.to_string();
         quote! {
@@ -1156,9 +1332,24 @@ pub fn expand_enum_e13(input: DeriveInput) -> TokenStream {
                 <#name as elicitation::ElicitIntrospect>::metadata,
             ));
         }
-    } else { quote! {} };
-    let prompt_tree = generate_prompt_tree_impl_enum(&name, &variants, custom_prompt.as_deref(), &impl_generics, &ty_generics, &where_clause);
-    let to_code_literal = crate::derive_to_code_literal::generate_to_code_literal_impl(&name, &input.data, &impl_generics, &ty_generics, &where_clause);
+    } else {
+        quote! {}
+    };
+    let prompt_tree = generate_prompt_tree_impl_enum(
+        &name,
+        &variants,
+        custom_prompt.as_deref(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    let to_code_literal = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        &name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
     let elicit_spec = generate_elicit_spec_impl(&name, &variants, &generics);
     quote! {
         #[allow(unexpected_cfgs, non_snake_case)]

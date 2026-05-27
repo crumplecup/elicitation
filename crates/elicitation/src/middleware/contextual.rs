@@ -142,10 +142,7 @@ impl<C: ElicitCommunicator + Clone> ElicitCommunicator for ContextualCommunicato
         self.inner.elicitation_context()
     }
 
-    fn with_style<
-        T: 'static,
-        S: StyleMarker + crate::style::ElicitationStyle + 'static,
-    >(
+    fn with_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
         &self,
         style: S,
     ) -> Self {

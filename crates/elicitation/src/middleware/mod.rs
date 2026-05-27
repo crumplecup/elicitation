@@ -40,5 +40,5 @@
 mod contextual;
 mod observable;
 
-pub use contextual::{knowledge_cache, ContextualCommunicator, KnowledgeCache, SharedKnowledge};
+pub use contextual::{ContextualCommunicator, KnowledgeCache, SharedKnowledge, knowledge_cache};
 pub use observable::{ChatMessage, ObservableCommunicator, Participant};
