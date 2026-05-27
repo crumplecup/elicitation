@@ -23,10 +23,22 @@
 //! states.  The connection proof token is threaded through to the inner
 //! machines.
 
+#[cfg(not(kani))]
 mod connection;
+#[cfg(kani)]
+pub mod connection;
+#[cfg(not(kani))]
 mod nav;
+#[cfg(kani)]
+pub mod nav;
+#[cfg(not(kani))]
 mod overlay;
+#[cfg(kani)]
+pub mod overlay;
+#[cfg(not(kani))]
 mod panel;
+#[cfg(kani)]
+pub mod panel;
 
 #[cfg(kani)]
 pub use connection::archive_connection_consistent;

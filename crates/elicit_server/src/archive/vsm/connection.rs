@@ -27,7 +27,6 @@ use elicitation::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use tracing::instrument;
 
 use crate::archive::types::{BackendKind, DatabaseDescriptor};
 
