@@ -699,7 +699,9 @@ fn handle_generate(target: &GenerateTarget) -> anyhow::Result<()> {
                 all_vsms.extend(vsms);
             }
             if !any_found {
-                println!("No VerifiedStateMachine structs found in any of the specified source crates");
+                println!(
+                    "No VerifiedStateMachine structs found in any of the specified source crates"
+                );
                 return Ok(());
             }
             let source_paths: Vec<&std::path::Path> =

@@ -99,6 +99,22 @@ pub fn generate_kani_file_with_style(
     let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);
     let resolved_imports = resolver.grouped_imports(&needed);
 
+    // Build explicit imports for _kani_contracted wrappers. These are
+    // macro-generated under #[cfg(kani)] so the file scanner cannot find them.
+    // They live in the same module as the source file — use that path directly
+    // rather than the re-export path, which never includes contracted names.
+    let contracted_imports: Vec<String> = if has_invariant {
+        let source_module = crate::cli::generate::type_resolver::derive_module_path(&vsm.source_file);
+        vsm.transitions
+            .iter()
+            .map(|name| {
+                format!("{crate_name}::{source_module}::{name}_kani_contracted")
+            })
+            .collect()
+    } else {
+        vec![]
+    };
+
     let mut out = String::new();
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -115,6 +131,9 @@ pub fn generate_kani_file_with_style(
     // ── Imports ─────────────────────────────────────────────────────────────
     out.push_str("#[cfg(kani)]\nuse elicitation::Established;\n");
     for import in &resolved_imports {
+        out.push_str(&format!("#[cfg(kani)]\nuse {import};\n"));
+    }
+    for import in &contracted_imports {
         out.push_str(&format!("#[cfg(kani)]\nuse {import};\n"));
     }
     out.push('\n');
@@ -226,12 +245,13 @@ fn emit_harness(tfn: &TransitionFn, inv_fn: &str, has_invariant: bool) -> String
     }
 
     let call_arg_str = call_args.join(", ");
-    lines.push(format!("    let _result = {fn_name}({call_arg_str});"));
+    let contracted = format!("{fn_name}_kani_contracted");
+    lines.push(format!("    let _result = {contracted}({call_arg_str});"));
     lines.push("    ::std::mem::forget(_result);".to_string());
 
     let body = lines.join("\n");
     format!(
-        "#[cfg(kani)]\n#[::kani::proof_for_contract({fn_name})]\nfn {closure_name}() {{\n{body}\n}}\n"
+        "#[cfg(kani)]\n#[::kani::proof_for_contract({contracted})]\nfn {closure_name}() {{\n{body}\n}}\n"
     )
 }
 
@@ -262,10 +282,11 @@ fn emit_minimal_harness(
     } else {
         (vec![], String::new())
     };
+    let contracted = format!("{fn_name}_kani_contracted");
     let mut lines = vec![
         format!("// TODO: verify argument types for {fn_name} and regenerate"),
         "#[cfg(kani)]".to_string(),
-        format!("#[::kani::proof_for_contract({fn_name})]"),
+        format!("#[::kani::proof_for_contract({contracted})]"),
         format!("fn {closure_name}() {{"),
         format!(
             "    let _state: {state_ty} = <{state_ty} as ::elicitation::KaniCompose>::kani_depth2();"
@@ -277,7 +298,7 @@ fn emit_minimal_harness(
         ),
     ];
     lines.extend(proof_lines);
-    lines.push(format!("    let _result = {fn_name}(_state{call_arg});"));
+    lines.push(format!("    let _result = {contracted}(_state{call_arg});"));
     lines.push("    ::std::mem::forget(_result);".to_string());
     lines.push("}".to_string());
     lines.join("\n") + "\n"

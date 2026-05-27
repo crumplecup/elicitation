@@ -206,7 +206,7 @@ impl TypeResolver {
 /// Locates the `src/` component and converts the remaining path to a
 /// `::` separated module path, stripping `.rs` and normalising `mod`/`lib`
 /// terminal segments.
-fn derive_module_path(source_file: &Path) -> String {
+pub(crate) fn derive_module_path(source_file: &Path) -> String {
     let mut segs: Vec<String> = Vec::new();
     let mut after_src = false;
 
