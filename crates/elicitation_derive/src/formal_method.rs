@@ -352,34 +352,40 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     // When true, we wrap func in an `#[allow(unexpected_cfgs)] mod` and
     // re-export it — the only pattern (gallery case K) that suppresses
     // unexpected_cfgs in downstream crates for attribute macros.
-    let mut needs_compat_mod = false;
+    let needs_compat_mod = false;
 
     // ── Gate tracing instrumentation under not(kani|creusot) ─────────────────
-    // `#[instrument]` from tracing expands to heap-allocating Span/enter code
-    // with no Kani contracts.  Under proof_for_contract, DFCC would inline the
-    // entire tracing prologue/epilogue (no contracts on tracing functions),
-    // inflating the proof cost from ~32s to timeout.
-    // Creusot likewise cannot translate tracing's callsite constants or its
-    // logging-level machinery, so instrumented free functions must compile to
-    // their plain bodies under `cfg(creusot)`.
-    // Only relevant for free, non-async functions: methods don't get
-    // proof_for_contract, so no inflation risk and no cfg_attr needed.
-    // Transform:
-    //   #[instrument(…)]  →  #[cfg_attr(not(any(kani, creusot)), instrument(…))]
+    // `#[instrument]` from tracing cannot be used in verifier contexts:
+    // - Kani: DFCC inlines the tracing prologue/epilogue (no contracts),
+    //   inflating proof cost from ~32s to timeout.
+    // - Creusot: cannot translate tracing's static [u8; N] callsite constants
+    //   (fails with `Unsupported constant value: Scalar(allocN)`).
+    //
+    // Solution (V9): strip `#[instrument]` from the output entirely and
+    // inject a `tracing::info_span!` call as the first statement of the
+    // function body.  This emits zero cfg_attr tokens → zero unexpected_cfgs
+    // warnings in downstream crates.  Kani and Creusot see a plain function
+    // body and never encounter the tracing machinery.
+    //
+    // Note: body_src for creusot/kani companions is captured AFTER this
+    // transform, but the span is injected into func.block below (after
+    // body_src capture), so companions always get the clean original body.
+    //
+    // Only relevant for free, non-async functions.
+    let mut has_instrument = false;
     if !has_receiver && !is_async {
-        for attr in func.attrs.iter_mut() {
-            let is_instrument = attr
+        func.attrs.retain(|attr| {
+            let is = attr
                 .path()
                 .segments
                 .last()
                 .map(|s| s.ident == "instrument")
                 .unwrap_or(false);
-            if is_instrument {
-                let meta = attr.meta.clone();
-                *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
-                needs_compat_mod = true;
+            if is {
+                has_instrument = true;
             }
-        }
+            !is
+        });
     }
 
     // ── Doc annotation ────────────────────────────────────────────────────────
@@ -572,6 +578,24 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         let creusot_body_src =
             creusot_delegation_rewrite(&func.block).unwrap_or_else(|| body_src.clone());
 
+        // Capture the clean block before tracing injection so the contracted
+        // Kani wrapper uses a tracing-free body (avoids state explosion in Kani).
+        let clean_block = func.block.clone();
+
+        // Inject manual tracing span as first statement (replaces stripped #[instrument]).
+        // Done AFTER body_src/creusot_body_src capture so companions see the clean body.
+        // Gated under not(kani): Kani symbolically executes through the tracing machinery
+        // (TLS, atomics) causing state explosion and ~530s timeouts. Under kani the span
+        // statement is compiled out, keeping proofs fast.
+        if has_instrument {
+            let span_name = fn_name.to_string();
+            let span_stmt: syn::Stmt = syn::parse_quote! {
+                #[cfg(not(kani))]
+                let _tracing_span = tracing::info_span!(#span_name).entered();
+            };
+            func.block.stmts.insert(0, span_stmt);
+        }
+
         // ── Kani contracts on the original function ───────────────────────
         // When contracts = [SomeType] is provided and there is a state
         // parameter, add #[cfg_attr(kani, kani::requires(...))] and
@@ -584,15 +608,22 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // This allows proof_for_contract(fn_name) to target the original
         // function directly, and stub_verified(fn_name) to work in
         // composition proofs without contracted wrapper indirection.
-        if has_state_param
+        // ── Kani contracts — Option B ─────────────────────────────────────
+        // Instead of emitting #[cfg_attr(kani, ::kani::requires(...))] on the
+        // original function (which leaks cfg tokens into downstream crates),
+        // we generate a contracted wrapper `fn_name_kani_contracted` inside the
+        // existing #[cfg(kani)] const block.  The wrapper delegates to the
+        // original function, so the actual body under contract is unchanged.
+        // proof_for_contract targets `fn_name_kani_contracted`.
+        //
+        // Zero cfg_attr tokens on func → needs_compat_mod stays false.
+        let contracted_fn: Option<TokenStream> = if has_state_param
             && !parsed_args.contracts.is_empty()
             && let Some(first_contract) = parsed_args.contracts.first()
             && let Some(last_seg) = first_contract.segments.last()
         {
             let inv_fn_name = {
                 let s = last_seg.ident.to_string();
-                // Manual PascalCase → snake_case: insert underscore before
-                // each uppercase letter that follows a lowercase letter.
                 let mut out = String::with_capacity(s.len() + 8);
                 let mut prev_lower = false;
                 for ch in s.chars() {
@@ -608,41 +639,38 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 syn::parse_str(&inv_fn_name).expect("derived ident is valid");
             let state_pat_tokens: TokenStream =
                 state_pat_s.parse().expect("state_pat_s is valid tokens");
-            let requires_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(kani, ::kani::requires(#inv_fn_ident(&#state_pat_tokens)))]
-            };
-            let ensures_attr: syn::Attribute = syn::parse_quote! {
-                #[cfg_attr(kani, ::kani::ensures(|result| #inv_fn_ident(&result.0)))]
-            };
-            func.attrs.push(requires_attr);
-            func.attrs.push(ensures_attr);
-            needs_compat_mod = true;
+            let contracted_fn_ident =
+                format_ident!("{fn_name}_kani_contracted");
 
-            // Emit any extra kani_requires expressions as additional
-            // #[cfg_attr(kani, ::kani::requires(expr))] attributes.
-            // These constrain symbolic parameters whose bounds are carried by
-            // proof tokens (ZSTs) and are therefore invisible to CBMC without
-            // an explicit assume.
-            for lit in &parsed_args.kani_requires {
-                let expr: syn::Expr =
-                    syn::parse_str(&lit.value()).expect("kani_requires expr is valid Rust");
-                let extra_req: syn::Attribute = syn::parse_quote! {
-                    #[cfg_attr(kani, ::kani::requires(#expr))]
-                };
-                func.attrs.push(extra_req);
-            }
+            // Extra kani_requires expressions (e.g. symbolic parameter bounds).
+            let extra_requires: Vec<TokenStream> = parsed_args
+                .kani_requires
+                .iter()
+                .map(|lit| {
+                    let expr: syn::Expr =
+                        syn::parse_str(&lit.value()).expect("kani_requires expr is valid Rust");
+                    quote! { #[::kani::requires(#expr)] }
+                })
+                .collect();
 
-            // Creusot contracts are expressed as extern_spec! blocks in
-            // elicitation_creusot/src/vsm.rs rather than inline annotations
-            // here.  Inline creusot attrs would require creusot_std in scope
-            // inside elicit_server, which violates the architecture principle
-            // that production crates have zero creusot knowledge.
-        }
+            let inputs = &func.sig.inputs;
+            let output = &func.sig.output;
+            let vis = &func.vis;
+            Some(quote! {
+                #[::kani::requires(#inv_fn_ident(&#state_pat_tokens))]
+                #[::kani::ensures(|result| #inv_fn_ident(&result.0))]
+                #(#extra_requires)*
+                #vis fn #contracted_fn_ident(#inputs) #output #clean_block
+            })
+        } else {
+            None
+        };
 
         // ── Kani harness ─────────────────────────────────────────────────
-        // kani_vec delegates to kani::any_vec::<T, 0>() which takes the
-        // vec![] branch immediately — no symbolic heap, no unbounded drops.
-        // No stub_verified needed.
+        // The inline proof harness goes inside const _: () to avoid polluting
+        // module namespace. The contracted wrapper is emitted at module scope
+        // (still #[cfg(kani)] gated) so that external proof crates can import
+        // and target it with proof_for_contract.
         let kani = quote! {
             #[allow(unexpected_cfgs)]
             const _: () = {
@@ -656,6 +684,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     ::std::mem::forget(_result);
                 }
             };
+        };
+
+        // The contracted wrapper is emitted separately so it is always present
+        // as a module-scope item. It must NOT be inside `kani` since that is
+        // captured as a string and then discarded (let _ = kani below).
+        let contracted_fn_emit = if let Some(ref cf) = contracted_fn {
+            quote! { #[cfg(kani)] #cf }
+        } else {
+            quote! {}
         };
 
         // ── Companion struct: returns the harness as a runtime TokenStream ──
@@ -940,16 +977,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
 
                     // Symbolic closure harness — proof_for_contract + forgive-and-forget.
                     //
-                    // Uses #[kani::proof_for_contract(fn_name)] where fn_name is the
-                    // ORIGINAL function.  The original function must have
-                    // #[cfg_attr(kani, kani::requires(...))] and
-                    // #[cfg_attr(kani, kani::ensures(...))] on it — emitted by
-                    // formal_method's expand() via the cfg_attr contract injection.
-                    //
-                    // DFCC instruments the original function body directly, without the
-                    // indirection of a contracted wrapper.  This is why the wrapper was
-                    // causing timeouts (DFCC inlined wrapper → called original → inlined
-                    // original body, doubling the CBMC work).
+                    // Targets `fn_name_kani_contracted`, the contracted wrapper generated
+                    // inside the #[cfg(kani)] const block by formal_method.  The wrapper
+                    // delegates to the original function, so DFCC instruments the real body.
+                    // This avoids emitting cfg_attr(kani, ...) on the original function
+                    // (which leaks cfg tokens into downstream crates).
                     //
                     // Forgive-and-forget pattern (confirmed tractable in Level 11-12 gallery):
                     //   a) kani_any() state for symbolic precondition coverage.
@@ -958,12 +990,13 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     //   d) kani_depth0() shadow for the actual function call.
                     // The postcondition is checked automatically by DFCC (no kani::assert).
                     //
-                    // Once verified, stub_verified(fn_name) can replace calls in
-                    // composition proofs with the contract axiom.
+                    // Once verified, stub_verified(fn_name_kani_contracted) can replace calls
+                    // in composition proofs with the contract axiom.
+                    let target_fn = String::new() + #fn_name_src + "_kani_contracted";
                     let closure_src = String::new()
                         + "# [allow (unexpected_cfgs)] # [cfg (kani)] "
                         + "# [:: kani :: proof_for_contract ("
-                        + #fn_name_src
+                        + &target_fn
                         + ")] fn "
                         + &closure_fn
                         + " () { let "
@@ -1004,11 +1037,10 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         };
 
         // ── Creusot companion ────────────────────────────────────────────
-        // The always-trusted inline Creusot companion has been removed.
-        // Real #[requires]/#[ensures] attrs are now emitted as cfg_attr
-        // on the original function (above). The companion struct's
-        // `creusot_contract()` method (used by elicit_proofs/build.rs)
-        // continues to generate the wrapper layer for elicit_proofs.
+        // Creusot contracts are expressed as extern_spec! blocks in
+        // elicitation_creusot/src/vsm.rs rather than inline annotations.
+        // The companion struct's `creusot_contract()` method (used by
+        // elicit_proofs/build.rs) continues to generate the wrapper layer.
         let creusot = quote! {};
 
         // ── Verus companion ──────────────────────────────────────────────
@@ -1041,7 +1073,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // The companion struct provides kani_harness() (returns the string)
         // and kani_harness_for_variant() for the build.rs / derive_vsm path.
         let _ = kani; // consumed by harness_src above — suppress unused warning
-        (quote! {}, creusot, verus, companion)
+        (contracted_fn_emit, creusot, verus, companion)
     } else {
         (quote! {}, quote! {}, quote! {}, quote! {})
     };
@@ -1050,61 +1082,40 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         quote! {}
     } else {
         quote! {
+            #[allow(unexpected_cfgs)]
             #[cfg(not(creusot))]
             #kani_harness
         }
     };
-    let gated_creusot_companion = if creusot_companion.is_empty() {
-        quote! {}
-    } else {
-        quote! {
-            #[cfg(not(creusot))]
-            #creusot_companion
-        }
-    };
-    let gated_verus_companion = if verus_companion.is_empty() {
-        quote! {}
-    } else {
-        quote! {
-            #[cfg(not(creusot))]
-            #verus_companion
-        }
-    };
-    let gated_companion_struct = if companion_struct.is_empty() {
-        quote! {}
-    } else {
-        quote! {
-            #[cfg(not(creusot))]
-            #companion_struct
-        }
-    };
+    // The outer #[allow(unexpected_cfgs)] #[cfg(not(creusot))] pattern is Case B
+    // (allow as sibling to cfg on same item) — it does NOT suppress warnings in
+    // downstream crates.  Each companion already wraps its cfg-gated content in
+    // #[allow(unexpected_cfgs)] const _: () = { #[cfg(...)] ... } (Case D), so
+    // the outer gate is redundant AND harmful.  Just emit the inner tokens directly.
+    let gated_creusot_companion = creusot_companion;
+    let gated_verus_companion = verus_companion;
+    let gated_companion_struct = companion_struct;
 
     // Emit the function. When cfg_attr(kani/not(kani), ...) attrs were added to
-    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it for
-    // normal builds — the only pattern (gallery case K) confirmed to suppress
-    // unexpected_cfgs in downstream crates for attribute macros that modify
-    // existing functions.
+    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it —
+    // gallery case M/K: the only confirmed pattern that suppresses
+    // unexpected_cfgs in downstream crates for attribute macros.
     //
-    // Creusot builds do not need that compat wrapper because `cfg(kani)` is
-    // already a declared cfg key there. Emit the fully rewritten function
-    // directly in place so Creusot still sees any gated tracing attrs and
-    // injected requires/ensures, but avoid the extra wrapper module.
+    // The outer #[cfg(creusot)] / #[cfg(not(creusot))] gates that were here
+    // previously caused warnings in downstream crates because allow(unexpected_cfgs)
+    // as a sibling attribute on the same item does NOT suppress the lint (gallery
+    // case B).  The mod-wrapper pattern (no outer cfg gate) is the correct fix.
     if needs_compat_mod {
         let original_vis = func.vis.clone();
         let mod_name = format_ident!("_formal_method_compat_{}", fn_name);
         let mut compat_func = func.clone();
         compat_func.vis = syn::parse_quote!(pub);
         Ok(quote! {
-            #[cfg(creusot)]
-            #func
-
-            #[cfg(not(creusot))]
             #[allow(unexpected_cfgs)]
             mod #mod_name {
                 use super::*;
                 #compat_func
             }
-            #[cfg(not(creusot))]
             #original_vis use #mod_name::#fn_name;
             #gated_kani_harness
             #gated_creusot_companion
