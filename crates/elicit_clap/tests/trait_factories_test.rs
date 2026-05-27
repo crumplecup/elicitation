@@ -517,16 +517,17 @@ async fn subcommand_augment_subcommands_returns_augmented_command() {
 
 // ── Error cases ───────────────────────────────────────────────────────────────
 
+// Defined at module scope: proc macro derives cannot resolve types from function-local scope.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit, clap::ValueEnum)]
+enum UnprimedEnum {
+    A,
+    B,
+}
+
 #[tokio::test]
 async fn instantiate_fails_without_prime() {
     // Register a type but do NOT prime the factory for it.
     // The factory's vtable map won't have an entry for this TypeId.
-    #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit, clap::ValueEnum)]
-    enum UnprimedEnum {
-        A,
-        B,
-    }
-
     let registry = DynamicToolRegistry::new().register_type::<UnprimedEnum>("unprimed");
     let result = registry.instantiate("clap::ValueEnum", "unprimed").await;
     assert!(
