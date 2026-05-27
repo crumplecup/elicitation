@@ -1200,6 +1200,317 @@ pub fn cfg_gallery_k(_attr: TokenStream, item: TokenStream) -> TokenStream {
     })
 }
 
+/// Gallery case L: reproduces the current `formal_method` compat_mod expansion.
+///
+/// Outer `#[allow] #[cfg(foo)]` on the bare fn, plus
+/// `#[allow] #[cfg(not(foo))] #[allow] mod { fn with cfg_attr(not(foo)) }` and
+/// `#[allow] #[cfg(not(foo))] pub use`.  This is the Case B pattern applied to
+/// both the outer cfg gate and the mod gate.
+/// Expected: **YES warning** — allow as sibling to cfg does not suppress.
+#[proc_macro_attribute]
+pub fn cfg_gallery_l(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
+    let mut compat_func = func.clone();
+    compat_func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_gallery_l_compat_{}", fn_name);
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        #[cfg(foo)]
+        #func
+
+        #[allow(unexpected_cfgs)]
+        #[cfg(not(foo))]
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #compat_func
+        }
+        #[allow(unexpected_cfgs)]
+        #[cfg(not(foo))]
+        pub use #mod_name::#fn_name;
+    })
+}
+
+/// Gallery case M: proposed fix — no outer `#[cfg(foo)]` / `#[cfg(not(foo))]`
+/// gates.  Always emits the function inside the allow-gated mod.
+///
+/// Expected: **no warning** (same as Case K but with cfg_attr using `foo`).
+#[proc_macro_attribute]
+pub fn cfg_gallery_m(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    func.vis = syn::parse_quote!(pub);
+    func.attrs.push(syn::parse_quote!(#[cfg_attr(not(foo), inline)]));
+    let mod_name = quote::format_ident!("_gallery_m_compat_{}", fn_name);
+    TokenStream::from(quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        pub use #mod_name::#fn_name;
+    })
+}
+
+/// Gallery case N: attribute macro emitting `#[allow] const _: () = { #[cfg(foo)] item }`.
+///
+/// Tests whether Case D (const wrapper) suppresses the lint when the emitter is an
+/// *attribute* macro rather than a derive macro.  The function itself is passed through
+/// unchanged; an additional `const _: () = {}` block with a `#[cfg(foo)]`-gated item
+/// is emitted alongside it — modelling the companion-struct emission in `formal_method`.
+///
+/// Expected: **NO warning** if Case D works for attribute macros too.
+/// Expected: **YES warning** if Case D only works for derive macros.
+#[proc_macro_attribute]
+pub fn cfg_gallery_n(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let func = syn::parse_macro_input!(item as syn::ItemFn);
+    TokenStream::from(quote::quote! {
+        #func
+        #[allow(unexpected_cfgs)]
+        const _: () = {
+            #[cfg(foo)]
+            fn _gallery_n_companion() {}
+        };
+    })
+}
+
+// ── Bisect test macros ─────────────────────────────────────────────────────
+// Each strips one more feature from formal_method to isolate which tokens
+// trigger unexpected_cfgs in downstream crates. Used only in valinoreth gallery.
+
+/// V1: pass the function through completely unchanged — baseline, no warnings expected.
+#[proc_macro_attribute]
+pub fn formal_method_test_v1(_args: TokenStream, item: TokenStream) -> TokenStream {
+    // Just return the function unchanged
+    item
+}
+
+/// V2: wrap in mod + pub use (the mod wrapper alone) — no cfg tokens emitted.
+#[proc_macro_attribute]
+pub fn formal_method_test_v2(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v2_{}", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+    }
+    .into()
+}
+
+/// V3: mod wrapper + transform #[instrument] into cfg_attr(not(any(kani,creusot)), instrument).
+#[proc_macro_attribute]
+pub fn formal_method_test_v3(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
+        }
+    }
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v3_{}", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+    }
+    .into()
+}
+
+/// V4: V3 + also emit an empty `#[allow] const _: () = {}` (like gated_kani_harness empty case).
+#[proc_macro_attribute]
+pub fn formal_method_test_v4(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
+        }
+    }
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v4_{}", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+        #[allow(unexpected_cfgs)]
+        const _: () = {};
+    }
+    .into()
+}
+
+/// V5: V4 + emit a real kani harness const (cfg(kani) inside allow const).
+#[proc_macro_attribute]
+pub fn formal_method_test_v5(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
+        }
+    }
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v5_{}", fn_name);
+    let kani_fn = quote::format_ident!("{}_kani_v5", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+        #[allow(unexpected_cfgs)]
+        const _: () = {
+            #[cfg(kani)]
+            #[::kani::proof]
+            fn #kani_fn() {}
+        };
+    }
+    .into()
+}
+
+/// V6: put #[allow(unexpected_cfgs)] directly on the function (no mod wrapper).
+/// Tests whether allow on the item itself suppresses proc-macro-origin warnings.
+#[proc_macro_attribute]
+pub fn formal_method_test_v6(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    // Transform #[instrument] to cfg_attr(not(any(kani, creusot)), instrument(...))
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
+        }
+    }
+    // Add #[allow(unexpected_cfgs)] directly on the function
+    func.attrs.insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    quote::quote! { #func }.into()
+}
+
+/// V7: #[allow(unexpected_cfgs)] on both the outer mod AND directly on the function inside.
+#[proc_macro_attribute]
+pub fn formal_method_test_v7(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    for attr in func.attrs.iter_mut() {
+        let is_instrument = attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false);
+        if is_instrument {
+            let meta = attr.meta.clone();
+            *attr = syn::parse_quote! { #[cfg_attr(not(any(kani, creusot)), #meta)] };
+        }
+    }
+    // Add #[allow] both on the function and on the mod
+    func.attrs.insert(0, syn::parse_quote!(#[allow(unexpected_cfgs)]));
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v7_{}", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+    }
+    .into()
+}
+
+/// V8: mod wrapper, but pass #[instrument] through UNCHANGED (no cfg_attr transform).
+/// Tests whether the cfg_attr transform itself is the warning source.
+#[proc_macro_attribute]
+pub fn formal_method_test_v8(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    let fn_name = func.sig.ident.clone();
+    let original_vis = func.vis.clone();
+    // Do NOT transform #[instrument] — leave it as-is
+    func.vis = syn::parse_quote!(pub);
+    let mod_name = quote::format_ident!("_fm_test_v8_{}", fn_name);
+    quote::quote! {
+        #[allow(unexpected_cfgs)]
+        mod #mod_name {
+            use super::*;
+            #func
+        }
+        #original_vis use #mod_name::#fn_name;
+    }
+    .into()
+}
+
+/// V9: strip #[instrument] entirely, manually inject `tracing::info_span!` into body.
+/// No cfg_attr emitted → zero unexpected_cfgs warnings.
+/// Kani/Creusot run on the plain function body without tracing attribute overhead.
+#[proc_macro_attribute]
+pub fn formal_method_test_v9(_args: TokenStream, item: TokenStream) -> TokenStream {
+    let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+    // Strip #[instrument] — we'll expand it manually instead
+    func.attrs.retain(|attr| {
+        !attr
+            .path()
+            .segments
+            .last()
+            .map(|s| s.ident == "instrument")
+            .unwrap_or(false)
+    });
+    let fn_name_str = func.sig.ident.to_string();
+    // Prepend a span entry as the first statement in the body
+    let original_stmts = std::mem::take(&mut func.block.stmts);
+    let span_stmt: syn::Stmt = syn::parse_quote! {
+        let _tracing_span = tracing::info_span!(#fn_name_str).entered();
+    };
+    func.block.stmts = vec![span_stmt];
+    func.block.stmts.extend(original_stmts);
+    quote::quote! { #func }.into()
+}
+
 /// Capture a third-party trait's methods as MCP tools.
 ///
 /// Apply to an `impl` block that names the factory struct and lists the
@@ -1213,3 +1524,62 @@ pub fn reflect_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => e.to_compile_error().into(),
     }
 }
+
+// ── Bisect derives: one sub-piece of expand_enum each ────────────────────────
+// E1..E8 apply to enums; each emits exactly one impl block inside the
+// `_elicit_compat_` mod wrapper.  Use in the gallery to pinpoint which
+// sub-function leaks unexpected_cfgs.
+
+#[proc_macro_derive(ElicitTestE1)]
+pub fn derive_elicit_test_e1(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e1(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE2)]
+pub fn derive_elicit_test_e2(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e2(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE3)]
+pub fn derive_elicit_test_e3(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e3(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE4)]
+pub fn derive_elicit_test_e4(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e4(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE5)]
+pub fn derive_elicit_test_e5(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e5(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE6)]
+pub fn derive_elicit_test_e6(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e6(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE7)]
+pub fn derive_elicit_test_e7(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e7(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE8)]
+pub fn derive_elicit_test_e8(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e8(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE9)]
+pub fn derive_elicit_test_e9(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e9(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE10)]
+pub fn derive_elicit_test_e10(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e10(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE11)]
+pub fn derive_elicit_test_e11(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e11(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE12)]
+pub fn derive_elicit_test_e12(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e12(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+#[proc_macro_derive(ElicitTestE13)]
+pub fn derive_elicit_test_e13(input: TokenStream) -> TokenStream {
+    enum_impl::expand_enum_e13(syn::parse_macro_input!(input as syn::DeriveInput))
+}
+

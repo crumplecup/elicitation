@@ -1,7 +1,42 @@
 //! Gallery for isolating `unexpected_cfgs` suppression patterns.
 // Cases A, C, E intentionally trigger unexpected_cfgs to document the behaviour.
-#![allow(unexpected_cfgs)]
+// TEMP: crate-level allow removed for testing — restore after confirming cases
+// #![allow(unexpected_cfgs)]
 //!
+//! Each case uses a calibrated derive macro that emits `cfg(foo)` — a cfg name
+//! not declared in this crate — matching what `cfg(kani)` / `cfg(creusot)` look
+//! like in downstream crates. Running `cargo check` on this file reveals which
+//! allow placement actually suppresses the lint.
+//!
+//! Confirmed results (run `cargo test -p elicitation_derive --test cfg_allow_gallery_test`):
+//!
+//! | Case | Pattern                                                    | Warning? |
+//! |------|------------------------------------------------------------|----------|
+//! | A    | No allow                                                   | YES      |
+//! | B    | `#[allow]` + `#[cfg(foo)]` on **same** item               | YES !!   |
+//! | C    | `#[allow]` on separate preceding const                     | YES      |
+//! | D    | `#[allow]` on outer `const _: () = { ... }`               | **NO**   |
+//! | E    | `cfg_attr(foo, ...)` with no allow                         | YES      |
+//! | F    | `#[allow]` + `cfg_attr` on **same** item                   | YES !!   |
+//! | G    | attr macro: push allow then cfg_attr at END of func.attrs  | YES      |
+//! | H    | attr macro: insert allow at pos 0, push cfg_attr at END    | YES      |
+//! | I    | attr macro: emit preceding allow const, then modified fn   | YES      |
+//! | J    | attr macro: wrap entire fn in `#[allow] const _: () = {}` | **NO**   |
+//! | K    | attr macro: `#[allow] mod { fn }` + `pub use`             | **NO**   |
+//! | L    | attr macro: outer `#[allow] #[cfg(foo)]` + mod wrapper    | YES !!   |
+//! | M    | attr macro: mod wrapper only, no outer cfg gate            | **NO**   |
+//!
+//! **KEY FINDINGS**:
+//! - `#[allow(unexpected_cfgs)]` directly on an item (same or adjacent) does NOT suppress
+//!   the lint when emitted from a proc macro into a downstream crate (cases B, F, G, H).
+//! - The allow must be on an ENCLOSING item: a `const _: () = {}` wrapper (case D, J)
+//!   or a `mod` block (case K, M).
+//! - Case L proves that adding outer `#[cfg(foo)]` / `#[cfg(not(foo))]` GATES around the
+//!   mod wrapper still produces warnings (the gate cfgs themselves trigger the lint).
+//! - Case M is the correct fix for `formal_method`: mod wrapper only, no outer cfg gates.
+//! - For derive macros emitting new impl blocks: use `const _: () = {}` (case D).
+//! - For attribute macros modifying existing functions: use `#[allow] mod { fn } + pub use`
+//!   WITHOUT any outer `#[cfg]` gates (case M) — the function remains accessible.
 //! Each case uses a calibrated derive macro that emits `cfg(foo)` — a cfg name
 //! not declared in this crate — matching what `cfg(kani)` / `cfg(creusot)` look
 //! like in downstream crates. Running `cargo check` on this file reveals which
@@ -84,6 +119,23 @@ fn gallery_j_fn() {}
 #[elicitation_derive::cfg_gallery_k]
 fn gallery_k_fn() {}
 
+// Case L: current formal_method pattern — outer #[allow] #[cfg(foo)] on bare fn,
+// #[allow] #[cfg(not(foo))] #[allow] mod { fn }, #[allow] #[cfg(not(foo))] pub use.
+// Expected: YES warning (allow as sibling to cfg = Case B, does not suppress)
+#[elicitation_derive::cfg_gallery_l]
+fn gallery_l_fn() {}
+
+// Case M: proposed fix — no outer #[cfg] gates, just #[allow] mod { fn } + pub use.
+// Expected: NO warning (same as Case K)
+#[elicitation_derive::cfg_gallery_m]
+fn gallery_m_fn() {}
+
+// Case N: attribute macro emitting #[allow] const _: () = { #[cfg(foo)] fn } alongside fn.
+// Tests whether Case D (const wrapper) suppresses the lint from an attribute macro.
+// Expected: NO warning if Case D works for attribute macros; YES warning if derive-only.
+#[elicitation_derive::cfg_gallery_n]
+fn gallery_n_fn() {}
+
 #[test]
 fn gallery_compiles() {
     // Compilation is the test. All derives above must expand without errors.
@@ -98,4 +150,7 @@ fn gallery_compiles() {
     gallery_i_fn();
     // gallery_j_fn is inside const _ so not callable from here
     gallery_k_fn();
+    gallery_l_fn();
+    gallery_m_fn();
+    gallery_n_fn();
 }
