@@ -24,7 +24,6 @@ verify = true
 
 [dependencies]
 elicitation = { version = "0.11.0" }
-verus_builtin = "0.0.0-2026-05-17-0151"
 verus_builtin_macros = "0.0.0-2026-05-10-0145"
 vstd = "0.0.0-2026-05-17-0151"
 
