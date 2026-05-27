@@ -733,7 +733,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                 #[cfg(kani)]
                 #(#kani_attrs)*
                 #vis fn #contracted_fn_ident(#inputs) #output #cb
+                // Non-kani stub: exists so pub use outside the compat mod compiles
+                // unconditionally without a #[cfg] gate at user module scope.
+                // Dead in normal builds by design — it is a kani artifact.
                 #[cfg(not(kani))]
+                #[allow(dead_code)]
                 #vis fn #contracted_fn_ident(#inputs) #output #cb
             }
         } else {
