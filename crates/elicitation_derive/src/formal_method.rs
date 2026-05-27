@@ -348,11 +348,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         .any(|a| matches!(a, FnArg::Receiver(_)));
     let is_async = func.sig.asyncness.is_some();
 
-    // Tracks whether any cfg_attr(kani/not(kani), ...) was pushed onto func.
-    // When true, we wrap func in an `#[allow(unexpected_cfgs)] mod` and
-    // re-export it — the only pattern (gallery case K) that suppresses
-    // unexpected_cfgs in downstream crates for attribute macros.
-    let needs_compat_mod = false;
+    // needs_compat_mod is computed after the companion block below, once we
+    // know whether a contracted fn was built and whether #[cfg(not(kani))]
+    // was injected into the function body.  See the assignment after line ~1079.
 
     // ── Gate tracing instrumentation under not(kani|creusot) ─────────────────
     // `#[instrument]` from tracing cannot be used in verifier contexts:
@@ -615,8 +613,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         // existing #[cfg(kani)] const block.  The wrapper delegates to the
         // original function, so the actual body under contract is unchanged.
         // proof_for_contract targets `fn_name_kani_contracted`.
-        //
-        // Zero cfg_attr tokens on func → needs_compat_mod stays false.
         let contracted_fn: Option<TokenStream> = if has_state_param
             && !parsed_args.contracts.is_empty()
             && let Some(first_contract) = parsed_args.contracts.first()
@@ -668,9 +664,9 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
 
         // ── Kani harness ─────────────────────────────────────────────────
         // The inline proof harness goes inside const _: () to avoid polluting
-        // module namespace. The contracted wrapper is emitted at module scope
-        // (still #[cfg(kani)] gated) so that external proof crates can import
-        // and target it with proof_for_contract.
+        // module namespace. The contracted wrapper is placed inside the compat
+        // mod (see needs_compat_mod below) so it is accessible from external
+        // proof crates via plain pub use with no cfg gate.
         let kani = quote! {
             #[allow(unexpected_cfgs)]
             const _: () = {
@@ -686,11 +682,60 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             };
         };
 
-        // The contracted wrapper is emitted separately so it is always present
-        // as a module-scope item. It must NOT be inside `kani` since that is
-        // captured as a string and then discarded (let _ = kani below).
+        // Build both cfg(kani) and cfg(not(kani)) variants of the contracted fn.
+        // Both variants live inside the #[allow(unexpected_cfgs)] compat mod so
+        // no cfg token escapes to module scope in the downstream crate.
+        // The unconditional existence of both variants means the pub use
+        // re-export outside the mod needs no cfg guard.
         let contracted_fn_emit = if let Some(ref cf) = contracted_fn {
-            quote! { #[cfg(kani)] #cf }
+            let contracted_fn_ident = format_ident!("{fn_name}_kani_contracted");
+            let inputs = &func.sig.inputs;
+            let output = &func.sig.output;
+            let vis = &func.vis;
+            let cb = &clean_block;
+            // Reconstruct kani-attrs for the cfg(kani) variant.
+            let kani_attrs: Vec<TokenStream> = {
+                let mut v: Vec<TokenStream> = Vec::new();
+                if let Some(first_contract) = parsed_args.contracts.first()
+                    && let Some(last_seg) = first_contract.segments.last()
+                {
+                    let inv_fn_name = {
+                        let s = last_seg.ident.to_string();
+                        let mut out = String::with_capacity(s.len() + 8);
+                        let mut prev_lower = false;
+                        for ch in s.chars() {
+                            if ch.is_uppercase() && prev_lower {
+                                out.push('_');
+                            }
+                            out.push(ch.to_ascii_lowercase());
+                            prev_lower = ch.is_lowercase();
+                        }
+                        out
+                    };
+                    let inv_fn_ident: syn::Ident =
+                        syn::parse_str(&inv_fn_name).expect("valid ident");
+                    let state_pat_tokens: TokenStream =
+                        state_pat_s.parse().expect("valid tokens");
+                    v.push(
+                        quote! { #[::kani::requires(#inv_fn_ident(&#state_pat_tokens))] },
+                    );
+                    v.push(quote! { #[::kani::ensures(|result| #inv_fn_ident(&result.0))] });
+                }
+                for lit in &parsed_args.kani_requires {
+                    let expr: syn::Expr =
+                        syn::parse_str(&lit.value()).expect("kani_requires expr");
+                    v.push(quote! { #[::kani::requires(#expr)] });
+                }
+                v
+            };
+            let _ = cf; // contracted_fn used only for Option check; attrs reconstructed
+            quote! {
+                #[cfg(kani)]
+                #(#kani_attrs)*
+                #vis fn #contracted_fn_ident(#inputs) #output #cb
+                #[cfg(not(kani))]
+                #vis fn #contracted_fn_ident(#inputs) #output #cb
+            }
         } else {
             quote! {}
         };
@@ -1078,46 +1123,41 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         (quote! {}, quote! {}, quote! {}, quote! {})
     };
 
-    let gated_kani_harness = if kani_harness.is_empty() {
-        quote! {}
-    } else {
-        quote! {
-            #[allow(unexpected_cfgs)]
-            #[cfg(not(creusot))]
-            #kani_harness
-        }
-    };
-    // The outer #[allow(unexpected_cfgs)] #[cfg(not(creusot))] pattern is Case B
-    // (allow as sibling to cfg on same item) — it does NOT suppress warnings in
-    // downstream crates.  Each companion already wraps its cfg-gated content in
-    // #[allow(unexpected_cfgs)] const _: () = { #[cfg(...)] ... } (Case D), so
-    // the outer gate is redundant AND harmful.  Just emit the inner tokens directly.
+    // needs_compat_mod: wrap func + contracted fn inside #[allow(unexpected_cfgs)] mod
+    // whenever we emit cfg-bearing tokens:
+    //   - has_instrument: injects #[cfg(not(kani))] let _tracing_span = ... in func body
+    //   - kani_harness non-empty: contracted fn pair has #[cfg(kani)]/#[cfg(not(kani))]
+    // The mod wrapper is the only pattern (gallery case K) proven to suppress
+    // unexpected_cfgs in downstream crates for attribute macros.
+    let needs_compat_mod = has_instrument || !kani_harness.is_empty();
+
     let gated_creusot_companion = creusot_companion;
     let gated_verus_companion = verus_companion;
     let gated_companion_struct = companion_struct;
 
-    // Emit the function. When cfg_attr(kani/not(kani), ...) attrs were added to
-    // func, wrap it in an `#[allow(unexpected_cfgs)] mod` and re-export it —
-    // gallery case M/K: the only confirmed pattern that suppresses
-    // unexpected_cfgs in downstream crates for attribute macros.
-    //
-    // The outer #[cfg(creusot)] / #[cfg(not(creusot))] gates that were here
-    // previously caused warnings in downstream crates because allow(unexpected_cfgs)
-    // as a sibling attribute on the same item does NOT suppress the lint (gallery
-    // case B).  The mod-wrapper pattern (no outer cfg gate) is the correct fix.
     if needs_compat_mod {
         let original_vis = func.vis.clone();
         let mod_name = format_ident!("_formal_method_compat_{}", fn_name);
         let mut compat_func = func.clone();
         compat_func.vis = syn::parse_quote!(pub);
+        // If a contracted fn pair exists, re-export it unconditionally — both
+        // cfg(kani) and cfg(not(kani)) variants are inside the mod, so the item
+        // always exists and no cfg guard is needed on the pub use.
+        let contracted_export = if !kani_harness.is_empty() {
+            let contracted_fn_ident = format_ident!("{fn_name}_kani_contracted");
+            quote! { #original_vis use #mod_name::#contracted_fn_ident; }
+        } else {
+            quote! {}
+        };
         Ok(quote! {
             #[allow(unexpected_cfgs)]
             mod #mod_name {
                 use super::*;
                 #compat_func
+                #kani_harness
             }
             #original_vis use #mod_name::#fn_name;
-            #gated_kani_harness
+            #contracted_export
             #gated_creusot_companion
             #gated_verus_companion
             #gated_companion_struct
@@ -1125,7 +1165,6 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     } else {
         Ok(quote! {
             #func
-            #gated_kani_harness
             #gated_creusot_companion
             #gated_verus_companion
             #gated_companion_struct
