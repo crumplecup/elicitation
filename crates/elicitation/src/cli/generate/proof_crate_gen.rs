@@ -16,7 +16,7 @@ use anyhow::Context;
 
 use crate::cli::generate::{
     ImportStyle, creusot_gen, find_crate_name, find_crate_root, kani_gen, scanner::VsmDescriptor,
-    verus_gen,
+    type_resolver::derive_module_path, verus_gen,
 };
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -101,7 +101,14 @@ pub fn generate_proof_crate(
     }
 
     let source_names: Vec<&str> = sources.iter().map(|s| s.name.as_str()).collect();
-    let source_dep_lines: Vec<&str> = sources.iter().map(|s| s.dep_line.as_str()).collect();
+    // Deduplicate: multiple paths may resolve to the same crate (e.g. src/vsm and src/ui/vsm).
+    // Keep only the first dep line per unique crate name.
+    let mut seen_names: std::collections::HashSet<&str> = std::collections::HashSet::new();
+    let source_dep_lines: Vec<&str> = sources
+        .iter()
+        .filter(|s| seen_names.insert(s.name.as_str()))
+        .map(|s| s.dep_line.as_str())
+        .collect();
     let extra_workspace_deps = collect_extra_deps(vsms, &source_names, &workspace_deps);
 
     // ── Cargo.toml ───────────────────────────────────────────────────────────
@@ -139,6 +146,17 @@ pub fn generate_proof_crate(
     write_kani_files(vsms, placeholder, out_dir)?;
     write_creusot_files(vsms, placeholder, out_dir)?;
     write_verus_files(vsms, placeholder, out_dir)?;
+
+    // ── kani reexports patched into each source crate's module tree ─────────
+    for src in &sources {
+        let src_vsms: Vec<&VsmDescriptor> = vsms
+            .iter()
+            .filter(|v| find_crate_name(&v.source_file) == src.name)
+            .collect();
+        if src_vsms.iter().any(|v| v.invariant.is_some()) {
+            patch_module_tree_kani_reexports(&src.root, &src_vsms)?;
+        }
+    }
 
     // ── why3find.json at workspace root (needed by `cargo creusot prove`) ────
     let ws_root = workspace_root.unwrap_or_else(|| first_root.clone());
@@ -203,6 +221,135 @@ fn write_verus_files(vsms: &[VsmDescriptor], source: &Path, out: &Path) -> anyho
         "mod.rs",
         &render_generated_mod_rs(vsms, "verus", false),
     )?;
+    Ok(())
+}
+
+// ─── kani_reexports helpers ───────────────────────────────────────────────────
+
+/// Patch the module tree of a source crate to re-export all `_kani_contracted`
+/// transition wrappers and invariant predicates up to the crate root.
+///
+/// Each module in the path from a VSM file to the crate root gets a sentinel
+/// block added/updated in its `mod.rs` (or `lib.rs` for depth 0) with:
+///
+/// ```rust
+/// pub use next_mod::fn_kani_contracted;
+/// ```
+///
+/// This follows the standard `pub use` chain already used for public API items —
+/// only the contracted/invariant fns are added, no `pub mod` is introduced.
+///
+/// For `lib.rs` specifically: if a symbol is already exported outside the
+/// sentinel block, it is skipped to avoid duplicate definition errors.
+///
+/// Also removes any orphaned `src/kani_reexports.rs` from the previous approach.
+fn patch_module_tree_kani_reexports(
+    source_root: &Path,
+    vsms: &[&VsmDescriptor],
+) -> anyhow::Result<()> {
+    use std::collections::{BTreeMap, BTreeSet};
+
+    const BEGIN: &str = "// BEGIN ELICITATION KANI REEXPORTS — DO NOT EDIT";
+    const END: &str = "// END ELICITATION KANI REEXPORTS";
+
+    // mod_file_path → sorted set of "pub use next_mod::fn;" lines
+    let mut patches: BTreeMap<PathBuf, BTreeSet<String>> = BTreeMap::new();
+
+    for vsm in vsms {
+        let Some(inv) = &vsm.invariant else { continue };
+        let Some(inv_fn) = &inv.kani_fn else { continue };
+
+        let items: Vec<String> = vsm
+            .transitions
+            .iter()
+            .map(|t| format!("{t}_kani_contracted"))
+            .chain(std::iter::once(inv_fn.clone()))
+            .collect();
+
+        let module_path = derive_module_path(&vsm.source_file);
+        let segments: Vec<&str> = module_path.split("::").collect();
+
+        // Level 0 → lib.rs:                  pub use seg[0]::item
+        // Level 1 → src/seg[0]/mod.rs:       pub use seg[1]::item
+        // Level L → src/seg[0]/../mod.rs:    pub use seg[L]::item
+        for level in 0..segments.len() {
+            let mod_file = if level == 0 {
+                source_root.join("src/lib.rs")
+            } else {
+                let mut p = source_root.join("src");
+                for &part in &segments[..level] {
+                    p = p.join(part);
+                }
+                p.join("mod.rs")
+            };
+
+            let next_mod = segments[level];
+            for item in &items {
+                patches
+                    .entry(mod_file.clone())
+                    .or_default()
+                    .insert(format!("pub use {next_mod}::{item};"));
+            }
+        }
+    }
+
+    // Remove orphaned kani_reexports.rs from the previous generation approach.
+    let orphan = source_root.join("src/kani_reexports.rs");
+    if orphan.exists() {
+        std::fs::remove_file(&orphan)
+            .with_context(|| format!("Cannot remove orphan {}", orphan.display()))?;
+        tracing::info!("Removed orphan {}", orphan.display());
+    }
+
+    // Apply patches to each mod file.
+    for (mod_file, new_lines) in &patches {
+        let existing = std::fs::read_to_string(mod_file)
+            .with_context(|| format!("Cannot read {}", mod_file.display()))?;
+
+        // For lib.rs: skip symbols already exported outside the sentinel block.
+        let outside_sentinel = if existing.contains(BEGIN) {
+            let start = existing.find(BEGIN).unwrap();
+            let end = existing.find(END).unwrap() + END.len();
+            format!("{}{}", &existing[..start], &existing[end..])
+        } else {
+            existing.clone()
+        };
+
+        let filtered: Vec<String> = new_lines
+            .iter()
+            .filter(|line| {
+                // Extract symbol: "pub use mod::symbol;" → "symbol"
+                let sym = line.trim_end_matches(';').rsplit("::").next().unwrap_or("");
+                // Skip if the symbol already appears anywhere outside the sentinel
+                // (handles both single-line and multi-line pub use blocks).
+                !outside_sentinel.contains(sym)
+            })
+            .cloned()
+            .collect();
+
+        if filtered.is_empty() {
+            continue;
+        }
+
+        let inner = filtered.join("\n");
+        let block = format!("{BEGIN}\n{inner}\n{END}\n");
+
+        let new_content = if existing.contains(BEGIN) {
+            let start = existing.find(BEGIN).unwrap();
+            let end = existing.find(END).unwrap() + END.len();
+            // Preserve any trailing newline after END marker.
+            let after = &existing[end..];
+            let after = after.strip_prefix('\n').unwrap_or(after);
+            format!("{}{}{}", &existing[..start], block, after)
+        } else {
+            format!("{}\n{}", existing.trim_end(), block)
+        };
+
+        std::fs::write(mod_file, &new_content)
+            .with_context(|| format!("Cannot write {}", mod_file.display()))?;
+        tracing::info!("Patched {}", mod_file.display());
+    }
+
     Ok(())
 }
 

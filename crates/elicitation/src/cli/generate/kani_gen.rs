@@ -90,27 +90,25 @@ pub fn generate_kani_file_with_style(
         for name in &vsm.transitions {
             needed.insert(name.clone());
         }
-        // Import the invariant function used in kani::assume calls.
-        if has_invariant {
-            needed.insert(inv_fn.to_string());
-        }
+        // inv_fn is re-exported via kani_reexports at crate root — do NOT add to
+        // `needed` here or TypeResolver will resolve it to a private module path.
     }
 
     let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);
     let resolved_imports = resolver.grouped_imports(&needed);
 
-    // Build explicit imports for _kani_contracted wrappers. These are
-    // macro-generated under #[cfg(kani)] so the file scanner cannot find them.
-    // They live in the same module as the source file — use that path directly
-    // rather than the re-export path, which never includes contracted names.
+    // Build explicit imports for _kani_contracted wrappers and the invariant
+    // predicate.  These are macro-generated under #[cfg(kani)] so the file
+    // scanner cannot find them.  They are re-exported at the source-crate root
+    // via the generated `kani_reexports` module — use the flat crate-root path.
     let contracted_imports: Vec<String> = if has_invariant {
-        let source_module = crate::cli::generate::type_resolver::derive_module_path(&vsm.source_file);
-        vsm.transitions
+        let mut imports: Vec<String> = vsm
+            .transitions
             .iter()
-            .map(|name| {
-                format!("{crate_name}::{source_module}::{name}_kani_contracted")
-            })
-            .collect()
+            .map(|name| format!("{crate_name}::{name}_kani_contracted"))
+            .collect();
+        imports.push(format!("{crate_name}::{inv_fn}"));
+        imports
     } else {
         vec![]
     };
