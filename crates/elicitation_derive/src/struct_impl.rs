@@ -192,16 +192,21 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
 
     let elicit_complete_where = elicit_complete_where(&input.generics);
 
+    let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     let expanded = quote! {
-        #prompt_impl
-        #survey_impl
-        #elicit_impl
-        #introspect_impl
-        #elicit_spec_impl
-        #graph_key_emission
-        #prompt_tree_impl
-        #to_code_literal_impl
-        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+        #[allow(unexpected_cfgs, non_snake_case)]
+        mod #mod_name {
+            use super::*;
+            #prompt_impl
+            #survey_impl
+            #elicit_impl
+            #introspect_impl
+            #elicit_spec_impl
+            #graph_key_emission
+            #prompt_tree_impl
+            #to_code_literal_impl
+            impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+        }
     };
 
     TokenStream::from(expanded)
@@ -354,18 +359,9 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             quote! {}
         };
         quote! {
+            #[cfg(not(creusot))]
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
-                    #[cfg(creusot)]
-                    {
-                        return elicitation::TypeSpecBuilder::default()
-                            .type_name(String::new())
-                            .summary(String::new())
-                            .categories(Vec::new())
-                            .build()
-                            .expect("valid TypeSpec");
-                    }
-
                     let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
                     #(
                         if let Some(cat) = #field_category_blocks {
@@ -377,6 +373,17 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
                         .type_name(#name_str.to_string())
                         .summary(#summary_expr)
                         .categories(categories)
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            #[cfg(creusot)]
+            impl elicitation::ElicitSpec for #name {
+                fn type_spec() -> elicitation::TypeSpec {
+                    elicitation::TypeSpecBuilder::default()
+                        .type_name(String::new())
+                        .summary(String::new())
+                        .categories(Vec::new())
                         .build()
                         .expect("valid TypeSpec")
                 }
@@ -468,8 +475,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         }
 
         /// Style enum for this type (default-only).
-        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
-        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -480,6 +486,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             fn prompt() -> Option<&'static str> { None }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
             #[cfg(not(creusot))]
@@ -540,17 +547,21 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
     );
 
     let elicit_complete_where = elicit_complete_where(&input.generics);
+    let mod_name = quote::format_ident!("_elicit_compat_{}", name);
 
     TokenStream::from(quote! {
-        #expanded
-        #to_code_literal_impl
-        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+        #[allow(unexpected_cfgs, non_snake_case)]
+        mod #mod_name {
+            use super::*;
+            #expanded
+            #to_code_literal_impl
+            impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+        }
     })
 }
 
 ///
 /// Unit structs have exactly one value, so `elicit()` returns `Ok(Self)` immediately
-/// with no user interaction needed.
 fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     let name = &input.ident;
     let generics = &input.generics;
@@ -612,24 +623,26 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             quote! {}
         };
         quote! {
+            #[cfg(not(creusot))]
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
-                    #[cfg(creusot)]
-                    {
-                        return elicitation::TypeSpecBuilder::default()
-                            .type_name(String::new())
-                            .summary(String::new())
-                            .categories(Vec::new())
-                            .build()
-                            .expect("valid TypeSpec");
-                    }
-
                     let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
                     #struct_requires_block
                     elicitation::TypeSpecBuilder::default()
                         .type_name(#name_str.to_string())
                         .summary(#summary_expr)
                         .categories(categories)
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            #[cfg(creusot)]
+            impl elicitation::ElicitSpec for #name {
+                fn type_spec() -> elicitation::TypeSpec {
+                    elicitation::TypeSpecBuilder::default()
+                        .type_name(String::new())
+                        .summary(String::new())
+                        .categories(Vec::new())
                         .build()
                         .expect("valid TypeSpec")
                 }
@@ -689,8 +702,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         }
 
         /// Style enum for this type (default-only).
-        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
-        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -701,6 +713,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             fn prompt() -> Option<&'static str> { None }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
             #[cfg(not(creusot))]
@@ -760,20 +773,25 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
 
     let elicit_complete_where = elicit_complete_where(&input.generics);
 
+    let mod_name = quote::format_ident!("_elicit_compat_{}", name);
     TokenStream::from(quote! {
-        #expanded
-        #to_code_literal_impl
-        impl #impl_generics elicitation::ElicitPromptTree for #name #ty_generics #where_clause {
-            fn prompt_tree() -> elicitation::PromptTree {
-                elicitation::PromptTree::Leaf {
-                    prompt: <Self as elicitation::Prompt>::prompt()
-                        .unwrap_or(#name_str)
-                        .to_string(),
-                    type_name: #name_str.to_string(),
+        #[allow(unexpected_cfgs, non_snake_case)]
+        mod #mod_name {
+            use super::*;
+            #expanded
+            #to_code_literal_impl
+            impl #impl_generics elicitation::ElicitPromptTree for #name #ty_generics #where_clause {
+                fn prompt_tree() -> elicitation::PromptTree {
+                    elicitation::PromptTree::Leaf {
+                        prompt: <Self as elicitation::Prompt>::prompt()
+                            .unwrap_or(#name_str)
+                            .to_string(),
+                        type_name: #name_str.to_string(),
+                    }
                 }
             }
+            impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
         }
-        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
     })
 }
 
@@ -1110,8 +1128,7 @@ fn generate_elicit_impl_simple(
 
     quote! {
         /// Style enum for this type (default-only).
-        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
-        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -1124,6 +1141,7 @@ fn generate_elicit_impl_simple(
             }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
@@ -1422,8 +1440,7 @@ fn generate_elicit_impl_styled(
 
     quote! {
         // Generate style selection enum
-        #[cfg_attr(not(creusot), derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default))]
-        #[cfg_attr(creusot, derive(Debug, Clone, Default))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         enum #style_enum_name {
             #[default]
             #default_variant,
@@ -1456,6 +1473,7 @@ fn generate_elicit_impl_styled(
             }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #style_enum_name {
             type Style = #style_enum_name;
 
@@ -1702,18 +1720,9 @@ fn generate_elicit_spec_impl(
     };
 
     let spec_impl = quote! {
+        #[cfg(not(creusot))]
         impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
             fn type_spec() -> elicitation::TypeSpec {
-                #[cfg(creusot)]
-                {
-                    return elicitation::TypeSpecBuilder::default()
-                        .type_name(String::new())
-                        .summary(String::new())
-                        .categories(Vec::new())
-                        .build()
-                        .expect("valid TypeSpec");
-                }
-
                 let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
 
                 // Per-field sub-categories
@@ -1734,10 +1743,22 @@ fn generate_elicit_spec_impl(
                     .expect("valid TypeSpec")
             }
         }
+        #[cfg(creusot)]
+        impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(String::new())
+                    .summary(String::new())
+                    .categories(Vec::new())
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
     };
 
     let inventory_submit = if emit_inventory {
         quote! {
+            #[allow(unexpected_cfgs)]
             #[cfg(not(creusot))]
             elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
                 #name_str,
@@ -1759,6 +1780,7 @@ fn generate_elicit_spec_impl(
 fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
     let name_str = name.to_string();
     quote! {
+        #[allow(unexpected_cfgs)]
         #[cfg(not(creusot))]
         elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
             #name_str,

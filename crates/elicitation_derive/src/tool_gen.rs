@@ -49,10 +49,8 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     quote! {
+        // NOTE: Caller wraps this output in an #[allow(unexpected_cfgs)] mod.
         #[cfg(not(creusot))]
-        const _: () = {
-        // Inherent impl for direct access AND trait default method override
-        // The #[tool] attribute here makes this discoverable by rmcp
         impl #impl_generics #type_name #ty_generics #where_clause {
             /// Checked elicitation via MCP protocol.
             ///
@@ -89,9 +87,9 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
         }
 
         // Submit to inventory for automatic tool discovery
+        #[cfg(not(creusot))]
         elicitation::inventory::submit! {
             elicitation::ElicitToolDescriptor::new(#type_name_str, module_path!())
         }
-        };
     }
 }

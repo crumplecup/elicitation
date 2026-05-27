@@ -26,14 +26,18 @@ pub fn expand(input: TokenStream) -> TokenStream {
         }
     };
 
-    // Generate MCP tool function
+    // Generate MCP tool function, wrapped in an allow(unexpected_cfgs) mod so that
+    // #[cfg(not(creusot))] inside tool_gen does not leak warnings into the downstream crate.
     let tool_impl = crate::tool_gen::generate_tool_function(&input);
-
-    // Combine both implementations
+    let tool_mod_name = quote::format_ident!("_elicit_tool_{}", &input.ident);
     let elicit_tokens: proc_macro2::TokenStream = elicit_impl.into();
     let combined = quote! {
         #elicit_tokens
-        #tool_impl
+        #[allow(unexpected_cfgs, non_snake_case)]
+        mod #tool_mod_name {
+            use super::*;
+            #tool_impl
+        }
     };
 
     TokenStream::from(combined)
