@@ -691,8 +691,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             let contracted_fn_ident = format_ident!("{fn_name}_kani_contracted");
             let inputs = &func.sig.inputs;
             let output = &func.sig.output;
-            let vis = &func.vis;
             let cb = &clean_block;
+            // The contracted fn is always placed inside the #[allow(unexpected_cfgs)] compat
+            // mod, where visibility is promoted to `pub` so the pub use re-export outside
+            // the mod works regardless of the original function visibility.
+            let pub_vis: syn::Visibility = syn::parse_quote!(pub);
             // Reconstruct kani-attrs for the cfg(kani) variant.
             let kani_attrs: Vec<TokenStream> = {
                 let mut v: Vec<TokenStream> = Vec::new();
@@ -732,13 +735,13 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             quote! {
                 #[cfg(kani)]
                 #(#kani_attrs)*
-                #vis fn #contracted_fn_ident(#inputs) #output #cb
+                #pub_vis fn #contracted_fn_ident(#inputs) #output #cb
                 // Non-kani stub: exists so pub use outside the compat mod compiles
                 // unconditionally without a #[cfg] gate at user module scope.
                 // Dead in normal builds by design — it is a kani artifact.
                 #[cfg(not(kani))]
                 #[allow(dead_code)]
-                #vis fn #contracted_fn_ident(#inputs) #output #cb
+                #pub_vis fn #contracted_fn_ident(#inputs) #output #cb
             }
         } else {
             quote! {}

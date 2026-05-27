@@ -1306,7 +1306,7 @@ pub fn formal_method_test_v2(_args: TokenStream, item: TokenStream) -> TokenStre
     .into()
 }
 
-/// V3: mod wrapper + transform #[instrument] into cfg_attr(not(any(kani,creusot)), instrument).
+/// V3: mod wrapper + transform `#[instrument]` into cfg_attr(not(any(kani,creusot)), instrument).
 #[proc_macro_attribute]
 pub fn formal_method_test_v3(_args: TokenStream, item: TokenStream) -> TokenStream {
     let mut func = syn::parse_macro_input!(item as syn::ItemFn);
@@ -1464,7 +1464,7 @@ pub fn formal_method_test_v7(_args: TokenStream, item: TokenStream) -> TokenStre
     .into()
 }
 
-/// V8: mod wrapper, but pass #[instrument] through UNCHANGED (no cfg_attr transform).
+/// V8: mod wrapper, but pass `#[instrument]` through UNCHANGED (no cfg_attr transform).
 /// Tests whether the cfg_attr transform itself is the warning source.
 #[proc_macro_attribute]
 pub fn formal_method_test_v8(_args: TokenStream, item: TokenStream) -> TokenStream {
@@ -1485,7 +1485,7 @@ pub fn formal_method_test_v8(_args: TokenStream, item: TokenStream) -> TokenStre
     .into()
 }
 
-/// V9: strip #[instrument] entirely, manually inject `tracing::info_span!` into body.
+/// V9: strip `#[instrument]` entirely, manually inject `tracing::info_span!` into body.
 /// No cfg_attr emitted → zero unexpected_cfgs warnings.
 /// Kani/Creusot run on the plain function body without tracing attribute overhead.
 #[proc_macro_attribute]

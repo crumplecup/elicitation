@@ -1,14 +1,11 @@
 //! Gallery for isolating `unexpected_cfgs` suppression patterns.
-// Cases A, C, E intentionally trigger unexpected_cfgs to document the behaviour.
-// TEMP: crate-level allow removed for testing — restore after confirming cases
-// #![allow(unexpected_cfgs)]
 //!
 //! Each case uses a calibrated derive macro that emits `cfg(foo)` — a cfg name
 //! not declared in this crate — matching what `cfg(kani)` / `cfg(creusot)` look
 //! like in downstream crates. Running `cargo check` on this file reveals which
 //! allow placement actually suppresses the lint.
 //!
-//! Confirmed results (run `cargo test -p elicitation_derive --test cfg_allow_gallery_test`):
+//! Confirmed results:
 //!
 //! | Case | Pattern                                                    | Warning? |
 //! |------|------------------------------------------------------------|----------|
@@ -27,6 +24,7 @@
 //! | M    | attr macro: mod wrapper only, no outer cfg gate            | **NO**   |
 //!
 //! **KEY FINDINGS**:
+//!
 //! - `#[allow(unexpected_cfgs)]` directly on an item (same or adjacent) does NOT suppress
 //!   the lint when emitted from a proc macro into a downstream crate (cases B, F, G, H).
 //! - The allow must be on an ENCLOSING item: a `const _: () = {}` wrapper (case D, J)
@@ -37,35 +35,11 @@
 //! - For derive macros emitting new impl blocks: use `const _: () = {}` (case D).
 //! - For attribute macros modifying existing functions: use `#[allow] mod { fn } + pub use`
 //!   WITHOUT any outer `#[cfg]` gates (case M) — the function remains accessible.
-//! Each case uses a calibrated derive macro that emits `cfg(foo)` — a cfg name
-//! not declared in this crate — matching what `cfg(kani)` / `cfg(creusot)` look
-//! like in downstream crates. Running `cargo check` on this file reveals which
-//! allow placement actually suppresses the lint.
 //!
-//! Confirmed results (run `cargo test -p elicitation_derive --test cfg_allow_gallery_test`):
-//!
-//! | Case | Pattern                                                    | Warning? |
-//! |------|------------------------------------------------------------|----------|
-//! | A    | No allow                                                   | YES      |
-//! | B    | `#[allow]` + `#[cfg(foo)]` on **same** item               | YES !!   |
-//! | C    | `#[allow]` on separate preceding const                     | YES      |
-//! | D    | `#[allow]` on outer `const _: () = { ... }`               | **NO**   |
-//! | E    | `cfg_attr(foo, ...)` with no allow                         | YES      |
-//! | F    | `#[allow]` + `cfg_attr` on **same** item                   | YES !!   |
-//! | G    | attr macro: push allow then cfg_attr at END of func.attrs  | YES      |
-//! | H    | attr macro: insert allow at pos 0, push cfg_attr at END    | YES      |
-//! | I    | attr macro: emit preceding allow const, then modified fn   | YES      |
-//! | J    | attr macro: wrap entire fn in `#[allow] const _: () = {}` | **NO**   |
-//! | K    | attr macro: `#[allow] mod { fn }` + `pub use`             | **NO**   |
-//!
-//! **KEY FINDINGS**:
-//! - `#[allow(unexpected_cfgs)]` directly on an item (same or adjacent) does NOT suppress
-//!   the lint when emitted from a proc macro into a downstream crate (cases B, F, G, H).
-//! - The allow must be on an ENCLOSING item: a `const _: () = {}` wrapper (case D, J)
-//!   or a `mod` block (case K).
-//! - For derive macros emitting new impl blocks: use `const _: () = {}` (case D).
-//! - For attribute macros modifying existing functions: use `#[allow] mod { fn } + pub use`
-//!   (case K) — the function remains accessible from the outer scope.
+//! See `UNEXPECTED_CFGS.md` at the repository root for the full white paper.
+
+// Research complete — suppress the intentional "YES" cases so CI stays clean.
+#![allow(unexpected_cfgs)]
 
 // Case A: no allow → should produce 1 warning: unexpected `cfg` condition name: `foo`
 #[derive(elicitation_derive::CfgGalleryA)]
