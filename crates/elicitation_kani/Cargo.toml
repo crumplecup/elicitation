@@ -17,6 +17,9 @@ categories = ["development-tools::testing", "mathematics"]
 # Core dependency - verification framework only
 elicitation = { workspace = true }
 
+# Tracing (for manual span injection test)
+tracing = { workspace = true }
+
 # Serialization (for serde boundary proofs)
 serde_json = { workspace = true, optional = true }
 

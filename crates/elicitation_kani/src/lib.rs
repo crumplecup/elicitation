@@ -85,6 +85,10 @@ mod unit;
 #[cfg(kani)]
 mod utf8;
 
+// Test whether manual tracing span injection survives Kani DFCC
+#[cfg(kani)]
+mod tracing_span_test;
+
 // Feature-gated proof modules
 #[cfg(all(kani, unix))]
 mod pathbytes;
