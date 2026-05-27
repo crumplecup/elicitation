@@ -75,6 +75,17 @@
 //! | `terminal_set_cursor` | Set cursor position |
 //! | `terminal_draw` | Draw a TuiNode tree |
 //!
+//! ## Runtime types (runtime feature)
+//!
+//! - [`TuiCommunicator`] — an [`ElicitCommunicator`] for terminal-based interactive applications
+//!   - Supports `elicit_select` (numbered menu with single-keystroke selection)
+//!   - Supports `elicit_text` (free-form text input)
+//!   - Configurable prompt pane height
+//!   - Works with [`ChoiceSet`] for runtime option filtering
+//!
+//! [`ElicitCommunicator`]: elicitation::ElicitCommunicator
+//! [`ChoiceSet`]: elicitation::ChoiceSet
+//!
 //! ## Events (runtime feature)
 //!
 //! | Tool | Description |
@@ -110,6 +121,8 @@ mod style_tools;
 mod terminal_tools;
 mod text_tools;
 pub mod tui_accesskit_convert;
+#[cfg(feature = "runtime")]
+mod tui_communicator;
 mod widget_tools;
 
 #[cfg(feature = "runtime")]
@@ -164,6 +177,8 @@ pub use text_tools::{
     LineFromSpansParams, SpanRawParams, SpanStyledParams, TextFromLinesParams, TextRawParams,
     TextStyledParams,
 };
+#[cfg(feature = "runtime")]
+pub use tui_communicator::TuiCommunicator;
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 pub use widget_tools::{
     BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
