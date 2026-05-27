@@ -17,3 +17,8 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)', 'c
 elicit_server = { workspace = true }
 elicitation = { workspace = true }
 creusot-std = { workspace = true, optional = true }
+elicit_db = { workspace = true }
+elicit_ui = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }

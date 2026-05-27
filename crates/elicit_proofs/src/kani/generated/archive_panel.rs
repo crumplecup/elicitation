@@ -14,6 +14,52 @@ use elicit_server::archive::display::{
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_panel_consistent;
 #[cfg(kani)]
+use elicit_server::archive::vsm::panel::abort_edits_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::admin_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::begin_edit_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::column_detail_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::commit_edits_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::constraints_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::data_grid_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::ddl_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::erd_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::explain_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::export_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::history_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::indexes_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::monitor_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::open_connection_editor_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::open_export_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::open_help_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::open_saved_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::open_sql_editor_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::panel_error_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::panel_loading_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::query_complete_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::panel::saved_ready_kani_contracted;
+#[cfg(kani)]
 use elicit_server::archive::{
     AdminSnapshot, ArchivePanelConsistent, ArchivePanelState, ConnectionProfile,
     ConstraintDescriptor, DdlDescriptor, ErdDiagram, ErdLayout, ExplainPlan, ExportResult,
@@ -34,7 +80,7 @@ fn verify_archive_panel_consistent_prop_marker() {
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(column_detail)]
+#[::kani::proof_for_contract(column_detail_kani_contracted)]
 fn column_detail_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -46,12 +92,12 @@ fn column_detail_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = column_detail(_state, proof);
+    let _result = column_detail_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(panel_loading)]
+#[::kani::proof_for_contract(panel_loading_kani_contracted)]
 fn panel_loading_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -65,12 +111,12 @@ fn panel_loading_kani_closure() {
     };
     let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let label: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = panel_loading(_state, proof, schema, label);
+    let _result = panel_loading_kani_contracted(_state, proof, schema, label);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(panel_error)]
+#[::kani::proof_for_contract(panel_error_kani_contracted)]
 fn panel_error_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -83,12 +129,12 @@ fn panel_error_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let message: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = panel_error(_state, proof, message);
+    let _result = panel_error_kani_contracted(_state, proof, message);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(data_grid_ready)]
+#[::kani::proof_for_contract(data_grid_ready_kani_contracted)]
 fn data_grid_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -105,12 +151,13 @@ fn data_grid_ready_kani_closure() {
     let query_result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: QueryResultMode =
         <QueryResultMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = data_grid_ready(_state, proof, schema, table, query_result, display_mode);
+    let _result =
+        data_grid_ready_kani_contracted(_state, proof, schema, table, query_result, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(query_complete)]
+#[::kani::proof_for_contract(query_complete_kani_contracted)]
 fn query_complete_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -121,12 +168,12 @@ fn query_complete_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let query_result: QueryResult = <QueryResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = query_complete(state, proof, query_result);
+    let _result = query_complete_kani_contracted(state, proof, query_result);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(begin_edit)]
+#[::kani::proof_for_contract(begin_edit_kani_contracted)]
 fn begin_edit_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -136,12 +183,12 @@ fn begin_edit_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = begin_edit(state, proof);
+    let _result = begin_edit_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(commit_edits)]
+#[::kani::proof_for_contract(commit_edits_kani_contracted)]
 fn commit_edits_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -151,12 +198,12 @@ fn commit_edits_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = commit_edits(state, proof);
+    let _result = commit_edits_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(abort_edits)]
+#[::kani::proof_for_contract(abort_edits_kani_contracted)]
 fn abort_edits_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -166,12 +213,12 @@ fn abort_edits_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = abort_edits(state, proof);
+    let _result = abort_edits_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_sql_editor)]
+#[::kani::proof_for_contract(open_sql_editor_kani_contracted)]
 fn open_sql_editor_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -184,12 +231,12 @@ fn open_sql_editor_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let initial_text: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = open_sql_editor(_state, proof, initial_text);
+    let _result = open_sql_editor_kani_contracted(_state, proof, initial_text);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_export_panel)]
+#[::kani::proof_for_contract(open_export_panel_kani_contracted)]
 fn open_export_panel_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -203,12 +250,12 @@ fn open_export_panel_kani_closure() {
     };
     let schema: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let table: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = open_export_panel(_state, proof, schema, table);
+    let _result = open_export_panel_kani_contracted(_state, proof, schema, table);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_help_panel)]
+#[::kani::proof_for_contract(open_help_panel_kani_contracted)]
 fn open_help_panel_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -220,12 +267,12 @@ fn open_help_panel_kani_closure() {
         let _cred = ArchivePanelConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = open_help_panel(_state, proof);
+    let _result = open_help_panel_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_saved_panel)]
+#[::kani::proof_for_contract(open_saved_panel_kani_contracted)]
 fn open_saved_panel_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -240,12 +287,12 @@ fn open_saved_panel_kani_closure() {
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode =
         <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = open_saved_panel(_state, proof, entries, display_mode);
+    let _result = open_saved_panel_kani_contracted(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_connection_editor)]
+#[::kani::proof_for_contract(open_connection_editor_kani_contracted)]
 fn open_connection_editor_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -261,12 +308,12 @@ fn open_connection_editor_kani_closure() {
         <ConnectionProfile as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: ConnectionProfileMode =
         <ConnectionProfileMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = open_connection_editor(_state, proof, profile, display_mode);
+    let _result = open_connection_editor_kani_contracted(_state, proof, profile, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(ddl_ready)]
+#[::kani::proof_for_contract(ddl_ready_kani_contracted)]
 fn ddl_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -283,12 +330,12 @@ fn ddl_ready_kani_closure() {
     let ddl: DdlDescriptor = <DdlDescriptor as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: DdlDescriptorMode =
         <DdlDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
+    let _result = ddl_ready_kani_contracted(_state, proof, schema, table, ddl, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(explain_ready)]
+#[::kani::proof_for_contract(explain_ready_kani_contracted)]
 fn explain_ready_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -303,12 +350,12 @@ fn explain_ready_kani_closure() {
     let root: ExplainPlan = <ExplainPlan as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: ExplainNodeMode =
         <ExplainNodeMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = explain_ready(state, proof, schema, table, root, display_mode);
+    let _result = explain_ready_kani_contracted(state, proof, schema, table, root, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(export_ready)]
+#[::kani::proof_for_contract(export_ready_kani_contracted)]
 fn export_ready_kani_closure() {
     let state: ArchivePanelState = <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_panel_consistent(&state));
@@ -319,12 +366,12 @@ fn export_ready_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let export_result: ExportResult = <ExportResult as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = export_ready(state, proof, export_result);
+    let _result = export_ready_kani_contracted(state, proof, export_result);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(history_ready)]
+#[::kani::proof_for_contract(history_ready_kani_contracted)]
 fn history_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -339,12 +386,12 @@ fn history_ready_kani_closure() {
     let entries: Vec<QueryHistoryEntry> = ::std::vec::Vec::new();
     let display_mode: QueryHistoryEntryMode =
         <QueryHistoryEntryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = history_ready(_state, proof, entries, display_mode);
+    let _result = history_ready_kani_contracted(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(saved_ready)]
+#[::kani::proof_for_contract(saved_ready_kani_contracted)]
 fn saved_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -359,12 +406,12 @@ fn saved_ready_kani_closure() {
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
     let display_mode: SavedQueryMode =
         <SavedQueryMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = saved_ready(_state, proof, entries, display_mode);
+    let _result = saved_ready_kani_contracted(_state, proof, entries, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(monitor_ready)]
+#[::kani::proof_for_contract(monitor_ready_kani_contracted)]
 fn monitor_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -379,12 +426,12 @@ fn monitor_ready_kani_closure() {
     let snapshot: MonitorSnapshot = <MonitorSnapshot as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: MonitorSnapshotMode =
         <MonitorSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = monitor_ready(_state, proof, snapshot, display_mode);
+    let _result = monitor_ready_kani_contracted(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(admin_ready)]
+#[::kani::proof_for_contract(admin_ready_kani_contracted)]
 fn admin_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -399,12 +446,12 @@ fn admin_ready_kani_closure() {
     let snapshot: AdminSnapshot = <AdminSnapshot as ::elicitation::KaniCompose>::kani_depth0();
     let display_mode: AdminSnapshotMode =
         <AdminSnapshotMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = admin_ready(_state, proof, snapshot, display_mode);
+    let _result = admin_ready_kani_contracted(_state, proof, snapshot, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(erd_ready)]
+#[::kani::proof_for_contract(erd_ready_kani_contracted)]
 fn erd_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -421,12 +468,12 @@ fn erd_ready_kani_closure() {
     let layout: Option<ErdLayout> = ::core::option::Option::None;
     let display_mode: ErdDiagramMode =
         <ErdDiagramMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = erd_ready(_state, proof, schema, diagram, layout, display_mode);
+    let _result = erd_ready_kani_contracted(_state, proof, schema, diagram, layout, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(constraints_ready)]
+#[::kani::proof_for_contract(constraints_ready_kani_contracted)]
 fn constraints_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -443,12 +490,13 @@ fn constraints_ready_kani_closure() {
     let constraints: Vec<ConstraintDescriptor> = ::std::vec::Vec::new();
     let display_mode: ConstraintDescriptorMode =
         <ConstraintDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
+    let _result =
+        constraints_ready_kani_contracted(_state, proof, schema, table, constraints, display_mode);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(indexes_ready)]
+#[::kani::proof_for_contract(indexes_ready_kani_contracted)]
 fn indexes_ready_kani_closure() {
     let _state: ArchivePanelState =
         <ArchivePanelState as ::elicitation::KaniCompose>::kani_depth2();
@@ -465,6 +513,7 @@ fn indexes_ready_kani_closure() {
     let indexes: Vec<IndexDescriptor> = ::std::vec::Vec::new();
     let display_mode: IndexDescriptorMode =
         <IndexDescriptorMode as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);
+    let _result =
+        indexes_ready_kani_contracted(_state, proof, schema, table, indexes, display_mode);
     ::std::mem::forget(_result);
 }

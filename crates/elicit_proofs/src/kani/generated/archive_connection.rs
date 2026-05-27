@@ -8,6 +8,20 @@
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_connection_consistent;
 #[cfg(kani)]
+use elicit_server::archive::vsm::connection::begin_connect_kv_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::begin_connect_sql_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::connection_error_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::disconnect_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::finish_connect_kv_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::finish_connect_sql_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::connection::reconnect_kani_contracted;
+#[cfg(kani)]
 use elicit_server::archive::{
     ArchiveConnectionConsistent, ArchiveConnectionState, BackendKind, DatabaseDescriptor,
     begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
@@ -24,7 +38,7 @@ fn verify_archive_connection_consistent_prop_marker() {
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(begin_connect_sql)]
+#[::kani::proof_for_contract(begin_connect_sql_kani_contracted)]
 fn begin_connect_sql_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -38,12 +52,12 @@ fn begin_connect_sql_kani_closure() {
     };
     let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
     let backend: BackendKind = <BackendKind as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = begin_connect_sql(_state, proof, profile_name, backend);
+    let _result = begin_connect_sql_kani_contracted(_state, proof, profile_name, backend);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(begin_connect_kv)]
+#[::kani::proof_for_contract(begin_connect_kv_kani_contracted)]
 fn begin_connect_kv_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -56,12 +70,12 @@ fn begin_connect_kv_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let profile_name: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = begin_connect_kv(_state, proof, profile_name);
+    let _result = begin_connect_kv_kani_contracted(_state, proof, profile_name);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(finish_connect_sql)]
+#[::kani::proof_for_contract(finish_connect_sql_kani_contracted)]
 fn finish_connect_sql_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -74,12 +88,12 @@ fn finish_connect_sql_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let db: DatabaseDescriptor = <DatabaseDescriptor as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = finish_connect_sql(_state, proof, db);
+    let _result = finish_connect_sql_kani_contracted(_state, proof, db);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(finish_connect_kv)]
+#[::kani::proof_for_contract(finish_connect_kv_kani_contracted)]
 fn finish_connect_kv_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -92,12 +106,12 @@ fn finish_connect_kv_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let path: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = finish_connect_kv(_state, proof, path);
+    let _result = finish_connect_kv_kani_contracted(_state, proof, path);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(disconnect)]
+#[::kani::proof_for_contract(disconnect_kani_contracted)]
 fn disconnect_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -109,12 +123,12 @@ fn disconnect_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = disconnect(_state, proof);
+    let _result = disconnect_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(reconnect)]
+#[::kani::proof_for_contract(reconnect_kani_contracted)]
 fn reconnect_kani_closure() {
     let state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -126,12 +140,12 @@ fn reconnect_kani_closure() {
         let _cred = ArchiveConnectionConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = reconnect(state, proof);
+    let _result = reconnect_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(connection_error)]
+#[::kani::proof_for_contract(connection_error_kani_contracted)]
 fn connection_error_kani_closure() {
     let _state: ArchiveConnectionState =
         <ArchiveConnectionState as ::elicitation::KaniCompose>::kani_depth2();
@@ -144,6 +158,6 @@ fn connection_error_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let message: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = connection_error(_state, proof, message);
+    let _result = connection_error_kani_contracted(_state, proof, message);
     ::std::mem::forget(_result);
 }

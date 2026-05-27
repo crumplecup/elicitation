@@ -8,6 +8,28 @@
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_overlay_consistent;
 #[cfg(kani)]
+use elicit_server::archive::vsm::overlay::close_overlay_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::open_export_picker_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::open_help_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::open_save_prompt_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::open_saved_browser_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::picker_move_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::picker_move_up_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::prompt_backspace_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::prompt_push_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::saved_browser_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::overlay::saved_browser_up_kani_contracted;
+#[cfg(kani)]
 use elicit_server::archive::{
     ArchiveOverlayConsistent, ArchiveOverlayState, ExportFormat, SavedQuery, close_overlay,
     open_export_picker, open_help, open_save_prompt, open_saved_browser, picker_move_down,
@@ -24,7 +46,7 @@ fn verify_archive_overlay_consistent_prop_marker() {
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(close_overlay)]
+#[::kani::proof_for_contract(close_overlay_kani_contracted)]
 fn close_overlay_kani_closure() {
     let _state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -36,12 +58,12 @@ fn close_overlay_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = close_overlay(_state, proof);
+    let _result = close_overlay_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_help)]
+#[::kani::proof_for_contract(open_help_kani_contracted)]
 fn open_help_kani_closure() {
     let _state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -53,12 +75,12 @@ fn open_help_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = open_help(_state, proof);
+    let _result = open_help_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_export_picker)]
+#[::kani::proof_for_contract(open_export_picker_kani_contracted)]
 fn open_export_picker_kani_closure() {
     let _state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -71,12 +93,12 @@ fn open_export_picker_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let formats: Vec<ExportFormat> = ::std::vec::Vec::new();
-    let _result = open_export_picker(_state, proof, formats);
+    let _result = open_export_picker_kani_contracted(_state, proof, formats);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(picker_move_up)]
+#[::kani::proof_for_contract(picker_move_up_kani_contracted)]
 fn picker_move_up_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -88,12 +110,12 @@ fn picker_move_up_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = picker_move_up(state, proof);
+    let _result = picker_move_up_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(picker_move_down)]
+#[::kani::proof_for_contract(picker_move_down_kani_contracted)]
 fn picker_move_down_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -105,12 +127,12 @@ fn picker_move_down_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = picker_move_down(state, proof);
+    let _result = picker_move_down_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_save_prompt)]
+#[::kani::proof_for_contract(open_save_prompt_kani_contracted)]
 fn open_save_prompt_kani_closure() {
     let _state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -122,12 +144,12 @@ fn open_save_prompt_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = open_save_prompt(_state, proof);
+    let _result = open_save_prompt_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(prompt_push)]
+#[::kani::proof_for_contract(prompt_push_kani_contracted)]
 fn prompt_push_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -140,12 +162,12 @@ fn prompt_push_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let ch: char = <char as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = prompt_push(state, proof, ch);
+    let _result = prompt_push_kani_contracted(state, proof, ch);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(prompt_backspace)]
+#[::kani::proof_for_contract(prompt_backspace_kani_contracted)]
 fn prompt_backspace_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -157,12 +179,12 @@ fn prompt_backspace_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = prompt_backspace(state, proof);
+    let _result = prompt_backspace_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(open_saved_browser)]
+#[::kani::proof_for_contract(open_saved_browser_kani_contracted)]
 fn open_saved_browser_kani_closure() {
     let _state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -175,12 +197,12 @@ fn open_saved_browser_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let entries: Vec<SavedQuery> = ::std::vec::Vec::new();
-    let _result = open_saved_browser(_state, proof, entries);
+    let _result = open_saved_browser_kani_contracted(_state, proof, entries);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(saved_browser_up)]
+#[::kani::proof_for_contract(saved_browser_up_kani_contracted)]
 fn saved_browser_up_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -192,12 +214,12 @@ fn saved_browser_up_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = saved_browser_up(state, proof);
+    let _result = saved_browser_up_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(saved_browser_down)]
+#[::kani::proof_for_contract(saved_browser_down_kani_contracted)]
 fn saved_browser_down_kani_closure() {
     let state: ArchiveOverlayState =
         <ArchiveOverlayState as ::elicitation::KaniCompose>::kani_depth2();
@@ -209,6 +231,6 @@ fn saved_browser_down_kani_closure() {
         let _cred = ArchiveOverlayConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = saved_browser_down(state, proof);
+    let _result = saved_browser_down_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }

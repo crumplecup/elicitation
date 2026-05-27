@@ -8,6 +8,24 @@
 #[cfg(kani)]
 use elicit_server::archive::vsm::archive_nav_consistent;
 #[cfg(kani)]
+use elicit_server::archive::vsm::nav::apply_filter_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::clear_filter_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::collapse_schema_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::expand_schema_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::load_nav_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::move_cursor_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::move_cursor_up_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::nav_loaded_kani_contracted;
+#[cfg(kani)]
+use elicit_server::archive::vsm::nav::nav_refresh_kani_contracted;
+#[cfg(kani)]
 use elicit_server::archive::{
     ArchiveNavConsistent, ArchiveNavState, NavTree, apply_filter, clear_filter, collapse_schema,
     expand_schema, load_nav, move_cursor_down, move_cursor_up, nav_loaded, nav_refresh,
@@ -23,7 +41,7 @@ fn verify_archive_nav_consistent_prop_marker() {
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(load_nav)]
+#[::kani::proof_for_contract(load_nav_kani_contracted)]
 fn load_nav_kani_closure() {
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
@@ -33,12 +51,12 @@ fn load_nav_kani_closure() {
         let _cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = load_nav(_state, proof);
+    let _result = load_nav_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(nav_loaded)]
+#[::kani::proof_for_contract(nav_loaded_kani_contracted)]
 fn nav_loaded_kani_closure() {
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
@@ -49,12 +67,12 @@ fn nav_loaded_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let nav: NavTree = <NavTree as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = nav_loaded(_state, proof, nav);
+    let _result = nav_loaded_kani_contracted(_state, proof, nav);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(nav_refresh)]
+#[::kani::proof_for_contract(nav_refresh_kani_contracted)]
 fn nav_refresh_kani_closure() {
     let _state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&_state));
@@ -64,12 +82,12 @@ fn nav_refresh_kani_closure() {
         let _cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = nav_refresh(_state, proof);
+    let _result = nav_refresh_kani_contracted(_state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(expand_schema)]
+#[::kani::proof_for_contract(expand_schema_kani_contracted)]
 fn expand_schema_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -81,12 +99,12 @@ fn expand_schema_kani_closure() {
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
     let expanded: bool = <bool as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = expand_schema(state, proof, schema_idx, expanded);
+    let _result = expand_schema_kani_contracted(state, proof, schema_idx, expanded);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(collapse_schema)]
+#[::kani::proof_for_contract(collapse_schema_kani_contracted)]
 fn collapse_schema_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -97,12 +115,12 @@ fn collapse_schema_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let schema_idx: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = collapse_schema(state, proof, schema_idx);
+    let _result = collapse_schema_kani_contracted(state, proof, schema_idx);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(move_cursor_up)]
+#[::kani::proof_for_contract(move_cursor_up_kani_contracted)]
 fn move_cursor_up_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -112,12 +130,12 @@ fn move_cursor_up_kani_closure() {
         let _cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = move_cursor_up(state, proof);
+    let _result = move_cursor_up_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(move_cursor_down)]
+#[::kani::proof_for_contract(move_cursor_down_kani_contracted)]
 fn move_cursor_down_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -128,12 +146,12 @@ fn move_cursor_down_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let max: usize = <usize as ::elicitation::KaniCompose>::kani_depth0();
-    let _result = move_cursor_down(state, proof, max);
+    let _result = move_cursor_down_kani_contracted(state, proof, max);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(apply_filter)]
+#[::kani::proof_for_contract(apply_filter_kani_contracted)]
 fn apply_filter_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -144,12 +162,12 @@ fn apply_filter_kani_closure() {
         ::elicitation::Established::prove(&_cred)
     };
     let filter: String = <::std::string::String as ::elicitation::KaniCompose>::kani_depth1();
-    let _result = apply_filter(state, proof, filter);
+    let _result = apply_filter_kani_contracted(state, proof, filter);
     ::std::mem::forget(_result);
 }
 
 #[cfg(kani)]
-#[::kani::proof_for_contract(clear_filter)]
+#[::kani::proof_for_contract(clear_filter_kani_contracted)]
 fn clear_filter_kani_closure() {
     let state: ArchiveNavState = <ArchiveNavState as ::elicitation::KaniCompose>::kani_depth2();
     ::kani::assume(archive_nav_consistent(&state));
@@ -159,6 +177,6 @@ fn clear_filter_kani_closure() {
         let _cred = ArchiveNavConsistent::kani_proof_credential();
         ::elicitation::Established::prove(&_cred)
     };
-    let _result = clear_filter(state, proof);
+    let _result = clear_filter_kani_contracted(state, proof);
     ::std::mem::forget(_result);
 }
