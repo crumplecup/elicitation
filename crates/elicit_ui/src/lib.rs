@@ -263,12 +263,13 @@ pub use palette::{
 };
 pub use spatial::{BoundingBox, LayoutContext};
 pub use traits::{
-    UiBackend, UiEventBridge, UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager,
-    UiNodeBridge, UiRenderBackend, UiRenderer, UiTreeRenderer, WcagBackend, WcagContrastFactory,
-    WcagElementMeta, WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory,
-    WcagLanguageFactory, WcagMediaFactory, WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory,
-    WcagRobustFactory, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory,
-    WcagUnderstandableFactory,
+    RenderContext, RenderVerifiable, UiBackend, UiEventBridge, UiEventDispatcher, UiInspector,
+    UiLayoutManager, UiNavigationManager, UiNodeBridge, UiRenderBackend, UiRenderer,
+    UiTreeRenderer, WcagBackend, WcagContrastFactory, WcagElementMeta, WcagErrorFactory,
+    WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
+    WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory, WcagRobustFactory,
+    WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WcagUnderstandableFactory,
+    verify_in_debug,
 };
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};
