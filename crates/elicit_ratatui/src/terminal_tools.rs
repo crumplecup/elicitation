@@ -561,7 +561,7 @@ pub fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
                 p = p.style(ratatui::style::Style::from(s.clone()));
             }
             if *wrap {
-                p = p.wrap(ratatui::widgets::Wrap { trim: true });
+                p = p.wrap(ratatui::widgets::Wrap { trim: false });
             }
             if let Some((row, col)) = scroll {
                 p = p.scroll((*row, *col));
