@@ -115,6 +115,7 @@ mod fragment_tools;
 mod layout_tools;
 mod property_tools;
 mod render_backend;
+mod render_context;
 mod serde_types;
 mod style_tools;
 #[cfg(feature = "runtime")]
@@ -156,6 +157,7 @@ pub use property_tools::{
     TabsSetStyleParams,
 };
 pub use render_backend::RatatuiBackend;
+pub use render_context::{RatatuiRenderContext, RenderVerifiable, ratatui_verify_in_debug};
 pub use serde_types::{
     AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
     CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,
