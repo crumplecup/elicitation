@@ -10,12 +10,15 @@
 
 use accesskit::{Node, NodeId, Role, Toggled};
 use elicit_ui::node_roles::*;
+use elicit_ui::text::{
+    ParagraphText as UiParagraphText, TextLine, TextModifier, TextSpan, TextStyle, UiColor,
+};
 use elicit_ui::{RolePreserved, UiNodeBridge, UiRenderBackend};
 use elicitation::Established;
 
 use crate::serde_types::{
-    ConstraintJson, DirectionJson, ModifierJson, ParagraphText, RowJson, StyleJson, TuiNode,
-    WidgetJson,
+    AlignmentJson, ConstraintJson, DirectionJson, LineJson, ModifierJson, ParagraphText, RowJson,
+    SpanJson, StyleJson, TextJson, TuiNode, WidgetJson,
 };
 
 // ── RatatuiBackend ────────────────────────────────────────────────────────────
@@ -61,6 +64,108 @@ fn titled_block(title: String) -> crate::serde_types::BlockJson {
 
 fn node_label(node: &Node) -> String {
     elicit_accesskit::node_label(node).to_string()
+}
+
+/// Extracts the `rich_text` serde_json::Value from an accesskit Node's custom
+/// properties by checking if the node's NodeJson has the field set.
+///
+/// Since `accesskit::Node` doesn't carry our `rich_text` sidecar, we encode
+/// it as raw JSON stored in the node's `class_name` property with a sentinel
+/// prefix.  `display.rs` writes this; we read it back here.
+fn node_json_rich_text(node: &Node) -> Option<serde_json::Value> {
+    const PREFIX: &str = "__rich_text__:";
+    let class = node.class_name()?;
+    if !class.starts_with(PREFIX) {
+        return None;
+    }
+    serde_json::from_str(&class[PREFIX.len()..]).ok()
+}
+
+/// Convert an `elicit_ui::ParagraphText` JSON value to the ratatui
+/// `ParagraphText` used by `WidgetJson::Paragraph`.
+fn rich_text_to_paragraph_text(raw: serde_json::Value) -> ParagraphText {
+    let Ok(ui_para) = serde_json::from_value::<UiParagraphText>(raw) else {
+        return ParagraphText::Plain(String::new());
+    };
+    match ui_para {
+        UiParagraphText::Plain(s) => ParagraphText::Plain(s),
+        UiParagraphText::Rich(rich) => {
+            let lines = rich.lines.into_iter().map(ui_line_to_json).collect();
+            let style = rich.style.as_ref().map(ui_style_to_json);
+            let alignment = rich.alignment.map(ui_align_to_json);
+            ParagraphText::Rich(TextJson { lines, style, alignment })
+        }
+    }
+}
+
+fn ui_line_to_json(line: TextLine) -> LineJson {
+    LineJson {
+        spans: line.spans.into_iter().map(ui_span_to_json).collect(),
+        style: line.style.as_ref().map(ui_style_to_json),
+        alignment: line.alignment.map(ui_align_to_json),
+    }
+}
+
+fn ui_span_to_json(span: TextSpan) -> SpanJson {
+    SpanJson {
+        content: span.content,
+        style: span.style.as_ref().map(ui_style_to_json),
+    }
+}
+
+fn ui_style_to_json(style: &TextStyle) -> StyleJson {
+    StyleJson {
+        fg: style.fg.as_ref().map(ui_color_to_json),
+        bg: style.bg.as_ref().map(ui_color_to_json),
+        modifiers: style.modifiers.iter().map(ui_modifier_to_json).collect(),
+    }
+}
+
+fn ui_color_to_json(color: &UiColor) -> crate::serde_types::ColorJson {
+    use crate::serde_types::ColorJson;
+    match color {
+        UiColor::Reset => ColorJson::Reset,
+        UiColor::Black => ColorJson::Black,
+        UiColor::Red => ColorJson::Red,
+        UiColor::Green => ColorJson::Green,
+        UiColor::Yellow => ColorJson::Yellow,
+        UiColor::Blue => ColorJson::Blue,
+        UiColor::Magenta => ColorJson::Magenta,
+        UiColor::Cyan => ColorJson::Cyan,
+        UiColor::White => ColorJson::White,
+        UiColor::DarkGray => ColorJson::DarkGray,
+        UiColor::LightRed => ColorJson::LightRed,
+        UiColor::LightGreen => ColorJson::LightGreen,
+        UiColor::LightYellow => ColorJson::LightYellow,
+        UiColor::LightBlue => ColorJson::LightBlue,
+        UiColor::LightMagenta => ColorJson::LightMagenta,
+        UiColor::LightCyan => ColorJson::LightCyan,
+        UiColor::Gray => ColorJson::Gray,
+        UiColor::Rgb { r, g, b } => ColorJson::Rgb { r: *r, g: *g, b: *b },
+        UiColor::Indexed { index } => ColorJson::Indexed { index: *index },
+    }
+}
+
+fn ui_modifier_to_json(m: &TextModifier) -> ModifierJson {
+    match m {
+        TextModifier::Bold => ModifierJson::Bold,
+        TextModifier::Dim => ModifierJson::Dim,
+        TextModifier::Italic => ModifierJson::Italic,
+        TextModifier::Underlined => ModifierJson::Underlined,
+        TextModifier::SlowBlink => ModifierJson::SlowBlink,
+        TextModifier::RapidBlink => ModifierJson::RapidBlink,
+        TextModifier::Reversed => ModifierJson::Reversed,
+        TextModifier::Hidden => ModifierJson::Hidden,
+        TextModifier::CrossedOut => ModifierJson::CrossedOut,
+    }
+}
+
+fn ui_align_to_json(a: elicit_ui::text::TextAlign) -> AlignmentJson {
+    match a {
+        elicit_ui::text::TextAlign::Left => AlignmentJson::Left,
+        elicit_ui::text::TextAlign::Center => AlignmentJson::Center,
+        elicit_ui::text::TextAlign::Right => AlignmentJson::Right,
+    }
 }
 
 fn text_widget(node: &Node) -> TuiNode {
@@ -643,24 +748,40 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<ParagraphNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
-            let style = if node.is_selected().unwrap_or(false) {
-                Some(StyleJson {
-                    fg: None,
-                    bg: None,
-                    modifiers: vec![ModifierJson::Reversed, ModifierJson::Bold],
-                })
+            // Prefer the rich-text payload when present (per-span cursor
+            // highlighting).  Fall back to the plain-label + whole-widget
+            // selected style for compatibility.
+            if let Some(rich_json) = node_json_rich_text(node) {
+                TuiNode::Widget {
+                    widget: Box::new(WidgetJson::Paragraph {
+                        text: rich_text_to_paragraph_text(rich_json),
+                        style: None,
+                        wrap: true,
+                        scroll: None,
+                        alignment: None,
+                        block: None,
+                    }),
+                }
             } else {
-                None
-            };
-            TuiNode::Widget {
-                widget: Box::new(WidgetJson::Paragraph {
-                    text: ParagraphText::Plain(node_label(node)),
-                    style,
-                    wrap: true,
-                    scroll: None,
-                    alignment: None,
-                    block: None,
-                }),
+                let style = if node.is_selected().unwrap_or(false) {
+                    Some(StyleJson {
+                        fg: None,
+                        bg: None,
+                        modifiers: vec![ModifierJson::Reversed, ModifierJson::Bold],
+                    })
+                } else {
+                    None
+                };
+                TuiNode::Widget {
+                    widget: Box::new(WidgetJson::Paragraph {
+                        text: ParagraphText::Plain(node_label(node)),
+                        style,
+                        wrap: true,
+                        scroll: None,
+                        alignment: None,
+                        block: None,
+                    }),
+                }
             }
         };
         (__w, Established::<RolePreserved>::prove(&proof))
