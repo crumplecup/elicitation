@@ -26,6 +26,9 @@ tracing.workspace = true
 derive_more.workspace = true
 derive-getters.workspace = true
 derive-new.workspace = true
+# Linebender IR stack — core dependencies (not optional)
+peniko = { workspace = true }
+parley = { workspace = true }
 
 # GeoRust spatial types (optional)
 geo = { workspace = true, optional = true }

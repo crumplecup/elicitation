@@ -61,6 +61,7 @@ pub mod node_roles {
     pub use crate::contracts::node_roles::*;
 }
 mod spatial;
+pub mod text;
 pub mod traits;
 mod types;
 mod typestate;
@@ -262,6 +263,10 @@ pub use palette::{
     PaletteBuilder, PaletteColors, SemanticRole, suggest_compliant,
 };
 pub use spatial::{BoundingBox, LayoutContext};
+pub use text::{
+    FontStyle, FontWeight, ParagraphText, RichText, TextAlign, TextDecoration, TextLine,
+    TextModifier, TextSpan, TextStyle, UiColor,
+};
 pub use traits::{
     RenderContext, RenderVerifiable, UiBackend, UiEventBridge, UiEventDispatcher, UiInspector,
     UiLayoutManager, UiNavigationManager, UiNodeBridge, UiRenderBackend, UiRenderer,

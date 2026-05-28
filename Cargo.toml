@@ -195,6 +195,9 @@ async-trait = "0.1"
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
+# Linebender IR stack — core elicit_ui deps (not optional)
+peniko = { version = "0.6", features = ["serde"] }
+parley = { version = "0.9", default-features = false, features = ["std"] }
 egui = { version = "0.34", features = ["serde"] }
 egui-winit = { version = "0.34" }
 egui-wgpu = { version = "0.34", features = ["winit"] }
