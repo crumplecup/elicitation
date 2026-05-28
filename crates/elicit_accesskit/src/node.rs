@@ -189,6 +189,16 @@ pub struct NodeJson {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub is_selected: Option<bool>,
 
+    // ── Render IR extension ──────────────────────────────────────────────────
+    /// Rich-text render payload (serialised [`elicit_ui::ParagraphText`]).
+    ///
+    /// When set on a `Paragraph` node, the render backend uses this for
+    /// per-span styling instead of applying a whole-widget style.  The value
+    /// is stored as raw JSON so `elicit_accesskit` stays independent of
+    /// `elicit_ui`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rich_text: Option<serde_json::Value>,
+
     // ── Enum state properties ────────────────────────────────────────────────
     /// Whether the input value is invalid, and why.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -473,6 +483,7 @@ impl NodeJson {
             is_visited: false,
             is_touch_transparent: false,
             is_selected: None,
+            rich_text: None,
             invalid: None,
             toggled: None,
             orientation: None,
@@ -642,6 +653,15 @@ impl NodeJson {
         self.is_selected = Some(v);
         self
     }
+
+    /// Attaches a rich-text render payload (serialised `elicit_ui::ParagraphText`).
+    ///
+    /// When set, the ratatui bridge renders this as a styled `Paragraph`
+    /// with per-span colours instead of highlighting the whole widget.
+    pub fn with_rich_text_value(mut self, value: serde_json::Value) -> Self {
+        self.rich_text = Some(value);
+        self
+    }
 }
 
 // ── From<&accesskit::Node> ────────────────────────────────────────────────────
@@ -715,6 +735,7 @@ impl From<&accesskit::Node> for NodeJson {
             is_visited: n.is_visited(),
             is_touch_transparent: n.is_touch_transparent(),
             is_selected: n.is_selected(),
+            rich_text: None,
             invalid: n.invalid().map(Invalid),
             toggled: n.toggled().map(Toggled),
             orientation: n.orientation().map(Orientation),
@@ -832,7 +853,13 @@ impl From<NodeJson> for accesskit::Node {
         if let Some(v) = j.author_id {
             n.set_author_id(v);
         }
-        if let Some(v) = j.class_name {
+        // Encode rich_text as a class_name sentinel so the ratatui bridge can
+        // recover it from the accesskit::Node (which has no native rich_text slot).
+        if let Some(rt_value) = j.rich_text {
+            if let Ok(encoded) = serde_json::to_string(&rt_value) {
+                n.set_class_name(format!("__rich_text__:{encoded}"));
+            }
+        } else if let Some(v) = j.class_name {
             n.set_class_name(v);
         }
         if let Some(v) = j.html_tag {
