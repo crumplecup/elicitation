@@ -17,7 +17,7 @@ pub use elicit_ui::verify_in_debug as ratatui_verify_in_debug;
 ///
 /// Wrap the buffer reference produced by `Frame::buffer_mut()` (or any
 /// in-memory buffer used in unit tests) to run [`RenderVerifiable`]
-/// implementations via [`verify_in_debug`].
+/// implementations via [`elicit_ui::verify_in_debug`].
 pub struct RatatuiRenderContext<'a> {
     buf: &'a Buffer,
 }
