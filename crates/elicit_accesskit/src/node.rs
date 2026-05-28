@@ -190,7 +190,7 @@ pub struct NodeJson {
     pub is_selected: Option<bool>,
 
     // ── Render IR extension ──────────────────────────────────────────────────
-    /// Rich-text render payload (serialised [`elicit_ui::ParagraphText`]).
+    /// Rich-text render payload (serialised `elicit_ui::ParagraphText`).
     ///
     /// When set on a `Paragraph` node, the render backend uses this for
     /// per-span styling instead of applying a whole-widget style.  The value
