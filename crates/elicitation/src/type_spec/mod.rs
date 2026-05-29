@@ -34,7 +34,7 @@ mod collections;
 mod csv_specs;
 mod datetime_specs;
 mod egui_specs;
-#[cfg(feature = "polars-types")]
+#[cfg(feature = "egui-winit-types")]
 mod egui_winit_specs;
 mod elicit_spec;
 mod float_contracts;
@@ -69,6 +69,7 @@ mod strings;
 mod toml_specs;
 mod tower_specs;
 pub mod type_spec_plugin;
+#[cfg(feature = "uom-types")]
 mod uom_specs;
 mod url_specs;
 mod uuid_specs;

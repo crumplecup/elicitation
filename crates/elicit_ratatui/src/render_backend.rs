@@ -93,7 +93,11 @@ fn rich_text_to_paragraph_text(raw: serde_json::Value) -> ParagraphText {
             let lines = rich.lines.into_iter().map(ui_line_to_json).collect();
             let style = rich.style.as_ref().map(ui_style_to_json);
             let alignment = rich.alignment.map(ui_align_to_json);
-            ParagraphText::Rich(TextJson { lines, style, alignment })
+            ParagraphText::Rich(TextJson {
+                lines,
+                style,
+                alignment,
+            })
         }
     }
 }
@@ -141,7 +145,11 @@ fn ui_color_to_json(color: &UiColor) -> crate::serde_types::ColorJson {
         UiColor::LightMagenta => ColorJson::LightMagenta,
         UiColor::LightCyan => ColorJson::LightCyan,
         UiColor::Gray => ColorJson::Gray,
-        UiColor::Rgb { r, g, b } => ColorJson::Rgb { r: *r, g: *g, b: *b },
+        UiColor::Rgb { r, g, b } => ColorJson::Rgb {
+            r: *r,
+            g: *g,
+            b: *b,
+        },
         UiColor::Indexed { index } => ColorJson::Indexed { index: *index },
     }
 }

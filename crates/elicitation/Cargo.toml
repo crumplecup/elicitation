@@ -187,7 +187,7 @@ cli = ["dep:clap", "dep:walkdir", "clap-types", "csv-types", "chrono", "shellexp
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
-accesskit = ["dep:accesskit"]
+accesskit = ["dep:accesskit", "uuid"]
 egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
