@@ -232,8 +232,8 @@ surrealdb = { version = "3.0.5", features = [
   "scripting",
 ] }
 rust_decimal = "1"
-sqlx-core = "0.9"
-sqlx = { version = "0.9", features = [
+sqlx-core = "0.8"
+sqlx = { version = "0.8", features = [
   "runtime-tokio",
   "tls-native-tls",
   "any",

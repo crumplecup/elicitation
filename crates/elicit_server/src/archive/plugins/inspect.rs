@@ -484,7 +484,7 @@ pub async fn explain_sql_direct(
 
     let explain_sql = format!("EXPLAIN (ANALYZE, FORMAT JSON) {sql}");
 
-    let rows = sqlx::query(sqlx::AssertSqlSafe(explain_sql))
+    let rows = sqlx::query(&explain_sql)
         .fetch_all(&pool)
         .await
         .map_err(|e| format!("EXPLAIN failed: {e}"))?;

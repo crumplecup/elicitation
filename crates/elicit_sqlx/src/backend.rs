@@ -149,9 +149,9 @@ fn any_row_to_db_row(row: &AnyRow) -> DbRow {
 // ── Parameter binding ─────────────────────────────────────────────────────────
 
 fn bind_spatial_value<'q>(
-    q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments>,
-    value: &DbSpatialValue,
-) -> sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments> {
+    q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>>,
+    value: &'q DbSpatialValue,
+) -> sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>> {
     match value {
         DbSpatialValue::Wkt(text) => q.bind(text.as_str()),
         DbSpatialValue::Wkb(bytes) => q.bind(bytes.as_slice()),
@@ -159,9 +159,9 @@ fn bind_spatial_value<'q>(
 }
 
 fn bind_params<'q>(
-    mut q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments>,
-    params: &[DbValue],
-) -> sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments> {
+    mut q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>>,
+    params: &'q [DbValue],
+) -> sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>> {
     for param in params {
         match param {
             DbValue::Null => q = q.bind(Option::<String>::None),
@@ -403,7 +403,7 @@ impl DbServerAdmin for SqlxDbBackend {
     fn install_extension(&self, name: &str) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"CREATE EXTENSION IF NOT EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -433,7 +433,7 @@ impl DbDatabaseManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<(Established<DatabaseCreated>, Established<AuditLogged>)>> {
         let sql = format!(r#"CREATE DATABASE "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -445,7 +445,7 @@ impl DbDatabaseManager for SqlxDbBackend {
     fn drop_database(&self, name: &str) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"DROP DATABASE IF EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -477,7 +477,7 @@ impl DbDatabaseManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"ALTER DATABASE "{from}" RENAME TO "{to}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -510,7 +510,7 @@ impl DbSchemaManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<(Established<SchemaCreated>, Established<AuditLogged>)>> {
         let sql = format!(r#"CREATE SCHEMA IF NOT EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -527,7 +527,7 @@ impl DbSchemaManager for SqlxDbBackend {
         let modifier = if cascade { "CASCADE" } else { "RESTRICT" };
         let sql = format!(r#"DROP SCHEMA IF EXISTS "{name}" {modifier}"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -609,7 +609,7 @@ impl DbTableManager for SqlxDbBackend {
         let col_str = col_defs.join(", ");
         let sql = format!(r#"CREATE TABLE IF NOT EXISTS "{schema}"."{name}" ({col_str})"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -630,7 +630,7 @@ impl DbTableManager for SqlxDbBackend {
             format!(r#"DROP TABLE IF EXISTS "{schema}"."{name}""#)
         };
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -699,7 +699,7 @@ impl DbTableManager for SqlxDbBackend {
             sql.push_str(&format!(" DEFAULT {default}"));
         }
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -716,7 +716,7 @@ impl DbTableManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"ALTER TABLE "{schema}"."{table}" DROP COLUMN IF EXISTS "{column}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -733,7 +733,7 @@ impl DbTableManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"ALTER TABLE "{schema}"."{from}" RENAME TO "{to}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -749,7 +749,7 @@ impl DbTableManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"TRUNCATE TABLE "{schema}"."{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -770,7 +770,7 @@ impl DbQueryExecutor for SqlxDbBackend {
         let sql = sql.to_string();
         let params = params.to_vec();
         Box::pin(async move {
-            let q = bind_params(sqlx::query(sqlx::AssertSqlSafe(sql)), &params);
+            let q = bind_params(sqlx::query(&sql), &params);
             let result = q.execute(&self.pool).await.map_err(sqlx_err)?;
             Ok((result.rows_affected(), Established::assert()))
         })
@@ -785,7 +785,7 @@ impl DbQueryExecutor for SqlxDbBackend {
         let sql = sql.to_string();
         let params = params.to_vec();
         Box::pin(async move {
-            let q = bind_params(sqlx::query(sqlx::AssertSqlSafe(sql)), &params);
+            let q = bind_params(sqlx::query(&sql), &params);
             let rows = q.fetch_all(&self.pool).await.map_err(sqlx_err)?;
             let affected = rows.len() as u64;
             let db_rows: Vec<DbRow> = rows.iter().map(any_row_to_db_row).collect();
@@ -807,7 +807,7 @@ impl DbQueryExecutor for SqlxDbBackend {
             format!("EXPLAIN {sql}")
         };
         Box::pin(async move {
-            let rows = sqlx::query(sqlx::AssertSqlSafe(explain_sql))
+            let rows = sqlx::query(&explain_sql)
                 .fetch_all(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -849,11 +849,11 @@ impl DbQueryExecutor for SqlxDbBackend {
                 .await
                 .map_err(sqlx_err)?;
             let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation}");
-            sqlx::query(sqlx::AssertSqlSafe(iso_sql))
+            sqlx::query(&iso_sql)
                 .execute(&mut *conn)
                 .await
                 .map_err(sqlx_err)?;
-            let q = bind_params(sqlx::query(sqlx::AssertSqlSafe(sql)), &params);
+            let q = bind_params(sqlx::query(&sql), &params);
             let result = q.execute(&mut *conn).await.map_err(sqlx_err)?;
             let affected = result.rows_affected();
             sqlx::query("COMMIT")
@@ -881,7 +881,7 @@ impl DbTransactor for SqlxDbBackend {
                 .await
                 .map_err(sqlx_err)?;
             let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation}");
-            sqlx::query(sqlx::AssertSqlSafe(iso_sql))
+            sqlx::query(&iso_sql)
                 .execute(&mut *conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -964,7 +964,7 @@ impl DbTransactor for SqlxDbBackend {
             let conn = conn_opt
                 .as_mut()
                 .ok_or_else(|| tx_err("transaction already consumed"))?;
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&mut **conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -992,7 +992,7 @@ impl DbTransactor for SqlxDbBackend {
             let conn = conn_opt
                 .as_mut()
                 .ok_or_else(|| tx_err("transaction already consumed"))?;
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&mut **conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -1015,7 +1015,7 @@ impl DbIndexManager for SqlxDbBackend {
         let cols = columns.join(", ");
         let sql = format!(r#"CREATE {unique_kw}INDEX ON "{table}" ({cols})"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1027,7 +1027,7 @@ impl DbIndexManager for SqlxDbBackend {
     fn drop_index(&self, name: &str) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"DROP INDEX IF EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1070,7 +1070,7 @@ impl DbIndexManager for SqlxDbBackend {
     fn reindex(&self, table: &str) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"REINDEX TABLE "{table}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1097,7 +1097,7 @@ impl DbRoleManager for SqlxDbBackend {
             sql.push_str(" SUPERUSER");
         }
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1109,7 +1109,7 @@ impl DbRoleManager for SqlxDbBackend {
     fn drop_role(&self, name: &str) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"DROP ROLE IF EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1156,7 +1156,7 @@ impl DbRoleManager for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<(Established<AccessAuthorized>, Established<AuditLogged>)>> {
         let sql = format!(r#"GRANT {privilege} ON {on} TO "{to}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1179,7 +1179,7 @@ impl DbRoleManager for SqlxDbBackend {
     > {
         let sql = format!(r#"REVOKE {privilege} ON {on} FROM "{from}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1214,7 +1214,7 @@ impl DbMonitor for SqlxDbBackend {
                 "{STAT_ACTIVITY_SQL} WHERE \
                  extract(epoch from now()-query_start)*1000 > $1"
             );
-            let rows = sqlx::query(sqlx::AssertSqlSafe(sql))
+            let rows = sqlx::query(&sql)
                 .bind(threshold_ms as i64)
                 .fetch_all(&self.pool)
                 .await
@@ -1394,7 +1394,7 @@ impl DbRoutineFactory for SqlxDbBackend {
             r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS {return_type} LANGUAGE {language} AS $body${body}$body$"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1411,7 +1411,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<(Established<FunctionDropped>, Established<AuditLogged>)>> {
         let sql = format!(r#"DROP FUNCTION IF EXISTS "{schema}"."{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1443,7 +1443,7 @@ impl DbRoutineFactory for SqlxDbBackend {
             r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS {return_type} LANGUAGE {language} AS $body${body}$body$"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1471,7 +1471,7 @@ impl DbRoutineFactory for SqlxDbBackend {
             r#"CREATE OR REPLACE PROCEDURE "{schema}"."{name}"() LANGUAGE {language} AS $body${body}$body$"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1488,7 +1488,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<(Established<ProcedureDropped>, Established<AuditLogged>)>> {
         let sql = format!(r#"DROP PROCEDURE IF EXISTS "{schema}"."{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1505,7 +1505,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     {
         let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL SAFE"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1527,7 +1527,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     > {
         let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL RESTRICTED"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1549,7 +1549,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     > {
         let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL UNSAFE"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1571,7 +1571,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     > {
         let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" SECURITY DEFINER"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1593,7 +1593,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     > {
         let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" SECURITY INVOKER"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1609,7 +1609,7 @@ impl DbRoutineFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AnonymousBlockExecuted>>> {
         let sql = format!("DO LANGUAGE {language} $anon${body}$anon$");
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1637,7 +1637,7 @@ impl DbRoutineFactory for SqlxDbBackend {
             r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS trigger LANGUAGE {language} AS $body${body}$body$"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1833,7 +1833,7 @@ impl DbConstraintFactory for SqlxDbBackend {
             r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" CHECK ({expression})"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1855,7 +1855,7 @@ impl DbConstraintFactory for SqlxDbBackend {
             .join(", ");
         let sql = format!(r#"ALTER TABLE "{schema}"."{table}" ADD PRIMARY KEY ({col_list})"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1886,7 +1886,7 @@ impl DbConstraintFactory for SqlxDbBackend {
             r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" UNIQUE ({col_list})"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1918,7 +1918,7 @@ impl DbConstraintFactory for SqlxDbBackend {
             r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" FOREIGN KEY ({col_list}) REFERENCES "{schema}"."{referenced_table}" ({ref_col_list})"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1942,7 +1942,7 @@ impl DbConstraintFactory for SqlxDbBackend {
         let sql =
             format!(r#"ALTER TABLE "{schema}"."{table}" ALTER COLUMN "{column}" SET NOT NULL"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -1959,7 +1959,7 @@ impl DbConstraintFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
         let sql = format!(r#"ALTER TABLE "{schema}"."{table}" DROP CONSTRAINT IF EXISTS "{name}""#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2011,7 +2011,7 @@ impl DbConstraintMeta for SqlxDbBackend {
         let table = table.to_string();
         Box::pin(async move {
             let sql = format!(r#"SELECT count(*) FROM "{schema}"."{table}""#);
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .fetch_one(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2175,7 +2175,7 @@ impl DbIsolationFactory for SqlxDbBackend {
                 .await
                 .map_err(sqlx_err)?;
             let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation} READ ONLY");
-            sqlx::query(sqlx::AssertSqlSafe(iso_sql))
+            sqlx::query(&iso_sql)
                 .execute(&mut *conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -2210,7 +2210,7 @@ impl DbIsolationFactory for SqlxDbBackend {
                 .await
                 .map_err(sqlx_err)?;
             let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation} READ WRITE");
-            sqlx::query(sqlx::AssertSqlSafe(iso_sql))
+            sqlx::query(&iso_sql)
                 .execute(&mut *conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -2232,7 +2232,7 @@ impl DbIsolationFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<SessionIsolationLevelSet>>> {
         let sql = format!("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL {level}");
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2260,7 +2260,7 @@ impl DbIsolationFactory for SqlxDbBackend {
             let conn = conn_opt
                 .as_mut()
                 .ok_or_else(|| tx_err("transaction already consumed"))?;
-            sqlx::query(sqlx::AssertSqlSafe(iso_sql))
+            sqlx::query(&iso_sql)
                 .execute(&mut **conn)
                 .await
                 .map_err(sqlx_err)?;
@@ -2321,7 +2321,7 @@ impl DbSecurityFactory for SqlxDbBackend {
     > {
         let sql = format!(r#"ALTER TABLE "{schema}"."{table}" ENABLE ROW LEVEL SECURITY"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2347,7 +2347,7 @@ impl DbSecurityFactory for SqlxDbBackend {
             r#"CREATE POLICY "{policy_name}" ON "{schema}"."{table}" USING ({using_expr})"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2374,7 +2374,7 @@ impl DbSecurityFactory for SqlxDbBackend {
     ) -> BoxFuture<'_, DbResult<Established<SessionTimeoutEnforced>>> {
         let sql = format!("SET idle_session_timeout = '{timeout_ms}ms'");
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2531,7 +2531,7 @@ impl DbReplicationFactory for SqlxDbBackend {
         };
         let sql = format!(r#"CREATE PUBLICATION "{name}" {tables_clause}"#);
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
@@ -2563,7 +2563,7 @@ impl DbReplicationFactory for SqlxDbBackend {
             r#"CREATE SUBSCRIPTION "{name}" CONNECTION '{conn_info}' PUBLICATION {pub_list}"#
         );
         Box::pin(async move {
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::query(&sql)
                 .execute(&self.pool)
                 .await
                 .map_err(sqlx_err)?;
