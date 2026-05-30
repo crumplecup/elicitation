@@ -100,7 +100,6 @@ impl ProvableFrom<ConnectionEstablished> for ArchiveConnectionConsistent {}
 /// there are no cross-field constraints to enforce.  Strings (profile names,
 /// paths, error messages) are accepted as given by callers; the VSM does not
 /// validate them.  This invariant is intentionally `true`.
-#[cfg(kani)]
 pub fn archive_connection_consistent(_state: &ArchiveConnectionState) -> bool {
     true
 }

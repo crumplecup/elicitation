@@ -273,7 +273,6 @@ impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}
 /// enabling `#[kani::proof_for_contract]` closure proofs.
 ///
 /// Invariant: `SqlEditor` cannot hold a result while a query is running.
-#[cfg(kani)]
 pub fn archive_panel_consistent(state: &ArchivePanelState) -> bool {
     match state {
         ArchivePanelState::SqlEditor {

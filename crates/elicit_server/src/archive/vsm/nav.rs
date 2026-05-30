@@ -79,7 +79,6 @@ impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}
 ///
 /// Invariant: `NavFiltered` always holds a non-empty filter string.
 /// `apply_filter` only creates `NavFiltered` when `!filter.is_empty()`.
-#[cfg(kani)]
 pub fn archive_nav_consistent(state: &ArchiveNavState) -> bool {
     match state {
         ArchiveNavState::NavFiltered { filter, .. } => !filter.is_empty(),
