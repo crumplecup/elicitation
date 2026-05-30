@@ -125,8 +125,8 @@ impl ElicitPlugin for SqlxPlugin {
                 }
 
                 "execute" => {
-                    let sql = require_sql(&p)?;
-                    match sqlx::query(sql).execute(&pool).await {
+                    let sql = require_sql(&p)?.to_owned();
+                    match sqlx::query(sqlx::AssertSqlSafe(sql)).execute(&pool).await {
                         Ok(result) => {
                             let data = QueryResultData {
                                 rows_affected: result.rows_affected,
@@ -141,8 +141,8 @@ impl ElicitPlugin for SqlxPlugin {
                 }
 
                 "fetch_all" => {
-                    let sql = require_sql(&p)?;
-                    match sqlx::query(sql).fetch_all(&pool).await {
+                    let sql = require_sql(&p)?.to_owned();
+                    match sqlx::query(sqlx::AssertSqlSafe(sql)).fetch_all(&pool).await {
                         Ok(rows) => {
                             let data: Vec<_> = rows
                                 .into_iter()
@@ -157,8 +157,8 @@ impl ElicitPlugin for SqlxPlugin {
                 }
 
                 "fetch_one" => {
-                    let sql = require_sql(&p)?;
-                    match sqlx::query(sql).fetch_one(&pool).await {
+                    let sql = require_sql(&p)?.to_owned();
+                    match sqlx::query(sqlx::AssertSqlSafe(sql)).fetch_one(&pool).await {
                         Ok(row) => {
                             let data = AnyRow::from(row).to_row_data();
                             let json = serde_json::to_string(&data)
@@ -170,8 +170,11 @@ impl ElicitPlugin for SqlxPlugin {
                 }
 
                 "fetch_optional" => {
-                    let sql = require_sql(&p)?;
-                    match sqlx::query(sql).fetch_optional(&pool).await {
+                    let sql = require_sql(&p)?.to_owned();
+                    match sqlx::query(sqlx::AssertSqlSafe(sql))
+                        .fetch_optional(&pool)
+                        .await
+                    {
                         Ok(maybe_row) => {
                             let data = maybe_row.map(|r| AnyRow::from(r).to_row_data());
                             let json = serde_json::to_string(&data)

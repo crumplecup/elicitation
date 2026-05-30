@@ -595,7 +595,7 @@ fn decode_any_row(row: &AnyRow) -> RowData {
 }
 
 /// Bind JSON args into `sqlx::any::AnyArguments`.
-fn any_args_from_json(args: &[serde_json::Value]) -> sqlx::any::AnyArguments<'static> {
+fn any_args_from_json(args: &[serde_json::Value]) -> sqlx::any::AnyArguments {
     use sqlx::Arguments as _;
     let mut out = sqlx::any::AnyArguments::default();
     for val in args {
@@ -696,11 +696,16 @@ async fn wf_execute(
     p: WfPoolSqlParams,
 ) -> Result<CallToolResult, ErrorData> {
     let result = if p.args.is_empty() {
-        sqlx::query(&p.sql).execute(&ctx.pool).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .execute(&ctx.pool)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .execute(&ctx.pool)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<QueryExecuted> = Established::assert();
@@ -723,11 +728,16 @@ async fn wf_fetch_all(
     p: WfFetchAllParams,
 ) -> Result<CallToolResult, ErrorData> {
     let rows = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_all(&ctx.pool).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_all(&ctx.pool)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_all(&ctx.pool)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<RowsFetched> = Established::assert();
@@ -748,11 +758,16 @@ async fn wf_fetch_one(
     p: WfFetchOneParams,
 ) -> Result<CallToolResult, ErrorData> {
     let row = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_one(&ctx.pool).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_one(&ctx.pool)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_one(&ctx.pool)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<RowsFetched> = Established::assert();
@@ -771,11 +786,16 @@ async fn wf_fetch_optional(
     p: WfFetchOptionalParams,
 ) -> Result<CallToolResult, ErrorData> {
     let maybe = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_optional(&ctx.pool).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_optional(&ctx.pool)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_optional(&ctx.pool)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let data: Option<RowData> = maybe.as_ref().map(decode_any_row);
@@ -883,11 +903,16 @@ async fn wf_tx_execute(ctx: Arc<SqlxTxCtx>, p: WfTxSqlParams) -> Result<CallTool
         .as_mut()
         .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
     let result = if p.args.is_empty() {
-        sqlx::query(&p.sql).execute(&mut **tx).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .execute(&mut **tx)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .execute(&mut **tx)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<QueryExecuted> = Established::assert();
@@ -914,11 +939,16 @@ async fn wf_tx_fetch_all(
         .as_mut()
         .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
     let rows = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_all(&mut **tx).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_all(&mut **tx)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_all(&mut **tx)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<RowsFetched> = Established::assert();
@@ -943,11 +973,16 @@ async fn wf_tx_fetch_one(
         .as_mut()
         .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
     let row = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_one(&mut **tx).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_one(&mut **tx)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_one(&mut **tx)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let _proof: Established<RowsFetched> = Established::assert();
@@ -970,11 +1005,16 @@ async fn wf_tx_fetch_optional(
         .as_mut()
         .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
     let maybe = if p.args.is_empty() {
-        sqlx::query(&p.sql).fetch_optional(&mut **tx).await
-    } else {
-        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+        sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
             .fetch_optional(&mut **tx)
             .await
+    } else {
+        sqlx::query_with(
+            sqlx::AssertSqlSafe(p.sql.clone()),
+            any_args_from_json(&p.args),
+        )
+        .fetch_optional(&mut **tx)
+        .await
     }
     .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     let data: Option<RowData> = maybe.as_ref().map(decode_any_row);
@@ -1566,11 +1606,16 @@ impl SqlxWorkflowPlugin {
             .cloned()
             .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
         let result = if args.is_empty() {
-            sqlx::query(sql).execute(&pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .execute(&pool)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .execute(&pool)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((
@@ -1598,11 +1643,16 @@ impl SqlxWorkflowPlugin {
             .cloned()
             .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
         let rows = if args.is_empty() {
-            sqlx::query(sql).fetch_all(&pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_all(&pool)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_all(&pool)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((
@@ -1627,11 +1677,16 @@ impl SqlxWorkflowPlugin {
             .cloned()
             .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
         let row = if args.is_empty() {
-            sqlx::query(sql).fetch_one(&pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_one(&pool)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_one(&pool)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((decode_any_row(&row), Established::assert()))
@@ -1653,11 +1708,16 @@ impl SqlxWorkflowPlugin {
             .cloned()
             .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
         let maybe = if args.is_empty() {
-            sqlx::query(sql).fetch_optional(&pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_optional(&pool)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_optional(&pool)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok(maybe.as_ref().map(decode_any_row))
@@ -1747,11 +1807,16 @@ impl SqlxWorkflowPlugin {
             .as_mut()
             .ok_or_else(|| "transaction not available".to_string())?;
         let result = if args.is_empty() {
-            sqlx::query(sql).execute(&mut **tx).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .execute(&mut **tx)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .execute(&mut **tx)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((
@@ -1783,11 +1848,16 @@ impl SqlxWorkflowPlugin {
             .as_mut()
             .ok_or_else(|| "transaction not available".to_string())?;
         let rows = if args.is_empty() {
-            sqlx::query(sql).fetch_all(&mut **tx).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_all(&mut **tx)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_all(&mut **tx)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((
@@ -1816,11 +1886,16 @@ impl SqlxWorkflowPlugin {
             .as_mut()
             .ok_or_else(|| "transaction not available".to_string())?;
         let row = if args.is_empty() {
-            sqlx::query(sql).fetch_one(&mut **tx).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_one(&mut **tx)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_one(&mut **tx)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok((decode_any_row(&row), Established::assert()))
@@ -1846,11 +1921,16 @@ impl SqlxWorkflowPlugin {
             .as_mut()
             .ok_or_else(|| "transaction not available".to_string())?;
         let maybe = if args.is_empty() {
-            sqlx::query(sql).fetch_optional(&mut **tx).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
+            sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
                 .fetch_optional(&mut **tx)
                 .await
+        } else {
+            sqlx::query_with(
+                sqlx::AssertSqlSafe(sql.to_owned()),
+                any_args_from_json(args),
+            )
+            .fetch_optional(&mut **tx)
+            .await
         }
         .map_err(|e| e.to_string())?;
         Ok(maybe.as_ref().map(decode_any_row))

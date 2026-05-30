@@ -354,7 +354,7 @@ pub fn pg_args_from_json(args: &[serde_json::Value]) -> sqlx::postgres::PgArgume
 }
 
 /// Bind a slice of [`serde_json::Value`] into [`sqlx::sqlite::SqliteArguments`].
-pub fn sqlite_args_from_json(args: &[serde_json::Value]) -> sqlx::sqlite::SqliteArguments<'static> {
+pub fn sqlite_args_from_json(args: &[serde_json::Value]) -> sqlx::sqlite::SqliteArguments {
     use sqlx::Arguments as _;
     let mut out = sqlx::sqlite::SqliteArguments::default();
     for v in args {
@@ -646,11 +646,16 @@ macro_rules! impl_driver_plugin {
                                 })?
                             };
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).execute(&pool).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .execute(&pool)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .execute(&pool)
+                                .await
                             };
                             match result {
                                 Ok(r) => Ok(json_result(&$build_result(r))),
@@ -669,11 +674,16 @@ macro_rules! impl_driver_plugin {
                                 })?
                             };
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_all(&pool).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_all(&pool)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_all(&pool)
+                                .await
                             };
                             match result {
                                 Ok(rows) => {
@@ -695,11 +705,16 @@ macro_rules! impl_driver_plugin {
                                 })?
                             };
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_one(&pool).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_one(&pool)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_one(&pool)
+                                .await
                             };
                             match result {
                                 Ok(row) => Ok(json_result(&$decode_row(&row))),
@@ -718,11 +733,16 @@ macro_rules! impl_driver_plugin {
                                 })?
                             };
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_optional(&pool).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_optional(&pool)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_optional(&pool)
+                                .await
                             };
                             match result {
                                 Ok(maybe) => {
@@ -797,11 +817,16 @@ macro_rules! impl_driver_plugin {
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).execute(&mut *tx).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .execute(&mut *tx)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .execute(&mut *tx)
+                                .await
                             };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
@@ -819,11 +844,16 @@ macro_rules! impl_driver_plugin {
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_all(&mut *tx).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_all(&mut *tx)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_all(&mut *tx)
+                                .await
                             };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
@@ -844,11 +874,16 @@ macro_rules! impl_driver_plugin {
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_one(&mut *tx).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_one(&mut *tx)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_one(&mut *tx)
+                                .await
                             };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
@@ -866,11 +901,16 @@ macro_rules! impl_driver_plugin {
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
                             let result = if p.args.is_empty() {
-                                sqlx::query(&p.sql).fetch_optional(&mut *tx).await
-                            } else {
-                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
                                     .fetch_optional(&mut *tx)
                                     .await
+                            } else {
+                                sqlx::query_with(
+                                    sqlx::AssertSqlSafe(p.sql.clone()),
+                                    $args_from_json(&p.args),
+                                )
+                                .fetch_optional(&mut *tx)
+                                .await
                             };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
