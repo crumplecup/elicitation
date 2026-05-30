@@ -58,10 +58,6 @@ exclude = [
   # surrealdb-core pins i_overlay ^4.0 which conflicts with geo 0.33 (needs i_overlay ^4.5).
   # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
   "crates/elicit_surrealdb",
-  # vendored copy of surrealdb-types (patched to allow geo 0.33). Exclude from
-  # workspace membership so `--workspace --all-targets` does not lint its test
-  # targets (which contain third-party unwrap() calls we cannot change).
-  "vendor/surrealdb-types-3.0.5",
 ]
 resolver = "2"
 
@@ -215,12 +211,8 @@ eframe = { version = "0.34", default-features = false, features = [
 
 # ── Database ──────────────────────────────────────────────────────────────────
 redb = "4"
-# surrealdb-types 3.x pins geo = "^0.32" but our workspace uses geo 0.33.
-# We vendor the crate and change that pin to 0.33 to unify the dep graph.
-# The [patch.crates-io] table below ensures surrealdb-core also resolves to
-# this vendored copy (and therefore geo 0.33) rather than the upstream one.
-surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
-surrealdb = { version = "3.0.5", features = [
+surrealdb-types = "3.1.2"
+surrealdb = { version = "3.1.2", features = [
   "protocol-ws",
   "protocol-http",
   "rustls",
