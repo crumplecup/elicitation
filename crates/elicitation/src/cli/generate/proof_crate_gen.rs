@@ -352,6 +352,10 @@ fn patch_module_tree_kani_reexports(
 
         std::fs::write(mod_file, &new_content)
             .with_context(|| format!("Cannot write {}", mod_file.display()))?;
+        let _ = std::process::Command::new("rustfmt")
+            .arg("--edition=2024")
+            .arg(mod_file)
+            .status();
         tracing::info!("Patched {}", mod_file.display());
     }
 
