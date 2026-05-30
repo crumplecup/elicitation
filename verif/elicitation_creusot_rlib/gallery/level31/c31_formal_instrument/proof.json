@@ -1,8 +1,0 @@
-{
-  "profile": [],
-  "proofs": {
-    "Coma": {
-      "vc_c31_formal_instrument": { "prover": "cvc4@1.8", "time": 0.015 }
-    }
-  }
-}
