@@ -136,6 +136,9 @@ pub use vsm::{
     saved_ready,
 };
 // BEGIN ELICITATION KANI REEXPORTS — DO NOT EDIT
+pub use vsm::abort_edits_kani_contracted;
+pub use vsm::admin_ready_kani_contracted;
+pub use vsm::apply_filter_kani_contracted;
 #[cfg(kani)]
 pub use vsm::archive_connection_consistent;
 #[cfg(kani)]
@@ -144,9 +147,6 @@ pub use vsm::archive_nav_consistent;
 pub use vsm::archive_overlay_consistent;
 #[cfg(kani)]
 pub use vsm::archive_panel_consistent;
-pub use vsm::abort_edits_kani_contracted;
-pub use vsm::admin_ready_kani_contracted;
-pub use vsm::apply_filter_kani_contracted;
 pub use vsm::begin_connect_kv_kani_contracted;
 pub use vsm::begin_connect_sql_kani_contracted;
 pub use vsm::begin_edit_kani_contracted;

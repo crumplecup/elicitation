@@ -196,6 +196,13 @@ lint package='':
     set -uo pipefail
     LOG_FILE="/tmp/elicitation_lint.log"
     rm -f "$LOG_FILE"
+    echo "🎨 Checking formatting"
+    if ! cargo fmt --all -- --check 2>&1 | tee "$LOG_FILE"; then
+        echo ""
+        echo "⚠️  Formatting check failed. Full log saved to: $LOG_FILE"
+        exit 1
+    fi
+    rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
         if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
