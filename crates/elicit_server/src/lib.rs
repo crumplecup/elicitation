@@ -158,13 +158,9 @@ pub fn emit_dispatch_crate(
 pub use archive::abort_edits_kani_contracted;
 pub use archive::admin_ready_kani_contracted;
 pub use archive::apply_filter_kani_contracted;
-#[cfg(kani)]
 pub use archive::archive_connection_consistent;
-#[cfg(kani)]
 pub use archive::archive_nav_consistent;
-#[cfg(kani)]
 pub use archive::archive_overlay_consistent;
-#[cfg(kani)]
 pub use archive::archive_panel_consistent;
 pub use archive::begin_connect_kv_kani_contracted;
 pub use archive::begin_connect_sql_kani_contracted;
