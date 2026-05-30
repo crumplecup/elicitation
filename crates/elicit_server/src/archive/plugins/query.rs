@@ -174,7 +174,7 @@ pub struct PreviewTableParams {
 async fn execute(p: ExecuteQueryParams) -> Result<CallToolResult, ErrorData> {
     let pool = connect(&p.url).await?;
 
-    let rows = sqlx::query(&p.sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(p.sql.clone()))
         .fetch_all(&pool)
         .await
         .map_err(|e| ErrorData::internal_error(format!("query failed: {e}"), None))?;
@@ -205,7 +205,7 @@ async fn preview_table(p: PreviewTableParams) -> Result<CallToolResult, ErrorDat
         limit
     );
 
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql))
         .fetch_all(&pool)
         .await
         .map_err(|e| ErrorData::internal_error(format!("preview failed: {e}"), None))?;
@@ -351,9 +351,12 @@ async fn edit_row(p: EditRowParams) -> Result<CallToolResult, ErrorData> {
 
     for edit in &p.edits {
         let sql = build_sql(edit);
-        let result = sqlx::query(&sql).execute(&mut *tx).await.map_err(|e| {
-            ErrorData::internal_error(format!("edit failed: {e}\n  sql: {sql}"), None)
-        })?;
+        let result = sqlx::query(sqlx::AssertSqlSafe(sql.clone()))
+            .execute(&mut *tx)
+            .await
+            .map_err(|e| {
+                ErrorData::internal_error(format!("edit failed: {e}\n  sql: {sql}"), None)
+            })?;
         rows_affected.push(result.rows_affected());
     }
 
@@ -419,7 +422,7 @@ pub async fn preview_table_direct(
         effective_limit
     );
 
-    let rows = sqlx::query(&sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql))
         .fetch_all(&pool)
         .await
         .map_err(|e| format!("query failed: {e}"))?;
@@ -443,7 +446,7 @@ pub async fn execute_sql_direct(
         .await
         .map_err(|e| format!("connection failed: {e}"))?;
 
-    let rows = sqlx::query(sql)
+    let rows = sqlx::query(sqlx::AssertSqlSafe(sql.to_owned()))
         .fetch_all(&pool)
         .await
         .map_err(|e| format!("query failed: {e}"))?;

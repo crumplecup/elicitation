@@ -77,7 +77,7 @@ where
     pub fn locate_in_envelope(&self, envelope: RstarAabb) -> Vec<T> {
         let tree = self.runtime_tree();
         let envelope: AABB<[f64; 2]> = envelope.into();
-        tree.locate_in_envelope(&envelope).cloned().collect()
+        tree.locate_in_envelope(envelope).cloned().collect()
     }
 
     /// Returns all items whose envelopes intersect the given envelope.
@@ -85,7 +85,7 @@ where
     pub fn locate_in_envelope_intersecting(&self, envelope: RstarAabb) -> Vec<T> {
         let tree = self.runtime_tree();
         let envelope: AABB<[f64; 2]> = envelope.into();
-        tree.locate_in_envelope_intersecting(&envelope)
+        tree.locate_in_envelope_intersecting(envelope)
             .cloned()
             .collect()
     }
@@ -109,7 +109,7 @@ where
     #[tracing::instrument(skip(self))]
     pub fn nearest_neighbor(&self, point: [f64; 2]) -> Option<T> {
         let tree = self.runtime_tree();
-        tree.nearest_neighbor(&point).cloned()
+        tree.nearest_neighbor(point).cloned()
     }
 
     /// Returns all nearest neighbors tied for minimum distance to the query point.
@@ -126,7 +126,7 @@ where
     #[tracing::instrument(skip(self))]
     pub fn locate_all_at_point(&self, point: [f64; 2]) -> Vec<T> {
         let tree = self.runtime_tree();
-        tree.locate_all_at_point(&point).cloned().collect()
+        tree.locate_all_at_point(point).cloned().collect()
     }
 
     /// Returns all items within the given squared distance of the query point.
