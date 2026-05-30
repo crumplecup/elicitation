@@ -259,11 +259,14 @@ fn patch_module_tree_kani_reexports(
         let Some(inv) = &vsm.invariant else { continue };
         let Some(inv_fn) = &inv.kani_fn else { continue };
 
-        let items: Vec<String> = vsm
+        // (name, kani_only): contracted fns have both cfg branches in their compat
+        // mods so they can be re-exported unconditionally; the invariant fn is only
+        // available under #[cfg(kani)] at each module level, so it must carry the gate.
+        let items: Vec<(String, bool)> = vsm
             .transitions
             .iter()
-            .map(|t| format!("{t}_kani_contracted"))
-            .chain(std::iter::once(inv_fn.clone()))
+            .map(|t| (format!("{t}_kani_contracted"), false))
+            .chain(std::iter::once((inv_fn.clone(), true)))
             .collect();
 
         let module_path = derive_module_path(&vsm.source_file);
@@ -284,11 +287,13 @@ fn patch_module_tree_kani_reexports(
             };
 
             let next_mod = segments[level];
-            for item in &items {
-                patches
-                    .entry(mod_file.clone())
-                    .or_default()
-                    .insert(format!("pub use {next_mod}::{item};"));
+            for (item, kani_only) in &items {
+                let line = if *kani_only {
+                    format!("#[cfg(kani)]\npub use {next_mod}::{item};")
+                } else {
+                    format!("pub use {next_mod}::{item};")
+                };
+                patches.entry(mod_file.clone()).or_default().insert(line);
             }
         }
     }
