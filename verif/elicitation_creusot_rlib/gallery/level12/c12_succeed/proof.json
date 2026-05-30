@@ -2,8 +2,8 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_c12_succeed": { "prover": "cvc5@1.3.1", "time": 0.023 },
-      "vc_elim_Connecting": { "prover": "cvc5@1.3.1", "time": 0.011 }
+      "vc_c12_succeed": { "prover": "cvc5", "time": 0.023 },
+      "vc_elim_Connecting": { "prover": "cvc5", "time": 0.011 }
     }
   }
 }

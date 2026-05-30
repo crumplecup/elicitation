@@ -2,10 +2,7 @@
   "profile": [],
   "proofs": {
     "Coma": {
-      "vc_c23_open_connection_edit": {
-        "prover": "cvc5@1.3.1",
-        "time": 0.037
-      }
+      "vc_c23_open_connection_edit": { "prover": "cvc5", "time": 0.031 }
     }
   }
 }

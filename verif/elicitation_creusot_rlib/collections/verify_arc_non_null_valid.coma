@@ -9,7 +9,7 @@ let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creus
 let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 268 38 268 91
 let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 267 10 267 57
 let%span scollections'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 1492 4 1492 80
-let%span ssync = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/sync.rs" 58 18 58 35
+let%span ssync = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/sync.rs" 61 18 61 35
 
 use creusot.int.Int32
 use creusot.int.Int128
