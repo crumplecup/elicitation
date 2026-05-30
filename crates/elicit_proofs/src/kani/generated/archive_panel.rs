@@ -6,59 +6,15 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
+use elicit_server::abort_edits_kani_contracted;
+#[cfg(kani)]
+use elicit_server::admin_ready_kani_contracted;
+#[cfg(kani)]
 use elicit_server::archive::display::{
     AdminSnapshotMode, ConnectionProfileMode, ConstraintDescriptorMode, DdlDescriptorMode,
     ErdDiagramMode, ExplainNodeMode, IndexDescriptorMode, MonitorSnapshotMode,
     QueryHistoryEntryMode, QueryResultMode, SavedQueryMode,
 };
-#[cfg(kani)]
-use elicit_server::archive::vsm::archive_panel_consistent;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::abort_edits_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::admin_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::begin_edit_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::column_detail_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::commit_edits_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::constraints_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::data_grid_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::ddl_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::erd_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::explain_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::export_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::history_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::indexes_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::monitor_ready_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::open_connection_editor_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::open_export_panel_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::open_help_panel_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::open_saved_panel_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::open_sql_editor_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::panel_error_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::panel_loading_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::query_complete_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::panel::saved_ready_kani_contracted;
 #[cfg(kani)]
 use elicit_server::archive::{
     AdminSnapshot, ArchivePanelConsistent, ArchivePanelState, ConnectionProfile,
@@ -69,6 +25,50 @@ use elicit_server::archive::{
     open_connection_editor, open_export_panel, open_help_panel, open_saved_panel, open_sql_editor,
     panel_error, panel_loading, query_complete, saved_ready,
 };
+#[cfg(kani)]
+use elicit_server::archive_panel_consistent;
+#[cfg(kani)]
+use elicit_server::begin_edit_kani_contracted;
+#[cfg(kani)]
+use elicit_server::column_detail_kani_contracted;
+#[cfg(kani)]
+use elicit_server::commit_edits_kani_contracted;
+#[cfg(kani)]
+use elicit_server::constraints_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::data_grid_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::ddl_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::erd_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::explain_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::export_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::history_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::indexes_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::monitor_ready_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_connection_editor_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_export_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_help_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_saved_panel_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_sql_editor_kani_contracted;
+#[cfg(kani)]
+use elicit_server::panel_error_kani_contracted;
+#[cfg(kani)]
+use elicit_server::panel_loading_kani_contracted;
+#[cfg(kani)]
+use elicit_server::query_complete_kani_contracted;
+#[cfg(kani)]
+use elicit_server::saved_ready_kani_contracted;
 #[cfg(kani)]
 use elicitation::Established;
 

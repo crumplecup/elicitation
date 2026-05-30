@@ -135,3 +135,63 @@ pub use vsm::{
     saved_browser_up,
     saved_ready,
 };
+// BEGIN ELICITATION KANI REEXPORTS — DO NOT EDIT
+#[cfg(kani)]
+pub use vsm::archive_connection_consistent;
+#[cfg(kani)]
+pub use vsm::archive_nav_consistent;
+#[cfg(kani)]
+pub use vsm::archive_overlay_consistent;
+#[cfg(kani)]
+pub use vsm::archive_panel_consistent;
+pub use vsm::abort_edits_kani_contracted;
+pub use vsm::admin_ready_kani_contracted;
+pub use vsm::apply_filter_kani_contracted;
+pub use vsm::begin_connect_kv_kani_contracted;
+pub use vsm::begin_connect_sql_kani_contracted;
+pub use vsm::begin_edit_kani_contracted;
+pub use vsm::clear_filter_kani_contracted;
+pub use vsm::close_overlay_kani_contracted;
+pub use vsm::collapse_schema_kani_contracted;
+pub use vsm::column_detail_kani_contracted;
+pub use vsm::commit_edits_kani_contracted;
+pub use vsm::connection_error_kani_contracted;
+pub use vsm::constraints_ready_kani_contracted;
+pub use vsm::data_grid_ready_kani_contracted;
+pub use vsm::ddl_ready_kani_contracted;
+pub use vsm::disconnect_kani_contracted;
+pub use vsm::erd_ready_kani_contracted;
+pub use vsm::expand_schema_kani_contracted;
+pub use vsm::explain_ready_kani_contracted;
+pub use vsm::export_ready_kani_contracted;
+pub use vsm::finish_connect_kv_kani_contracted;
+pub use vsm::finish_connect_sql_kani_contracted;
+pub use vsm::history_ready_kani_contracted;
+pub use vsm::indexes_ready_kani_contracted;
+pub use vsm::load_nav_kani_contracted;
+pub use vsm::monitor_ready_kani_contracted;
+pub use vsm::move_cursor_down_kani_contracted;
+pub use vsm::move_cursor_up_kani_contracted;
+pub use vsm::nav_loaded_kani_contracted;
+pub use vsm::nav_refresh_kani_contracted;
+pub use vsm::open_connection_editor_kani_contracted;
+pub use vsm::open_export_panel_kani_contracted;
+pub use vsm::open_export_picker_kani_contracted;
+pub use vsm::open_help_kani_contracted;
+pub use vsm::open_help_panel_kani_contracted;
+pub use vsm::open_save_prompt_kani_contracted;
+pub use vsm::open_saved_browser_kani_contracted;
+pub use vsm::open_saved_panel_kani_contracted;
+pub use vsm::open_sql_editor_kani_contracted;
+pub use vsm::panel_error_kani_contracted;
+pub use vsm::panel_loading_kani_contracted;
+pub use vsm::picker_move_down_kani_contracted;
+pub use vsm::picker_move_up_kani_contracted;
+pub use vsm::prompt_backspace_kani_contracted;
+pub use vsm::prompt_push_kani_contracted;
+pub use vsm::query_complete_kani_contracted;
+pub use vsm::reconnect_kani_contracted;
+pub use vsm::saved_browser_down_kani_contracted;
+pub use vsm::saved_browser_up_kani_contracted;
+pub use vsm::saved_ready_kani_contracted;
+// END ELICITATION KANI REEXPORTS

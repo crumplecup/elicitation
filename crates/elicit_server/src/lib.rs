@@ -154,3 +154,63 @@ pub fn emit_dispatch_crate(
         elicitation::emit_code::dispatch_emit_from(tool, crate_name, params)
     }
 }
+// BEGIN ELICITATION KANI REEXPORTS — DO NOT EDIT
+#[cfg(kani)]
+pub use archive::archive_connection_consistent;
+#[cfg(kani)]
+pub use archive::archive_nav_consistent;
+#[cfg(kani)]
+pub use archive::archive_overlay_consistent;
+#[cfg(kani)]
+pub use archive::archive_panel_consistent;
+pub use archive::abort_edits_kani_contracted;
+pub use archive::admin_ready_kani_contracted;
+pub use archive::apply_filter_kani_contracted;
+pub use archive::begin_connect_kv_kani_contracted;
+pub use archive::begin_connect_sql_kani_contracted;
+pub use archive::begin_edit_kani_contracted;
+pub use archive::clear_filter_kani_contracted;
+pub use archive::close_overlay_kani_contracted;
+pub use archive::collapse_schema_kani_contracted;
+pub use archive::column_detail_kani_contracted;
+pub use archive::commit_edits_kani_contracted;
+pub use archive::connection_error_kani_contracted;
+pub use archive::constraints_ready_kani_contracted;
+pub use archive::data_grid_ready_kani_contracted;
+pub use archive::ddl_ready_kani_contracted;
+pub use archive::disconnect_kani_contracted;
+pub use archive::erd_ready_kani_contracted;
+pub use archive::expand_schema_kani_contracted;
+pub use archive::explain_ready_kani_contracted;
+pub use archive::export_ready_kani_contracted;
+pub use archive::finish_connect_kv_kani_contracted;
+pub use archive::finish_connect_sql_kani_contracted;
+pub use archive::history_ready_kani_contracted;
+pub use archive::indexes_ready_kani_contracted;
+pub use archive::load_nav_kani_contracted;
+pub use archive::monitor_ready_kani_contracted;
+pub use archive::move_cursor_down_kani_contracted;
+pub use archive::move_cursor_up_kani_contracted;
+pub use archive::nav_loaded_kani_contracted;
+pub use archive::nav_refresh_kani_contracted;
+pub use archive::open_connection_editor_kani_contracted;
+pub use archive::open_export_panel_kani_contracted;
+pub use archive::open_export_picker_kani_contracted;
+pub use archive::open_help_kani_contracted;
+pub use archive::open_help_panel_kani_contracted;
+pub use archive::open_save_prompt_kani_contracted;
+pub use archive::open_saved_browser_kani_contracted;
+pub use archive::open_saved_panel_kani_contracted;
+pub use archive::open_sql_editor_kani_contracted;
+pub use archive::panel_error_kani_contracted;
+pub use archive::panel_loading_kani_contracted;
+pub use archive::picker_move_down_kani_contracted;
+pub use archive::picker_move_up_kani_contracted;
+pub use archive::prompt_backspace_kani_contracted;
+pub use archive::prompt_push_kani_contracted;
+pub use archive::query_complete_kani_contracted;
+pub use archive::reconnect_kani_contracted;
+pub use archive::saved_browser_down_kani_contracted;
+pub use archive::saved_browser_up_kani_contracted;
+pub use archive::saved_ready_kani_contracted;
+// END ELICITATION KANI REEXPORTS

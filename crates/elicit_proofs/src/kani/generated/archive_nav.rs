@@ -6,30 +6,30 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
-use elicit_server::archive::vsm::archive_nav_consistent;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::apply_filter_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::clear_filter_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::collapse_schema_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::expand_schema_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::load_nav_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::move_cursor_down_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::move_cursor_up_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::nav_loaded_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::nav::nav_refresh_kani_contracted;
+use elicit_server::apply_filter_kani_contracted;
 #[cfg(kani)]
 use elicit_server::archive::{
     ArchiveNavConsistent, ArchiveNavState, NavTree, apply_filter, clear_filter, collapse_schema,
     expand_schema, load_nav, move_cursor_down, move_cursor_up, nav_loaded, nav_refresh,
 };
+#[cfg(kani)]
+use elicit_server::archive_nav_consistent;
+#[cfg(kani)]
+use elicit_server::clear_filter_kani_contracted;
+#[cfg(kani)]
+use elicit_server::collapse_schema_kani_contracted;
+#[cfg(kani)]
+use elicit_server::expand_schema_kani_contracted;
+#[cfg(kani)]
+use elicit_server::load_nav_kani_contracted;
+#[cfg(kani)]
+use elicit_server::move_cursor_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::move_cursor_up_kani_contracted;
+#[cfg(kani)]
+use elicit_server::nav_loaded_kani_contracted;
+#[cfg(kani)]
+use elicit_server::nav_refresh_kani_contracted;
 #[cfg(kani)]
 use elicitation::Established;
 

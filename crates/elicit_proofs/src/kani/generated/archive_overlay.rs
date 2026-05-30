@@ -6,35 +6,35 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
-use elicit_server::archive::vsm::archive_overlay_consistent;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::close_overlay_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::open_export_picker_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::open_help_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::open_save_prompt_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::open_saved_browser_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::picker_move_down_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::picker_move_up_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::prompt_backspace_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::prompt_push_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::saved_browser_down_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::overlay::saved_browser_up_kani_contracted;
-#[cfg(kani)]
 use elicit_server::archive::{
     ArchiveOverlayConsistent, ArchiveOverlayState, ExportFormat, SavedQuery, close_overlay,
     open_export_picker, open_help, open_save_prompt, open_saved_browser, picker_move_down,
     picker_move_up, prompt_backspace, prompt_push, saved_browser_down, saved_browser_up,
 };
+#[cfg(kani)]
+use elicit_server::archive_overlay_consistent;
+#[cfg(kani)]
+use elicit_server::close_overlay_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_export_picker_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_help_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_save_prompt_kani_contracted;
+#[cfg(kani)]
+use elicit_server::open_saved_browser_kani_contracted;
+#[cfg(kani)]
+use elicit_server::picker_move_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::picker_move_up_kani_contracted;
+#[cfg(kani)]
+use elicit_server::prompt_backspace_kani_contracted;
+#[cfg(kani)]
+use elicit_server::prompt_push_kani_contracted;
+#[cfg(kani)]
+use elicit_server::saved_browser_down_kani_contracted;
+#[cfg(kani)]
+use elicit_server::saved_browser_up_kani_contracted;
 #[cfg(kani)]
 use elicitation::Established;
 

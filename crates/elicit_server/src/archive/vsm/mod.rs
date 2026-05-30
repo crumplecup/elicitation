@@ -70,3 +70,55 @@ pub use panel::{
     open_connection_editor, open_export_panel, open_help_panel, open_saved_panel, open_sql_editor,
     panel_error, panel_loading, query_complete, saved_ready,
 };
+// BEGIN ELICITATION KANI REEXPORTS — DO NOT EDIT
+pub use connection::begin_connect_kv_kani_contracted;
+pub use connection::begin_connect_sql_kani_contracted;
+pub use connection::connection_error_kani_contracted;
+pub use connection::disconnect_kani_contracted;
+pub use connection::finish_connect_kv_kani_contracted;
+pub use connection::finish_connect_sql_kani_contracted;
+pub use connection::reconnect_kani_contracted;
+pub use nav::apply_filter_kani_contracted;
+pub use nav::clear_filter_kani_contracted;
+pub use nav::collapse_schema_kani_contracted;
+pub use nav::expand_schema_kani_contracted;
+pub use nav::load_nav_kani_contracted;
+pub use nav::move_cursor_down_kani_contracted;
+pub use nav::move_cursor_up_kani_contracted;
+pub use nav::nav_loaded_kani_contracted;
+pub use nav::nav_refresh_kani_contracted;
+pub use overlay::close_overlay_kani_contracted;
+pub use overlay::open_export_picker_kani_contracted;
+pub use overlay::open_help_kani_contracted;
+pub use overlay::open_save_prompt_kani_contracted;
+pub use overlay::open_saved_browser_kani_contracted;
+pub use overlay::picker_move_down_kani_contracted;
+pub use overlay::picker_move_up_kani_contracted;
+pub use overlay::prompt_backspace_kani_contracted;
+pub use overlay::prompt_push_kani_contracted;
+pub use overlay::saved_browser_down_kani_contracted;
+pub use overlay::saved_browser_up_kani_contracted;
+pub use panel::abort_edits_kani_contracted;
+pub use panel::admin_ready_kani_contracted;
+pub use panel::begin_edit_kani_contracted;
+pub use panel::column_detail_kani_contracted;
+pub use panel::commit_edits_kani_contracted;
+pub use panel::constraints_ready_kani_contracted;
+pub use panel::data_grid_ready_kani_contracted;
+pub use panel::ddl_ready_kani_contracted;
+pub use panel::erd_ready_kani_contracted;
+pub use panel::explain_ready_kani_contracted;
+pub use panel::export_ready_kani_contracted;
+pub use panel::history_ready_kani_contracted;
+pub use panel::indexes_ready_kani_contracted;
+pub use panel::monitor_ready_kani_contracted;
+pub use panel::open_connection_editor_kani_contracted;
+pub use panel::open_export_panel_kani_contracted;
+pub use panel::open_help_panel_kani_contracted;
+pub use panel::open_saved_panel_kani_contracted;
+pub use panel::open_sql_editor_kani_contracted;
+pub use panel::panel_error_kani_contracted;
+pub use panel::panel_loading_kani_contracted;
+pub use panel::query_complete_kani_contracted;
+pub use panel::saved_ready_kani_contracted;
+// END ELICITATION KANI REEXPORTS

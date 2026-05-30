@@ -6,27 +6,27 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(kani)]
-use elicit_server::archive::vsm::archive_connection_consistent;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::begin_connect_kv_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::begin_connect_sql_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::connection_error_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::disconnect_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::finish_connect_kv_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::finish_connect_sql_kani_contracted;
-#[cfg(kani)]
-use elicit_server::archive::vsm::connection::reconnect_kani_contracted;
-#[cfg(kani)]
 use elicit_server::archive::{
     ArchiveConnectionConsistent, ArchiveConnectionState, BackendKind, DatabaseDescriptor,
     begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
     finish_connect_sql, reconnect,
 };
+#[cfg(kani)]
+use elicit_server::archive_connection_consistent;
+#[cfg(kani)]
+use elicit_server::begin_connect_kv_kani_contracted;
+#[cfg(kani)]
+use elicit_server::begin_connect_sql_kani_contracted;
+#[cfg(kani)]
+use elicit_server::connection_error_kani_contracted;
+#[cfg(kani)]
+use elicit_server::disconnect_kani_contracted;
+#[cfg(kani)]
+use elicit_server::finish_connect_kv_kani_contracted;
+#[cfg(kani)]
+use elicit_server::finish_connect_sql_kani_contracted;
+#[cfg(kani)]
+use elicit_server::reconnect_kani_contracted;
 #[cfg(kani)]
 use elicitation::Established;
 
