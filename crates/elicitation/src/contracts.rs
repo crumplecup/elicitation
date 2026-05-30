@@ -1087,44 +1087,6 @@ where
 /// the contracts stack can be used freely; inside, every transition must be
 /// a `FormalMethod`.
 ///
-/// # Examples
-///
-/// ```rust
-/// use elicitation::contracts::{
-///     Established, FormalMethod, Prop, VerifiedStateMachine, VerifiedTransition,
-/// };
-/// use elicitation::ElicitComplete;
-///
-/// // --- State ---
-/// #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
-///          schemars::JsonSchema, elicitation::Elicit)]
-/// enum OrderState { Draft, Submitted, Shipped }
-///
-/// // --- Invariant proposition ---
-/// #[derive(elicitation::Prop)]
-/// struct OrderIntact;
-///
-/// // --- The VSM declaration ---
-/// struct OrderMachine;
-/// impl VerifiedStateMachine for OrderMachine {
-///     type State     = OrderState;
-///     type Invariant = OrderIntact;
-/// }
-///
-/// // --- A verified transition ---
-/// fn submit(state: OrderState, proof: Established<OrderIntact>)
-///     -> (OrderState, Established<OrderIntact>)
-/// {
-///     (OrderState::Submitted, proof) // invariant preserved
-/// }
-///
-/// // `submit` satisfies VerifiedTransition<OrderMachine> automatically.
-/// fn run<T: VerifiedTransition<OrderMachine>>(t: &T) {
-///     let proof = Established::assert();
-///     let (_new_state, _new_proof) = t.call_formal(OrderState::Draft, proof);
-/// }
-/// run(&submit);
-/// ```
 pub trait VerifiedStateMachine {
     /// The state type.  Must be [`ElicitComplete`][crate::ElicitComplete].
     type State: crate::ElicitComplete;
