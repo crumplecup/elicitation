@@ -85,6 +85,7 @@ mod wkt_specs;
 pub use collections::{HashMapSpec, HashSetSpec, OptionSpec, ResultSpec, VecSpec};
 
 pub use elicit_spec::ElicitSpec;
+pub use integers::i32_as_i8_checked;
 pub use registry::{TypeSpecInventoryKey, lookup_type_spec, lookup_type_spec_by_id};
 
 use derive_builder::Builder;

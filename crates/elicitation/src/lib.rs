@@ -211,8 +211,8 @@ pub use type_graph::{TypeGraphKey, all_graphable_types, lookup_type_graph};
 // Type spec layer (agent-browsable contracts)
 pub use type_spec::{
     ElicitSpec, SpecCategory, SpecCategoryBuilder, SpecEntry, SpecEntryBuilder, TypeSpec,
-    TypeSpecBuilder, TypeSpecInventoryKey, lookup_type_spec, lookup_type_spec_by_id,
-    type_spec_plugin::TypeSpecPlugin,
+    TypeSpecBuilder, TypeSpecInventoryKey, i32_as_i8_checked, lookup_type_spec,
+    lookup_type_spec_by_id, type_spec_plugin::TypeSpecPlugin,
 };
 
 // Contracts (proof-carrying composition)
