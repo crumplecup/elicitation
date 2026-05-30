@@ -39,8 +39,7 @@ pub struct DateTimeUtcAfter(std::marker::PhantomData<()>);
 impl DateTimeUtcAfter {
     /// Create a new DateTimeUtcAfter, validating value > threshold.
     #[cfg(not(kani))]
-    #[spec(requires: [value > threshold])]
-    #[spec(requires: [value < threshold])]
+    #[spec(requires: [value > threshold, value < threshold])]
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })

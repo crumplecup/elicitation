@@ -82,6 +82,9 @@ unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(creusot)',
   'cfg(verus)',
   'cfg(prusti)',
+  'cfg(anodized_panic)',
+  'cfg(anodized_print)',
+  'cfg(anodized_discard_specs)',
 ] }
 
 [workspace.dependencies]
@@ -170,7 +173,7 @@ heck = "0.5"
 prettyplease = "0.2"
 toml = "1"
 toml_edit = { version = "0.25", features = ["default"] }
-toml_datetime = { version = "1.1", features = ["serde"] }
+toml_datetime = { version = "1", features = ["serde"] }
 walkdir = "2"
 
 # ── Tracing ───────────────────────────────────────────────────────────────────
@@ -229,8 +232,8 @@ surrealdb = { version = "3.0.5", features = [
   "scripting",
 ] }
 rust_decimal = "1"
-sqlx-core = "0.8"
-sqlx = { version = "0.8", features = [
+sqlx-core = "0.9"
+sqlx = { version = "0.9", features = [
   "runtime-tokio",
   "tls-native-tls",
   "any",
@@ -246,7 +249,7 @@ dotenvy = "0.15"
 # ── CLI ───────────────────────────────────────────────────────────────────────
 clap = { version = "4", features = ["derive", "string"] }
 csv = "1.4"
-shellexpand = "3.1"
+shellexpand = "3"
 indicatif = "0.18"
 
 # ── DateTime ──────────────────────────────────────────────────────────────────
@@ -290,7 +293,7 @@ regex = "1.12"
 # ── Spatial ───────────────────────────────────────────────────────────────────
 geo = "0.33"
 geo-types = "0.7"
-rstar = { version = "0.12", features = ["serde"] }
+rstar = { version = "0.13", features = ["serde"] }
 georaster = { version = "0.2", default-features = false }
 proj = "0.31"
 geojson = { version = "1", features = ["geo-types"] }
@@ -323,7 +326,7 @@ inventory = "0.3"
 dirs = "6"
 # Spec annotations (runtime-no-check: specs are purely documentation/static-analysis hooks;
 # runtime validation is handled by Result-returning constructors)
-anodized = { version = "0.4", features = ["runtime-no-check"] }
+anodized = { version = "0.5" }
 
 # ── Dev dependencies ──────────────────────────────────────────────────────────
 tempfile = "3"

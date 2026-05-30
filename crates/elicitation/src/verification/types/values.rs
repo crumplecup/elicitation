@@ -31,9 +31,7 @@ pub struct ValueObject(std::marker::PhantomData<()>);
 impl ValueObject {
     /// Create a new ValueObject, validating it's an object.
     #[cfg(not(kani))]
-    #[spec(requires: [value.is_object()])]
-    #[spec(requires: [value.is_array()])]
-    #[spec(requires: [!value.is_null()])]
+    #[spec(requires: [value.is_object(), value.is_array(), !value.is_null()])]
     pub fn new(value: Value) -> Result<Self, ValidationError> {
         if value.is_object() {
             Ok(Self(value))
