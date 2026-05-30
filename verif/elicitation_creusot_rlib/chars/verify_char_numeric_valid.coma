@@ -6,7 +6,7 @@ let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/c
 let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 26 11 26 33
 let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 28 49 28 85
 let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 27 10 27 57
-let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 136 4 136 43
+let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 137 4 137 60
 
 use creusot.prelude.Char
 use creusot.int.Int128

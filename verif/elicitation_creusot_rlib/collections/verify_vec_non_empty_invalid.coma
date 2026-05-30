@@ -7,7 +7,7 @@ let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creus
 let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 33 11 33 15
 let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 41 35 95
 let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 34 10 34 57
-let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 19 4 19 40
+let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 20 4 20 60
 let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 102 18 102 36
 let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 

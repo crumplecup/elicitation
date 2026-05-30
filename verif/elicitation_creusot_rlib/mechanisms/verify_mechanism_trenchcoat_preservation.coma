@@ -2,7 +2,7 @@
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 150 18 150 104
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 151 18 151 81
-let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 257 4 257 34
+let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 258 4 258 58
 let%span sops = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/ops.rs" 662 18 662 22
 let%span sops'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/ops.rs" 658 18 661 9
 let%span sops'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/ops.rs" 675 25 675 33

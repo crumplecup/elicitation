@@ -8,7 +8,7 @@ let%span sdurations'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot
 let%span sdurations'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 12 11 12 41
 let%span sdurations'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 16 5 16 46
 let%span sdurations'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 13 10 13 57
-let%span sdurations'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/durations.rs" 29 4 29 48
+let%span sdurations'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/durations.rs" 30 4 30 67
 
 use creusot.int.Int128
 use creusot.float.Float64

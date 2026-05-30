@@ -9,7 +9,7 @@ let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/s
 let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 34 11 34 49
 let%span sstrings'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 38 5 38 61
 let%span sstrings'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 35 10 35 57
-let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 44 4 44 66
+let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 45 4 45 62
 
 use creusot.int.Int128
 use creusot.float.Float64
