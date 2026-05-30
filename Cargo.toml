@@ -307,7 +307,7 @@ palette = "0.7"
 taffy = "0.10"
 
 # ── Verification ──────────────────────────────────────────────────────────────
-creusot-std = { version = "0.10", features = ["nightly"] }
+creusot-std = { version = "0.11", features = ["nightly"] }
 kani-verifier = { version = "0.67" }
 # prusti-contracts lives on prusti-verification branch
 
@@ -330,12 +330,3 @@ criterion = { version = "0.8", features = ["html_reports"] }
 lto = true
 codegen-units = 1
 strip = true
-
-# creusot-std 0.10.0 on crates.io depends on pearlite-syn 0.10.0 which is not
-# yet published. Patch to the local Creusot toolchain installation until the
-# upstream crates.io release is complete. The version spec above stays as the
-# canonical reference; this patch is only active locally and is ignored when
-# elicitation_creusot is resolved as a dependency by downstream users.
-[patch.crates-io]
-creusot-std = { path = "vendor/creusot-std" }
-pearlite-syn = { path = "vendor/pearlite-syn" }
