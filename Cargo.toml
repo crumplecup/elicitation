@@ -55,7 +55,7 @@ exclude = [
   # polars-arrow pins chrono <=0.4.41 which conflicts with the workspace chrono 0.4.43.
   # elicit_polars can be checked independently: cargo check --manifest-path crates/elicit_polars/Cargo.toml
   "crates/elicit_polars",
-  # surrealdb-core pins i_overlay ^4.0 which conflicts with geo 0.33 (needs i_overlay ^4.5).
+  # surrealdb-types 3.x pins geo = "^0.32" which conflicts with the workspace geo 0.33.
   # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
   "crates/elicit_surrealdb",
 ]
