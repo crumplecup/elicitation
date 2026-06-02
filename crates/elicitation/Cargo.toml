@@ -130,7 +130,7 @@ criterion = { workspace = true }
 tempfile = { workspace = true }
 
 [features]
-default = ["full"]
+default = []
 
 # Full feature bundle - all third-party support + rand
 full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "redb-types", "csv-types", "toml-types", "emit", "accesskit"]
