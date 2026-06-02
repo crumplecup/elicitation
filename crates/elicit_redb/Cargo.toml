@@ -16,7 +16,7 @@ categories = ["database", "development-tools"]
 api = []
 
 [dependencies]
-elicitation = { workspace = true, features = ["redb-types", "emit"] }
+elicitation = { workspace = true, features = ["redb-types", "emit", "uuid"] }
 elicit_db.workspace = true
 elicitation_derive.workspace = true
 inventory.workspace = true

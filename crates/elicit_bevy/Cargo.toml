@@ -15,7 +15,7 @@ categories = ["game-engines", "development-tools"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
 
 [dependencies]
-elicitation = { workspace = true, features = ["bevy-types"] }
+elicitation = { workspace = true, features = ["bevy-types", "uuid"] }
 elicitation_derive.workspace = true
 bevy = { workspace = true, features = [
     "bevy_color",

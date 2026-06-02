@@ -13,7 +13,7 @@ keywords = ["mcp", "tokio", "async-runtime", "elicitation", "agent"]
 categories = ["asynchronous", "development-tools"]
 
 [dependencies]
-elicitation = { workspace = true }
+elicitation = { workspace = true, features = ["uuid"] }
 elicitation_derive.workspace = true
 
 tokio = { workspace = true, features = ["time", "sync", "rt"] }
