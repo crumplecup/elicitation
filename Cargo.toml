@@ -53,8 +53,9 @@ members = [
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
 exclude = [
   "crates/elicitation_verus",
-  # surrealdb-types 3.x pins geo = "^0.32" which conflicts with the workspace geo 0.33.
-  # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
+  # surrealdb-types 3.x pins geo ^0.32 (via i_overlay) which conflicts with workspace geo 0.33.
+  # Blocked until surrealdb-types upgrades to geo 0.33. Check independently:
+  #   cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
   "crates/elicit_surrealdb",
 ]
 resolver = "2"
