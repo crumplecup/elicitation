@@ -14,22 +14,22 @@ categories = ["data-structures", "science"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["polars-types", "emit"] }
-elicit_db = { path = "../elicit_db" }
-derive_more = { workspace = true }
+elicit_db.workspace = true
+derive_more.workspace = true
 
 polars = { version = "0.53", features = [
-    "lazy",
-    "serde",
-    "serde-lazy",
-    "csv",
-    "parquet",
-    "json",
-    "ipc",
-    "dtype-full",
-    "strings",
-    "temporal",
-    "sql",
-    "semi_anti_join",
+  "lazy",
+  "serde",
+  "serde-lazy",
+  "csv",
+  "parquet",
+  "json",
+  "ipc",
+  "dtype-full",
+  "strings",
+  "temporal",
+  "sql",
+  "semi_anti_join",
 ] }
 rmcp = { workspace = true }
 schemars = { workspace = true }
@@ -50,4 +50,9 @@ default = []
 emit = ["elicitation/emit"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(kani)',
+  'cfg(creusot)',
+  'cfg(prusti)',
+  'cfg(verus)',
+] }
