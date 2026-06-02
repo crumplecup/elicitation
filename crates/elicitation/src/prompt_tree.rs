@@ -125,12 +125,12 @@
 //! # AccessKit Bridge
 //!
 //! Behind the `prompt-tree-accesskit` feature, every [`PromptTree`] can be
-//! converted to an [`accesskit::TreeUpdate`] via
+//! converted to an `accesskit::TreeUpdate` via
 //! `PromptTree::to_accesskit_tree`. The AccessKit tree is self-contained — no
 //! live UI context, no async — and maps each node to the semantically closest
 //! accessibility role:
 //!
-//! | [`PromptTree`] variant | AccessKit [`Role`][accesskit::Role] |
+//! | [`PromptTree`] variant | AccessKit `Role` |
 //! |---|---|
 //! | `Leaf` | `Role::TextInput` |
 //! | `Affirm` | `Role::CheckBox` |

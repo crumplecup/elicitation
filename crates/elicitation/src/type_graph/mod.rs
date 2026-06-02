@@ -1,9 +1,11 @@
 //! Type graph visualization for elicitation workflows.
 //!
 //! Provides a runtime-queryable structural registry ([`TypeGraphKey`]),
-//! a graph builder ([`TypeGraph`]), and renderers ([`MermaidRenderer`],
-//! [`DotRenderer`]) that together enable visualization of any
+//! a graph builder (`TypeGraph`), and renderers (`MermaidRenderer`,
+//! `DotRenderer`) that together enable visualization of any
 //! `#[derive(Elicit)]` type hierarchy.
+//!
+//! These types are available with the `graph` feature.
 //!
 //! # Quick start
 //!

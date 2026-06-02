@@ -1,4 +1,4 @@
-//! [`accesskit::Role`] elicitation.
+//! `accesskit::Role` elicitation.
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
