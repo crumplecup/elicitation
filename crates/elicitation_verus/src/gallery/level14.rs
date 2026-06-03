@@ -34,17 +34,17 @@
 
 use verus_builtin_macros::verus;
 
-#[verifier::external]
-pub fn v14_start_stub(state: V14State) -> V14State {
-    todo!()
-}
-
-#[verifier::external]
-pub fn v14_stop_stub(state: V14State) -> V14State {
-    todo!()
-}
-
 verus! {
+
+#[verifier::external]
+pub fn v14_start_stub(_state: V14State) -> V14State {
+    todo!()
+}
+
+#[verifier::external]
+pub fn v14_stop_stub(_state: V14State) -> V14State {
+    todo!()
+}
 
 // State enum: no `Clone`, no `Copy` — unit-only enum inside verus! {} block.
 // Deriving `Clone` (without `Copy`) on a unit-only enum combined with a `Copy`
