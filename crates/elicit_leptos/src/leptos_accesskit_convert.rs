@@ -831,6 +831,11 @@ fn render_node(
                 )
             } else {
                 stats.widgets_rendered += 1;
+                if let Some(ui_para) = node_json_rich_text(node)
+                    .and_then(|v| serde_json::from_value::<elicit_ui::ParagraphText>(v).ok())
+                {
+                    return rich_paragraph_html(ui_para, depth, mode);
+                }
                 let text = node_text(node);
                 format!("{}<p>{}</p>\n", indent(depth), text_content(&text, mode))
             }
@@ -1791,4 +1796,343 @@ fn parse_kv_coords(desc: &str) -> std::collections::HashMap<&str, f64> {
             Some((k.trim(), v))
         })
         .collect()
+}
+
+// ── Rich-text paragraph helpers ────────────────────────────────────────────────
+
+/// Extract the `__rich_text__:` sidecar from the node's `class_name` field,
+/// returning the raw JSON value if present.
+fn node_json_rich_text(node: &Node) -> Option<serde_json::Value> {
+    const PREFIX: &str = "__rich_text__:";
+    let class = node.class_name()?;
+    if !class.starts_with(PREFIX) {
+        return None;
+    }
+    serde_json::from_str(&class[PREFIX.len()..]).ok()
+}
+
+/// Convert an [`elicit_ui::UiColor`] to a CSS colour string.
+fn ui_color_to_css(color: &elicit_ui::UiColor) -> String {
+    use elicit_ui::UiColor;
+    // Named ANSI colours use the VS Code terminal palette (same reference
+    // sRGB values used by all other bridges).
+    match color {
+        UiColor::Reset => "inherit".to_string(),
+        UiColor::Black => "#0c0c0c".to_string(),
+        UiColor::Red => "#c50f1f".to_string(),
+        UiColor::Green => "#13a10e".to_string(),
+        UiColor::Yellow => "#c19c00".to_string(),
+        UiColor::Blue => "#0037da".to_string(),
+        UiColor::Magenta => "#881798".to_string(),
+        UiColor::Cyan => "#3a96dd".to_string(),
+        UiColor::White => "#cccccc".to_string(),
+        UiColor::DarkGray => "#767676".to_string(),
+        UiColor::LightRed => "#e74856".to_string(),
+        UiColor::LightGreen => "#16c60c".to_string(),
+        UiColor::LightYellow => "#f9f1a5".to_string(),
+        UiColor::LightBlue => "#3b78ff".to_string(),
+        UiColor::LightMagenta => "#b4009e".to_string(),
+        UiColor::LightCyan => "#61d6d6".to_string(),
+        UiColor::Gray => "#f2f2f2".to_string(),
+        UiColor::Rgb { r, g, b } => format!("#{r:02x}{g:02x}{b:02x}"),
+        UiColor::Rgba { r, g, b, a } => {
+            format!("rgba({r},{g},{b},{:.3})", *a as f32 / 255.0)
+        }
+        UiColor::Indexed { index } => ansi256_to_css(*index),
+    }
+}
+
+/// Convert a 256-colour ANSI palette index to a CSS hex colour.
+fn ansi256_to_css(index: u8) -> String {
+    let (r, g, b) = match index {
+        0 => (0x0cu8, 0x0cu8, 0x0cu8),
+        1 => (0xc5, 0x0f, 0x1f),
+        2 => (0x13, 0xa1, 0x0e),
+        3 => (0xc1, 0x9c, 0x00),
+        4 => (0x00, 0x37, 0xda),
+        5 => (0x88, 0x17, 0x98),
+        6 => (0x3a, 0x96, 0xdd),
+        7 => (0xcc, 0xcc, 0xcc),
+        8 => (0x76, 0x76, 0x76),
+        9 => (0xe7, 0x48, 0x56),
+        10 => (0x16, 0xc6, 0x0c),
+        11 => (0xf9, 0xf1, 0xa5),
+        12 => (0x3b, 0x78, 0xff),
+        13 => (0xb4, 0x00, 0x9e),
+        14 => (0x61, 0xd6, 0xd6),
+        15 => (0xf2, 0xf2, 0xf2),
+        16..=231 => {
+            let i = index - 16;
+            let b_idx = i % 6;
+            let g_idx = (i / 6) % 6;
+            let r_idx = i / 36;
+            let ch = |x: u8| if x == 0 { 0u8 } else { 55 + x * 40 };
+            (ch(r_idx), ch(g_idx), ch(b_idx))
+        }
+        232..=255 => {
+            let v = 8 + (index - 232) * 10;
+            (v, v, v)
+        }
+    };
+    format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+/// Build an inline CSS `style` attribute value for a text span, cascading
+/// span style → line style → block style.
+///
+/// Returns an empty string when no style properties apply.
+fn span_inline_css(
+    span_style: Option<&elicit_ui::TextStyle>,
+    line_style: Option<&elicit_ui::TextStyle>,
+    block_style: Option<&elicit_ui::TextStyle>,
+) -> String {
+    use elicit_ui::{FontFamily, FontStyle, LineHeight, TextDecoration, TextModifier, VerticalAlign};
+
+    macro_rules! cascade {
+        ($field:ident) => {
+            span_style
+                .and_then(|s| s.$field.as_ref())
+                .or_else(|| line_style.and_then(|s| s.$field.as_ref()))
+                .or_else(|| block_style.and_then(|s| s.$field.as_ref()))
+        };
+    }
+    macro_rules! cascade_vec {
+        ($field:ident) => {{
+            let sv: &[_] = span_style.map_or(&[], |s| s.$field.as_slice());
+            let lv: &[_] = line_style.map_or(&[], |s| s.$field.as_slice());
+            let bv: &[_] = block_style.map_or(&[], |s| s.$field.as_slice());
+            if !sv.is_empty() { sv } else if !lv.is_empty() { lv } else { bv }
+        }};
+    }
+
+    let modifiers = cascade_vec!(modifiers);
+    let decorations = cascade_vec!(decorations);
+
+    let mut props: Vec<String> = Vec::new();
+
+    // Colour.
+    let mut fg = cascade!(fg).map(ui_color_to_css);
+    let mut bg = cascade!(bg).map(ui_color_to_css);
+
+    // Modifier effects.
+    let mut blink_duration: Option<f32> = None;
+    let mut is_dim = false;
+    let mut is_hidden = false;
+    let mut is_reversed = false;
+    let mut has_bold = false;
+    let mut has_italic = false;
+    let mut text_decorations: Vec<&str> = Vec::new();
+
+    for m in modifiers {
+        match m {
+            TextModifier::Bold => has_bold = true,
+            TextModifier::Italic => has_italic = true,
+            TextModifier::Underlined => text_decorations.push("underline"),
+            TextModifier::CrossedOut => text_decorations.push("line-through"),
+            TextModifier::SlowBlink => blink_duration = Some(1.0),
+            TextModifier::RapidBlink => blink_duration = Some(0.5),
+            TextModifier::Dim => is_dim = true,
+            TextModifier::Hidden => is_hidden = true,
+            TextModifier::Reversed => is_reversed = true,
+        }
+    }
+
+    for d in decorations {
+        match d {
+            TextDecoration::Underline => text_decorations.push("underline"),
+            TextDecoration::Strikethrough => text_decorations.push("line-through"),
+            TextDecoration::Overline => text_decorations.push("overline"),
+        }
+    }
+
+    // FontWeight from style field.
+    if !has_bold {
+        match cascade!(font_weight) {
+            Some(fw) if fw.0 >= 700.0 => has_bold = true,
+            Some(fw) if fw.0 != 400.0 => props.push(format!("font-weight:{}", fw.0 as u32)),
+            _ => {}
+        }
+    }
+
+    // FontStyle from style field.
+    if !has_italic {
+        match cascade!(font_style) {
+            Some(FontStyle::Italic) => has_italic = true,
+            Some(FontStyle::Oblique(_)) => props.push("font-style:oblique".to_string()),
+            _ => {}
+        }
+    }
+
+    // Apply modifier effects to colours.
+    if is_reversed {
+        match (&fg, &bg) {
+            (Some(f), Some(b)) => {
+                let (f, b) = (f.clone(), b.clone());
+                fg = Some(b);
+                bg = Some(f);
+            }
+            _ => {
+                fg = Some("#0c0c0c".to_string());
+                bg = Some("#cccccc".to_string());
+            }
+        }
+    }
+
+    if let Some(f) = fg {
+        props.push(format!("color:{f}"));
+    }
+    if let Some(b) = bg {
+        props.push(format!("background-color:{b}"));
+    }
+
+    if has_bold {
+        props.push("font-weight:bold".to_string());
+    }
+    if has_italic {
+        props.push("font-style:italic".to_string());
+    }
+    if !text_decorations.is_empty() {
+        text_decorations.dedup();
+        props.push(format!("text-decoration:{}", text_decorations.join(" ")));
+    }
+    if is_dim {
+        props.push("opacity:0.5".to_string());
+    }
+    if is_hidden {
+        props.push("visibility:hidden".to_string());
+    }
+    // Blink via CSS animation; requires @keyframes blink { to { visibility: hidden; } }
+    // in the page stylesheet.
+    if let Some(secs) = blink_duration {
+        props.push(format!(
+            "animation:blink {secs}s step-start infinite"
+        ));
+    }
+
+    // Font family.
+    if let Some(ff) = cascade!(font_family) {
+        let css = match ff {
+            FontFamily::Proportional => "sans-serif".to_string(),
+            FontFamily::Monospace => "monospace".to_string(),
+            FontFamily::Named { name } => format!("'{name}'"),
+        };
+        props.push(format!("font-family:{css}"));
+    }
+
+    // Font size.
+    if let Some(sz) = cascade!(font_size) {
+        props.push(format!("font-size:{sz}px"));
+    }
+
+    // Letter spacing.
+    if let Some(ls) = cascade!(letter_spacing) {
+        props.push(format!("letter-spacing:{ls}px"));
+    }
+
+    // Word spacing.
+    if let Some(ws) = cascade!(word_spacing) {
+        props.push(format!("word-spacing:{ws}px"));
+    }
+
+    // Line height.
+    if let Some(lh) = cascade!(line_height) {
+        let css = match lh {
+            LineHeight::Absolute { value } => format!("{value}px"),
+            LineHeight::FontSizeRelative { factor } => format!("{factor}"),
+            // MetricsRelative: emit unitless (CSS approximation).
+            LineHeight::MetricsRelative { factor } => format!("{factor}"),
+        };
+        props.push(format!("line-height:{css}"));
+    }
+
+    // Vertical alignment.
+    if let Some(va) = cascade!(vertical_align) {
+        let css = match va {
+            VerticalAlign::Top => "super",
+            VerticalAlign::Center => "middle",
+            VerticalAlign::Bottom => "sub",
+        };
+        props.push(format!("vertical-align:{css}"));
+    }
+
+    props.join(";")
+}
+
+/// Build an inline CSS `style` value for a `<p>` block, covering text-align only.
+/// Span-level styles are handled by [`span_inline_css`].
+fn paragraph_block_css(
+    block_style: Option<&elicit_ui::TextStyle>,
+    alignment: Option<elicit_ui::TextAlign>,
+) -> String {
+    use elicit_ui::TextAlign;
+    let mut props: Vec<String> = Vec::new();
+    let align_css = match alignment {
+        Some(TextAlign::Center) => Some("center"),
+        Some(TextAlign::Right) => Some("right"),
+        Some(TextAlign::Justify) => Some("justify"),
+        Some(TextAlign::Left) | None => None,
+    };
+    if let Some(a) = align_css {
+        props.push(format!("text-align:{a}"));
+    }
+    // Block-level line-height.
+    if let Some(lh) = block_style.and_then(|s| s.line_height.as_ref()) {
+        use elicit_ui::LineHeight;
+        let css = match lh {
+            LineHeight::Absolute { value } => format!("{value}px"),
+            LineHeight::FontSizeRelative { factor } | LineHeight::MetricsRelative { factor } => {
+                format!("{factor}")
+            }
+        };
+        props.push(format!("line-height:{css}"));
+    }
+    props.join(";")
+}
+
+/// Render a [`elicit_ui::ParagraphText`] as a `<p>` HTML element with full
+/// inline-CSS rich-text styling.
+fn rich_paragraph_html(
+    para: elicit_ui::ParagraphText,
+    depth: usize,
+    mode: LeptosRenderMode,
+) -> String {
+    use elicit_ui::ParagraphText;
+    match para {
+        ParagraphText::Plain(text) => {
+            format!("{}<p>{}</p>\n", indent(depth), text_content(&text, mode))
+        }
+        ParagraphText::Rich(rich) => {
+            let block_css = paragraph_block_css(rich.style.as_ref(), rich.alignment);
+            let style_attr = if block_css.is_empty() {
+                String::new()
+            } else {
+                format!(" style=\"{block_css}\"")
+            };
+            let pad = indent(depth);
+            let inner_pad = indent(depth + 1);
+            let mut out = format!("{pad}<p{style_attr}>\n");
+            for (li, line) in rich.lines.iter().enumerate() {
+                if li > 0 {
+                    out.push_str(&format!("{inner_pad}<br/>\n"));
+                }
+                for span in &line.spans {
+                    let css = span_inline_css(
+                        span.style.as_ref(),
+                        line.style.as_ref(),
+                        rich.style.as_ref(),
+                    );
+                    let content = text_content(&span.content, mode);
+                    if css.is_empty() {
+                        out.push_str(&format!("{inner_pad}<span>{content}</span>\n"));
+                    } else {
+                        out.push_str(&format!(
+                            "{inner_pad}<span style=\"{css}\">{content}</span>\n"
+                        ));
+                    }
+                }
+            }
+            out.push_str(&format!("{pad}</p>\n"));
+            out
+        }
+    }
 }
