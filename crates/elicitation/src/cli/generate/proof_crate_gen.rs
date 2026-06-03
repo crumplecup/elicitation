@@ -764,10 +764,6 @@ elicitation generate proof-crate \
 "#
     )
 }
-"#
-    )
-}
-
 
 /// return the names of any external crates that appear in `workspace_deps` but
 /// are not already emitted by `render_cargo_toml` as explicit deps.
