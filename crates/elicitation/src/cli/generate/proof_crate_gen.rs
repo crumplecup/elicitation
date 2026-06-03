@@ -710,7 +710,11 @@ fn write_why3find_json(dir: &Path) -> anyhow::Result<()> {
 /// On first generation the stub README explains that this is an auto-generated
 /// proof crate and how to regenerate it.  On subsequent runs it is left alone
 /// so users can customize it freely.
-fn write_readme_if_absent(dir: &Path, proof_name: &str, primary_source: &str) -> anyhow::Result<()> {
+fn write_readme_if_absent(
+    dir: &Path,
+    proof_name: &str,
+    primary_source: &str,
+) -> anyhow::Result<()> {
     let path = dir.join("README.md");
     if path.exists() {
         println!("Skipped (exists): {}", path.display());
