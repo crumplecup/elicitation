@@ -28,6 +28,7 @@ mod code;
 mod error;
 pub mod leptos_accesskit_convert;
 mod reactive;
+pub mod render_context;
 pub mod renderer;
 
 pub use axum_ssr::LeptosAxumPlugin;
@@ -36,4 +37,5 @@ pub use code::LeptosCodePlugin;
 pub use error::{LeptosError, LeptosErrorKind, LeptosResult};
 pub use leptos_accesskit_convert::{LeptosRenderMode, render_tree, render_tree_with_stats};
 pub use reactive::LeptosReactivePlugin;
+pub use render_context::{LeptosRenderArea, LeptosRenderContext};
 pub use renderer::LeptosRenderer;

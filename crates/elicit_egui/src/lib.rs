@@ -193,6 +193,7 @@ pub mod fragment_tools;
 mod input_tools;
 mod layout_tools;
 mod menu_tools;
+pub mod render_context;
 mod response_tools;
 #[cfg(feature = "runtime")]
 pub mod runtime;
@@ -206,6 +207,7 @@ pub mod winit_plugin;
 
 pub use accesskit_bridge::{EguiBackend, bounds_to_size, render_tree};
 pub use egui_accesskit_convert::{tree_update_to_ui_node, ui_node_to_tree_update};
+pub use render_context::EguiRenderContext;
 pub use winit_plugin::EguiWinitPlugin;
 
 pub use container_tools::{
