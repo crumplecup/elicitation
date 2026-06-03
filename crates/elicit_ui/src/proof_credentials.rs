@@ -24,12 +24,12 @@ use crate::{
     WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
     WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusVisibleKeyboard,
     WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic, WcagKeyboardNotTrapped,
-    WcagKeyboardOperable, WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLevelAAValid,
-    WcagListStructureProgrammatic, WcagNamePresent, WcagNonTextContrastMinimum, WcagOperableValid,
-    WcagPageLanguageIdentified, WcagPartLanguageIdentified, WcagPerceivedValid,
+    WcagKeyboardOperable, WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLargeTextClassified,
+    WcagLevelAAValid, WcagListStructureProgrammatic, WcagNamePresent, WcagNonTextContrastMinimum,
+    WcagOperableValid, WcagPageLanguageIdentified, WcagPartLanguageIdentified, WcagPerceivedValid,
     WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative, WcagRobustValid,
     WcagTableHeadersProgrammatic, WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable,
-    WcagTimingAdjustable, WcagUnderstandableValid,
+    WcagTextSpacingAdjustable, WcagTimingAdjustable, WcagUnderstandableValid,
 };
 
 // ── Contrast ──────────────────────────────────────────────────────────────────
@@ -59,6 +59,12 @@ proof_credential! {
     ///
     /// Source: WCAG 2.2 SC 1.4.11 — Non-text Contrast Level AA.
     pub(crate) NonTextContrastVerified => WcagNonTextContrastMinimum;
+
+    /// Witness that text was measured and confirmed to meet the WCAG "large text"
+    /// definition: ≥18 pt at any weight, or ≥14 pt at bold (weight ≥700).
+    ///
+    /// Source: WCAG 2.2 SC 1.4.3 — Contrast (Minimum) large-text definition, Level AA.
+    pub(crate) LargeTextClassified => WcagLargeTextClassified;
 
     /// Witness issued by [`PaletteBuilder`] when a text/background pair meets
     /// the ≥ 4.5:1 normal-text threshold.
@@ -192,6 +198,13 @@ proof_credential! {
     ///
     /// Source: WCAG 2.2 SC 1.4.4 — Resize Text Level AA.
     pub(crate) ResizableTextCreated => WcagTextResizable;
+
+    /// Witness that a text block's spacing values were verified to meet all
+    /// four SC 1.4.12 thresholds: line height ≥1.5×, letter spacing ≥0.12 em,
+    /// word spacing ≥0.16 em, paragraph spacing ≥2 em.
+    ///
+    /// Source: WCAG 2.2 SC 1.4.12 — Text Spacing, Level AA.
+    pub(crate) TextSpacingVerified => WcagTextSpacingAdjustable;
 }
 
 // ── Media ─────────────────────────────────────────────────────────────────────

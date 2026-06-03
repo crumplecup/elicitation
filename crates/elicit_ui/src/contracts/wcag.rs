@@ -369,6 +369,18 @@ mod emit_impls {
         "WcagNoHorizontalScrollVerticalText"
     );
 
+    /// Text qualifies as "large" under WCAG definitions:
+    /// at least 18 pt at any weight, or at least 14 pt when bold (≥700 weight).
+    ///
+    /// Obtaining this token through [`WcagContrastFactory::classify_large_text`](crate::WcagContrastFactory::classify_large_text)
+    /// is required before calling the large-text contrast threshold methods, ensuring
+    /// the 3:1 / 4.5:1 distinction is validated by the type system rather than
+    /// asserted by the caller.
+    ///
+    /// Source: WCAG 2.2 SC 1.4.3 — Contrast (Minimum), large-text definition.
+    pub struct WcagLargeTextClassified;
+    structural_prop!(WcagLargeTextClassified, "WcagLargeTextClassified");
+
     /// User interface components and graphical objects have at least 3:1
     /// contrast against adjacent colors.
     ///
@@ -1322,6 +1334,7 @@ pub use emit_impls::{
     WcagLabelInNameMatch,
     WcagLabelsDescriptive,
     WcagLabelsOrInstructionsPresent,
+    WcagLargeTextClassified,
     WcagLetterSpacingAdjustable,
     WcagLevelAAAValid,
     WcagLevelAAValid,

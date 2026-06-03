@@ -101,6 +101,7 @@ pub use wcag::{
     WcagLabelInNameMatch,
     WcagLabelsDescriptive,
     WcagLabelsOrInstructionsPresent,
+    WcagLargeTextClassified,
     WcagLetterSpacingAdjustable,
     WcagLevelAAAValid,
     WcagLevelAAValid,

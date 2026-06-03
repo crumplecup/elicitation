@@ -14,37 +14,38 @@ use crate::proof_credentials::{
     FocusAppearanceEnhancedVerified, FocusAppearanceMinimumVerified, FocusOrderSet,
     FocusVisibleVerified, FormLabelVerified, HeadingCreated, KeyboardEscapeVerified,
     KeyboardOperableVerified, LabelInNameVerified, LabelsAndInstructionsVerified,
-    LargeTextContrastVerified, LayoutContainerCreated, ListCreated, NonTextContrastVerified,
-    NormalTextContrastVerified, PageLanguageVerified, PartLanguageVerified,
+    LargeTextClassified, LargeTextContrastVerified, LayoutContainerCreated, ListCreated,
+    NonTextContrastVerified, NormalTextContrastVerified, PageLanguageVerified, PartLanguageVerified,
     PointerCancellationVerified, PointerGestureAlternativeVerified, RemappableShortcutVerified,
     ResizableTextCreated, ShortcutRegistered, SkipLinkAdded, TableCreated,
-    TargetSizeEnhancedVerified, TargetSizeMinimumVerified, TimingAdjustableVerified,
+    TargetSizeEnhancedVerified, TargetSizeMinimumVerified, TextSpacingVerified,
+    TimingAdjustableVerified,
 };
 use crate::{
     CaptionedMedia, ContainerId, ContrastDescriptor, ContrastPair, ErrorDescriptor, ErrorField,
     FocusDescriptor, FocusIndicator, FocusVisible, KeyboardAccessible, KeyboardDescriptor,
     KeyboardPath, LabelDescriptor, LabeledElement, LanguageDescriptor, LanguagePage,
     MediaDescriptor, NoOverflow, OperableEvidence, OperableInterface, PerceivedEvidence,
-    PerceivedSection, PointerTarget, RobustEvidence, RobustWidget, StructureDescriptor,
-    StructuredElement, TargetDescriptor, TimedElement, TimingDescriptor, UiError, UiErrorKind,
-    UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager, UiResult,
-    UnderstandableEvidence, UnderstandableInterface, WcagAudioDescriptionPrerecorded,
-    WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable, WcagContrastEnhancedLargeText,
-    WcagContrastEnhancedNormalText, WcagContrastFactory, WcagContrastMinimumLargeText,
-    WcagContrastMinimumNormalText, WcagElementMeta, WcagErrorFactory,
+    PerceivedSection, PointerTarget, RobustEvidence, RobustWidget, SpacedText, StructureDescriptor,
+    StructuredElement, TargetDescriptor, TextSizeDescriptor, TextSpacingDescriptor, TimedElement,
+    TimingDescriptor, UiError, UiErrorKind, UiEventDispatcher, UiInspector, UiLayoutManager,
+    UiNavigationManager, UiResult, UnderstandableEvidence, UnderstandableInterface,
+    WcagAudioDescriptionPrerecorded, WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable,
+    WcagContrastEnhancedLargeText, WcagContrastEnhancedNormalText, WcagContrastFactory,
+    WcagContrastMinimumLargeText, WcagContrastMinimumNormalText, WcagElementMeta, WcagErrorFactory,
     WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
     WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusFactory,
     WcagFocusVisibleKeyboard, WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic,
     WcagKeyboardFactory, WcagKeyboardNotTrapped, WcagKeyboardOperable, WcagLabelFactory,
-    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLanguageFactory,
-    WcagListStructureProgrammatic, WcagMediaFactory, WcagNamePresent, WcagNonTextContrastMinimum,
-    WcagOperableFactory, WcagOperableValid, WcagPageLanguageIdentified, WcagPageMeta,
-    WcagPartLanguageIdentified, WcagPerceivedFactory, WcagPerceivedValid,
+    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLargeTextClassified,
+    WcagLanguageFactory, WcagListStructureProgrammatic, WcagMediaFactory, WcagNamePresent,
+    WcagNonTextContrastMinimum, WcagOperableFactory, WcagOperableValid, WcagPageLanguageIdentified,
+    WcagPageMeta, WcagPartLanguageIdentified, WcagPerceivedFactory, WcagPerceivedValid,
     WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative, WcagRobustFactory,
     WcagRobustValid, WcagStructureFactory, WcagTableHeadersProgrammatic, WcagTargetFactory,
-    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTimingAdjustable,
-    WcagTimingFactory, WcagUnderstandableFactory, WcagUnderstandableValid, WidgetId, WidgetInfo,
-    contrast_ratio,
+    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable,
+    WcagTimingAdjustable, WcagTimingFactory, WcagUnderstandableFactory, WcagUnderstandableValid,
+    WidgetId, WidgetInfo, contrast_ratio,
 };
 
 struct BackendState {
@@ -220,6 +221,24 @@ impl WcagContrastFactory for AccessKitUiBackend {
             ratio: ratio.into(),
         };
         Ok((pair, Established::prove(&NonTextContrastVerified)))
+    }
+
+    #[instrument(skip(self, input), fields(font_size_pt = input.font_size_pt, bold = input.bold))]
+    fn classify_large_text(
+        &self,
+        input: TextSizeDescriptor,
+    ) -> UiResult<Established<WcagLargeTextClassified>> {
+        // WCAG 1.4.3 large text: ≥18 pt at any weight, or ≥14 pt when bold (weight ≥700).
+        let is_large = input.font_size_pt >= 18.0 || (input.bold && input.font_size_pt >= 14.0);
+        if !is_large {
+            return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                "text {:.1} pt ({}) does not meet WCAG large-text threshold \
+                 (≥18 pt normal or ≥14 pt bold)",
+                input.font_size_pt,
+                if input.bold { "bold" } else { "normal" }
+            ))));
+        }
+        Ok(Established::prove(&LargeTextClassified))
     }
 }
 
@@ -742,6 +761,82 @@ impl WcagStructureFactory for AccessKitUiBackend {
             role: "paragraph".to_string(),
         };
         Ok((element, Established::prove(&ResizableTextCreated)))
+    }
+
+    #[instrument(skip(self, input), fields(font_size_pt = input.font_size_pt))]
+    fn build_text_spacing(
+        &self,
+        input: TextSpacingDescriptor,
+    ) -> UiResult<(SpacedText, Established<WcagTextSpacingAdjustable>)> {
+        let fs = input.font_size_pt;
+        if fs <= 0.0 {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "font_size_pt must be positive for SC 1.4.12 validation".into(),
+            )));
+        }
+
+        // SC 1.4.12 thresholds (in points, using font_size as 1 em).
+        let line_min = 1.5 * fs;
+        let letter_min = 0.12 * fs;
+        let word_min = 0.16 * fs;
+        let para_min = 2.0 * fs;
+
+        if let Some(lh) = input.line_height_pt {
+            if lh < line_min {
+                return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                    "line height {lh:.2} pt < {line_min:.2} pt (1.5 em) required by WCAG 1.4.12"
+                ))));
+            }
+        } else {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "line_height_pt is required for SC 1.4.12 validation".into(),
+            )));
+        }
+
+        if let Some(ls) = input.letter_spacing_pt {
+            if ls < letter_min {
+                return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                    "letter spacing {ls:.3} pt < {letter_min:.3} pt (0.12 em) required by WCAG 1.4.12"
+                ))));
+            }
+        } else {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "letter_spacing_pt is required for SC 1.4.12 validation".into(),
+            )));
+        }
+
+        if let Some(ws) = input.word_spacing_pt {
+            if ws < word_min {
+                return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                    "word spacing {ws:.3} pt < {word_min:.3} pt (0.16 em) required by WCAG 1.4.12"
+                ))));
+            }
+        } else {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "word_spacing_pt is required for SC 1.4.12 validation".into(),
+            )));
+        }
+
+        if let Some(ps) = input.paragraph_spacing_pt {
+            if ps < para_min {
+                return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                    "paragraph spacing {ps:.2} pt < {para_min:.2} pt (2 em) required by WCAG 1.4.12"
+                ))));
+            }
+        } else {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "paragraph_spacing_pt is required for SC 1.4.12 validation".into(),
+            )));
+        }
+
+        let mut state = self.state.lock().unwrap();
+        let id = state.next_id();
+        let node = Node::new(Role::Paragraph);
+        state.nodes.insert(id, node);
+        let spaced = SpacedText {
+            id: WidgetId::from_node(id),
+        };
+        Ok((spaced, Established::prove(&TextSpacingVerified)))
     }
 }
 

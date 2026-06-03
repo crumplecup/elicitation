@@ -60,20 +60,21 @@ use crate::{
     FocusIndicator, KeyboardDescriptor, KeyboardPath, LabelDescriptor, LabeledElement,
     LanguageDescriptor, LanguagePage, LevelAaEvidence, MediaDescriptor, OperableEvidence,
     OperableInterface, PerceivedEvidence, PerceivedSection, PointerTarget, RobustEvidence,
-    RobustWidget, StructureDescriptor, StructuredElement, TargetDescriptor, TimedElement,
-    TimingDescriptor, UiResult, UnderstandableEvidence, UnderstandableInterface,
-    WcagAudioDescriptionPrerecorded, WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable,
-    WcagContrastEnhancedLargeText, WcagContrastEnhancedNormalText, WcagContrastMinimumLargeText,
-    WcagContrastMinimumNormalText, WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal,
-    WcagErrorSuggestionProvided, WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea,
-    WcagFocusVisibleKeyboard, WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic,
-    WcagKeyboardNotTrapped, WcagKeyboardOperable, WcagLabelInNameMatch,
-    WcagLabelsOrInstructionsPresent, WcagLevelAAValid, WcagListStructureProgrammatic,
-    WcagNamePresent, WcagNonTextContrastMinimum, WcagOperableValid, WcagPageLanguageIdentified,
+    RobustWidget, SpacedText, StructureDescriptor, StructuredElement, TargetDescriptor,
+    TextSizeDescriptor, TextSpacingDescriptor, TimedElement, TimingDescriptor, UiResult,
+    UnderstandableEvidence, UnderstandableInterface, WcagAudioDescriptionPrerecorded,
+    WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable, WcagContrastEnhancedLargeText,
+    WcagContrastEnhancedNormalText, WcagContrastMinimumLargeText, WcagContrastMinimumNormalText,
+    WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
+    WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusVisibleKeyboard,
+    WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic, WcagKeyboardNotTrapped,
+    WcagKeyboardOperable, WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent,
+    WcagLargeTextClassified, WcagLevelAAValid, WcagListStructureProgrammatic, WcagNamePresent,
+    WcagNonTextContrastMinimum, WcagOperableValid, WcagPageLanguageIdentified,
     WcagPartLanguageIdentified, WcagPerceivedValid, WcagPointerCancellationUpEvent,
     WcagPointerGesturesSimpleAlternative, WcagRobustValid, WcagTableHeadersProgrammatic,
-    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTimingAdjustable,
-    WcagUnderstandableValid, WidgetId,
+    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable,
+    WcagTimingAdjustable, WcagUnderstandableValid, WidgetId,
 };
 
 // ── Role 1a: Leaf factories ───────────────────────────────────────────────────
@@ -124,6 +125,19 @@ pub trait WcagContrastFactory: Send + Sync {
         &self,
         input: ContrastDescriptor,
     ) -> UiResult<(ContrastPair, Established<WcagNonTextContrastMinimum>)>;
+
+    /// Classify text as "large" under WCAG 1.4.3 definitions.
+    ///
+    /// Returns `Established<WcagLargeTextClassified>` when the font meets either
+    /// threshold: ≥18 pt at any weight, or ≥14 pt when bold (weight ≥700).
+    /// Returns an error when neither threshold is met, preventing the caller
+    /// from using the large-text contrast methods on normal-sized text.
+    ///
+    /// Source: WCAG 2.2 SC 1.4.3 — Contrast (Minimum), large-text definition, Level AA
+    fn classify_large_text(
+        &self,
+        input: TextSizeDescriptor,
+    ) -> UiResult<Established<WcagLargeTextClassified>>;
 }
 
 /// Constructs labeled elements, establishing the presence of an accessible name.
@@ -313,6 +327,23 @@ pub trait WcagStructureFactory: Send + Sync {
         &self,
         input: StructureDescriptor,
     ) -> UiResult<(StructuredElement, Established<WcagTextResizable>)>;
+
+    /// Build a text block proven to meet all four SC 1.4.12 spacing thresholds.
+    ///
+    /// Validates that the provided spacing values satisfy:
+    /// - Line height ≥ 1.5 × font size
+    /// - Letter spacing ≥ 0.12 em (0.12 × font size)
+    /// - Word spacing ≥ 0.16 em (0.16 × font size)
+    /// - Paragraph spacing ≥ 2 em (2.0 × font size)
+    ///
+    /// Any spacing field that is `None` is treated as zero and will fail the
+    /// corresponding threshold.
+    ///
+    /// Source: WCAG 2.2 SC 1.4.12 — Text Spacing, Level AA
+    fn build_text_spacing(
+        &self,
+        input: TextSpacingDescriptor,
+    ) -> UiResult<(SpacedText, Established<WcagTextSpacingAdjustable>)>;
 }
 
 /// Constructs accessible media elements with captions and audio descriptions.

@@ -22,7 +22,8 @@ use crate::{
     WcagNavigationConsistent, WcagNonTextContrastMinimum, WcagOperableValid,
     WcagPageLanguageIdentified, WcagPageTitled, WcagPerceivedValid, WcagPointerCancellationUpEvent,
     WcagRedundantEntryMinimized, WcagRobustValid, WcagStatusMessagesProgrammatic,
-    WcagTargetSizeMinimum, WcagTextResizable, WcagUnderstandableValid, WidgetId,
+    WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable, WcagUnderstandableValid,
+    WidgetId,
 };
 
 // ── Descriptors (raw input data) ──────────────────────────────────────────────
@@ -158,6 +159,42 @@ pub struct ErrorDescriptor {
     pub suggestion: Option<String>,
 }
 
+/// Raw input for text-size classification (WCAG 1.4.3 large-text threshold).
+///
+/// Pass to [`WcagContrastFactory::classify_large_text`](crate::WcagContrastFactory::classify_large_text).
+/// The factory returns `Established<WcagLargeTextClassified>` when the size
+/// meets WCAG's definition of "large text" (≥18 pt normal, or ≥14 pt bold).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TextSizeDescriptor {
+    /// Font size in points (1 pt = 1/72 inch).
+    pub font_size_pt: f32,
+    /// `true` when font weight is bold (≥700).
+    pub bold: bool,
+}
+
+/// Raw input for SC 1.4.12 text-spacing validation.
+///
+/// All spacing values are in points; the factory converts them to `em` units
+/// using `font_size_pt` as the reference.  `None` fields are treated as zero
+/// (not provided by the caller); the factory only validates fields that are
+/// present.
+///
+/// Pass to [`WcagStructureFactory::build_text_spacing`](crate::WcagStructureFactory::build_text_spacing).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TextSpacingDescriptor {
+    /// Reference font size in points (used as the `1 em` baseline).
+    pub font_size_pt: f32,
+    /// Line height in points.  WCAG 1.4.12 minimum: 1.5 × `font_size_pt`.
+    pub line_height_pt: Option<f32>,
+    /// Letter spacing in points.  WCAG 1.4.12 minimum: 0.12 × `font_size_pt`.
+    pub letter_spacing_pt: Option<f32>,
+    /// Word spacing in points.  WCAG 1.4.12 minimum: 0.16 × `font_size_pt`.
+    pub word_spacing_pt: Option<f32>,
+    /// Paragraph (bottom margin / padding) spacing in points.
+    /// WCAG 1.4.12 minimum: 2.0 × `font_size_pt`.
+    pub paragraph_spacing_pt: Option<f32>,
+}
+
 // ── Validated constructs (output of successful factory calls) ─────────────────
 
 /// A colour pair that has been proven to meet a WCAG contrast threshold.
@@ -242,6 +279,18 @@ pub struct StructuredElement {
     pub id: WidgetId,
     /// AccessKit role name.
     pub role: String,
+}
+
+/// A text block proven to meet WCAG 1.4.12 text-spacing requirements.
+///
+/// Only constructible through [`WcagStructureFactory::build_text_spacing`](crate::WcagStructureFactory::build_text_spacing).
+/// Its existence constitutes evidence that the provided spacing values satisfy
+/// the SC 1.4.12 thresholds (line height ≥1.5×, letter spacing ≥0.12 em,
+/// word spacing ≥0.16 em, paragraph spacing ≥2 em).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SpacedText {
+    /// Widget identifier of the validated text block.
+    pub id: WidgetId,
 }
 
 /// A media element proven to have synchronised captions.
@@ -338,6 +387,9 @@ pub struct PerceivedEvidence {
     pub structure: Established<WcagInfoAndRelationshipsProgrammatic>,
     /// All non-text content has an accessible name (WCAG 1.1.1 / 4.1.2).
     pub name_present: Established<WcagNamePresent>,
+    /// Text spacing meets WCAG 1.4.12 thresholds (line height ≥1.5×, letter
+    /// spacing ≥0.12 em, word spacing ≥0.16 em, paragraph spacing ≥2 em).
+    pub text_spacing: Established<WcagTextSpacingAdjustable>,
 }
 
 /// Evidence required to prove WCAG Principle 2 (Operable) Level AA.

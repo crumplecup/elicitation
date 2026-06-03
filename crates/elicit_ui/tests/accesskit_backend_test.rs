@@ -3,10 +3,10 @@
 use elicit_ui::{
     AccessKitUiBackend, ContrastDescriptor, ErrorDescriptor, FocusDescriptor, KeyboardDescriptor,
     LabelDescriptor, LanguageDescriptor, MediaDescriptor, SrgbColor, StructureDescriptor,
-    TargetDescriptor, TimingDescriptor, UiInspector, UiLayoutManager, UiNavigationManager,
-    WcagContrastFactory, WcagElementMeta, WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory,
-    WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory, WcagPageMeta, WcagStructureFactory,
-    WcagTargetFactory, WcagTimingFactory, WidgetId,
+    TargetDescriptor, TextSizeDescriptor, TextSpacingDescriptor, TimingDescriptor, UiInspector,
+    UiLayoutManager, UiNavigationManager, WcagContrastFactory, WcagElementMeta, WcagErrorFactory,
+    WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
+    WcagPageMeta, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WidgetId,
 };
 
 fn black() -> SrgbColor {
@@ -119,6 +119,167 @@ fn contrast_enhanced_requires_seven_to_one() {
         b.build_contrast_enhanced(desc2).is_ok(),
         "black on white satisfies 7:1"
     );
+}
+
+// ── WcagContrastFactory — classify_large_text (SC 1.4.3) ─────────────────────
+
+#[test]
+fn large_text_passes_at_18pt_normal() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSizeDescriptor { font_size_pt: 18.0, bold: false };
+    assert!(b.classify_large_text(desc).is_ok(), "18 pt normal is large text");
+}
+
+#[test]
+fn large_text_passes_at_14pt_bold() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSizeDescriptor { font_size_pt: 14.0, bold: true };
+    assert!(b.classify_large_text(desc).is_ok(), "14 pt bold is large text");
+}
+
+#[test]
+fn large_text_passes_above_18pt() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSizeDescriptor { font_size_pt: 24.0, bold: false };
+    assert!(b.classify_large_text(desc).is_ok(), "24 pt normal is large text");
+}
+
+#[test]
+fn large_text_rejects_12pt_normal() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSizeDescriptor { font_size_pt: 12.0, bold: false };
+    assert!(b.classify_large_text(desc).is_err(), "12 pt normal is not large text");
+}
+
+#[test]
+fn large_text_rejects_13pt_bold() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSizeDescriptor { font_size_pt: 13.0, bold: true };
+    assert!(
+        b.classify_large_text(desc).is_err(),
+        "13 pt bold does not reach 14 pt threshold"
+    );
+}
+
+#[test]
+fn large_text_rejects_17pt_normal() {
+    let b = AccessKitUiBackend::new();
+    // 17.9 pt is below the 18 pt threshold.
+    let desc = TextSizeDescriptor { font_size_pt: 17.9, bold: false };
+    assert!(
+        b.classify_large_text(desc).is_err(),
+        "17.9 pt normal does not meet 18 pt threshold"
+    );
+}
+
+// ── WcagStructureFactory — build_text_spacing (SC 1.4.12) ────────────────────
+
+fn compliant_spacing(font_size_pt: f32) -> TextSpacingDescriptor {
+    // Exactly at the SC 1.4.12 minimums.
+    TextSpacingDescriptor {
+        font_size_pt,
+        line_height_pt: Some(1.5 * font_size_pt),
+        letter_spacing_pt: Some(0.12 * font_size_pt),
+        word_spacing_pt: Some(0.16 * font_size_pt),
+        paragraph_spacing_pt: Some(2.0 * font_size_pt),
+    }
+}
+
+#[test]
+fn text_spacing_passes_at_minimum_thresholds() {
+    let b = AccessKitUiBackend::new();
+    let (spaced, _proof) = b.build_text_spacing(compliant_spacing(16.0)).unwrap();
+    let _ = spaced.id;
+}
+
+#[test]
+fn text_spacing_passes_above_minimum() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSpacingDescriptor {
+        font_size_pt: 16.0,
+        line_height_pt: Some(32.0),
+        letter_spacing_pt: Some(4.0),
+        word_spacing_pt: Some(6.0),
+        paragraph_spacing_pt: Some(40.0),
+    };
+    assert!(b.build_text_spacing(desc).is_ok());
+}
+
+#[test]
+fn text_spacing_rejects_line_height_below_threshold() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.line_height_pt = Some(16.0 * 1.4);
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_letter_spacing_below_threshold() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.letter_spacing_pt = Some(16.0 * 0.11);
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_word_spacing_below_threshold() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.word_spacing_pt = Some(16.0 * 0.15);
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_paragraph_spacing_below_threshold() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.paragraph_spacing_pt = Some(16.0 * 1.9);
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_missing_line_height() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.line_height_pt = None;
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_missing_letter_spacing() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.letter_spacing_pt = None;
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_missing_word_spacing() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.word_spacing_pt = None;
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_missing_paragraph_spacing() {
+    let b = AccessKitUiBackend::new();
+    let mut desc = compliant_spacing(16.0);
+    desc.paragraph_spacing_pt = None;
+    assert!(b.build_text_spacing(desc).is_err());
+}
+
+#[test]
+fn text_spacing_rejects_zero_font_size() {
+    let b = AccessKitUiBackend::new();
+    let desc = TextSpacingDescriptor {
+        font_size_pt: 0.0,
+        line_height_pt: Some(0.0),
+        letter_spacing_pt: Some(0.0),
+        word_spacing_pt: Some(0.0),
+        paragraph_spacing_pt: Some(0.0),
+    };
+    assert!(b.build_text_spacing(desc).is_err());
 }
 
 // ── WcagLabelFactory ──────────────────────────────────────────────────────────

@@ -46,6 +46,79 @@ impl SrgbColor {
     }
 }
 
+/// Convert a [`crate::UiColor`] to an sRGB triple for contrast checking.
+///
+/// Returns `None` for `UiColor::Reset` because it inherits its colour from
+/// the host theme at render time; no single sRGB value can represent it.
+/// For `Rgba` the alpha channel is discarded — WCAG contrast is defined for
+/// fully opaque colours; callers should verify opacity independently.
+impl crate::UiColor {
+    /// Convert to [`SrgbColor`], or `None` for `UiColor::Reset`.
+    pub fn to_srgb(self) -> Option<SrgbColor> {
+        // VS Code terminal palette — same values as `From<UiColor> for peniko::Color`.
+        let (r, g, b): (u8, u8, u8) = match self {
+            Self::Reset => return None,
+            Self::Black => (12, 12, 12),
+            Self::Red => (197, 15, 31),
+            Self::Green => (19, 161, 14),
+            Self::Yellow => (193, 156, 0),
+            Self::Blue => (0, 55, 218),
+            Self::Magenta => (136, 23, 152),
+            Self::Cyan => (58, 150, 221),
+            Self::White => (204, 204, 204),
+            Self::DarkGray => (118, 118, 118),
+            Self::LightRed => (231, 72, 86),
+            Self::LightGreen => (22, 198, 12),
+            Self::LightYellow => (249, 241, 165),
+            Self::LightBlue => (59, 120, 255),
+            Self::LightMagenta => (180, 0, 158),
+            Self::LightCyan => (97, 214, 214),
+            Self::Gray => (242, 242, 242),
+            Self::Rgb { r, g, b } | Self::Rgba { r, g, b, .. } => (r, g, b),
+            Self::Indexed { index } => ansi256_to_rgb(index),
+        };
+        Some(SrgbColor::from_u8(r, g, b))
+    }
+}
+
+/// Expand an ANSI-256 palette index to `(r, g, b)` bytes.
+///
+/// Indices 0–15 follow the standard 16-colour terminal palette.
+/// Indices 16–231 are the 6×6×6 colour cube.  Indices 232–255 are
+/// the 24-step grayscale ramp.
+fn ansi256_to_rgb(index: u8) -> (u8, u8, u8) {
+    match index {
+        0 => (0, 0, 0),
+        1 => (128, 0, 0),
+        2 => (0, 128, 0),
+        3 => (128, 128, 0),
+        4 => (0, 0, 128),
+        5 => (128, 0, 128),
+        6 => (0, 128, 128),
+        7 => (192, 192, 192),
+        8 => (128, 128, 128),
+        9 => (255, 0, 0),
+        10 => (0, 255, 0),
+        11 => (255, 255, 0),
+        12 => (0, 0, 255),
+        13 => (255, 0, 255),
+        14 => (0, 255, 255),
+        15 => (255, 255, 255),
+        16..=231 => {
+            let n = index - 16;
+            let r = n / 36;
+            let g = (n % 36) / 6;
+            let b = n % 6;
+            let to_byte = |v: u8| if v == 0 { 0 } else { 55 + v * 40 };
+            (to_byte(r), to_byte(g), to_byte(b))
+        }
+        232..=255 => {
+            let gray = 8 + (index - 232) * 10;
+            (gray, gray, gray)
+        }
+    }
+}
+
 /// Compute the WCAG 2.1 contrast ratio between two colors.
 ///
 /// Uses palette's `Wcag21RelativeContrast` for accurate luminance-based

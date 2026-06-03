@@ -20,6 +20,7 @@
 //!     fg: None,
 //!     bg: None,
 //!     modifiers: vec![TextModifier::Reversed, TextModifier::Bold],
+//!     ..Default::default()
 //! };
 //! let span = TextSpan { content: " X ".to_string(), style: Some(cursor_style) };
 //! let line = TextLine { spans: vec![span], style: None, alignment: None };

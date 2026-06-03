@@ -169,6 +169,7 @@ pub use contracts::{
     WcagLabelInNameMatch,
     WcagLabelsDescriptive,
     WcagLabelsOrInstructionsPresent,
+    WcagLargeTextClassified,
     WcagLetterSpacingAdjustable,
     // ── Aggregate seams ───────────────────────────────────────────────────
     WcagLevelAAAValid,
@@ -286,6 +287,7 @@ pub use wcag_types::{
     FocusIndicator, KeyboardDescriptor, KeyboardPath, LabelDescriptor, LabeledElement,
     LanguageDescriptor, LanguagePage, LevelAaEvidence, MediaDescriptor, OperableEvidence,
     OperableInterface, PerceivedEvidence, PerceivedSection, PointerTarget, RobustEvidence,
-    RobustWidget, StructureDescriptor, StructuredElement, TargetDescriptor, TimedElement,
-    TimingDescriptor, UnderstandableEvidence, UnderstandableInterface,
+    RobustWidget, SpacedText, StructureDescriptor, StructuredElement, TargetDescriptor,
+    TextSizeDescriptor, TextSpacingDescriptor, TimedElement, TimingDescriptor,
+    UnderstandableEvidence, UnderstandableInterface,
 };
