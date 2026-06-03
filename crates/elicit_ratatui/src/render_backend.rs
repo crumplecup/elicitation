@@ -186,7 +186,7 @@ fn ui_align_to_json(a: elicit_ui::text::TextAlign) -> AlignmentJson {
     }
 }
 
-fn text_widget(node: &Node) -> TuiNode {
+fn text_widget(node: &Node, proofs: WcagNodeProofs) -> TuiNode {
     TuiNode::Widget {
         widget: Box::new(WidgetJson::Paragraph {
             text: ParagraphText::Plain(node_label(node)),
@@ -196,6 +196,7 @@ fn text_widget(node: &Node) -> TuiNode {
             alignment: None,
             block: None,
         }),
+        proofs,
     }
 }
 
@@ -249,7 +250,7 @@ impl UiNodeBridge for RatatuiBackend {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             if children.is_empty() {
-                text_widget(node)
+                text_widget(node, proofs)
             } else {
                 vertical_layout(children)
             }
@@ -385,7 +386,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TerminalNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -417,6 +418,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: Some("Center".to_string()),
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -449,6 +451,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -484,6 +487,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -519,6 +523,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -554,6 +559,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -584,6 +590,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -619,6 +626,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -649,6 +657,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -673,7 +682,7 @@ impl UiNodeBridge for RatatuiBackend {
             let items: Vec<String> = children
                 .iter()
                 .map(|c| match c {
-                    TuiNode::Widget { widget } => match widget.as_ref() {
+                    TuiNode::Widget { widget, .. } => match widget.as_ref() {
                         WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
                         _ => String::new(),
                     },
@@ -690,6 +699,7 @@ impl UiNodeBridge for RatatuiBackend {
                     highlight_symbol: None,
                     state: None,
                 }),
+                proofs,
             }
         };
         (
@@ -726,6 +736,7 @@ impl UiNodeBridge for RatatuiBackend {
                     style: None,
                     gauge_style: None,
                 }),
+                proofs,
             }
         };
         (
@@ -756,6 +767,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: Some("Center".to_string()),
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -791,6 +803,7 @@ impl UiNodeBridge for RatatuiBackend {
                     style: None,
                     gauge_style: None,
                 }),
+                proofs,
             }
         };
         (
@@ -839,6 +852,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -874,6 +888,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: lbl.map(titled_block),
                 }),
+                proofs,
             }
         };
         (
@@ -900,7 +915,7 @@ impl UiNodeBridge for RatatuiBackend {
             Established::<TextInputNodeValid>::prove(&proof),
             proofs,
         );
-        if let TuiNode::Widget { widget } = &mut result
+        if let TuiNode::Widget { widget, .. } = &mut result
             && let WidgetJson::Paragraph { wrap, .. } = widget.as_mut()
         {
             *wrap = true;
@@ -924,7 +939,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TextRunNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -966,6 +981,7 @@ impl UiNodeBridge for RatatuiBackend {
                         alignment: outer_alignment,
                         block: None,
                     }),
+                    proofs,
                 }
             } else {
                 let style = if node.is_selected().unwrap_or(false) {
@@ -986,6 +1002,7 @@ impl UiNodeBridge for RatatuiBackend {
                         alignment: None,
                         block: None,
                     }),
+                    proofs,
                 }
             }
         };
@@ -1006,7 +1023,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<LabelNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1037,6 +1054,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1066,6 +1084,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1096,6 +1115,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1115,7 +1135,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<CodeNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1133,7 +1153,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<MathNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1154,7 +1174,7 @@ impl UiNodeBridge for RatatuiBackend {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             if children.is_empty() {
-                text_widget(node)
+                text_widget(node, proofs)
             } else {
                 vertical_layout(children)
             }
@@ -1176,7 +1196,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TermNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1194,7 +1214,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<DefinitionNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1230,6 +1250,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1268,7 +1289,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<FigureCaptionNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1297,6 +1318,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1327,6 +1349,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1357,6 +1380,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1663,7 +1687,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TooltipNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1692,6 +1716,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1711,7 +1736,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<StatusNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1729,7 +1754,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TimerNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1754,7 +1779,7 @@ impl UiNodeBridge for RatatuiBackend {
             let items: Vec<String> = children
                 .iter()
                 .map(|c| match c {
-                    TuiNode::Widget { widget } => match widget.as_ref() {
+                    TuiNode::Widget { widget, .. } => match widget.as_ref() {
                         WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
                         _ => String::new(),
                     },
@@ -1771,6 +1796,7 @@ impl UiNodeBridge for RatatuiBackend {
                     highlight_symbol: None,
                     state: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1790,7 +1816,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<ListItemNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1834,7 +1860,7 @@ impl UiNodeBridge for RatatuiBackend {
             let rows: Vec<RowJson> = children
                 .into_iter()
                 .map(|child| match child {
-                    TuiNode::Widget { widget } => match *widget {
+                    TuiNode::Widget { widget, .. } => match *widget {
                         WidgetJson::Paragraph { text, .. } => RowJson {
                             cells: vec![crate::serde_types::CellJson {
                                 content: text.to_plain_string(),
@@ -1868,6 +1894,7 @@ impl UiNodeBridge for RatatuiBackend {
                     highlight_symbol: None,
                     state: None,
                 }),
+                proofs,
             }
         };
         (
@@ -1906,7 +1933,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<CellNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1924,7 +1951,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<CaptionNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1998,6 +2025,7 @@ impl UiNodeBridge for RatatuiBackend {
                     alignment: None,
                     block: None,
                 }),
+                proofs,
             }
         };
         (
@@ -2019,7 +2047,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<TabNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -2042,7 +2070,7 @@ impl UiNodeBridge for RatatuiBackend {
             let titles: Vec<String> = children
                 .iter()
                 .map(|c| match c {
-                    TuiNode::Widget { widget } => match widget.as_ref() {
+                    TuiNode::Widget { widget, .. } => match widget.as_ref() {
                         WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
                         _ => String::new(),
                     },
@@ -2058,6 +2086,7 @@ impl UiNodeBridge for RatatuiBackend {
                     highlight_style: None,
                     divider: None,
                 }),
+                proofs,
             }
         };
         (
@@ -2117,7 +2146,7 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<MenuItemNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let __w = { text_widget(node) };
+        let __w = { text_widget(node, proofs) };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {

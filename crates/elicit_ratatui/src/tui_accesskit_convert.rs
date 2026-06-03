@@ -10,7 +10,7 @@ use crate::serde_types::{
     SpanJson, StyleJson, TextJson, TuiNode, WidgetJson,
 };
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
-use elicit_ui::ColorTheme;
+use elicit_ui::{ColorTheme, WcagNodeProofs};
 
 /// Convert a `TuiNode` tree into an AccessKit `TreeUpdate`.
 ///
@@ -53,7 +53,7 @@ fn convert_node(tui_node: &TuiNode, nodes: &mut Vec<(NodeId, Node)>, next_id: &m
     *next_id += 1;
 
     match tui_node {
-        TuiNode::Widget { widget } => {
+        TuiNode::Widget { widget, .. } => {
             let node = widget_to_accesskit(widget);
             nodes.push((my_id, node));
         }
@@ -238,6 +238,7 @@ fn convert_accesskit_node(
                 alignment: None,
                 block: None,
             }),
+            proofs: WcagNodeProofs::default(),
         };
     };
 
@@ -289,6 +290,7 @@ fn convert_accesskit_node(
                     alignment: None,
                     block,
                 }),
+                proofs: WcagNodeProofs::default(),
             };
         }
     }
@@ -298,6 +300,7 @@ fn convert_accesskit_node(
         let widget = accesskit_to_widget(node);
         TuiNode::Widget {
             widget: Box::new(widget),
+            proofs: WcagNodeProofs::default(),
         }
     } else {
         // Container → Layout with children.

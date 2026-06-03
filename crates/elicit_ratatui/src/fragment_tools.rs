@@ -254,7 +254,7 @@ pub fn draw(frame: &mut Frame) {{
 fn tui_node_to_code(node: &TuiNode, indent: usize) -> String {
     let pad = "    ".repeat(indent);
     match node {
-        TuiNode::Widget { widget } => widget_to_code(widget, indent),
+        TuiNode::Widget { widget, .. } => widget_to_code(widget, indent),
         TuiNode::Layout {
             direction,
             constraints,

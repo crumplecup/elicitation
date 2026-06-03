@@ -3,9 +3,10 @@
 //! Import [`RatatuiRenderContext`] and wrap a `&Buffer` + `Rect` pair to
 //! perform post-render invariant checks via [`verify_in_debug`].
 
-use elicit_ui::RenderContext;
+use elicit_ui::{RenderColors, RenderContext};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
+use ratatui::style::Color;
 
 // Re-export so callers can write `elicit_ratatui::verify_in_debug`.
 pub use elicit_ui::RenderVerifiable;
@@ -48,5 +49,46 @@ impl<'a> RenderContext for RatatuiRenderContext<'a> {
 
     fn area_height(&self, area: &Rect) -> u16 {
         area.height
+    }
+
+    fn colors_at(&self, area: &Rect, col: u16, row: u16) -> Option<RenderColors> {
+        let x = area.x.saturating_add(col);
+        let y = area.y.saturating_add(row);
+        if x >= area.right() || y >= area.bottom() {
+            return None;
+        }
+        let cell = self.buf.cell((x, y))?;
+        let fg = color_to_rgb(cell.fg)?;
+        let bg = color_to_rgb(cell.bg)?;
+        Some(RenderColors {
+            foreground: fg,
+            background: bg,
+        })
+    }
+}
+
+/// Convert a ratatui [`Color`] to `[r, g, b]`, returning `None` for colours
+/// that require terminal-specific lookup (Reset, Indexed).
+fn color_to_rgb(color: Color) -> Option<[u8; 3]> {
+    match color {
+        Color::Rgb(r, g, b) => Some([r, g, b]),
+        Color::Black => Some([0, 0, 0]),
+        Color::Red => Some([128, 0, 0]),
+        Color::Green => Some([0, 128, 0]),
+        Color::Yellow => Some([128, 128, 0]),
+        Color::Blue => Some([0, 0, 128]),
+        Color::Magenta => Some([128, 0, 128]),
+        Color::Cyan => Some([0, 128, 128]),
+        Color::Gray => Some([192, 192, 192]),
+        Color::DarkGray => Some([128, 128, 128]),
+        Color::LightRed => Some([255, 0, 0]),
+        Color::LightGreen => Some([0, 255, 0]),
+        Color::LightYellow => Some([255, 255, 0]),
+        Color::LightBlue => Some([0, 0, 255]),
+        Color::LightMagenta => Some([255, 0, 255]),
+        Color::LightCyan => Some([0, 255, 255]),
+        Color::White => Some([255, 255, 255]),
+        // Terminal default or palette index — cannot determine RGB without runtime lookup.
+        Color::Reset | Color::Indexed(_) => None,
     }
 }

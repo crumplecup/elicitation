@@ -4,7 +4,7 @@
 //! conversion to/from the corresponding ratatui type and derives
 //! `Serialize`, `Deserialize`, `JsonSchema` for MCP transport.
 
-use elicit_ui::ColorTheme;
+use elicit_ui::{ColorTheme, WcagNodeProofs};
 use elicitation::ToCodeLiteral;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -1085,6 +1085,14 @@ pub enum TuiNode {
     Widget {
         /// Widget description.
         widget: Box<WidgetJson>,
+        /// WCAG proof tokens carried with this node.
+        ///
+        /// Skipped during serialisation (zero-cost ZST at runtime).  Populated
+        /// by the bridge during `render_dfs` so that `render_node` can run
+        /// [`elicit_ui::verify_in_debug`] checks after drawing.
+        #[serde(skip, default)]
+        #[schemars(skip)]
+        proofs: WcagNodeProofs,
     },
     /// A layout split containing child nodes.
     Layout {

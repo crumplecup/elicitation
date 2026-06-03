@@ -124,6 +124,7 @@ mod text_tools;
 pub mod tui_accesskit_convert;
 #[cfg(feature = "runtime")]
 mod tui_communicator;
+pub(crate) mod wcag_verify;
 mod widget_tools;
 
 #[cfg(feature = "runtime")]
@@ -182,6 +183,7 @@ pub use text_tools::{
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 #[cfg(feature = "runtime")]
 pub use tui_communicator::TuiCommunicator;
+pub use wcag_verify::{verify_wcag_proofs, wcag_contrast_ratio};
 pub use widget_tools::{
     BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
     ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
