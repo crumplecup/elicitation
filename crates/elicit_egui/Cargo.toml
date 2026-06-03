@@ -14,6 +14,7 @@ categories = ["gui", "development-tools"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["egui-types", "egui-winit-types"] }
+wgpu = { workspace = true, optional = true }
 elicitation_derive.workspace = true
 elicit_ui.workspace = true
 elicit_accesskit.workspace = true
@@ -38,6 +39,7 @@ serde_json = { workspace = true }
 [features]
 emit = ["elicitation/emit"]
 runtime = []
+runtime-proofs = ["dep:wgpu"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
