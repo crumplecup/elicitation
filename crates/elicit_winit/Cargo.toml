@@ -8,7 +8,7 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
-description = "Elicitation-enabled winit code-generation tools for windowing and input"
+description = "Elicitation shadow crate for winit — expose OS windowing as MCP tools"
 keywords = ["mcp", "winit", "windowing", "elicitation", "agent"]
 categories = ["gui", "os", "development-tools"]
 
@@ -16,15 +16,17 @@ categories = ["gui", "os", "development-tools"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
 
 [dependencies]
-elicitation = { workspace = true, features = ["winit-types"] }
+elicitation = { workspace = true, features = ["winit-types", "uuid"] }
 elicitation_derive.workspace = true
 winit = { workspace = true }
 rmcp.workspace = true
 schemars.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+tokio = { workspace = true, features = ["sync"] }
 tracing.workspace = true
 derive_more = { workspace = true, features = ["display", "error"] }
+uuid = { workspace = true, features = ["v4"] }
 
 [dev-dependencies]
 tokio.workspace = true

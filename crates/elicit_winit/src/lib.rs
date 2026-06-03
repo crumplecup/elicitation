@@ -1,22 +1,28 @@
-//! `elicit_winit` — code-generation MCP tools for winit windowing and input.
+//! `elicit_winit` — shadow crate for `winit` windowing.
 //!
-//! All tools are **emit-only**: they generate Rust code snippets for native
-//! windowing applications.  No windows are created at runtime.
+//! Exposes OS window management as MCP tools via a [`WinitPlugin`].
+//! The embedding app owns the winit `EventLoop` on the main thread and
+//! injects an `EventLoopProxy<WinitCmd>` into the plugin.
 //!
-//! # Plugins
+//! # Integration pattern
 //!
-//! | Plugin | Prefix | Tools | Coverage |
-//! |--------|--------|-------|---------|
-//! | [`WinitWindowPlugin`] | `winit_window__` | 8 | Window creation and configuration |
-//! | [`WinitEventPlugin`] | `winit_event__` | 7 | Event loop and ApplicationHandler |
-//! | [`WinitInputPlugin`] | `winit_input__` | 7 | Keyboard, mouse, touch, cursor |
-
+//! ```no_run
+//! # use winit::event_loop::EventLoop;
+//! # use elicit_winit::{WinitCmd, WinitPlugin};
+//! let event_loop = EventLoop::<WinitCmd>::with_user_event()
+//!     .build()
+//!     .expect("event loop");
+//! let proxy = event_loop.create_proxy();
+//! let plugin = WinitPlugin::new(proxy);
+//! // register plugin with your MCP server, then run event_loop.run_app(...)
+//! ```
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-pub mod workflow;
+mod context;
+mod plugin;
+mod window;
 
-pub use workflow::{
-    WinitEventLoopScaffolded, WinitEventPlugin, WinitInputHandled, WinitInputPlugin,
-    WinitWindowConfigured, WinitWindowPlugin,
-};
+pub use context::{WinitCmd, WinitCtx, WinitError};
+pub use plugin::WinitPlugin;
+pub use window::Window;
