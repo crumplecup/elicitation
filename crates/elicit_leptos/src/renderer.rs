@@ -29,6 +29,15 @@ use elicitation::Established;
 use crate::leptos_accesskit_convert::LeptosRenderMode;
 use crate::render_context::{LeptosRenderArea, LeptosRenderContext};
 
+#[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+use {
+    crate::render_context::WasmLeptosRenderContext,
+    std::sync::{
+        Mutex,
+        atomic::{AtomicU32, Ordering},
+    },
+};
+
 // ── LeptosRenderer ────────────────────────────────────────────────────────────
 
 /// Leptos rendering backend for verified AccessKit trees.
@@ -45,6 +54,16 @@ use crate::render_context::{LeptosRenderArea, LeptosRenderContext};
 /// | [`LeptosRenderMode::Html`] | Semantic HTML5 string | SSR via axum/tower |
 /// | [`LeptosRenderMode::ViewMacro`] | Leptos `view!` body | CSR/WASM or codegen |
 ///
+/// # Runtime proofs (`wasm32` + `debug_assertions` + `runtime-proofs` feature)
+///
+/// When this feature triple is active, [`wrap_widget`](UiNodeBridge::wrap_widget)
+/// injects a `data-wcag-check` attribute on every rendered element and queues the
+/// associated [`WcagNodeProofs`].  After the HTML is mounted into the DOM, call
+/// `post_render` (available on `wasm32` debug builds with `runtime-proofs`) to
+/// query each element via `document.querySelector` and verify colours using
+/// `window.getComputedStyle`, which reflects the true CSS cascade rather than
+/// only explicitly-set AccessKit metadata.
+///
 /// # Example
 ///
 /// ```rust,no_run
@@ -56,12 +75,26 @@ use crate::render_context::{LeptosRenderArea, LeptosRenderContext};
 /// ```
 pub struct LeptosRenderer {
     mode: LeptosRenderMode,
+    /// Pending WCAG checks queued by `wrap_widget`; drained by `post_render`.
+    #[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+    pending: Mutex<Vec<(u32, WcagNodeProofs)>>,
 }
+
+/// Document-wide monotonically increasing index for `data-wcag-check` attributes.
+///
+/// Shared across all `LeptosRenderer` instances to guarantee uniqueness even
+/// when multiple renderers are active on the same page.
+#[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+static WCAG_IDX: AtomicU32 = AtomicU32::new(0);
 
 impl LeptosRenderer {
     /// Create a new renderer with the given output mode.
     pub fn new(mode: LeptosRenderMode) -> Self {
-        Self { mode }
+        Self {
+            mode,
+            #[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+            pending: Mutex::new(Vec::new()),
+        }
     }
 
     /// Shorthand: renderer targeting SSR HTML output.
@@ -77,6 +110,37 @@ impl LeptosRenderer {
     /// Return the output mode.
     pub fn mode(&self) -> LeptosRenderMode {
         self.mode
+    }
+
+    /// Run queued WCAG contrast checks against live DOM computed styles.
+    ///
+    /// Only available on `wasm32` debug builds with the `runtime-proofs` feature.
+    ///
+    /// Call this after the HTML produced by the renderer has been mounted into the
+    /// DOM and the browser has computed styles.  For each pending node, the method
+    /// queries the element via `[data-wcag-check]` and calls
+    /// `window.getComputedStyle` to obtain true CSS cascade colours before
+    /// verifying contrast proofs.
+    #[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+    pub fn post_render(&self) {
+        let pending = {
+            let mut guard = self.pending.lock().unwrap_or_else(|e| e.into_inner());
+            std::mem::take(&mut *guard)
+        };
+        let Some(window) = web_sys::window() else {
+            return;
+        };
+        let Some(document) = window.document() else {
+            return;
+        };
+        for (idx, proofs) in pending {
+            let selector = format!("[data-wcag-check=\"{idx}\"]");
+            let Ok(Some(el)) = document.query_selector(&selector) else {
+                continue;
+            };
+            let ctx = WasmLeptosRenderContext::from_element(&el, &window);
+            verify_wcag_contrast_proofs(&ctx, &LeptosRenderArea::default(), &proofs);
+        }
     }
 }
 
@@ -154,14 +218,34 @@ impl UiRenderBackend for LeptosRenderer {
 impl UiNodeBridge for LeptosRenderer {
     type Widget = String;
 
-    // ── Post-render hook ──────────────────────────────────────────────────
+    // ── Post-render hooks ─────────────────────────────────────────────────
+
+    /// Inject a `data-wcag-check` attribute and queue the proofs for DOM
+    /// verification via [`post_render`](LeptosRenderer::post_render).
+    ///
+    /// Only active on `wasm32` debug builds with the `runtime-proofs` feature;
+    /// on other targets the default no-op is used instead.
+    #[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+    fn wrap_widget(&self, widget: String, proofs: &WcagNodeProofs) -> String {
+        let n = WCAG_IDX.fetch_add(1, Ordering::Relaxed);
+        match inject_data_attr(&widget, n) {
+            Some(augmented) => {
+                self.pending
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .push((n, proofs.clone()));
+                augmented
+            }
+            None => widget,
+        }
+    }
 
     /// Run WCAG contrast checks against AccessKit node colour metadata.
     ///
-    /// Leptos renders HTML strings; per-pixel buffer inspection is not
-    /// available.  Instead, colours are read from `foreground_color` and
-    /// `background_color` on the AccessKit node.  When neither is explicitly
-    /// set, the check silently skips (returning `None` from `colors_at`).
+    /// Disabled on `wasm32` debug builds with the `runtime-proofs` feature —
+    /// the `post_render` path uses `window.getComputedStyle` for true CSS
+    /// cascade colours instead.
+    #[cfg(not(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs")))]
     fn verify_node(&self, node: &Node, proofs: &WcagNodeProofs) {
         let ctx = LeptosRenderContext::from_node(node);
         verify_wcag_contrast_proofs(&ctx, &LeptosRenderArea::default(), proofs);
@@ -2294,4 +2378,24 @@ impl UiNodeBridge for LeptosRenderer {
             }),
         )
     }
+}
+
+// ── runtime-proofs helpers ────────────────────────────────────────────────────
+
+/// Inject a `data-wcag-check="{idx}"` attribute into the first HTML tag in `html`.
+///
+/// Returns `None` when no opening tag is found (e.g. empty string or plain text),
+/// in which case the caller should skip queueing the proofs.
+#[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+fn inject_data_attr(html: &str, idx: u32) -> Option<String> {
+    let pos = html.find('<')?;
+    let rest = &html[pos + 1..];
+    let end = rest.find(|c: char| c == ' ' || c == '/' || c == '>')?;
+    let insert_pos = pos + 1 + end;
+    let attr = format!(" data-wcag-check=\"{idx}\"");
+    let mut result = String::with_capacity(html.len() + attr.len());
+    result.push_str(&html[..insert_pos]);
+    result.push_str(&attr);
+    result.push_str(&html[insert_pos..]);
+    Some(result)
 }

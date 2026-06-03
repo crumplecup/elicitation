@@ -37,5 +37,7 @@ pub use code::LeptosCodePlugin;
 pub use error::{LeptosError, LeptosErrorKind, LeptosResult};
 pub use leptos_accesskit_convert::{LeptosRenderMode, render_tree, render_tree_with_stats};
 pub use reactive::LeptosReactivePlugin;
+#[cfg(all(target_arch = "wasm32", debug_assertions, feature = "runtime-proofs"))]
+pub use render_context::WasmLeptosRenderContext;
 pub use render_context::{LeptosRenderArea, LeptosRenderContext};
 pub use renderer::LeptosRenderer;

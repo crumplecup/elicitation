@@ -3575,6 +3575,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "wgpu 29.0.3",
 ]
 
 [[package]]
@@ -3702,6 +3703,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "web-sys",
 ]
 
 [[package]]
@@ -4178,6 +4180,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tracing",
+ "uuid",
  "winit",
 ]
 

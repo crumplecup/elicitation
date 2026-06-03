@@ -28,6 +28,12 @@ uuid = { workspace = true, features = ["v4"] }
 quote = { workspace = true }
 derive_more = { workspace = true }
 futures = { workspace = true }
+web-sys = { workspace = true, optional = true, features = [
+    "Window",
+    "Document",
+    "Element",
+    "CssStyleDeclaration",
+] }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
@@ -38,6 +44,7 @@ uuid = { workspace = true, features = ["v4"] }
 [features]
 default = []
 emit = ["elicitation/emit"]
+runtime-proofs = ["dep:web-sys"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
