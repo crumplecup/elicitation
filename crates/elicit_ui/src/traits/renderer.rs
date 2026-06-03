@@ -90,6 +90,27 @@ pub trait UiNodeBridge: UiRenderBackend {
     /// The frontend's native element or render unit.
     type Widget;
 
+    // ── Post-render hooks ─────────────────────────────────────────────────
+
+    /// Wrap a widget to add post-render behaviour such as WCAG verification.
+    ///
+    /// Called by [`render_dfs`] after [`dispatch_role`] returns.  The default
+    /// implementation is an identity function; frontends that need to inject
+    /// post-render logic (e.g. egui wrapping a closure to run contrast checks
+    /// after the widget draws) should override this.
+    fn wrap_widget(&self, widget: Self::Widget, _proofs: &WcagNodeProofs) -> Self::Widget {
+        widget
+    }
+
+    /// Inspect an AccessKit [`Node`] and its proof sidecar for any verification
+    /// that can be performed before the widget is drawn.
+    ///
+    /// Called by [`render_dfs`] after [`dispatch_role`] returns, in addition to
+    /// [`wrap_widget`].  The default implementation is a no-op; frontends that
+    /// derive colour information from AccessKit node metadata (e.g. leptos)
+    /// should override this to run WCAG contrast checks.
+    fn verify_node(&self, _node: &Node, _proofs: &WcagNodeProofs) {}
+
     // ── Unknown / fallback ────────────────────────────────────────────────
 
     /// Unrecognised or unsupported role — required safety net.
@@ -2971,7 +2992,10 @@ fn render_dfs<T: UiNodeBridge>(
         stats.widgets_rendered += 1;
     }
 
-    dispatch_role(bridge, node, id, children, wcag, proofs)
+    let (widget, role) = dispatch_role(bridge, node, id, children, wcag, proofs);
+    let widget = bridge.wrap_widget(widget, &proofs);
+    bridge.verify_node(node, &proofs);
+    (widget, role)
 }
 
 /// Returns `true` for roles that structurally contain other nodes.
