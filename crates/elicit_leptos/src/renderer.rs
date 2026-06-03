@@ -22,10 +22,12 @@ use accesskit::{Node, NodeId, Role};
 use elicit_ui::node_roles::*;
 use elicit_ui::{
     NodeRenderedEvidence, RolePreserved, UiNodeBridge, UiRenderBackend, WcagNodeProofs,
+    verify_wcag_contrast_proofs,
 };
 use elicitation::Established;
 
 use crate::leptos_accesskit_convert::LeptosRenderMode;
+use crate::render_context::{LeptosRenderArea, LeptosRenderContext};
 
 // ── LeptosRenderer ────────────────────────────────────────────────────────────
 
@@ -151,6 +153,19 @@ impl UiRenderBackend for LeptosRenderer {
 
 impl UiNodeBridge for LeptosRenderer {
     type Widget = String;
+
+    // ── Post-render hook ──────────────────────────────────────────────────
+
+    /// Run WCAG contrast checks against AccessKit node colour metadata.
+    ///
+    /// Leptos renders HTML strings; per-pixel buffer inspection is not
+    /// available.  Instead, colours are read from `foreground_color` and
+    /// `background_color` on the AccessKit node.  When neither is explicitly
+    /// set, the check silently skips (returning `None` from `colors_at`).
+    fn verify_node(&self, node: &Node, proofs: &WcagNodeProofs) {
+        let ctx = LeptosRenderContext::from_node(node);
+        verify_wcag_contrast_proofs(&ctx, &LeptosRenderArea::default(), proofs);
+    }
 
     // ── Unknown / generic ─────────────────────────────────────────────────
 
