@@ -6,9 +6,9 @@
 //! This is the canonical shape for production VSM companions.
 //! Expected: ✓ proves.
 
+use verus_builtin_macros::verus;
 #[allow(unused_imports)]
 use vstd::prelude::*;
-use verus_builtin_macros::verus;
 
 verus! {
 

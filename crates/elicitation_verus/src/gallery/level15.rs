@@ -12,6 +12,9 @@
 //! Expected: ✓ proves.
 
 use verus_builtin_macros::verus;
+
+verus! {
+
 #[allow(unused_imports)]
 use vstd::prelude::SpecOrd;
 
@@ -22,8 +25,6 @@ pub fn v15_exec(x: u64) -> u64 {
     // In production this would be: let _span = tracing::info_span!(...).entered();
     x.saturating_add(1)
 }
-
-verus! {
 
 /// Attach a trusted spec — mirrors what formal_method __verus companion does.
 /// No requires needed: just ensures the result is positive.
