@@ -139,6 +139,27 @@ impl AccessKitUiBackend {
             node_proofs: state.node_proofs.clone(),
         }
     }
+
+    /// Associate WCAG proof tokens with a specific node.
+    ///
+    /// Use this for proof tokens that are not automatically stored by factory
+    /// methods — notably the contrast and large-text proofs returned by
+    /// [`WcagContrastFactory`](crate::WcagContrastFactory) and
+    /// [`WcagPerceivedFactory`](crate::WcagPerceivedFactory), which validate
+    /// colour pairs rather than specific nodes.
+    ///
+    /// ```rust,ignore
+    /// let (_, proof) = backend.build_contrast_minimum(...)?;
+    /// backend.add_node_proof(button_id, |p| p.contrast_normal = Some(proof));
+    /// ```
+    pub fn add_node_proof(
+        &self,
+        widget: crate::WidgetId,
+        f: impl FnOnce(&mut crate::WcagNodeProofs),
+    ) {
+        let node_id = widget.to_node_id();
+        self.state.lock().unwrap().merge_proofs(node_id, f);
+    }
 }
 
 impl Default for AccessKitUiBackend {
@@ -985,10 +1006,14 @@ impl WcagLanguageFactory for AccessKitUiBackend {
         }
         let mut state = self.state.lock().unwrap();
         state.page_lang = input.page_lang.clone();
+        let proof = Established::prove(&PageLanguageVerified);
+        // Attach the proof to the backend root so the sidecar carries it.
+        let root = state.root;
+        state.merge_proofs(root, |p| p.language_page = Some(proof));
         let page = LanguagePage {
             lang: input.page_lang,
         };
-        Ok((page, Established::prove(&PageLanguageVerified)))
+        Ok((page, proof))
     }
 
     #[instrument(skip(self, input))]
@@ -1004,8 +1029,14 @@ impl WcagLanguageFactory for AccessKitUiBackend {
                     "element language tag is empty (WCAG 3.1.2)".into(),
                 ))
             })?;
+        let proof = Established::prove(&PartLanguageVerified);
+        if let Some(widget) = input.widget {
+            let node_id = widget.to_node_id();
+            let mut state = self.state.lock().unwrap();
+            state.merge_proofs(node_id, |p| p.language_element = Some(proof));
+        }
         let page = LanguagePage { lang };
-        Ok((page, Established::prove(&PartLanguageVerified)))
+        Ok((page, proof))
     }
 }
 

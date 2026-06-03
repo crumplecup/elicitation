@@ -270,8 +270,8 @@ pub use text::{
     TextDecoration, TextLine, TextModifier, TextSpan, TextStyle, UiColor, VerticalAlign,
 };
 pub use traits::{
-    RenderContext, RenderVerifiable, UiBackend, UiEventBridge, UiEventDispatcher, UiInspector,
-    UiLayoutManager, UiNavigationManager, UiNodeBridge, UiRenderBackend, UiRenderer,
+    RenderColors, RenderContext, RenderVerifiable, UiBackend, UiEventBridge, UiEventDispatcher,
+    UiInspector, UiLayoutManager, UiNavigationManager, UiNodeBridge, UiRenderBackend, UiRenderer,
     UiTreeRenderer, WcagBackend, WcagContrastFactory, WcagElementMeta, WcagErrorFactory,
     WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
     WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory, WcagRobustFactory,

@@ -152,6 +152,12 @@ pub struct LanguageDescriptor {
     pub page_lang: String,
     /// BCP-47 language tag for a specific element, if different from the page.
     pub element_lang: Option<String>,
+    /// Widget whose language differs from the page default.
+    ///
+    /// Required by [`WcagLanguageFactory::build_language_element`] so that the
+    /// proof token can be stored in the per-node sidecar for runtime checks.
+    /// Ignored by [`WcagLanguageFactory::build_language_page`].
+    pub widget: Option<WidgetId>,
 }
 
 /// Raw input for error field factory methods.
@@ -384,7 +390,7 @@ pub struct RobustWidget {
 /// large-text classification have no node identity in the current factory
 /// API (they validate colour pairs, not nodes directly); use
 /// [`crate::AccessKitUiBackend::add_node_proofs`] to associate them manually.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, elicitation::ToCodeLiteral)]
 pub struct WcagNodeProofs {
     // ── Principle 1 — Perceivable ─────────────────────────────────────────
     /// WCAG 1.4.3 contrast for normal text (4.5:1).
@@ -421,6 +427,8 @@ pub struct WcagNodeProofs {
     pub list_structure: Option<Established<WcagListStructureProgrammatic>>,
     /// WCAG 1.3.1 table headers programmatically associated.
     pub table_headers: Option<Established<WcagTableHeadersProgrammatic>>,
+    /// WCAG 3.1.1 page language identified (stored on root node).
+    pub language_page: Option<Established<WcagPageLanguageIdentified>>,
     /// WCAG 3.1.2 language of part identified.
     pub language_element: Option<Established<WcagPartLanguageIdentified>>,
     // ── Principle 2 — Operable ────────────────────────────────────────────

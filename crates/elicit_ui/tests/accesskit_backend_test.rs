@@ -631,6 +631,7 @@ fn language_page_stores_lang_tag() {
     let desc = LanguageDescriptor {
         page_lang: "en".into(),
         element_lang: None,
+        widget: None,
     };
     assert!(b.build_language_page(desc).is_ok());
     assert_eq!(b.page_language().unwrap().as_deref(), Some("en"));
@@ -642,6 +643,7 @@ fn language_page_rejects_empty_tag() {
     let desc = LanguageDescriptor {
         page_lang: "".into(),
         element_lang: None,
+        widget: None,
     };
     assert!(b.build_language_page(desc).is_err());
 }
@@ -652,11 +654,13 @@ fn language_element_requires_element_lang() {
     let desc = LanguageDescriptor {
         page_lang: "en".into(),
         element_lang: None,
+        widget: None,
     };
     assert!(b.build_language_element(desc).is_err());
     let desc2 = LanguageDescriptor {
         page_lang: "en".into(),
         element_lang: Some("fr".into()),
+        widget: None,
     };
     assert!(b.build_language_element(desc2).is_ok());
 }

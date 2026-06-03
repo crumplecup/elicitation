@@ -12,7 +12,7 @@ pub use events::UiEventDispatcher;
 pub use inspector::UiInspector;
 pub use layout_manager::UiLayoutManager;
 pub use navigation::UiNavigationManager;
-pub use render_verify::{RenderContext, RenderVerifiable, verify_in_debug};
+pub use render_verify::{RenderColors, RenderContext, RenderVerifiable, verify_in_debug};
 pub use renderer::{UiEventBridge, UiNodeBridge, UiRenderBackend, UiRenderer, UiTreeRenderer};
 pub use wcag::{
     WcagBackend, WcagContrastFactory, WcagElementMeta, WcagErrorFactory, WcagFocusFactory,

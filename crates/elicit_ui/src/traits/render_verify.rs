@@ -36,6 +36,21 @@
 
 use elicitation::contracts::Prop;
 
+// ── RenderColors ──────────────────────────────────────────────────────────────
+
+/// Foreground and background colour of a rendered cell expressed as sRGB.
+///
+/// Returned by [`RenderContext::colors_at`] when the exact colour can be
+/// determined from the render buffer (i.e. the colour is not a terminal
+/// default or a 256-colour palette index without a known mapping).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RenderColors {
+    /// Foreground colour as `[r, g, b]` bytes.
+    pub foreground: [u8; 3],
+    /// Background colour as `[r, g, b]` bytes.
+    pub background: [u8; 3],
+}
+
 // ── RenderContext ─────────────────────────────────────────────────────────────
 
 /// Abstract view into a rendered frame buffer.
@@ -63,6 +78,21 @@ pub trait RenderContext {
 
     /// Height of `area` in terminal rows / pixels.
     fn area_height(&self, area: &Self::Area) -> u16;
+
+    /// Returns the foreground and background colours at `(col, row)` within
+    /// `area`, or `None` when the actual colour cannot be determined (e.g.
+    /// terminal default or an indexed palette entry without a known mapping).
+    ///
+    /// `col` and `row` are zero-based offsets relative to the top-left of
+    /// `area`.  Returns `None` if the position is out of bounds.
+    ///
+    /// The default implementation always returns `None`; frontend crates
+    /// override this when colour inspection is possible (e.g. ratatui
+    /// [`Buffer`](ratatui::buffer::Buffer) cells carry explicit `Color::Rgb`).
+    fn colors_at(&self, area: &Self::Area, col: u16, row: u16) -> Option<RenderColors> {
+        let _ = (area, col, row);
+        None
+    }
 }
 
 // ── RenderVerifiable ──────────────────────────────────────────────────────────
