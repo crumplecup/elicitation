@@ -143,14 +143,16 @@ impl AccessKitUiBackend {
     /// Associate WCAG proof tokens with a specific node.
     ///
     /// Use this for proof tokens that are not automatically stored by factory
-    /// methods — notably the contrast and large-text proofs returned by
-    /// [`WcagContrastFactory`](crate::WcagContrastFactory) and
-    /// [`WcagPerceivedFactory`](crate::WcagPerceivedFactory), which validate
-    /// colour pairs rather than specific nodes.
+    /// methods.  Note that [`WcagContrastFactory`](crate::WcagContrastFactory)
+    /// and [`WcagPerceivedFactory`](crate::WcagPerceivedFactory) now auto-store
+    /// proofs when the descriptor's `widget` field is set; this method is only
+    /// needed for tokens without a built-in descriptor field.
     ///
     /// ```rust,ignore
-    /// let (_, proof) = backend.build_contrast_minimum(...)?;
-    /// backend.add_node_proof(button_id, |p| p.contrast_normal = Some(proof));
+    /// let (_, proof) = backend.build_contrast_minimum(ContrastDescriptor {
+    ///     foreground, background, widget: Some(button_id),
+    /// })?;
+    /// // proof is now stored automatically — no add_node_proof call needed.
     /// ```
     pub fn add_node_proof(
         &self,
@@ -187,7 +189,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
             background: input.background,
             ratio: ratio.into(),
         };
-        Ok((pair, Established::prove(&NormalTextContrastVerified)))
+        let proof = Established::prove(&NormalTextContrastVerified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.contrast_normal = Some(proof));
+        }
+        Ok((pair, proof))
     }
 
     #[instrument(skip(self, input))]
@@ -206,7 +215,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
             background: input.background,
             ratio: ratio.into(),
         };
-        Ok((pair, Established::prove(&LargeTextContrastVerified)))
+        let proof = Established::prove(&LargeTextContrastVerified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.contrast_large = Some(proof));
+        }
+        Ok((pair, proof))
     }
 
     #[instrument(skip(self, input))]
@@ -225,10 +241,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
             background: input.background,
             ratio: ratio.into(),
         };
-        Ok((
-            pair,
-            Established::prove(&EnhancedNormalTextContrastVerified),
-        ))
+        let proof = Established::prove(&EnhancedNormalTextContrastVerified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.contrast_enhanced = Some(proof));
+        }
+        Ok((pair, proof))
     }
 
     #[instrument(skip(self, input))]
@@ -247,7 +267,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
             background: input.background,
             ratio: ratio.into(),
         };
-        Ok((pair, Established::prove(&EnhancedLargeTextContrastVerified)))
+        let proof = Established::prove(&EnhancedLargeTextContrastVerified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.contrast_enhanced_large = Some(proof));
+        }
+        Ok((pair, proof))
     }
 
     #[instrument(skip(self, input))]
@@ -266,7 +293,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
             background: input.background,
             ratio: ratio.into(),
         };
-        Ok((pair, Established::prove(&NonTextContrastVerified)))
+        let proof = Established::prove(&NonTextContrastVerified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.non_text_contrast = Some(proof));
+        }
+        Ok((pair, proof))
     }
 
     #[instrument(skip(self, input), fields(font_size_pt = input.font_size_pt, bold = input.bold))]
@@ -284,7 +318,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 if input.bold { "bold" } else { "normal" }
             ))));
         }
-        Ok(Established::prove(&LargeTextClassified))
+        let proof = Established::prove(&LargeTextClassified);
+        if let Some(w) = input.widget {
+            self.state
+                .lock()
+                .unwrap()
+                .merge_proofs(w.to_node_id(), |p| p.large_text = Some(proof));
+        }
+        Ok(proof)
     }
 }
 

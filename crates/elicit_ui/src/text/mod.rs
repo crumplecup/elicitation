@@ -281,7 +281,7 @@ pub enum TextDecoration {
 /// Portable font family.
 ///
 /// Bridges map this to the closest native type:
-/// - egui: [`egui::FontFamily`]
+/// - egui: `egui::FontFamily`
 /// - CSS/leptos: `font-family` property (`sans-serif`, `monospace`, or quoted name)
 /// - parley: [`parley::style::GenericFamily`] / [`parley::style::FontFamilyName`]
 /// - ratatui: no-op (terminal uses its own font)

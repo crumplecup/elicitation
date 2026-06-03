@@ -88,7 +88,7 @@ pub trait RenderContext {
     ///
     /// The default implementation always returns `None`; frontend crates
     /// override this when colour inspection is possible (e.g. ratatui
-    /// [`Buffer`](ratatui::buffer::Buffer) cells carry explicit `Color::Rgb`).
+    /// `Buffer` cells carry explicit `Color::Rgb`).
     fn colors_at(&self, area: &Self::Area, col: u16, row: u16) -> Option<RenderColors> {
         let _ = (area, col, row);
         None

@@ -38,12 +38,18 @@ use crate::{
 ///
 /// The factory validates the ratio and returns a [`ContrastPair`] proof construct
 /// or an error if the ratio falls below the required threshold.
+///
+/// Setting `widget` causes the factory to automatically store the resulting
+/// proof in the per-node sidecar for that widget, eliminating the need to call
+/// [`crate::AccessKitUiBackend::add_node_proof`] separately.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ContrastDescriptor {
     /// Foreground (text or component) colour.
     pub foreground: SrgbColor,
     /// Background colour.
     pub background: SrgbColor,
+    /// Widget to associate the resulting proof with, if any.
+    pub widget: Option<WidgetId>,
 }
 
 /// Raw input for label factory methods.
@@ -154,9 +160,9 @@ pub struct LanguageDescriptor {
     pub element_lang: Option<String>,
     /// Widget whose language differs from the page default.
     ///
-    /// Required by [`WcagLanguageFactory::build_language_element`] so that the
+    /// Required by `WcagLanguageFactory::build_language_element` so that the
     /// proof token can be stored in the per-node sidecar for runtime checks.
-    /// Ignored by [`WcagLanguageFactory::build_language_page`].
+    /// Ignored by `WcagLanguageFactory::build_language_page`.
     pub widget: Option<WidgetId>,
 }
 
@@ -176,12 +182,17 @@ pub struct ErrorDescriptor {
 /// Pass to [`WcagContrastFactory::classify_large_text`](crate::WcagContrastFactory::classify_large_text).
 /// The factory returns `Established<WcagLargeTextClassified>` when the size
 /// meets WCAG's definition of "large text" (≥18 pt normal, or ≥14 pt bold).
+///
+/// Setting `widget` causes the factory to automatically store the resulting
+/// proof in the per-node sidecar for that widget.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TextSizeDescriptor {
     /// Font size in points (1 pt = 1/72 inch).
     pub font_size_pt: f32,
     /// `true` when font weight is bold (≥700).
     pub bold: bool,
+    /// Widget to associate the resulting proof with, if any.
+    pub widget: Option<WidgetId>,
 }
 
 /// Raw input for SC 1.4.12 text-spacing validation.
@@ -386,10 +397,7 @@ pub struct RobustWidget {
 ///
 /// ## Organisation
 ///
-/// Fields are grouped by WCAG principle.  Contrast proofs (1.4.x) and
-/// large-text classification have no node identity in the current factory
-/// API (they validate colour pairs, not nodes directly); use
-/// [`crate::AccessKitUiBackend::add_node_proofs`] to associate them manually.
+/// Fields are grouped by WCAG principle.
 #[derive(Debug, Clone, Copy, Default, PartialEq, elicitation::ToCodeLiteral)]
 pub struct WcagNodeProofs {
     // ── Principle 1 — Perceivable ─────────────────────────────────────────

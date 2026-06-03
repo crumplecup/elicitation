@@ -4,9 +4,10 @@ use elicit_ui::{
     AccessKitUiBackend, ContrastDescriptor, ErrorDescriptor, FocusDescriptor, KeyboardDescriptor,
     LabelDescriptor, LanguageDescriptor, MediaDescriptor, SrgbColor, StructureDescriptor,
     TargetDescriptor, TextSizeDescriptor, TextSpacingDescriptor, TimingDescriptor, UiInspector,
-    UiLayoutManager, UiNavigationManager, WcagContrastFactory, WcagElementMeta, WcagErrorFactory,
-    WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
-    WcagPageMeta, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WidgetId,
+    UiLayoutManager, UiNavigationManager, Viewport, WcagContrastFactory, WcagElementMeta,
+    WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory,
+    WcagMediaFactory, WcagPageMeta, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory,
+    WidgetId,
 };
 
 fn black() -> SrgbColor {
@@ -41,6 +42,7 @@ fn contrast_minimum_passes_high_contrast() {
     let desc = ContrastDescriptor {
         foreground: black(),
         background: white(),
+        widget: None,
     };
     let result = b.build_contrast_minimum(desc);
     assert!(result.is_ok(), "black on white should satisfy 4.5:1");
@@ -54,6 +56,7 @@ fn contrast_minimum_rejects_low_contrast() {
     let desc = ContrastDescriptor {
         foreground: light_gray(),
         background: white(),
+        widget: None,
     };
     let result = b.build_contrast_minimum(desc);
     assert!(result.is_err(), "light gray on white fails 4.5:1");
@@ -71,6 +74,7 @@ fn contrast_minimum_large_passes_at_three_to_one() {
     let desc = ContrastDescriptor {
         foreground: dark_gray,
         background: white(),
+        widget: None,
     };
     let result = b.build_contrast_minimum_large(desc);
     assert!(
@@ -90,6 +94,7 @@ fn contrast_non_text_passes_at_three_to_one() {
     let desc = ContrastDescriptor {
         foreground: dark,
         background: white(),
+        widget: None,
     };
     assert!(b.build_non_text_contrast(desc).is_ok());
 }
@@ -106,6 +111,7 @@ fn contrast_enhanced_requires_seven_to_one() {
     let desc = ContrastDescriptor {
         foreground: mid,
         background: white(),
+        widget: None,
     };
     assert!(
         b.build_contrast_enhanced(desc).is_err(),
@@ -114,6 +120,7 @@ fn contrast_enhanced_requires_seven_to_one() {
     let desc2 = ContrastDescriptor {
         foreground: black(),
         background: white(),
+        widget: None,
     };
     assert!(
         b.build_contrast_enhanced(desc2).is_ok(),
@@ -129,6 +136,7 @@ fn large_text_passes_at_18pt_normal() {
     let desc = TextSizeDescriptor {
         font_size_pt: 18.0,
         bold: false,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_ok(),
@@ -142,6 +150,7 @@ fn large_text_passes_at_14pt_bold() {
     let desc = TextSizeDescriptor {
         font_size_pt: 14.0,
         bold: true,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_ok(),
@@ -155,6 +164,7 @@ fn large_text_passes_above_18pt() {
     let desc = TextSizeDescriptor {
         font_size_pt: 24.0,
         bold: false,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_ok(),
@@ -168,6 +178,7 @@ fn large_text_rejects_12pt_normal() {
     let desc = TextSizeDescriptor {
         font_size_pt: 12.0,
         bold: false,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_err(),
@@ -181,6 +192,7 @@ fn large_text_rejects_13pt_bold() {
     let desc = TextSizeDescriptor {
         font_size_pt: 13.0,
         bold: true,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_err(),
@@ -195,10 +207,65 @@ fn large_text_rejects_17pt_normal() {
     let desc = TextSizeDescriptor {
         font_size_pt: 17.9,
         bold: false,
+        widget: None,
     };
     assert!(
         b.classify_large_text(desc).is_err(),
         "17.9 pt normal does not meet 18 pt threshold"
+    );
+}
+
+// ── WcagContrastFactory — nodeId traceability ────────────────────────────────
+
+#[test]
+fn contrast_proof_stored_on_widget_when_widget_set() {
+    let b = AccessKitUiBackend::new();
+    let btn = b
+        .build_labeled_element(LabelDescriptor {
+            name: "Submit".into(),
+            role: "button".into(),
+            labelled_by: None,
+        })
+        .unwrap()
+        .0;
+    let desc = ContrastDescriptor {
+        foreground: black(),
+        background: white(),
+        widget: Some(btn.id),
+    };
+    b.build_contrast_minimum(desc).unwrap();
+    let tree = b.to_verified_tree(Viewport::new(800, 600));
+    let node_id = accesskit::NodeId(btn.id.0);
+    let proofs = tree.node_proofs().get(&node_id).unwrap();
+    assert!(
+        proofs.contrast_normal.is_some(),
+        "contrast proof should be auto-stored on the widget"
+    );
+}
+
+#[test]
+fn large_text_proof_stored_on_widget_when_widget_set() {
+    let b = AccessKitUiBackend::new();
+    let btn = b
+        .build_labeled_element(LabelDescriptor {
+            name: "Heading".into(),
+            role: "heading".into(),
+            labelled_by: None,
+        })
+        .unwrap()
+        .0;
+    let desc = TextSizeDescriptor {
+        font_size_pt: 18.0,
+        bold: false,
+        widget: Some(btn.id),
+    };
+    b.classify_large_text(desc).unwrap();
+    let tree = b.to_verified_tree(Viewport::new(800, 600));
+    let node_id = accesskit::NodeId(btn.id.0);
+    let proofs = tree.node_proofs().get(&node_id).unwrap();
+    assert!(
+        proofs.large_text.is_some(),
+        "large_text proof should be auto-stored on the widget"
     );
 }
 
