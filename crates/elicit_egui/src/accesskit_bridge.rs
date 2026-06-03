@@ -585,11 +585,57 @@ impl UiNodeBridge for EguiBackend {
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ParagraphNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
-        let __w = {
-            let text = node_label(node);
-            Box::new(move |ui: &mut egui::Ui| {
-                ui.label(&text);
-            })
+        use elicit_ui::{ParagraphText, TextAlign};
+        let rich = node_json_rich_text(node).and_then(|v| {
+            serde_json::from_value::<ParagraphText>(v).ok()
+        });
+        let __w: Box<dyn FnOnce(&mut egui::Ui) + Send + Sync> = match rich {
+            Some(ParagraphText::Rich(rich)) => {
+                let block_style = rich.style.clone();
+                let block_align = rich.alignment;
+                // Derive LayoutJob halign/justify from block alignment.
+                let (halign, justify) = match block_align {
+                    Some(TextAlign::Center) => (egui::Align::Center, false),
+                    Some(TextAlign::Right) => (egui::Align::RIGHT, false),
+                    Some(TextAlign::Justify) => (egui::Align::LEFT, true),
+                    _ => (egui::Align::LEFT, false),
+                };
+                let lines = rich.lines.clone();
+                Box::new(move |ui: &mut egui::Ui| {
+                    let mut job = egui::text::LayoutJob {
+                        halign,
+                        justify,
+                        ..Default::default()
+                    };
+                    for (li, line) in lines.iter().enumerate() {
+                        // Insert line break between lines.
+                        if li > 0 {
+                            let line_fmt = build_text_format(None, line.style.as_ref(), block_style.as_ref());
+                            job.append("\n", 0.0, line_fmt);
+                        }
+                        for span in &line.spans {
+                            let fmt = build_text_format(
+                                span.style.as_ref(),
+                                line.style.as_ref(),
+                                block_style.as_ref(),
+                            );
+                            job.append(&span.content, 0.0, fmt);
+                        }
+                    }
+                    ui.label(job);
+                })
+            }
+            Some(ParagraphText::Plain(text)) => {
+                Box::new(move |ui: &mut egui::Ui| {
+                    ui.label(&text);
+                })
+            }
+            None => {
+                let text = node_label(node);
+                Box::new(move |ui: &mut egui::Ui| {
+                    ui.label(&text);
+                })
+            }
         };
         (__w, Established::<RolePreserved>::prove(&proof))
     }
@@ -2114,6 +2160,260 @@ fn parse_kv_coords_egui(desc: &str) -> std::collections::HashMap<&str, f32> {
             Some((k.trim(), v))
         })
         .collect()
+}
+
+// ── Rich-text paragraph helpers ────────────────────────────────────────────────
+
+/// Extract the `__rich_text__:` sidecar from the node's `class_name` field,
+/// returning the raw JSON value if present.
+fn node_json_rich_text(node: &Node) -> Option<serde_json::Value> {
+    const PREFIX: &str = "__rich_text__:";
+    let class = node.class_name()?;
+    if !class.starts_with(PREFIX) {
+        return None;
+    }
+    serde_json::from_str(&class[PREFIX.len()..]).ok()
+}
+
+/// Convert a [`elicit_ui::UiColor`] to an [`egui::Color32`].
+///
+/// Named ANSI colours use the VS Code terminal palette (same reference sRGB
+/// values as `elicit_ui::ansi256_to_peniko`).  Alpha is honoured for `Rgba`.
+fn ui_color_to_color32(color: &elicit_ui::UiColor) -> egui::Color32 {
+    use elicit_ui::UiColor;
+    match color {
+        UiColor::Reset => egui::Color32::PLACEHOLDER,
+        UiColor::Black => egui::Color32::from_rgb(0x0c, 0x0c, 0x0c),
+        UiColor::Red => egui::Color32::from_rgb(0xc5, 0x0f, 0x1f),
+        UiColor::Green => egui::Color32::from_rgb(0x13, 0xa1, 0x0e),
+        UiColor::Yellow => egui::Color32::from_rgb(0xc1, 0x9c, 0x00),
+        UiColor::Blue => egui::Color32::from_rgb(0x00, 0x37, 0xda),
+        UiColor::Magenta => egui::Color32::from_rgb(0x88, 0x17, 0x98),
+        UiColor::Cyan => egui::Color32::from_rgb(0x3a, 0x96, 0xdd),
+        UiColor::White => egui::Color32::from_rgb(0xcc, 0xcc, 0xcc),
+        UiColor::DarkGray => egui::Color32::from_rgb(0x76, 0x76, 0x76),
+        UiColor::LightRed => egui::Color32::from_rgb(0xe7, 0x48, 0x56),
+        UiColor::LightGreen => egui::Color32::from_rgb(0x16, 0xc6, 0x0c),
+        UiColor::LightYellow => egui::Color32::from_rgb(0xf9, 0xf1, 0xa5),
+        UiColor::LightBlue => egui::Color32::from_rgb(0x3b, 0x78, 0xff),
+        UiColor::LightMagenta => egui::Color32::from_rgb(0xb4, 0x00, 0x9e),
+        UiColor::LightCyan => egui::Color32::from_rgb(0x61, 0xd6, 0xd6),
+        UiColor::Gray => egui::Color32::from_rgb(0xf2, 0xf2, 0xf2),
+        UiColor::Rgb { r, g, b } => egui::Color32::from_rgb(*r, *g, *b),
+        UiColor::Rgba { r, g, b, a } => {
+            egui::Color32::from_rgba_unmultiplied(*r, *g, *b, *a)
+        }
+        UiColor::Indexed { index } => ansi256_to_color32(*index),
+    }
+}
+
+/// Convert a 256-colour ANSI palette index to [`egui::Color32`].
+///
+/// Indices 0–15: standard ANSI colours (VS Code palette).
+/// Indices 16–231: 6×6×6 colour cube.
+/// Indices 232–255: grayscale ramp.
+fn ansi256_to_color32(index: u8) -> egui::Color32 {
+    let (r, g, b) = match index {
+        0 => (0x0c, 0x0c, 0x0c),
+        1 => (0xc5, 0x0f, 0x1f),
+        2 => (0x13, 0xa1, 0x0e),
+        3 => (0xc1, 0x9c, 0x00),
+        4 => (0x00, 0x37, 0xda),
+        5 => (0x88, 0x17, 0x98),
+        6 => (0x3a, 0x96, 0xdd),
+        7 => (0xcc, 0xcc, 0xcc),
+        8 => (0x76, 0x76, 0x76),
+        9 => (0xe7, 0x48, 0x56),
+        10 => (0x16, 0xc6, 0x0c),
+        11 => (0xf9, 0xf1, 0xa5),
+        12 => (0x3b, 0x78, 0xff),
+        13 => (0xb4, 0x00, 0x9e),
+        14 => (0x61, 0xd6, 0xd6),
+        15 => (0xf2, 0xf2, 0xf2),
+        16..=231 => {
+            let i = index - 16;
+            let b_idx = i % 6;
+            let g_idx = (i / 6) % 6;
+            let r_idx = i / 36;
+            let ch = |x: u8| if x == 0 { 0 } else { 55 + x * 40 };
+            (ch(r_idx), ch(g_idx), ch(b_idx))
+        }
+        232..=255 => {
+            let v = 8 + (index - 232) * 10;
+            (v, v, v)
+        }
+    };
+    egui::Color32::from_rgb(r, g, b)
+}
+
+/// Build an [`egui::text::TextFormat`] by cascading span → line → block style.
+///
+/// Modifiers are applied in this cascade order; span wins over line wins over block.
+/// `UiColor::Reset` / absent colour → `Color32::PLACEHOLDER` (theme text colour).
+fn build_text_format(
+    span_style: Option<&elicit_ui::TextStyle>,
+    line_style: Option<&elicit_ui::TextStyle>,
+    block_style: Option<&elicit_ui::TextStyle>,
+) -> egui::text::TextFormat {
+    use elicit_ui::{FontFamily, FontStyle, FontWeight, LineHeight, TextDecoration, TextModifier, VerticalAlign};
+
+    // Helper: resolve a field through the three layers.
+    macro_rules! cascade {
+        ($field:ident) => {
+            span_style
+                .and_then(|s| s.$field.as_ref())
+                .or_else(|| line_style.and_then(|s| s.$field.as_ref()))
+                .or_else(|| block_style.and_then(|s| s.$field.as_ref()))
+        };
+    }
+    macro_rules! cascade_vec {
+        ($field:ident) => {{
+            let sv: &[_] = span_style.map_or(&[], |s| s.$field.as_slice());
+            let lv: &[_] = line_style.map_or(&[], |s| s.$field.as_slice());
+            let bv: &[_] = block_style.map_or(&[], |s| s.$field.as_slice());
+            if !sv.is_empty() {
+                sv
+            } else if !lv.is_empty() {
+                lv
+            } else {
+                bv
+            }
+        }};
+    }
+
+    let fg_color = cascade!(fg);
+    let bg_color = cascade!(bg);
+    let modifiers = cascade_vec!(modifiers);
+    let decorations = cascade_vec!(decorations);
+
+    // Foreground colour — apply modifier overrides after.
+    let mut fg = fg_color
+        .map(ui_color_to_color32)
+        .unwrap_or(egui::Color32::PLACEHOLDER);
+
+    let mut bg = bg_color
+        .map(ui_color_to_color32)
+        .unwrap_or(egui::Color32::TRANSPARENT);
+
+    // Process modifiers.
+    let mut italic = false;
+    let mut underline = egui::Stroke::NONE;
+    let mut strikethrough = egui::Stroke::NONE;
+    let mut is_dim = false;
+    let mut is_hidden = false;
+    let mut is_reversed = false;
+
+    for m in modifiers {
+        match m {
+            TextModifier::Bold => {
+                // Bold handled via font_family below.
+            }
+            TextModifier::Italic => italic = true,
+            TextModifier::Underlined => {
+                underline = egui::Stroke::new(1.0, fg);
+            }
+            TextModifier::CrossedOut => {
+                strikethrough = egui::Stroke::new(1.0, fg);
+            }
+            TextModifier::Dim => is_dim = true,
+            TextModifier::Hidden => is_hidden = true,
+            TextModifier::Reversed => is_reversed = true,
+            // SlowBlink / RapidBlink: no native egui blink; content preserved.
+            TextModifier::SlowBlink | TextModifier::RapidBlink => {}
+        }
+    }
+
+    // Decorations from TextStyle::decorations field.
+    for d in decorations {
+        match d {
+            TextDecoration::Underline => {
+                underline = egui::Stroke::new(1.0, fg);
+            }
+            TextDecoration::Strikethrough => {
+                strikethrough = egui::Stroke::new(1.0, fg);
+            }
+            TextDecoration::Overline => {
+                // egui has no overline; silently ignored.
+            }
+        }
+    }
+
+    // Apply modifier effects.
+    if is_reversed {
+        // Swap fg and bg; if no explicit colours, use high-contrast fallback.
+        let explicit_fg = fg != egui::Color32::PLACEHOLDER;
+        let explicit_bg = bg != egui::Color32::TRANSPARENT;
+        if explicit_fg || explicit_bg {
+            std::mem::swap(&mut fg, &mut bg);
+        } else {
+            fg = egui::Color32::from_rgb(0x0c, 0x0c, 0x0c);
+            bg = egui::Color32::from_rgb(0xcc, 0xcc, 0xcc);
+        }
+    }
+    if is_dim {
+        let [r, g, b, _] = fg.to_array();
+        fg = egui::Color32::from_rgba_unmultiplied(r, g, b, 128);
+    }
+    if is_hidden {
+        fg = egui::Color32::TRANSPARENT;
+        bg = egui::Color32::TRANSPARENT;
+    }
+
+    // Font size.
+    let font_size = cascade!(font_size).copied().unwrap_or(14.0);
+
+    // Font family — Bold modifier maps to the "Bold" named family convention.
+    let is_bold = modifiers.contains(&TextModifier::Bold)
+        || cascade!(font_weight)
+            .map(|w| *w == FontWeight::BOLD)
+            .unwrap_or(false);
+
+    let font_family = if is_bold {
+        // egui bold convention: register a font under this name in your FontDefinitions.
+        egui::FontFamily::Name("Bold".into())
+    } else {
+        match cascade!(font_family) {
+            Some(FontFamily::Monospace) => egui::FontFamily::Monospace,
+            Some(FontFamily::Named { name }) => egui::FontFamily::Name(name.as_str().into()),
+            _ => egui::FontFamily::Proportional,
+        }
+    };
+
+    // Italic via FontStyle.
+    if matches!(cascade!(font_style), Some(FontStyle::Italic) | Some(FontStyle::Oblique(_))) {
+        italic = true;
+    }
+
+    // Letter spacing.
+    let extra_letter_spacing = cascade!(letter_spacing).copied().unwrap_or(0.0);
+
+    // Line height: convert to absolute points using font_size as base.
+    let line_height = cascade!(line_height).map(|lh| match lh {
+        LineHeight::Absolute { value } => *value,
+        LineHeight::FontSizeRelative { factor } => font_size * factor,
+        // MetricsRelative: approximate as font_size × 1.2 × factor.
+        LineHeight::MetricsRelative { factor } => font_size * 1.2 * factor,
+    });
+
+    // Vertical alignment.
+    let valign = match cascade!(vertical_align) {
+        Some(VerticalAlign::Top) => egui::Align::TOP,
+        Some(VerticalAlign::Bottom) => egui::Align::BOTTOM,
+        _ => egui::Align::Center,
+    };
+
+    egui::text::TextFormat {
+        font_id: egui::FontId::new(font_size, font_family),
+        color: fg,
+        background: bg,
+        italics: italic,
+        underline,
+        strikethrough,
+        extra_letter_spacing,
+        line_height,
+        valign,
+        ..Default::default()
+    }
 }
 
 // ── SQL syntax highlighting for egui TextEdit ─────────────────────────────────
