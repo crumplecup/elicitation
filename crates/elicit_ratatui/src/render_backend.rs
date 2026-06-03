@@ -150,6 +150,12 @@ fn ui_color_to_json(color: &UiColor) -> crate::serde_types::ColorJson {
             g: *g,
             b: *b,
         },
+        // Ratatui has no alpha channel; drop alpha and use RGB (best-effort).
+        UiColor::Rgba { r, g, b, a: _ } => ColorJson::Rgb {
+            r: *r,
+            g: *g,
+            b: *b,
+        },
         UiColor::Indexed { index } => ColorJson::Indexed { index: *index },
     }
 }
@@ -173,6 +179,8 @@ fn ui_align_to_json(a: elicit_ui::text::TextAlign) -> AlignmentJson {
         elicit_ui::text::TextAlign::Left => AlignmentJson::Left,
         elicit_ui::text::TextAlign::Center => AlignmentJson::Center,
         elicit_ui::text::TextAlign::Right => AlignmentJson::Right,
+        // Ratatui has no justify mode; fall back to left alignment.
+        elicit_ui::text::TextAlign::Justify => AlignmentJson::Left,
     }
 }
 
