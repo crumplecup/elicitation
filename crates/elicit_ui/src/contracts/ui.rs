@@ -61,14 +61,50 @@ mod emit_impls {
     use crate::VerifiedTree;
     use elicitation::contracts::Established;
 
+    use crate::WcagNodeProofs;
+
+    /// Evidence bundle that every concrete [`UiNodeBridge`](crate::UiNodeBridge)
+    /// method must build and pass to `Established::<RolePreserved>::prove`.
+    ///
+    /// Combining the per-role validity proof with the WCAG sidecar keeps the
+    /// chain of proof custody unbroken:
+    ///
+    /// ```text
+    /// factory method  →  WcagNodeProofs sidecar
+    ///                          ↓
+    /// role dispatch   →  Established<T: NodeRoleProof>
+    ///                          ↓
+    ///     NodeRenderedEvidence { role, wcag }
+    ///                          ↓
+    ///             Established<RolePreserved>
+    /// ```
+    ///
+    /// Default forwarding impls in the trait may still use the bare
+    /// `Established<T>` credential; this bundle is required only in concrete
+    /// backend implementations that produce an actual widget.
+    #[derive(Clone, Copy)]
+    pub struct NodeRenderedEvidence<T: NodeRoleProof> {
+        /// Proof that the node's AccessKit role is valid for this bridge method.
+        pub role: Established<T>,
+        /// WCAG proofs accumulated for this node by factory method calls.
+        pub wcag: WcagNodeProofs,
+    }
+
     // `WcagVerified` is minted from a `VerifiedTree` — the tree is the credential.
     impl ProvableFrom<VerifiedTree> for WcagVerified {}
 
     // Any role proof can mint `RolePreserved` — the role token is the credential.
+    // Used by default forwarding impls in the trait that convert one role to another.
     impl<T: NodeRoleProof> ProvableFrom<Established<T>> for RolePreserved {}
+
+    // Combined evidence (role proof + WCAG sidecar) can mint `RolePreserved`.
+    // Concrete bridge implementations must use this form to preserve proof custody.
+    impl<T: NodeRoleProof> ProvableFrom<NodeRenderedEvidence<T>> for RolePreserved {}
 
     // `RenderComplete` is minted once the wcag-gated render pass finishes.
     impl ProvableFrom<Established<WcagVerified>> for RenderComplete {}
 }
 
-pub use emit_impls::{IrSourced, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified};
+pub use emit_impls::{
+    IrSourced, NodeRenderedEvidence, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified,
+};

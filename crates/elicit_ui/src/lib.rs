@@ -94,6 +94,7 @@ pub use contracts::{
     KeyboardAccessible,
     MinTargetSize,
     NoOverflow,
+    NodeRenderedEvidence,
     RenderComplete,
     RolePreserved,
     StructuredContent,
@@ -289,5 +290,5 @@ pub use wcag_types::{
     OperableInterface, PerceivedEvidence, PerceivedSection, PointerTarget, RobustEvidence,
     RobustWidget, SpacedText, StructureDescriptor, StructuredElement, TargetDescriptor,
     TextSizeDescriptor, TextSpacingDescriptor, TimedElement, TimingDescriptor,
-    UnderstandableEvidence, UnderstandableInterface,
+    UnderstandableEvidence, UnderstandableInterface, WcagNodeProofs,
 };

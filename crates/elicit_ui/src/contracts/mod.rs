@@ -11,7 +11,9 @@ pub mod ui;
 pub mod wcag;
 
 // Re-export everything so call sites use `elicit_ui::{WcagLevelAAValid, ...}`.
-pub use ui::{IrSourced, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified};
+pub use ui::{
+    IrSourced, NodeRenderedEvidence, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified,
+};
 pub use wcag::{
     // ── Legacy aliases (API back-compat) ──────────────────────────────────
     AccessibleAA,
