@@ -41,7 +41,8 @@ use tracing::instrument;
 
 use crate::node_roles::*;
 use crate::{
-    RenderComplete, RenderStats, RolePreserved, UiResult, VerifiedTree, WcagVerified, WidgetId,
+    RenderComplete, RenderStats, RolePreserved, UiResult, VerifiedTree, WcagNodeProofs,
+    WcagVerified, WidgetId,
 };
 
 // ── UiRenderBackend ──────────────────────────────────────────────────────────
@@ -101,6 +102,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<UnknownNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Structural containers ─────────────────────────────────────────────
@@ -113,6 +115,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<GenericContainerNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Split-pane or panel — a distinct visible region within a window.
@@ -122,6 +125,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<PaneNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Top-level application window frame.
@@ -131,6 +135,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<WindowNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Document root (non-web contexts, e.g. an office document).
@@ -140,6 +145,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DocumentNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Web-page root (`<html>` element).
@@ -149,6 +155,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RootWebAreaNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Application container (ARIA `application` landmark).
@@ -158,6 +165,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ApplicationNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// VT-100-style terminal widget.
@@ -167,6 +175,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TerminalNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Interactive controls ──────────────────────────────────────────────
@@ -178,6 +187,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ButtonNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Default-action button (activated by Enter in a form).
@@ -187,12 +197,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DefaultButtonNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_button(
             node,
             id,
             children,
             Established::<ButtonNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -203,6 +215,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<LinkNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Two-state checkbox (checked / unchecked / mixed).
@@ -212,6 +225,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<CheckBoxNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// One-of-N radio button.
@@ -221,6 +235,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RadioButtonNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Binary toggle switch (on / off).
@@ -230,6 +245,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SwitchNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Native color-picker control.
@@ -239,6 +255,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ColorWellNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Expand/collapse disclosure triangle (summary/details-style).
@@ -248,6 +265,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DisclosureTriangleNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Dropdown combo-box (read-only input + popup list).
@@ -257,6 +275,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ComboBoxNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Editable combo-box (free-text input + popup list).
@@ -266,12 +285,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<EditableComboBoxNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_combo_box(
             node,
             id,
             children,
             Established::<ComboBoxNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -282,6 +303,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ListBoxNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Continuous range slider.
@@ -291,6 +313,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SliderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Numeric spin button (increment / decrement).
@@ -300,6 +323,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SpinButtonNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Linear progress indicator (determinate or indeterminate).
@@ -309,6 +333,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ProgressIndicatorNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Scroll bar (horizontal or vertical).
@@ -318,12 +343,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ScrollBarNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_progress_indicator(
             node,
             id,
             children,
             Established::<ProgressIndicatorNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -334,6 +361,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ScrollViewNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Resize handle / pane splitter.
@@ -343,6 +371,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SplitterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Text inputs ───────────────────────────────────────────────────────
@@ -354,6 +383,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TextInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Multi-line text area.
@@ -363,6 +393,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<MultilineTextInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Search-specialised text input (`type="search"`).
@@ -374,12 +405,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SearchInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -392,12 +425,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DateInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -410,12 +445,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DateTimeInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -428,12 +465,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<WeekInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -446,12 +485,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MonthInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -464,12 +505,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<TimeInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -482,12 +525,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<EmailInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -500,12 +545,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<NumberInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -518,12 +565,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PasswordInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -536,12 +585,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PhoneNumberInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -554,12 +605,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<UrlInputNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -572,6 +625,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TextRunNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Paragraph of text.
@@ -581,6 +635,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ParagraphNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Accessible label / static caption text.
@@ -590,6 +645,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<LabelNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Heading (level is in `node.level()`).
@@ -599,6 +655,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<HeadingNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Explicit line break.
@@ -608,6 +665,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<LineBreakNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Block quotation.
@@ -617,6 +675,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<BlockquoteNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Code block or inline code.
@@ -626,6 +685,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<CodeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Mathematical expression.
@@ -635,6 +695,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<MathNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Short note or advisory text (ARIA `note`).
@@ -644,6 +705,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<NoteNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Description-list term (`<dt>`).
@@ -653,6 +715,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TermNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Description-list definition (`<dd>`).
@@ -662,6 +725,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DefinitionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Abbreviated text (`<abbr>`).
@@ -673,12 +737,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<AbbrNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -691,12 +757,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<EmphasisNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -709,12 +777,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<StrongNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -727,12 +797,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MarkNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -745,12 +817,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<TimeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -763,12 +837,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RubyNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -781,12 +857,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RubyAnnotationNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -799,12 +877,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SuggestionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_paragraph(
             node,
             id,
             children,
             Established::<ParagraphNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -817,12 +897,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<CommentNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_paragraph(
             node,
             id,
             children,
             Established::<ParagraphNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -835,12 +917,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ContentDeletionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -853,12 +937,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ContentInsertionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -871,12 +957,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<LegendNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -889,6 +977,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ImageNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Figure container (`<figure>`).
@@ -898,6 +987,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<FigureNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Caption for a figure or table.
@@ -907,6 +997,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<FigureCaptionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// 2-D drawing canvas.
@@ -916,6 +1007,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<CanvasNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Video player.
@@ -925,6 +1017,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<VideoNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Audio player.
@@ -934,6 +1027,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<AudioNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// SVG document root.
@@ -945,12 +1039,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SvgRootNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_image(
             node,
             id,
             children,
             Established::<ImageNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -963,12 +1059,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<EmbeddedObjectNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -981,12 +1079,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PluginObjectNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -999,12 +1099,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<WebViewNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1017,12 +1119,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<IframeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1035,12 +1139,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<IframePresentationalNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_generic_container(
             node,
             id,
             children,
             Established::<GenericContainerNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1053,6 +1159,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<MainNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<nav>` landmark — navigation links.
@@ -1062,6 +1169,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<NavigationNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<header>` / `<banner>` landmark — page header.
@@ -1071,6 +1179,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<BannerNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<footer>` / `contentinfo` landmark — page footer.
@@ -1080,6 +1189,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ContentInfoNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<aside>` / `complementary` landmark.
@@ -1089,6 +1199,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ComplementaryNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<form>` landmark / form region.
@@ -1098,6 +1209,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<FormNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<search>` landmark.
@@ -1107,6 +1219,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SearchNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Generic named region (`<section>` with accessible label).
@@ -1116,6 +1229,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RegionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Unnamed section (no accessible label).
@@ -1125,6 +1239,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SectionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Section-level heading container (distinct from [`Self::bridge_heading`]).
@@ -1134,6 +1249,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SectionHeaderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Section-level footer container.
@@ -1143,6 +1259,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<SectionFooterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// `<header>` within a section (not the page banner).
@@ -1154,12 +1271,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<HeaderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section_header(
             node,
             id,
             children,
             Established::<SectionHeaderNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1172,12 +1291,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<FooterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section_footer(
             node,
             id,
             children,
             Established::<SectionFooterNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1188,6 +1309,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ArticleNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Generic logical grouping (`<div>` / `role="group"`).
@@ -1197,6 +1319,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<GroupNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Dialogs / overlays ────────────────────────────────────────────────
@@ -1208,6 +1331,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DialogNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Alert dialog — requires immediate user response.
@@ -1219,12 +1343,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<AlertDialogNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_dialog(
             node,
             id,
             children,
             Established::<DialogNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1235,6 +1361,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DetailsNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Transient tooltip.
@@ -1244,6 +1371,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TooltipNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Status / live regions ─────────────────────────────────────────────
@@ -1255,6 +1383,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<AlertNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Status bar or status region (non-urgent live region).
@@ -1264,6 +1393,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<StatusNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Log — append-only live region.
@@ -1275,12 +1405,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<LogNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_status(
             node,
             id,
             children,
             Established::<StatusNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1293,12 +1425,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MarqueeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_status(
             node,
             id,
             children,
             Established::<StatusNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1309,6 +1443,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TimerNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Lists ─────────────────────────────────────────────────────────────
@@ -1320,6 +1455,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ListNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Item within a list.
@@ -1329,6 +1465,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ListItemNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Bullet / number marker for a list item.
@@ -1340,12 +1477,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ListMarkerNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1356,6 +1495,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<DescriptionListNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Continuous stream of content (`role="feed"`).
@@ -1367,12 +1507,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<FeedNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list(
             node,
             id,
             children,
             Established::<ListNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1385,12 +1527,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ListBoxOptionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list_item(
             node,
             id,
             children,
             Established::<ListItemNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1403,6 +1547,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TableNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Table row (`<tr>`).
@@ -1412,6 +1557,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RowNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Table data cell (`<td>`).
@@ -1421,6 +1567,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<CellNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Table caption (`<caption>`).
@@ -1430,6 +1577,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<CaptionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Row group — `<thead>`, `<tbody>`, or `<tfoot>`.
@@ -1439,6 +1587,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RowGroupNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Row header cell (`<th scope="row">`).
@@ -1450,12 +1599,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RowHeaderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_cell(
             node,
             id,
             children,
             Established::<CellNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1468,12 +1619,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ColumnHeaderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_cell(
             node,
             id,
             children,
             Established::<CellNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1486,12 +1639,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GridNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_table(
             node,
             id,
             children,
             Established::<TableNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1504,12 +1659,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GridCellNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_cell(
             node,
             id,
             children,
             Established::<CellNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1522,12 +1679,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<TreeGridNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_tree(
             node,
             id,
             children,
             Established::<TreeNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1540,12 +1699,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ListGridNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_grid(
             node,
             id,
             children,
             Established::<GridNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1558,12 +1719,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<LayoutTableNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_generic_container(
             node,
             id,
             children,
             Established::<GenericContainerNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1576,12 +1739,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<LayoutTableRowNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_row(
             node,
             id,
             children,
             Established::<RowNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1594,12 +1759,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<LayoutTableCellNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_generic_container(
             node,
             id,
             children,
             Established::<GenericContainerNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1612,6 +1779,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TreeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Node within a tree widget.
@@ -1621,6 +1789,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TreeItemNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Tabs ──────────────────────────────────────────────────────────────
@@ -1632,6 +1801,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TabNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Tab strip containing tab buttons.
@@ -1641,6 +1811,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TabListNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Content panel associated with a tab.
@@ -1650,6 +1821,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<TabPanelNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     // ── Menus ─────────────────────────────────────────────────────────────
@@ -1661,6 +1833,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<MenuNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Horizontal menu bar.
@@ -1672,12 +1845,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MenuBarNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_menu(
             node,
             id,
             children,
             Established::<MenuNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1688,6 +1863,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<MenuItemNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Option in a menu-style list popup.
@@ -1699,12 +1875,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MenuListOptionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_menu_item(
             node,
             id,
             children,
             Established::<MenuItemNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1717,12 +1895,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MenuListPopupNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_menu(
             node,
             id,
             children,
             Established::<MenuNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1735,12 +1915,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MenuItemCheckBoxNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_check_box(
             node,
             id,
             children,
             Established::<CheckBoxNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1753,12 +1935,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MenuItemRadioNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_radio_button(
             node,
             id,
             children,
             Established::<RadioButtonNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1771,6 +1955,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<ToolbarNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Title bar (window chrome header).
@@ -1782,12 +1967,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<TitleBarNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_toolbar(
             node,
             id,
             children,
             Established::<ToolbarNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1798,6 +1985,7 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         _: Established<RadioGroupNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>);
 
     /// Gauge / scalar measurement indicator.
@@ -1809,12 +1997,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MeterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_progress_indicator(
             node,
             id,
             children,
             Established::<ProgressIndicatorNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1829,12 +2019,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<KeyboardNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1847,12 +2039,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<CaretNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1865,12 +2059,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ImeCandidateNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_unknown(
             node,
             id,
             children,
             Established::<UnknownNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1885,12 +2081,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PdfRootNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_document(
             node,
             id,
             children,
             Established::<DocumentNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1903,12 +2101,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PdfActionableHighlightNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1923,12 +2123,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GraphicsDocumentNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_document(
             node,
             id,
             children,
             Established::<DocumentNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1941,12 +2143,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GraphicsObjectNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_group(
             node,
             id,
             children,
             Established::<GroupNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1959,12 +2163,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GraphicsSymbolNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_image(
             node,
             id,
             children,
             Established::<ImageNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1981,12 +2187,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocAbstractNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -1997,12 +2205,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocAcknowledgementsNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2013,12 +2223,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocAfterwordNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2029,12 +2241,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocAppendixNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2045,12 +2259,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocBackLinkNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2061,12 +2277,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocBiblioEntryNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list_item(
             node,
             id,
             children,
             Established::<ListItemNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2077,12 +2295,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocBibliographyNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list(
             node,
             id,
             children,
             Established::<ListNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2093,12 +2313,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocBiblioRefNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2109,12 +2331,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocChapterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2125,12 +2349,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocColophonNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2141,12 +2367,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocConclusionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2157,12 +2385,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocCoverNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_figure(
             node,
             id,
             children,
             Established::<FigureNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2173,12 +2403,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocCreditNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_paragraph(
             node,
             id,
             children,
             Established::<ParagraphNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2189,12 +2421,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocCreditsNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2205,12 +2439,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocDedicationNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2221,12 +2457,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocEndnoteNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_note(
             node,
             id,
             children,
             Established::<NoteNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2237,12 +2475,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocEndnotesNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list(
             node,
             id,
             children,
             Established::<ListNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2253,12 +2493,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocEpigraphNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_blockquote(
             node,
             id,
             children,
             Established::<BlockquoteNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2269,12 +2511,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocEpilogueNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2285,12 +2529,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocErrataNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2301,12 +2547,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocExampleNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2317,12 +2565,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocFootnoteNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_note(
             node,
             id,
             children,
             Established::<NoteNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2333,12 +2583,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocForewordNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2349,12 +2601,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocGlossaryNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_description_list(
             node,
             id,
             children,
             Established::<DescriptionListNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2365,12 +2619,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocGlossRefNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2381,12 +2637,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocIndexNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2397,12 +2655,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocIntroductionNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2413,12 +2673,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocNoteRefNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2429,12 +2691,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocNoticeNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_alert(
             node,
             id,
             children,
             Established::<AlertNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2445,12 +2709,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPageBreakNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_line_break(
             node,
             id,
             children,
             Established::<LineBreakNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2461,12 +2727,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPageFooterNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section_footer(
             node,
             id,
             children,
             Established::<SectionFooterNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2477,12 +2745,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPageHeaderNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section_header(
             node,
             id,
             children,
             Established::<SectionHeaderNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2493,12 +2763,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPageListNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_list(
             node,
             id,
             children,
             Established::<ListNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2509,12 +2781,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPartNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2525,12 +2799,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPrefaceNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2541,12 +2817,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPrologueNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2557,12 +2835,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocPullquoteNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_blockquote(
             node,
             id,
             children,
             Established::<BlockquoteNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2573,12 +2853,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocQnaNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_group(
             node,
             id,
             children,
             Established::<GroupNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2589,12 +2871,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocSubtitleNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_heading(
             node,
             id,
             children,
             Established::<HeadingNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2605,12 +2889,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocTipNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_note(
             node,
             id,
             children,
             Established::<NoteNodeValid>::prove(&proof),
+            proofs,
         )
     }
 
@@ -2621,12 +2907,14 @@ pub trait UiNodeBridge: UiRenderBackend {
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocTocNodeValid>,
+        proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         self.bridge_navigation(
             node,
             id,
             children,
             Established::<NavigationNodeValid>::prove(&proof),
+            proofs,
         )
     }
 }
@@ -2639,7 +2927,9 @@ fn render_dfs<T: UiNodeBridge>(
     id: NodeId,
     stats: &mut RenderStats,
     wcag: &Established<WcagVerified>,
+    node_proofs: &BTreeMap<NodeId, WcagNodeProofs>,
 ) -> (T::Widget, Established<RolePreserved>) {
+    let proofs = node_proofs.get(&id).copied().unwrap_or_default();
     let node = match nodes.get(&id) {
         Some(n) => n,
         None => {
@@ -2649,6 +2939,7 @@ fn render_dfs<T: UiNodeBridge>(
                 id,
                 vec![],
                 Established::<UnknownNodeValid>::prove(wcag),
+                proofs,
             );
         }
     };
@@ -2661,6 +2952,7 @@ fn render_dfs<T: UiNodeBridge>(
             id,
             vec![],
             Established::<UnknownNodeValid>::prove(wcag),
+            proofs,
         );
     }
 
@@ -2670,7 +2962,7 @@ fn render_dfs<T: UiNodeBridge>(
     let children: Vec<(T::Widget, Established<RolePreserved>)> = node
         .children()
         .iter()
-        .map(|child_id| render_dfs(bridge, nodes, *child_id, stats, wcag))
+        .map(|child_id| render_dfs(bridge, nodes, *child_id, stats, wcag, node_proofs))
         .collect();
 
     if is_container {
@@ -2679,7 +2971,7 @@ fn render_dfs<T: UiNodeBridge>(
         stats.widgets_rendered += 1;
     }
 
-    dispatch_role(bridge, node, id, children, wcag)
+    dispatch_role(bridge, node, id, children, wcag, proofs)
 }
 
 /// Returns `true` for roles that structurally contain other nodes.
@@ -2747,6 +3039,7 @@ fn dispatch_role<T: UiNodeBridge>(
     id: NodeId,
     children: Vec<(T::Widget, Established<RolePreserved>)>,
     wcag: &Established<WcagVerified>,
+    proofs: WcagNodeProofs,
 ) -> (T::Widget, Established<RolePreserved>) {
     match node.role() {
         Role::Unknown => bridge.bridge_unknown(
@@ -2754,1083 +3047,1274 @@ fn dispatch_role<T: UiNodeBridge>(
             id,
             children,
             Established::<UnknownNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TextRun => bridge.bridge_text_run(
             node,
             id,
             children,
             Established::<TextRunNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Cell => bridge.bridge_cell(
             node,
             id,
             children,
             Established::<CellNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Label => bridge.bridge_label(
             node,
             id,
             children,
             Established::<LabelNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Image => bridge.bridge_image(
             node,
             id,
             children,
             Established::<ImageNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Link => bridge.bridge_link(
             node,
             id,
             children,
             Established::<LinkNodeValid>::prove(wcag),
+            proofs,
         ),
-        Role::Row => {
-            bridge.bridge_row(node, id, children, Established::<RowNodeValid>::prove(wcag))
-        }
+        Role::Row => bridge.bridge_row(
+            node,
+            id,
+            children,
+            Established::<RowNodeValid>::prove(wcag),
+            proofs,
+        ),
         Role::ListItem => bridge.bridge_list_item(
             node,
             id,
             children,
             Established::<ListItemNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ListMarker => bridge.bridge_list_marker(
             node,
             id,
             children,
             Established::<ListMarkerNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TreeItem => bridge.bridge_tree_item(
             node,
             id,
             children,
             Established::<TreeItemNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ListBoxOption => bridge.bridge_list_box_option(
             node,
             id,
             children,
             Established::<ListBoxOptionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuItem => bridge.bridge_menu_item(
             node,
             id,
             children,
             Established::<MenuItemNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuListOption => bridge.bridge_menu_list_option(
             node,
             id,
             children,
             Established::<MenuListOptionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Paragraph => bridge.bridge_paragraph(
             node,
             id,
             children,
             Established::<ParagraphNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::GenericContainer => bridge.bridge_generic_container(
             node,
             id,
             children,
             Established::<GenericContainerNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::CheckBox => bridge.bridge_check_box(
             node,
             id,
             children,
             Established::<CheckBoxNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RadioButton => bridge.bridge_radio_button(
             node,
             id,
             children,
             Established::<RadioButtonNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TextInput => bridge.bridge_text_input(
             node,
             id,
             children,
             Established::<TextInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Button => bridge.bridge_button(
             node,
             id,
             children,
             Established::<ButtonNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DefaultButton => bridge.bridge_default_button(
             node,
             id,
             children,
             Established::<DefaultButtonNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Pane => bridge.bridge_pane(
             node,
             id,
             children,
             Established::<PaneNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RowHeader => bridge.bridge_row_header(
             node,
             id,
             children,
             Established::<RowHeaderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ColumnHeader => bridge.bridge_column_header(
             node,
             id,
             children,
             Established::<ColumnHeaderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RowGroup => bridge.bridge_row_group(
             node,
             id,
             children,
             Established::<RowGroupNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::List => bridge.bridge_list(
             node,
             id,
             children,
             Established::<ListNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Table => bridge.bridge_table(
             node,
             id,
             children,
             Established::<TableNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::LayoutTableCell => bridge.bridge_layout_table_cell(
             node,
             id,
             children,
             Established::<LayoutTableCellNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::LayoutTableRow => bridge.bridge_layout_table_row(
             node,
             id,
             children,
             Established::<LayoutTableRowNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::LayoutTable => bridge.bridge_layout_table(
             node,
             id,
             children,
             Established::<LayoutTableNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Switch => bridge.bridge_switch(
             node,
             id,
             children,
             Established::<SwitchNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Menu => bridge.bridge_menu(
             node,
             id,
             children,
             Established::<MenuNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MultilineTextInput => bridge.bridge_multiline_text_input(
             node,
             id,
             children,
             Established::<MultilineTextInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::SearchInput => bridge.bridge_search_input(
             node,
             id,
             children,
             Established::<SearchInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DateInput => bridge.bridge_date_input(
             node,
             id,
             children,
             Established::<DateInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DateTimeInput => bridge.bridge_date_time_input(
             node,
             id,
             children,
             Established::<DateTimeInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::WeekInput => bridge.bridge_week_input(
             node,
             id,
             children,
             Established::<WeekInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MonthInput => bridge.bridge_month_input(
             node,
             id,
             children,
             Established::<MonthInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TimeInput => bridge.bridge_time_input(
             node,
             id,
             children,
             Established::<TimeInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::EmailInput => bridge.bridge_email_input(
             node,
             id,
             children,
             Established::<EmailInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::NumberInput => bridge.bridge_number_input(
             node,
             id,
             children,
             Established::<NumberInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::PasswordInput => bridge.bridge_password_input(
             node,
             id,
             children,
             Established::<PasswordInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::PhoneNumberInput => bridge.bridge_phone_number_input(
             node,
             id,
             children,
             Established::<PhoneNumberInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::UrlInput => bridge.bridge_url_input(
             node,
             id,
             children,
             Established::<UrlInputNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Abbr => bridge.bridge_abbr(
             node,
             id,
             children,
             Established::<AbbrNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Alert => bridge.bridge_alert(
             node,
             id,
             children,
             Established::<AlertNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::AlertDialog => bridge.bridge_alert_dialog(
             node,
             id,
             children,
             Established::<AlertDialogNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Application => bridge.bridge_application(
             node,
             id,
             children,
             Established::<ApplicationNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Article => bridge.bridge_article(
             node,
             id,
             children,
             Established::<ArticleNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Audio => bridge.bridge_audio(
             node,
             id,
             children,
             Established::<AudioNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Banner => bridge.bridge_banner(
             node,
             id,
             children,
             Established::<BannerNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Blockquote => bridge.bridge_blockquote(
             node,
             id,
             children,
             Established::<BlockquoteNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Canvas => bridge.bridge_canvas(
             node,
             id,
             children,
             Established::<CanvasNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Caption => bridge.bridge_caption(
             node,
             id,
             children,
             Established::<CaptionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Caret => bridge.bridge_caret(
             node,
             id,
             children,
             Established::<CaretNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Code => bridge.bridge_code(
             node,
             id,
             children,
             Established::<CodeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ColorWell => bridge.bridge_color_well(
             node,
             id,
             children,
             Established::<ColorWellNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ComboBox => bridge.bridge_combo_box(
             node,
             id,
             children,
             Established::<ComboBoxNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::EditableComboBox => bridge.bridge_editable_combo_box(
             node,
             id,
             children,
             Established::<EditableComboBoxNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Complementary => bridge.bridge_complementary(
             node,
             id,
             children,
             Established::<ComplementaryNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Comment => bridge.bridge_comment(
             node,
             id,
             children,
             Established::<CommentNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ContentDeletion => bridge.bridge_content_deletion(
             node,
             id,
             children,
             Established::<ContentDeletionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ContentInsertion => bridge.bridge_content_insertion(
             node,
             id,
             children,
             Established::<ContentInsertionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ContentInfo => bridge.bridge_content_info(
             node,
             id,
             children,
             Established::<ContentInfoNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Definition => bridge.bridge_definition(
             node,
             id,
             children,
             Established::<DefinitionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DescriptionList => bridge.bridge_description_list(
             node,
             id,
             children,
             Established::<DescriptionListNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Details => bridge.bridge_details(
             node,
             id,
             children,
             Established::<DetailsNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Dialog => bridge.bridge_dialog(
             node,
             id,
             children,
             Established::<DialogNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DisclosureTriangle => bridge.bridge_disclosure_triangle(
             node,
             id,
             children,
             Established::<DisclosureTriangleNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Document => bridge.bridge_document(
             node,
             id,
             children,
             Established::<DocumentNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::EmbeddedObject => bridge.bridge_embedded_object(
             node,
             id,
             children,
             Established::<EmbeddedObjectNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Emphasis => bridge.bridge_emphasis(
             node,
             id,
             children,
             Established::<EmphasisNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Feed => bridge.bridge_feed(
             node,
             id,
             children,
             Established::<FeedNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::FigureCaption => bridge.bridge_figure_caption(
             node,
             id,
             children,
             Established::<FigureCaptionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Figure => bridge.bridge_figure(
             node,
             id,
             children,
             Established::<FigureNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Footer => bridge.bridge_footer(
             node,
             id,
             children,
             Established::<FooterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Form => bridge.bridge_form(
             node,
             id,
             children,
             Established::<FormNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Grid => bridge.bridge_grid(
             node,
             id,
             children,
             Established::<GridNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::GridCell => bridge.bridge_grid_cell(
             node,
             id,
             children,
             Established::<GridCellNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Group => bridge.bridge_group(
             node,
             id,
             children,
             Established::<GroupNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Header => bridge.bridge_header(
             node,
             id,
             children,
             Established::<HeaderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Heading => bridge.bridge_heading(
             node,
             id,
             children,
             Established::<HeadingNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Iframe => bridge.bridge_iframe(
             node,
             id,
             children,
             Established::<IframeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::IframePresentational => bridge.bridge_iframe_presentational(
             node,
             id,
             children,
             Established::<IframePresentationalNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ImeCandidate => bridge.bridge_ime_candidate(
             node,
             id,
             children,
             Established::<ImeCandidateNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Keyboard => bridge.bridge_keyboard(
             node,
             id,
             children,
             Established::<KeyboardNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Legend => bridge.bridge_legend(
             node,
             id,
             children,
             Established::<LegendNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::LineBreak => bridge.bridge_line_break(
             node,
             id,
             children,
             Established::<LineBreakNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ListBox => bridge.bridge_list_box(
             node,
             id,
             children,
             Established::<ListBoxNodeValid>::prove(wcag),
+            proofs,
         ),
-        Role::Log => {
-            bridge.bridge_log(node, id, children, Established::<LogNodeValid>::prove(wcag))
-        }
+        Role::Log => bridge.bridge_log(
+            node,
+            id,
+            children,
+            Established::<LogNodeValid>::prove(wcag),
+            proofs,
+        ),
         Role::Main => bridge.bridge_main(
             node,
             id,
             children,
             Established::<MainNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Mark => bridge.bridge_mark(
             node,
             id,
             children,
             Established::<MarkNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Marquee => bridge.bridge_marquee(
             node,
             id,
             children,
             Established::<MarqueeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Math => bridge.bridge_math(
             node,
             id,
             children,
             Established::<MathNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuBar => bridge.bridge_menu_bar(
             node,
             id,
             children,
             Established::<MenuBarNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuItemCheckBox => bridge.bridge_menu_item_check_box(
             node,
             id,
             children,
             Established::<MenuItemCheckBoxNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuItemRadio => bridge.bridge_menu_item_radio(
             node,
             id,
             children,
             Established::<MenuItemRadioNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::MenuListPopup => bridge.bridge_menu_list_popup(
             node,
             id,
             children,
             Established::<MenuListPopupNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Meter => bridge.bridge_meter(
             node,
             id,
             children,
             Established::<MeterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Navigation => bridge.bridge_navigation(
             node,
             id,
             children,
             Established::<NavigationNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Note => bridge.bridge_note(
             node,
             id,
             children,
             Established::<NoteNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::PluginObject => bridge.bridge_plugin_object(
             node,
             id,
             children,
             Established::<PluginObjectNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ProgressIndicator => bridge.bridge_progress_indicator(
             node,
             id,
             children,
             Established::<ProgressIndicatorNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RadioGroup => bridge.bridge_radio_group(
             node,
             id,
             children,
             Established::<RadioGroupNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Region => bridge.bridge_region(
             node,
             id,
             children,
             Established::<RegionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RootWebArea => bridge.bridge_root_web_area(
             node,
             id,
             children,
             Established::<RootWebAreaNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Ruby => bridge.bridge_ruby(
             node,
             id,
             children,
             Established::<RubyNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::RubyAnnotation => bridge.bridge_ruby_annotation(
             node,
             id,
             children,
             Established::<RubyAnnotationNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ScrollBar => bridge.bridge_scroll_bar(
             node,
             id,
             children,
             Established::<ScrollBarNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ScrollView => bridge.bridge_scroll_view(
             node,
             id,
             children,
             Established::<ScrollViewNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Search => bridge.bridge_search(
             node,
             id,
             children,
             Established::<SearchNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Section => bridge.bridge_section(
             node,
             id,
             children,
             Established::<SectionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::SectionFooter => bridge.bridge_section_footer(
             node,
             id,
             children,
             Established::<SectionFooterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::SectionHeader => bridge.bridge_section_header(
             node,
             id,
             children,
             Established::<SectionHeaderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Slider => bridge.bridge_slider(
             node,
             id,
             children,
             Established::<SliderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::SpinButton => bridge.bridge_spin_button(
             node,
             id,
             children,
             Established::<SpinButtonNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Splitter => bridge.bridge_splitter(
             node,
             id,
             children,
             Established::<SplitterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Status => bridge.bridge_status(
             node,
             id,
             children,
             Established::<StatusNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Strong => bridge.bridge_strong(
             node,
             id,
             children,
             Established::<StrongNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Suggestion => bridge.bridge_suggestion(
             node,
             id,
             children,
             Established::<SuggestionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::SvgRoot => bridge.bridge_svg_root(
             node,
             id,
             children,
             Established::<SvgRootNodeValid>::prove(wcag),
+            proofs,
         ),
-        Role::Tab => {
-            bridge.bridge_tab(node, id, children, Established::<TabNodeValid>::prove(wcag))
-        }
+        Role::Tab => bridge.bridge_tab(
+            node,
+            id,
+            children,
+            Established::<TabNodeValid>::prove(wcag),
+            proofs,
+        ),
         Role::TabList => bridge.bridge_tab_list(
             node,
             id,
             children,
             Established::<TabListNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TabPanel => bridge.bridge_tab_panel(
             node,
             id,
             children,
             Established::<TabPanelNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Term => bridge.bridge_term(
             node,
             id,
             children,
             Established::<TermNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Time => bridge.bridge_time(
             node,
             id,
             children,
             Established::<TimeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Timer => bridge.bridge_timer(
             node,
             id,
             children,
             Established::<TimerNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TitleBar => bridge.bridge_title_bar(
             node,
             id,
             children,
             Established::<TitleBarNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Toolbar => bridge.bridge_toolbar(
             node,
             id,
             children,
             Established::<ToolbarNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Tooltip => bridge.bridge_tooltip(
             node,
             id,
             children,
             Established::<TooltipNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Tree => bridge.bridge_tree(
             node,
             id,
             children,
             Established::<TreeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::TreeGrid => bridge.bridge_tree_grid(
             node,
             id,
             children,
             Established::<TreeGridNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Video => bridge.bridge_video(
             node,
             id,
             children,
             Established::<VideoNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::WebView => bridge.bridge_web_view(
             node,
             id,
             children,
             Established::<WebViewNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Window => bridge.bridge_window(
             node,
             id,
             children,
             Established::<WindowNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::PdfActionableHighlight => bridge.bridge_pdf_actionable_highlight(
             node,
             id,
             children,
             Established::<PdfActionableHighlightNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::PdfRoot => bridge.bridge_pdf_root(
             node,
             id,
             children,
             Established::<PdfRootNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::GraphicsDocument => bridge.bridge_graphics_document(
             node,
             id,
             children,
             Established::<GraphicsDocumentNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::GraphicsObject => bridge.bridge_graphics_object(
             node,
             id,
             children,
             Established::<GraphicsObjectNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::GraphicsSymbol => bridge.bridge_graphics_symbol(
             node,
             id,
             children,
             Established::<GraphicsSymbolNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocAbstract => bridge.bridge_doc_abstract(
             node,
             id,
             children,
             Established::<DocAbstractNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocAcknowledgements => bridge.bridge_doc_acknowledgements(
             node,
             id,
             children,
             Established::<DocAcknowledgementsNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocAfterword => bridge.bridge_doc_afterword(
             node,
             id,
             children,
             Established::<DocAfterwordNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocAppendix => bridge.bridge_doc_appendix(
             node,
             id,
             children,
             Established::<DocAppendixNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocBackLink => bridge.bridge_doc_back_link(
             node,
             id,
             children,
             Established::<DocBackLinkNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocBiblioEntry => bridge.bridge_doc_biblio_entry(
             node,
             id,
             children,
             Established::<DocBiblioEntryNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocBibliography => bridge.bridge_doc_bibliography(
             node,
             id,
             children,
             Established::<DocBibliographyNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocBiblioRef => bridge.bridge_doc_biblio_ref(
             node,
             id,
             children,
             Established::<DocBiblioRefNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocChapter => bridge.bridge_doc_chapter(
             node,
             id,
             children,
             Established::<DocChapterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocColophon => bridge.bridge_doc_colophon(
             node,
             id,
             children,
             Established::<DocColophonNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocConclusion => bridge.bridge_doc_conclusion(
             node,
             id,
             children,
             Established::<DocConclusionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocCover => bridge.bridge_doc_cover(
             node,
             id,
             children,
             Established::<DocCoverNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocCredit => bridge.bridge_doc_credit(
             node,
             id,
             children,
             Established::<DocCreditNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocCredits => bridge.bridge_doc_credits(
             node,
             id,
             children,
             Established::<DocCreditsNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocDedication => bridge.bridge_doc_dedication(
             node,
             id,
             children,
             Established::<DocDedicationNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocEndnote => bridge.bridge_doc_endnote(
             node,
             id,
             children,
             Established::<DocEndnoteNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocEndnotes => bridge.bridge_doc_endnotes(
             node,
             id,
             children,
             Established::<DocEndnotesNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocEpigraph => bridge.bridge_doc_epigraph(
             node,
             id,
             children,
             Established::<DocEpigraphNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocEpilogue => bridge.bridge_doc_epilogue(
             node,
             id,
             children,
             Established::<DocEpilogueNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocErrata => bridge.bridge_doc_errata(
             node,
             id,
             children,
             Established::<DocErrataNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocExample => bridge.bridge_doc_example(
             node,
             id,
             children,
             Established::<DocExampleNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocFootnote => bridge.bridge_doc_footnote(
             node,
             id,
             children,
             Established::<DocFootnoteNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocForeword => bridge.bridge_doc_foreword(
             node,
             id,
             children,
             Established::<DocForewordNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocGlossary => bridge.bridge_doc_glossary(
             node,
             id,
             children,
             Established::<DocGlossaryNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocGlossRef => bridge.bridge_doc_gloss_ref(
             node,
             id,
             children,
             Established::<DocGlossRefNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocIndex => bridge.bridge_doc_index(
             node,
             id,
             children,
             Established::<DocIndexNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocIntroduction => bridge.bridge_doc_introduction(
             node,
             id,
             children,
             Established::<DocIntroductionNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocNoteRef => bridge.bridge_doc_note_ref(
             node,
             id,
             children,
             Established::<DocNoteRefNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocNotice => bridge.bridge_doc_notice(
             node,
             id,
             children,
             Established::<DocNoticeNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPageBreak => bridge.bridge_doc_page_break(
             node,
             id,
             children,
             Established::<DocPageBreakNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPageFooter => bridge.bridge_doc_page_footer(
             node,
             id,
             children,
             Established::<DocPageFooterNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPageHeader => bridge.bridge_doc_page_header(
             node,
             id,
             children,
             Established::<DocPageHeaderNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPageList => bridge.bridge_doc_page_list(
             node,
             id,
             children,
             Established::<DocPageListNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPart => bridge.bridge_doc_part(
             node,
             id,
             children,
             Established::<DocPartNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPreface => bridge.bridge_doc_preface(
             node,
             id,
             children,
             Established::<DocPrefaceNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPrologue => bridge.bridge_doc_prologue(
             node,
             id,
             children,
             Established::<DocPrologueNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocPullquote => bridge.bridge_doc_pullquote(
             node,
             id,
             children,
             Established::<DocPullquoteNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocQna => bridge.bridge_doc_qna(
             node,
             id,
             children,
             Established::<DocQnaNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocSubtitle => bridge.bridge_doc_subtitle(
             node,
             id,
             children,
             Established::<DocSubtitleNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocTip => bridge.bridge_doc_tip(
             node,
             id,
             children,
             Established::<DocTipNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::DocToc => bridge.bridge_doc_toc(
             node,
             id,
             children,
             Established::<DocTocNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::ListGrid => bridge.bridge_list_grid(
             node,
             id,
             children,
             Established::<ListGridNodeValid>::prove(wcag),
+            proofs,
         ),
         Role::Terminal => bridge.bridge_terminal(
             node,
             id,
             children,
             Established::<TerminalNodeValid>::prove(wcag),
+            proofs,
         ),
     }
 }
@@ -3868,7 +4352,14 @@ impl<T: UiNodeBridge> UiTreeRenderer for T {
     ) -> UiResult<(Self::Widget, RenderStats, Established<RenderComplete>)> {
         let mut stats = RenderStats::default();
         let wcag = Established::<WcagVerified>::prove(tree);
-        let (widget, _) = render_dfs(self, tree.nodes(), tree.root(), &mut stats, &wcag);
+        let (widget, _) = render_dfs(
+            self,
+            tree.nodes(),
+            tree.root(),
+            &mut stats,
+            &wcag,
+            tree.node_proofs(),
+        );
         tracing::debug!(
             visited = stats.nodes_visited,
             widgets = stats.widgets_rendered,
@@ -3893,6 +4384,7 @@ impl<T: UiNodeBridge> UiTreeRenderer for T {
             subtree_root.to_node_id(),
             &mut stats,
             &wcag,
+            tree.node_proofs(),
         );
         Ok((widget, stats))
     }

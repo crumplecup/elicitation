@@ -24,12 +24,13 @@ use crate::{
     WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
     WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusVisibleKeyboard,
     WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic, WcagKeyboardNotTrapped,
-    WcagKeyboardOperable, WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLargeTextClassified,
-    WcagLevelAAValid, WcagListStructureProgrammatic, WcagNamePresent, WcagNonTextContrastMinimum,
-    WcagOperableValid, WcagPageLanguageIdentified, WcagPartLanguageIdentified, WcagPerceivedValid,
-    WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative, WcagRobustValid,
-    WcagTableHeadersProgrammatic, WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable,
-    WcagTextSpacingAdjustable, WcagTimingAdjustable, WcagUnderstandableValid,
+    WcagKeyboardOperable, WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent,
+    WcagLargeTextClassified, WcagLevelAAValid, WcagListStructureProgrammatic, WcagNamePresent,
+    WcagNonTextContrastMinimum, WcagOperableValid, WcagPageLanguageIdentified,
+    WcagPartLanguageIdentified, WcagPerceivedValid, WcagPointerCancellationUpEvent,
+    WcagPointerGesturesSimpleAlternative, WcagRobustValid, WcagTableHeadersProgrammatic,
+    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable,
+    WcagTimingAdjustable, WcagUnderstandableValid,
 };
 
 // ── Contrast ──────────────────────────────────────────────────────────────────

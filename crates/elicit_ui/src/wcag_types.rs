@@ -13,17 +13,23 @@
 use elicitation::Established;
 
 use crate::{
-    SrgbColor, WcagAccessibleAuthentication, WcagBypassBlocksMechanism, WcagColorNotSoleConveyor,
-    WcagConsistentHelpLocated, WcagContrastMinimumNormalText, WcagErrorIdentificationDescriptive,
-    WcagFocusAppearanceMinimumArea, WcagFocusIndicatorContrast, WcagFocusOrderLogical,
-    WcagFocusVisibleKeyboard, WcagIdentificationConsistent, WcagInfoAndRelationshipsProgrammatic,
-    WcagKeyboardNotTrapped, WcagKeyboardOperable, WcagLabelsOrInstructionsPresent,
-    WcagLinkPurposeFromContext, WcagNamePresent, WcagNameRoleValueProgrammatic,
-    WcagNavigationConsistent, WcagNonTextContrastMinimum, WcagOperableValid,
-    WcagPageLanguageIdentified, WcagPageTitled, WcagPerceivedValid, WcagPointerCancellationUpEvent,
+    SrgbColor, WcagAccessibleAuthentication, WcagAudioDescriptionPrerecorded,
+    WcagBypassBlocksMechanism, WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable,
+    WcagColorNotSoleConveyor, WcagConsistentHelpLocated, WcagContrastEnhancedLargeText,
+    WcagContrastEnhancedNormalText, WcagContrastMinimumLargeText, WcagContrastMinimumNormalText,
+    WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
+    WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusIndicatorContrast,
+    WcagFocusOrderLogical, WcagFocusVisibleKeyboard, WcagFormLabelsProgrammatic,
+    WcagHeadingStructureProgrammatic, WcagIdentificationConsistent,
+    WcagInfoAndRelationshipsProgrammatic, WcagKeyboardNotTrapped, WcagKeyboardOperable,
+    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLargeTextClassified,
+    WcagLinkPurposeFromContext, WcagListStructureProgrammatic, WcagNamePresent,
+    WcagNameRoleValueProgrammatic, WcagNavigationConsistent, WcagNonTextContrastMinimum,
+    WcagOperableValid, WcagPageLanguageIdentified, WcagPageTitled, WcagPartLanguageIdentified,
+    WcagPerceivedValid, WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative,
     WcagRedundantEntryMinimized, WcagRobustValid, WcagStatusMessagesProgrammatic,
-    WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable, WcagUnderstandableValid,
-    WidgetId,
+    WcagTableHeadersProgrammatic, WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable,
+    WcagTextSpacingAdjustable, WcagTimingAdjustable, WcagUnderstandableValid, WidgetId,
 };
 
 // ── Descriptors (raw input data) ──────────────────────────────────────────────
@@ -356,6 +362,99 @@ pub struct UnderstandableInterface {
 pub struct RobustWidget {
     /// Number of widgets included in the validation sweep.
     pub validated_count: usize,
+}
+
+// ── Per-node proof sidecar ───────────────────────────────────────────────────
+
+/// Element-level WCAG proof tokens collected during factory calls.
+///
+/// This sidecar is stored alongside each node in [`crate::VerifiedTree`] and
+/// threaded into every [`crate::UiNodeBridge`] method so that bridges can:
+///
+/// - Assert at compile time that validated elements were rendered faithfully.
+/// - Trigger [`crate::RenderVerifiable`] runtime checks as a free bonus.
+///
+/// `None` means the criterion was not validated for this node (either it is
+/// not applicable, or the factory was not called).  This is correct — many
+/// criteria only apply to specific roles.
+///
+/// ## Organisation
+///
+/// Fields are grouped by WCAG principle.  Contrast proofs (1.4.x) and
+/// large-text classification have no node identity in the current factory
+/// API (they validate colour pairs, not nodes directly); use
+/// [`crate::AccessKitUiBackend::add_node_proofs`] to associate them manually.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct WcagNodeProofs {
+    // ── Principle 1 — Perceivable ─────────────────────────────────────────
+    /// WCAG 1.4.3 contrast for normal text (4.5:1).
+    pub contrast_normal: Option<Established<WcagContrastMinimumNormalText>>,
+    /// WCAG 1.4.3 contrast for large text (3:1).
+    pub contrast_large: Option<Established<WcagContrastMinimumLargeText>>,
+    /// WCAG 1.4.6 enhanced contrast for normal text (7:1).
+    pub contrast_enhanced: Option<Established<WcagContrastEnhancedNormalText>>,
+    /// WCAG 1.4.6 enhanced contrast for large text (4.5:1).
+    pub contrast_enhanced_large: Option<Established<WcagContrastEnhancedLargeText>>,
+    /// WCAG 1.4.11 non-text contrast (3:1).
+    pub non_text_contrast: Option<Established<WcagNonTextContrastMinimum>>,
+    /// Text classified as "large text" per WCAG 1.4.3 / 1.4.6 thresholds.
+    pub large_text: Option<Established<WcagLargeTextClassified>>,
+    /// WCAG 1.4.12 text spacing adjustable.
+    pub text_spacing: Option<Established<WcagTextSpacingAdjustable>>,
+    /// WCAG 1.4.4 text resizable to 200 %.
+    pub text_resizable: Option<Established<WcagTextResizable>>,
+    /// WCAG 1.1.1 / 4.1.2 accessible name present.
+    pub name_present: Option<Established<WcagNamePresent>>,
+    /// WCAG 1.3.1 form label programmatically associated.
+    pub form_label: Option<Established<WcagFormLabelsProgrammatic>>,
+    /// WCAG 2.5.3 label in name matches visible label.
+    pub label_in_name: Option<Established<WcagLabelInNameMatch>>,
+    /// WCAG 1.2.2 synchronised captions for media.
+    pub captions: Option<Established<WcagCaptionsSynchronized>>,
+    /// WCAG 1.2.5 audio description for prerecorded video.
+    pub audio_description: Option<Established<WcagAudioDescriptionPrerecorded>>,
+    /// WCAG 1.3.1 information and relationships programmatically determinable.
+    pub structure: Option<Established<WcagInfoAndRelationshipsProgrammatic>>,
+    /// WCAG 1.3.1 heading structure programmatically determinable.
+    pub heading_structure: Option<Established<WcagHeadingStructureProgrammatic>>,
+    /// WCAG 1.3.1 list structure programmatically determinable.
+    pub list_structure: Option<Established<WcagListStructureProgrammatic>>,
+    /// WCAG 1.3.1 table headers programmatically associated.
+    pub table_headers: Option<Established<WcagTableHeadersProgrammatic>>,
+    /// WCAG 3.1.2 language of part identified.
+    pub language_element: Option<Established<WcagPartLanguageIdentified>>,
+    // ── Principle 2 — Operable ────────────────────────────────────────────
+    /// WCAG 2.4.7 focus visible for keyboard users.
+    pub focus_visible: Option<Established<WcagFocusVisibleKeyboard>>,
+    /// WCAG 2.4.11 focus appearance minimum area.
+    pub focus_appearance: Option<Established<WcagFocusAppearanceMinimumArea>>,
+    /// WCAG 2.4.12 focus appearance enhanced area.
+    pub focus_appearance_enhanced: Option<Established<WcagFocusAppearanceEnhancedArea>>,
+    /// WCAG 2.1.1 keyboard operable.
+    pub keyboard_operable: Option<Established<WcagKeyboardOperable>>,
+    /// WCAG 2.1.2 keyboard not trapped.
+    pub keyboard_not_trapped: Option<Established<WcagKeyboardNotTrapped>>,
+    /// WCAG 2.1.4 character shortcut remappable or disableable.
+    pub shortcut_remappable: Option<Established<WcagCharacterShortcutsRemappable>>,
+    /// WCAG 2.2.1 timing adjustable.
+    pub timing_adjustable: Option<Established<WcagTimingAdjustable>>,
+    /// WCAG 2.5.8 target size minimum (24×24 CSS px).
+    pub target_minimum: Option<Established<WcagTargetSizeMinimum>>,
+    /// WCAG 2.5.5 target size enhanced (44×44 CSS px).
+    pub target_enhanced: Option<Established<WcagTargetSizeEnhanced>>,
+    /// WCAG 2.5.1 pointer gesture — simple alternative available.
+    pub pointer_gesture_alt: Option<Established<WcagPointerGesturesSimpleAlternative>>,
+    /// WCAG 2.5.2 pointer cancellation on up-event.
+    pub pointer_cancellation: Option<Established<WcagPointerCancellationUpEvent>>,
+    // ── Principle 3 — Understandable ─────────────────────────────────────
+    /// WCAG 3.3.1 error identified descriptively.
+    pub error_identified: Option<Established<WcagErrorIdentificationDescriptive>>,
+    /// WCAG 3.3.2 labels or instructions present.
+    pub error_labeled: Option<Established<WcagLabelsOrInstructionsPresent>>,
+    /// WCAG 3.3.3 error suggestion provided.
+    pub error_suggestion: Option<Established<WcagErrorSuggestionProvided>>,
+    /// WCAG 3.3.4 error prevention (legal / financial / data).
+    pub error_prevention: Option<Established<WcagErrorPreventionLegal>>,
 }
 
 // ── Evidence bundles (preconditions for section factories) ────────────────────

@@ -5,6 +5,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+use crate::WcagNodeProofs;
+
 /// Opaque identifier for a widget in the UI tree.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 pub struct WidgetId(pub u64);
@@ -85,6 +87,7 @@ pub struct VerifiedTree {
     pub(crate) nodes: BTreeMap<NodeId, accesskit::Node>,
     pub(crate) root: NodeId,
     pub(crate) viewport: crate::Viewport,
+    pub(crate) node_proofs: BTreeMap<NodeId, WcagNodeProofs>,
 }
 
 impl VerifiedTree {
@@ -103,6 +106,11 @@ impl VerifiedTree {
         &self.nodes
     }
 
+    /// Per-node WCAG proof sidecar, keyed by `NodeId`.
+    pub fn node_proofs(&self) -> &BTreeMap<NodeId, WcagNodeProofs> {
+        &self.node_proofs
+    }
+
     /// Construct a [`VerifiedTree`] directly from raw parts.
     ///
     /// This bypasses the typestate verification pipeline and is
@@ -117,6 +125,7 @@ impl VerifiedTree {
             nodes,
             root,
             viewport,
+            node_proofs: BTreeMap::new(),
         }
     }
 }

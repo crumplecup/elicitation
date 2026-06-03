@@ -15,10 +15,10 @@ use crate::proof_credentials::{
     FocusVisibleVerified, FormLabelVerified, HeadingCreated, KeyboardEscapeVerified,
     KeyboardOperableVerified, LabelInNameVerified, LabelsAndInstructionsVerified,
     LargeTextClassified, LargeTextContrastVerified, LayoutContainerCreated, ListCreated,
-    NonTextContrastVerified, NormalTextContrastVerified, PageLanguageVerified, PartLanguageVerified,
-    PointerCancellationVerified, PointerGestureAlternativeVerified, RemappableShortcutVerified,
-    ResizableTextCreated, ShortcutRegistered, SkipLinkAdded, TableCreated,
-    TargetSizeEnhancedVerified, TargetSizeMinimumVerified, TextSpacingVerified,
+    NonTextContrastVerified, NormalTextContrastVerified, PageLanguageVerified,
+    PartLanguageVerified, PointerCancellationVerified, PointerGestureAlternativeVerified,
+    RemappableShortcutVerified, ResizableTextCreated, ShortcutRegistered, SkipLinkAdded,
+    TableCreated, TargetSizeEnhancedVerified, TargetSizeMinimumVerified, TextSpacingVerified,
     TimingAdjustableVerified,
 };
 use crate::{
@@ -37,15 +37,15 @@ use crate::{
     WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusFactory,
     WcagFocusVisibleKeyboard, WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic,
     WcagKeyboardFactory, WcagKeyboardNotTrapped, WcagKeyboardOperable, WcagLabelFactory,
-    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLargeTextClassified,
-    WcagLanguageFactory, WcagListStructureProgrammatic, WcagMediaFactory, WcagNamePresent,
-    WcagNonTextContrastMinimum, WcagOperableFactory, WcagOperableValid, WcagPageLanguageIdentified,
-    WcagPageMeta, WcagPartLanguageIdentified, WcagPerceivedFactory, WcagPerceivedValid,
-    WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative, WcagRobustFactory,
-    WcagRobustValid, WcagStructureFactory, WcagTableHeadersProgrammatic, WcagTargetFactory,
-    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTextSpacingAdjustable,
-    WcagTimingAdjustable, WcagTimingFactory, WcagUnderstandableFactory, WcagUnderstandableValid,
-    WidgetId, WidgetInfo, contrast_ratio,
+    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLanguageFactory,
+    WcagLargeTextClassified, WcagListStructureProgrammatic, WcagMediaFactory, WcagNamePresent,
+    WcagNodeProofs, WcagNonTextContrastMinimum, WcagOperableFactory, WcagOperableValid,
+    WcagPageLanguageIdentified, WcagPageMeta, WcagPartLanguageIdentified, WcagPerceivedFactory,
+    WcagPerceivedValid, WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative,
+    WcagRobustFactory, WcagRobustValid, WcagStructureFactory, WcagTableHeadersProgrammatic,
+    WcagTargetFactory, WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable,
+    WcagTextSpacingAdjustable, WcagTimingAdjustable, WcagTimingFactory, WcagUnderstandableFactory,
+    WcagUnderstandableValid, WidgetId, WidgetInfo, contrast_ratio,
 };
 
 struct BackendState {
@@ -56,6 +56,7 @@ struct BackendState {
     event_handlers: BTreeMap<(u64, String), String>,
     parent_map: BTreeMap<NodeId, NodeId>,
     page_lang: String,
+    node_proofs: BTreeMap<NodeId, WcagNodeProofs>,
 }
 
 impl BackendState {
@@ -73,6 +74,7 @@ impl BackendState {
             event_handlers: BTreeMap::new(),
             parent_map: BTreeMap::new(),
             page_lang: String::new(),
+            node_proofs: BTreeMap::new(),
         }
     }
 
@@ -80,6 +82,15 @@ impl BackendState {
         let id = NodeId(self.next_id);
         self.next_id += 1;
         id
+    }
+
+    /// Associate a set of WCAG proofs with a node.
+    ///
+    /// Merges `proofs` into the existing entry for `node_id`, preserving any
+    /// proofs already present.  Call this after every factory method that
+    /// validates a criterion for a specific node.
+    fn merge_proofs(&mut self, node_id: NodeId, f: impl FnOnce(&mut WcagNodeProofs)) {
+        f(self.node_proofs.entry(node_id).or_default());
     }
 
     fn to_tree_update(&self) -> TreeUpdate {
@@ -113,6 +124,20 @@ impl AccessKitUiBackend {
     /// Take a raw snapshot of the current tree as an AccessKit `TreeUpdate`.
     pub fn snapshot(&self) -> TreeUpdate {
         self.state.lock().unwrap().to_tree_update()
+    }
+
+    /// Build a [`crate::VerifiedTree`] snapshot from the current backend state.
+    ///
+    /// The returned tree carries all WCAG proof tokens accumulated by factory
+    /// method calls so far.  Pass it to any [`crate::UiNodeBridge`] renderer.
+    pub fn to_verified_tree(&self, viewport: crate::Viewport) -> crate::VerifiedTree {
+        let state = self.state.lock().unwrap();
+        crate::VerifiedTree {
+            nodes: state.nodes.clone(),
+            root: state.root,
+            viewport,
+            node_proofs: state.node_proofs.clone(),
+        }
     }
 }
 
@@ -271,7 +296,9 @@ impl WcagLabelFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             name: input.name,
         };
-        Ok((element, Established::prove(&AccessibleNameVerified)))
+        let proof = Established::prove(&AccessibleNameVerified);
+        state.merge_proofs(id, |p| p.name_present = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(role = %input.role))]
@@ -303,7 +330,9 @@ impl WcagLabelFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             name: input.name,
         };
-        Ok((element, Established::prove(&FormLabelVerified)))
+        let proof = Established::prove(&FormLabelVerified);
+        state.merge_proofs(id, |p| p.form_label = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(role = %input.role))]
@@ -331,7 +360,9 @@ impl WcagLabelFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             name: input.name,
         };
-        Ok((element, Established::prove(&LabelInNameVerified)))
+        let proof = Established::prove(&LabelInNameVerified);
+        state.merge_proofs(id, |p| p.label_in_name = Some(proof));
+        Ok((element, proof))
     }
 }
 
@@ -343,7 +374,7 @@ impl WcagFocusFactory for AccessKitUiBackend {
         &self,
         input: FocusDescriptor,
     ) -> UiResult<(FocusIndicator, Established<WcagFocusVisibleKeyboard>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -361,7 +392,9 @@ impl WcagFocusFactory for AccessKitUiBackend {
             area_px: input.indicator_area_px,
             contrast: input.indicator_contrast,
         };
-        Ok((indicator, Established::prove(&FocusVisibleVerified)))
+        let proof = Established::prove(&FocusVisibleVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| p.focus_visible = Some(proof));
+        Ok((indicator, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -369,7 +402,7 @@ impl WcagFocusFactory for AccessKitUiBackend {
         &self,
         input: FocusDescriptor,
     ) -> UiResult<(FocusIndicator, Established<WcagFocusAppearanceMinimumArea>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -392,10 +425,11 @@ impl WcagFocusFactory for AccessKitUiBackend {
             area_px: input.indicator_area_px,
             contrast: input.indicator_contrast,
         };
-        Ok((
-            indicator,
-            Established::prove(&FocusAppearanceMinimumVerified),
-        ))
+        let proof = Established::prove(&FocusAppearanceMinimumVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.focus_appearance = Some(proof)
+        });
+        Ok((indicator, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -403,7 +437,7 @@ impl WcagFocusFactory for AccessKitUiBackend {
         &self,
         input: FocusDescriptor,
     ) -> UiResult<(FocusIndicator, Established<WcagFocusAppearanceEnhancedArea>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -427,10 +461,11 @@ impl WcagFocusFactory for AccessKitUiBackend {
             area_px: input.indicator_area_px,
             contrast: input.indicator_contrast,
         };
-        Ok((
-            indicator,
-            Established::prove(&FocusAppearanceEnhancedVerified),
-        ))
+        let proof = Established::prove(&FocusAppearanceEnhancedVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.focus_appearance_enhanced = Some(proof)
+        });
+        Ok((indicator, proof))
     }
 }
 
@@ -455,11 +490,15 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
         if !state.focus_order.contains(&input.widget.to_node_id()) {
             state.focus_order.push(input.widget.to_node_id());
         }
+        let proof = Established::prove(&KeyboardOperableVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.keyboard_operable = Some(proof)
+        });
         let path = KeyboardPath {
             widget: input.widget,
             tab_index: input.tab_index,
         };
-        Ok((path, Established::prove(&KeyboardOperableVerified)))
+        Ok((path, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -467,18 +506,22 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
         &self,
         input: KeyboardDescriptor,
     ) -> UiResult<(KeyboardPath, Established<WcagKeyboardNotTrapped>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
                 input.widget.0
             ))));
         }
+        let proof = Established::prove(&KeyboardEscapeVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.keyboard_not_trapped = Some(proof)
+        });
         let path = KeyboardPath {
             widget: input.widget,
             tab_index: input.tab_index,
         };
-        Ok((path, Established::prove(&KeyboardEscapeVerified)))
+        Ok((path, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -486,7 +529,7 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
         &self,
         input: KeyboardDescriptor,
     ) -> UiResult<(KeyboardPath, Established<WcagCharacterShortcutsRemappable>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -494,11 +537,15 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
             ))));
         }
         // WCAG 2.1.4: shortcuts must be remappable or focus-restricted.
+        let proof = Established::prove(&RemappableShortcutVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.shortcut_remappable = Some(proof)
+        });
         let path = KeyboardPath {
             widget: input.widget,
             tab_index: input.tab_index,
         };
-        Ok((path, Established::prove(&RemappableShortcutVerified)))
+        Ok((path, proof))
     }
 }
 
@@ -520,18 +567,22 @@ impl WcagTimingFactory for AccessKitUiBackend {
                 "timed element has no adjustable time control (WCAG 2.2.1)".into(),
             )));
         }
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.element.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
                 input.element.0
             ))));
         }
+        let proof = Established::prove(&TimingAdjustableVerified);
+        state.merge_proofs(input.element.to_node_id(), |p| {
+            p.timing_adjustable = Some(proof)
+        });
         let element = TimedElement {
             widget: input.element,
             max_seconds: input.max_seconds,
         };
-        Ok((element, Established::prove(&TimingAdjustableVerified)))
+        Ok((element, proof))
     }
 }
 
@@ -574,12 +625,14 @@ impl WcagTargetFactory for AccessKitUiBackend {
                 y1: input.height_px,
             });
         }
+        let proof = Established::prove(&TargetSizeMinimumVerified);
+        state.merge_proofs(node_id, |p| p.target_minimum = Some(proof));
         let target = PointerTarget {
             id: input.widget,
             width_px: input.width_px,
             height_px: input.height_px,
         };
-        Ok((target, Established::prove(&TargetSizeMinimumVerified)))
+        Ok((target, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -613,12 +666,14 @@ impl WcagTargetFactory for AccessKitUiBackend {
                 y1: input.height_px,
             });
         }
+        let proof = Established::prove(&TargetSizeEnhancedVerified);
+        state.merge_proofs(node_id, |p| p.target_enhanced = Some(proof));
         let target = PointerTarget {
             id: input.widget,
             width_px: input.width_px,
             height_px: input.height_px,
         };
-        Ok((target, Established::prove(&TargetSizeEnhancedVerified)))
+        Ok((target, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -629,7 +684,7 @@ impl WcagTargetFactory for AccessKitUiBackend {
         PointerTarget,
         Established<WcagPointerGesturesSimpleAlternative>,
     )> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -637,15 +692,16 @@ impl WcagTargetFactory for AccessKitUiBackend {
             ))));
         }
         // Caller asserts the single-pointer alternative exists (WCAG 2.5.7).
+        let proof = Established::prove(&PointerGestureAlternativeVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.pointer_gesture_alt = Some(proof)
+        });
         let target = PointerTarget {
             id: input.widget,
             width_px: input.width_px,
             height_px: input.height_px,
         };
-        Ok((
-            target,
-            Established::prove(&PointerGestureAlternativeVerified),
-        ))
+        Ok((target, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -653,7 +709,7 @@ impl WcagTargetFactory for AccessKitUiBackend {
         &self,
         input: TargetDescriptor,
     ) -> UiResult<(PointerTarget, Established<WcagPointerCancellationUpEvent>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -661,12 +717,16 @@ impl WcagTargetFactory for AccessKitUiBackend {
             ))));
         }
         // Caller asserts up-event / abort mechanism is in place (WCAG 2.5.2).
+        let proof = Established::prove(&PointerCancellationVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.pointer_cancellation = Some(proof)
+        });
         let target = PointerTarget {
             id: input.widget,
             width_px: input.width_px,
             height_px: input.height_px,
         };
-        Ok((target, Established::prove(&PointerCancellationVerified)))
+        Ok((target, proof))
     }
 }
 
@@ -697,7 +757,9 @@ impl WcagStructureFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             role: "heading".to_string(),
         };
-        Ok((element, Established::prove(&HeadingCreated)))
+        let proof = Established::prove(&HeadingCreated);
+        state.merge_proofs(id, |p| p.heading_structure = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -719,7 +781,9 @@ impl WcagStructureFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             role: "list".to_string(),
         };
-        Ok((element, Established::prove(&ListCreated)))
+        let proof = Established::prove(&ListCreated);
+        state.merge_proofs(id, |p| p.list_structure = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -741,7 +805,9 @@ impl WcagStructureFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             role: "table".to_string(),
         };
-        Ok((element, Established::prove(&TableCreated)))
+        let proof = Established::prove(&TableCreated);
+        state.merge_proofs(id, |p| p.table_headers = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -760,7 +826,9 @@ impl WcagStructureFactory for AccessKitUiBackend {
             id: WidgetId::from_node(id),
             role: "paragraph".to_string(),
         };
-        Ok((element, Established::prove(&ResizableTextCreated)))
+        let proof = Established::prove(&ResizableTextCreated);
+        state.merge_proofs(id, |p| p.text_resizable = Some(proof));
+        Ok((element, proof))
     }
 
     #[instrument(skip(self, input), fields(font_size_pt = input.font_size_pt))]
@@ -836,7 +904,9 @@ impl WcagStructureFactory for AccessKitUiBackend {
         let spaced = SpacedText {
             id: WidgetId::from_node(id),
         };
-        Ok((spaced, Established::prove(&TextSpacingVerified)))
+        let proof = Established::prove(&TextSpacingVerified);
+        state.merge_proofs(id, |p| p.text_spacing = Some(proof));
+        Ok((spaced, proof))
     }
 }
 
@@ -866,7 +936,9 @@ impl WcagMediaFactory for AccessKitUiBackend {
         let media = CaptionedMedia {
             id: WidgetId::from_node(id),
         };
-        Ok((media, Established::prove(&CaptionsVerified)))
+        let proof = Established::prove(&CaptionsVerified);
+        state.merge_proofs(id, |p| p.captions = Some(proof));
+        Ok((media, proof))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -892,7 +964,9 @@ impl WcagMediaFactory for AccessKitUiBackend {
         let media = CaptionedMedia {
             id: WidgetId::from_node(id),
         };
-        Ok((media, Established::prove(&AudioDescriptionVerified)))
+        let proof = Established::prove(&AudioDescriptionVerified);
+        state.merge_proofs(id, |p| p.audio_description = Some(proof));
+        Ok((media, proof))
     }
 }
 
@@ -966,7 +1040,9 @@ impl WcagErrorFactory for AccessKitUiBackend {
             id: input.widget,
             description,
         };
-        Ok((field, Established::prove(&ErrorIdentifiedVerified)))
+        let proof = Established::prove(&ErrorIdentifiedVerified);
+        state.merge_proofs(node_id, |p| p.error_identified = Some(proof));
+        Ok((field, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -975,7 +1051,7 @@ impl WcagErrorFactory for AccessKitUiBackend {
         input: ErrorDescriptor,
     ) -> UiResult<(ErrorField, Established<WcagLabelsOrInstructionsPresent>)> {
         let node_id = input.widget.to_node_id();
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&node_id) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -990,11 +1066,13 @@ impl WcagErrorFactory for AccessKitUiBackend {
             .map(|l| l.to_string())
             .or_else(|| input.error_text.clone())
             .unwrap_or_else(|| "label present".to_string());
+        let proof = Established::prove(&LabelsAndInstructionsVerified);
+        state.merge_proofs(node_id, |p| p.error_labeled = Some(proof));
         let field = ErrorField {
             id: input.widget,
             description,
         };
-        Ok((field, Established::prove(&LabelsAndInstructionsVerified)))
+        Ok((field, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -1018,11 +1096,16 @@ impl WcagErrorFactory for AccessKitUiBackend {
             ))
         })?;
         let description = input.error_text.unwrap_or_else(|| suggestion.clone());
+        let proof = Established::prove(&ErrorSuggestionVerified);
+        self.state
+            .lock()
+            .unwrap()
+            .merge_proofs(node_id, |p| p.error_suggestion = Some(proof));
         let field = ErrorField {
             id: input.widget,
             description,
         };
-        Ok((field, Established::prove(&ErrorSuggestionVerified)))
+        Ok((field, proof))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -1030,7 +1113,7 @@ impl WcagErrorFactory for AccessKitUiBackend {
         &self,
         input: ErrorDescriptor,
     ) -> UiResult<(ErrorField, Established<WcagErrorPreventionLegal>)> {
-        let state = self.state.lock().unwrap();
+        let mut state = self.state.lock().unwrap();
         if !state.nodes.contains_key(&input.widget.to_node_id()) {
             return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
                 "widget {:?} not found",
@@ -1041,11 +1124,15 @@ impl WcagErrorFactory for AccessKitUiBackend {
         let description = input
             .error_text
             .unwrap_or_else(|| "error prevention mechanism present".to_string());
+        let proof = Established::prove(&ErrorPreventionVerified);
+        state.merge_proofs(input.widget.to_node_id(), |p| {
+            p.error_prevention = Some(proof)
+        });
         let field = ErrorField {
             id: input.widget,
             description,
         };
-        Ok((field, Established::prove(&ErrorPreventionVerified)))
+        Ok((field, proof))
     }
 }
 

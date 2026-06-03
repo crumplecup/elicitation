@@ -126,35 +126,62 @@ fn contrast_enhanced_requires_seven_to_one() {
 #[test]
 fn large_text_passes_at_18pt_normal() {
     let b = AccessKitUiBackend::new();
-    let desc = TextSizeDescriptor { font_size_pt: 18.0, bold: false };
-    assert!(b.classify_large_text(desc).is_ok(), "18 pt normal is large text");
+    let desc = TextSizeDescriptor {
+        font_size_pt: 18.0,
+        bold: false,
+    };
+    assert!(
+        b.classify_large_text(desc).is_ok(),
+        "18 pt normal is large text"
+    );
 }
 
 #[test]
 fn large_text_passes_at_14pt_bold() {
     let b = AccessKitUiBackend::new();
-    let desc = TextSizeDescriptor { font_size_pt: 14.0, bold: true };
-    assert!(b.classify_large_text(desc).is_ok(), "14 pt bold is large text");
+    let desc = TextSizeDescriptor {
+        font_size_pt: 14.0,
+        bold: true,
+    };
+    assert!(
+        b.classify_large_text(desc).is_ok(),
+        "14 pt bold is large text"
+    );
 }
 
 #[test]
 fn large_text_passes_above_18pt() {
     let b = AccessKitUiBackend::new();
-    let desc = TextSizeDescriptor { font_size_pt: 24.0, bold: false };
-    assert!(b.classify_large_text(desc).is_ok(), "24 pt normal is large text");
+    let desc = TextSizeDescriptor {
+        font_size_pt: 24.0,
+        bold: false,
+    };
+    assert!(
+        b.classify_large_text(desc).is_ok(),
+        "24 pt normal is large text"
+    );
 }
 
 #[test]
 fn large_text_rejects_12pt_normal() {
     let b = AccessKitUiBackend::new();
-    let desc = TextSizeDescriptor { font_size_pt: 12.0, bold: false };
-    assert!(b.classify_large_text(desc).is_err(), "12 pt normal is not large text");
+    let desc = TextSizeDescriptor {
+        font_size_pt: 12.0,
+        bold: false,
+    };
+    assert!(
+        b.classify_large_text(desc).is_err(),
+        "12 pt normal is not large text"
+    );
 }
 
 #[test]
 fn large_text_rejects_13pt_bold() {
     let b = AccessKitUiBackend::new();
-    let desc = TextSizeDescriptor { font_size_pt: 13.0, bold: true };
+    let desc = TextSizeDescriptor {
+        font_size_pt: 13.0,
+        bold: true,
+    };
     assert!(
         b.classify_large_text(desc).is_err(),
         "13 pt bold does not reach 14 pt threshold"
@@ -165,7 +192,10 @@ fn large_text_rejects_13pt_bold() {
 fn large_text_rejects_17pt_normal() {
     let b = AccessKitUiBackend::new();
     // 17.9 pt is below the 18 pt threshold.
-    let desc = TextSizeDescriptor { font_size_pt: 17.9, bold: false };
+    let desc = TextSizeDescriptor {
+        font_size_pt: 17.9,
+        bold: false,
+    };
     assert!(
         b.classify_large_text(desc).is_err(),
         "17.9 pt normal does not meet 18 pt threshold"

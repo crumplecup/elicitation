@@ -279,6 +279,7 @@ impl Layout<Verified> {
             nodes: self.nodes,
             root: self.root,
             viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
+            node_proofs: std::collections::BTreeMap::new(),
         }
     }
 
