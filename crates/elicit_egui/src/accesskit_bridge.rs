@@ -15,6 +15,7 @@ use elicit_ui::{
 use elicitation::Established;
 use std::collections::BTreeMap;
 
+#[cfg(not(all(debug_assertions, feature = "runtime-proofs")))]
 use crate::render_context::EguiRenderContext;
 
 // ── EguiBackend ───────────────────────────────────────────────────────────────
@@ -38,12 +39,58 @@ use crate::render_context::EguiRenderContext;
 /// assert_eq!(backend.backend_name(), "egui");
 /// ```
 #[derive(Default)]
-pub struct EguiBackend;
+pub struct EguiBackend {
+    /// Pending (rect, proofs, ppp) items awaiting GPU pixel readback verification.
+    ///
+    /// Populated by [`wrap_widget`](UiNodeBridge::wrap_widget) during the egui frame
+    /// and drained by [`post_frame`](EguiBackend::post_frame) after GPU readback.
+    #[cfg(feature = "runtime-proofs")]
+    pending: std::sync::Arc<std::sync::Mutex<Vec<(egui::Rect, WcagNodeProofs, f32)>>>,
+}
 
 impl EguiBackend {
     /// Create a new egui render backend.
     pub fn new() -> Self {
-        Self
+        Self::default()
+    }
+
+    /// Drain pending contrast checks using GPU pixel data from the current frame.
+    ///
+    /// Call this once per frame **after** `copy_texture_to_buffer` + `map_async` +
+    /// `device.poll(wait_indefinitely())` — i.e. after the pixel data has been
+    /// transferred from the GPU into a CPU-accessible staging buffer.
+    ///
+    /// Each pending `(rect, proofs, ppp)` tuple is verified against the actual
+    /// rendered pixels via [`GpuPixelContext`](crate::render_context::GpuPixelContext).
+    ///
+    /// If `post_frame` is not called every frame the pending queue accumulates,
+    /// growing O(N × missed frames).
+    ///
+    /// # Parameters
+    ///
+    /// * `pixels` — byte slice from `Buffer::get_mapped_range()` (full frame)
+    /// * `width` — surface width in physical pixels
+    /// * `bytes_per_row` — padded stride (multiple of 256, as required by wgpu)
+    /// * `height` — surface height in physical pixels
+    /// * `format` — surface texture format (determines `Bgra` vs `Rgba` byte order)
+    #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+    pub fn post_frame(
+        &self,
+        pixels: &[u8],
+        width: u32,
+        bytes_per_row: u32,
+        height: u32,
+        format: wgpu::TextureFormat,
+    ) {
+        use crate::render_context::GpuPixelContext;
+        let items: Vec<(egui::Rect, WcagNodeProofs, f32)> = {
+            let mut guard = self.pending.lock().unwrap();
+            guard.drain(..).collect()
+        };
+        for (rect, proofs, ppp) in items {
+            let gpu_ctx = GpuPixelContext::new(pixels, width, bytes_per_row, height, format, ppp);
+            verify_wcag_contrast_proofs(&gpu_ctx, &rect, &proofs);
+        }
     }
 }
 
@@ -68,18 +115,34 @@ impl UiNodeBridge for EguiBackend {
 
     /// Wrap the widget closure to run WCAG contrast checks after it draws.
     ///
-    /// Captures `proofs` and the egui visual state at draw time to verify
-    /// that theme colours satisfy the declared contrast requirements.
+    /// With the `runtime-proofs` feature and debug builds, defers verification
+    /// to [`post_frame`](EguiBackend::post_frame) so actual GPU pixel data
+    /// (from surface readback) is used instead of theme defaults.
     ///
-    /// This is best-effort: only the theme's default text/background colours
-    /// are checked.  Widget-specific overrides (e.g. `colored_label`) are
-    /// outside the scope of this check.
+    /// Without `runtime-proofs`, performs an immediate best-effort check using
+    /// `ui.visuals()` theme colours at draw time.
     fn wrap_widget(
         &self,
         widget: Box<dyn FnOnce(&mut egui::Ui)>,
         proofs: &WcagNodeProofs,
     ) -> Box<dyn FnOnce(&mut egui::Ui)> {
         let proofs = *proofs;
+
+        #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+        {
+            // Defer: push rect + proofs + ppp to pending queue; post_frame will
+            // verify against actual GPU-rendered pixels after surface readback.
+            let pending = std::sync::Arc::clone(&self.pending);
+            Box::new(move |ui: &mut egui::Ui| {
+                widget(ui);
+                let ppp = ui.ctx().pixels_per_point();
+                let rect = ui.min_rect();
+                pending.lock().unwrap().push((rect, proofs, ppp));
+            })
+        }
+
+        #[cfg(not(all(debug_assertions, feature = "runtime-proofs")))]
+        // Fallback: verify immediately using theme colours.
         Box::new(move |ui: &mut egui::Ui| {
             widget(ui);
             let ctx = EguiRenderContext::from_ui(ui);
