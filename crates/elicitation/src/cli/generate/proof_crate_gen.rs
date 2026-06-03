@@ -117,6 +117,7 @@ pub fn generate_proof_crate(
         "Cargo.toml",
         &render_cargo_toml(
             &proof_name,
+            &sources[0].name,
             &source_dep_lines,
             elicitation_rel.as_deref(),
             creusot_std_rel.as_deref(),
@@ -362,6 +363,7 @@ fn patch_module_tree_kani_reexports(
 
 fn render_cargo_toml(
     proof_name: &str,
+    primary_source: &str,
     source_dep_lines: &[&str],
     elicitation_rel: Option<&Path>,
     creusot_std_rel: Option<&Path>,
@@ -382,17 +384,38 @@ fn render_cargo_toml(
     } else {
         "edition = \"2024\"".to_string()
     };
-    let license_field = if has_wpkg("license") {
-        Some("license.workspace = true".to_string())
+
+    // description is required by crates.io; inherit from workspace or synthesize
+    let description_field = if has_wpkg("description") {
+        "description.workspace = true".to_string()
     } else {
-        None
+        format!(
+            "description = \"Formal verification proof harnesses for {}\"",
+            primary_source
+        )
     };
 
+    // Optional publishable fields — inherit from workspace when present
+    let optional_fields: &[&str] = &[
+        "license",
+        "license-file",
+        "repository",
+        "authors",
+        "homepage",
+        "documentation",
+        "readme",
+        "keywords",
+        "categories",
+    ];
+    let inherited: Vec<String> = optional_fields
+        .iter()
+        .filter(|&&f| has_wpkg(f))
+        .map(|&f| format!("{f}.workspace = true"))
+        .collect();
+
     let pkg_fields = {
-        let mut parts = vec![version_field, edition_field];
-        if let Some(l) = license_field {
-            parts.push(l);
-        }
+        let mut parts = vec![version_field, edition_field, description_field];
+        parts.extend(inherited);
         parts.join("\n")
     };
 

@@ -3,7 +3,13 @@
 name = "elicit_proofs"
 version.workspace = true
 edition.workspace = true
+description = "Formal verification proof harnesses for elicit_server"
 license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
 
 [features]
 kani    = []

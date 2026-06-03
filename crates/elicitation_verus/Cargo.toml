@@ -1,6 +1,6 @@
 [package]
 name = "elicitation_verus"
-version = "0.11.0"
+version = "0.11.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/crumplecup/elicitation"
@@ -23,9 +23,9 @@ readme = "README.md"
 verify = true
 
 [dependencies]
-elicitation = { version = "0.11.0" }
-verus_builtin_macros = "0.0.0-2026-05-10-0145"
-vstd = "0.0.0-2026-05-17-0151"
+elicitation = { version = "0.11.1" }
+verus_builtin_macros = "0.0.0-2026-05-31-0205"
+vstd = "0.0.0-2026-05-31-0205"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
