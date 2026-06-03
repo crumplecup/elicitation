@@ -1886,7 +1886,9 @@ fn span_inline_css(
     line_style: Option<&elicit_ui::TextStyle>,
     block_style: Option<&elicit_ui::TextStyle>,
 ) -> String {
-    use elicit_ui::{FontFamily, FontStyle, LineHeight, TextDecoration, TextModifier, VerticalAlign};
+    use elicit_ui::{
+        FontFamily, FontStyle, LineHeight, TextDecoration, TextModifier, VerticalAlign,
+    };
 
     macro_rules! cascade {
         ($field:ident) => {
@@ -1901,7 +1903,13 @@ fn span_inline_css(
             let sv: &[_] = span_style.map_or(&[], |s| s.$field.as_slice());
             let lv: &[_] = line_style.map_or(&[], |s| s.$field.as_slice());
             let bv: &[_] = block_style.map_or(&[], |s| s.$field.as_slice());
-            if !sv.is_empty() { sv } else if !lv.is_empty() { lv } else { bv }
+            if !sv.is_empty() {
+                sv
+            } else if !lv.is_empty() {
+                lv
+            } else {
+                bv
+            }
         }};
     }
 
@@ -2004,9 +2012,7 @@ fn span_inline_css(
     // Blink via CSS animation; requires @keyframes blink { to { visibility: hidden; } }
     // in the page stylesheet.
     if let Some(secs) = blink_duration {
-        props.push(format!(
-            "animation:blink {secs}s step-start infinite"
-        ));
+        props.push(format!("animation:blink {secs}s step-start infinite"));
     }
 
     // Font family.
