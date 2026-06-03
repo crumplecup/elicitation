@@ -93,6 +93,16 @@ pub trait RenderContext {
         let _ = (area, col, row);
         None
     }
+
+    /// Sample a representative colour pair for `area`.
+    ///
+    /// The default implementation delegates to `colors_at(area, 0, 0)`.
+    /// Frontends where the first cell might be transparent or unset (e.g.
+    /// ratatui, where cells use terminal-default colours until overwritten)
+    /// should override this to scan for the first cell with determinate colours.
+    fn sample_colors(&self, area: &Self::Area) -> Option<RenderColors> {
+        self.colors_at(area, 0, 0)
+    }
 }
 
 // ── RenderVerifiable ──────────────────────────────────────────────────────────

@@ -276,7 +276,7 @@ pub use traits::{
     WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
     WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory, WcagRobustFactory,
     WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WcagUnderstandableFactory,
-    verify_in_debug,
+    verify_in_debug, verify_wcag_contrast_proofs, wcag_contrast_ratio,
 };
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};

@@ -7,6 +7,7 @@ mod navigation;
 mod render_verify;
 mod renderer;
 mod wcag;
+mod wcag_verify;
 
 pub use events::UiEventDispatcher;
 pub use inspector::UiInspector;
@@ -20,6 +21,7 @@ pub use wcag::{
     WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory, WcagRobustFactory,
     WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WcagUnderstandableFactory,
 };
+pub use wcag_verify::{verify_wcag_contrast_proofs, wcag_contrast_ratio};
 
 /// Complete UI backend — blanket impl for anything implementing all required traits.
 ///
