@@ -760,13 +760,23 @@ impl UiNodeBridge for RatatuiBackend {
             // highlighting).  Fall back to the plain-label + whole-widget
             // selected style for compatibility.
             if let Some(rich_json) = node_json_rich_text(node) {
+                let rich_pt = rich_text_to_paragraph_text(rich_json);
+                // Propagate the text-level alignment to the paragraph wrapper so
+                // that Paragraph::alignment() is applied in terminal_tools —
+                // Text::alignment() alone does not center short lines within the
+                // widget area.
+                let outer_alignment = if let ParagraphText::Rich(ref t) = rich_pt {
+                    t.alignment.as_ref().map(|a| format!("{a:?}"))
+                } else {
+                    None
+                };
                 TuiNode::Widget {
                     widget: Box::new(WidgetJson::Paragraph {
-                        text: rich_text_to_paragraph_text(rich_json),
+                        text: rich_pt,
                         style: None,
                         wrap: true,
                         scroll: None,
-                        alignment: None,
+                        alignment: outer_alignment,
                         block: None,
                     }),
                 }
