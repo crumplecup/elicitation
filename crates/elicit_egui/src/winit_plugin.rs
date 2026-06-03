@@ -269,6 +269,8 @@ use winit::{{
     event_loop::{{ActiveEventLoop, ControlFlow, EventLoop}},
     window::{{Window, WindowId, WindowAttributes}},
 }};
+#[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+use elicit_egui::EguiBackend;
 
 /// Your application state — add your own fields here.
 #[derive(Default)]
@@ -282,6 +284,8 @@ struct {app} {{
     surface_config: Option<wgpu::SurfaceConfiguration>,
     #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
     readback_supported: bool,
+    #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+    backend: EguiBackend,
 }}
 
 impl {app} {{
@@ -478,8 +482,7 @@ impl ApplicationHandler for {app} {{
                     let _ = device.poll(wgpu::PollType::wait_indefinitely());
                     {{
                         let data = slice.get_mapped_range();
-                        // TODO: Call your EguiBackend::post_frame here, e.g.:
-                        // backend.post_frame(&data, cfg.width, bpr, cfg.height, cfg.format);
+                        self.backend.post_frame(&data, cfg.width, bpr, cfg.height, cfg.format);
                         drop(data);
                     }}
                     readback_buf.unmap();
