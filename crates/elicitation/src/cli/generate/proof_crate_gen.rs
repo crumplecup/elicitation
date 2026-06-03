@@ -163,6 +163,9 @@ pub fn generate_proof_crate(
     let ws_root = workspace_root.unwrap_or_else(|| first_root.clone());
     write_why3find_json(&ws_root)?;
 
+    // ── README.md (scaffold once; skip if already customized) ────────────────
+    write_readme_if_absent(out_dir, &proof_name, &sources[0].name)?;
+
     Ok(())
 }
 
@@ -390,12 +393,14 @@ fn render_cargo_toml(
         "description.workspace = true".to_string()
     } else {
         format!(
-            "description = \"Formal verification proof harnesses for {}\"",
+            "description = \"Auto-generated Kani, Creusot, and Verus proof harnesses for {}, produced by elicitation\"",
             primary_source
         )
     };
 
-    // Optional publishable fields — inherit from workspace when present
+    // Optional publishable fields — inherit from workspace when present.
+    // readme is intentionally excluded: we always emit a local readme = "README.md"
+    // so the proof crate's README reflects its own purpose, not the workspace's.
     let optional_fields: &[&str] = &[
         "license",
         "license-file",
@@ -403,7 +408,6 @@ fn render_cargo_toml(
         "authors",
         "homepage",
         "documentation",
-        "readme",
         "keywords",
         "categories",
     ];
@@ -416,6 +420,7 @@ fn render_cargo_toml(
     let pkg_fields = {
         let mut parts = vec![version_field, edition_field, description_field];
         parts.extend(inherited);
+        parts.push("readme = \"README.md\"".to_string());
         parts.join("\n")
     };
 
@@ -700,7 +705,54 @@ fn write_why3find_json(dir: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Scan all VSM source files for top-level `use <crate>::...` statements and
+/// Write `README.md` to `dir` if it does not already exist.
+///
+/// On first generation the stub README explains that this is an auto-generated
+/// proof crate and how to regenerate it.  On subsequent runs it is left alone
+/// so users can customize it freely.
+fn write_readme_if_absent(dir: &Path, proof_name: &str, primary_source: &str) -> anyhow::Result<()> {
+    let path = dir.join("README.md");
+    if path.exists() {
+        println!("Skipped (exists): {}", path.display());
+        return Ok(());
+    }
+    let content = render_readme(proof_name, primary_source);
+    std::fs::write(&path, content).with_context(|| format!("write {}", path.display()))?;
+    println!("Written: {}", path.display());
+    Ok(())
+}
+
+fn render_readme(proof_name: &str, primary_source: &str) -> String {
+    format!(
+        r#"# {proof_name}
+
+> **Auto-generated** — do not edit by hand.
+> Regenerate with `elicitation generate proof-crate`.
+
+Kani, Creusot, and Verus proof harnesses for [`{primary_source}`],
+produced by [elicitation](https://crates.io/crates/elicitation).
+
+## Verifiers
+
+| Backend  | Feature flag | Run command                       |
+|----------|-------------|-----------------------------------|
+| Kani     | `kani`      | `cargo kani`                      |
+| Creusot  | `creusot`   | `cargo creusot prove`             |
+| Verus    | `verus`     | `verus src/lib.rs`                |
+
+## Regenerating
+
+```sh
+elicitation generate proof-crate \
+    --crate-path <path-to-{primary_source}> \
+    --crate-name {proof_name} \
+    --out <path-to-this-crate>
+```
+"#
+    )
+}
+
+
 /// return the names of any external crates that appear in `workspace_deps` but
 /// are not already emitted by `render_cargo_toml` as explicit deps.
 ///
