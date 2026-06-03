@@ -59,6 +59,12 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --exclude elicitation_creusot --exclude elicitation_kani ${{ matrix.extra_exclude }} -- -D warnings
 
+      - name: Clippy elicitation_verus
+        run: |
+          cd crates/elicitation_verus
+          cargo fmt -- --check
+          cargo clippy --all-targets -- -D warnings
+
       - name: Doc check
         env:
           RUSTDOCFLAGS: "-D warnings"

@@ -221,6 +221,19 @@ lint package='':
             exit 1
         fi
         rm -f "$LOG_FILE"
+        echo "🔍 Linting elicitation_verus (workspace-excluded crate)"
+        if ! (cd crates/elicitation_verus && cargo fmt -- --check) 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint (elicitation_verus fmt) failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
+        if ! (cd crates/elicitation_verus && cargo clippy --all-targets -- -D warnings) 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint (elicitation_verus clippy) failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
         echo "📖 Checking documentation"
         if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps \
             --exclude elicitation_creusot \
