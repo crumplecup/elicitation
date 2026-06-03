@@ -256,7 +256,7 @@ fn emit_wgpu(desc: &EguiWinitDescriptor) -> String {
 //! egui = "0.34"
 //! egui-winit = "0.34"
 //! egui-wgpu = {{ version = "0.34", features = ["winit"] }}
-//! wgpu = "24"
+//! wgpu = "29"
 //! winit = "0.30"
 //! pollster = "0.4"
 //! ```
@@ -280,6 +280,8 @@ struct {app} {{
     queue: Option<Arc<wgpu::Queue>>,
     renderer: Option<egui_wgpu::Renderer>,
     surface_config: Option<wgpu::SurfaceConfiguration>,
+    #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+    readback_supported: bool,
 }}
 
 impl {app} {{
@@ -311,9 +313,20 @@ impl ApplicationHandler for {app} {{
         let queue = Arc::new(queue);
 
         let size = window.inner_size();
-        let surface_format = surface.get_capabilities(&adapter).formats[0];
+        let caps = surface.get_capabilities(&adapter);
+        let surface_format = caps.formats[0];
+        #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+        {{
+            self.readback_supported = caps.usages.contains(wgpu::TextureUsages::COPY_SRC);
+        }}
+        let surface_usage = wgpu::TextureUsages::RENDER_ATTACHMENT | {{
+            #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+            if self.readback_supported {{ wgpu::TextureUsages::COPY_SRC }} else {{ wgpu::TextureUsages::empty() }}
+            #[cfg(not(all(debug_assertions, feature = "runtime-proofs")))]
+            wgpu::TextureUsages::empty()
+        }};
         let config = wgpu::SurfaceConfiguration {{
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            usage: surface_usage,
             format: surface_format,
             width: size.width,
             height: size.height,
@@ -423,6 +436,54 @@ impl ApplicationHandler for {app} {{
                     renderer.render(&mut rpass, &clipped, &screen);
                 }}
                 queue.submit(std::iter::once(encoder.finish()));
+                // ── runtime-proofs: GPU pixel readback for WCAG contrast checks ──────
+                #[cfg(all(debug_assertions, feature = "runtime-proofs"))]
+                if self.readback_supported {{
+                    // bytes_per_row must be a multiple of 256 (wgpu requirement).
+                    let bpp: u32 = 4;
+                    let bpr = ((cfg.width * bpp + 255) / 256) * 256;
+                    let readback_buf = device.create_buffer(&wgpu::BufferDescriptor {{
+                        label: Some("wcag_readback"),
+                        size: (bpr * cfg.height) as u64,
+                        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
+                        mapped_at_creation: false,
+                    }});
+                    let mut rb_enc = device.create_command_encoder(
+                        &wgpu::CommandEncoderDescriptor {{ label: Some("wcag_rb") }},
+                    );
+                    rb_enc.copy_texture_to_buffer(
+                        wgpu::TexelCopyTextureInfo {{
+                            texture: &output.texture,
+                            mip_level: 0,
+                            origin: wgpu::Origin3d::ZERO,
+                            aspect: wgpu::TextureAspect::All,
+                        }},
+                        wgpu::TexelCopyBufferInfo {{
+                            buffer: &readback_buf,
+                            layout: wgpu::TexelCopyBufferLayout {{
+                                offset: 0,
+                                bytes_per_row: Some(bpr),
+                                rows_per_image: Some(cfg.height),
+                            }},
+                        }},
+                        wgpu::Extent3d {{
+                            width: cfg.width,
+                            height: cfg.height,
+                            depth_or_array_layers: 1,
+                        }},
+                    );
+                    queue.submit(std::iter::once(rb_enc.finish()));
+                    let slice = readback_buf.slice(..);
+                    slice.map_async(wgpu::MapMode::Read, |_| {{}});
+                    let _ = device.poll(wgpu::PollType::wait_indefinitely());
+                    {{
+                        let data = slice.get_mapped_range();
+                        // TODO: Call your EguiBackend::post_frame here, e.g.:
+                        // backend.post_frame(&data, cfg.width, bpr, cfg.height, cfg.format);
+                        drop(data);
+                    }}
+                    readback_buf.unmap();
+                }}
                 output.present();
                 for id in &full_output.textures_delta.free {{
                     renderer.free_texture(id);
