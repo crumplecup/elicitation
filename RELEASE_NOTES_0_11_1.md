@@ -1,32 +1,47 @@
 # Release Notes — elicitation 0.11.1
 
-## The headline: leaner by default
+## The headline: silencing the cfg warning storm
 
-The most consequential change in this release is one that users will feel immediately at
-build time: **`elicitation` now ships with `default = []`**. Previously the crate defaulted
-to `full`, silently pulling in chrono, geo, polars-types, bevy-types, egui, wgpu, and two
-dozen other heavy dependencies whether you asked for them or not. That era is over.
+If you've wired up a crate with `#[derive(Elicit)]` alongside Kani or Creusot, you've
+probably seen the wall of `unexpected_cfg` warnings that followed. This release eliminates
+them.
 
-Each consumer crate now declares exactly the features it needs. The result is faster
-incremental builds, smaller dependency trees, and no more surprises when `cargo build`
-fetches half of crates.io for a project that only needs JSON schemas. The `full` feature is
-still available as an explicit opt-in, and `dev` continues to enable everything for
-workspace-level development.
+The root problem is structural: elicitation's derive macro and proof generator emit code
+gated on `cfg(kani)`, `cfg(creusot)`, and `cfg(verus)`. When those toolchains aren't active,
+Rust rightfully flags the unknown cfg keys. The naive fix — annotate every callsite — doesn't
+scale across a generated codebase, and `#[allow]` attributes are a maintenance smell.
 
-> **Breaking change:** any downstream crate relying on implicit transitive features must now
-> declare them explicitly. The fix is always a one-liner — add `features = ["your-feature"]`
-> to your elicitation dependency.
+The solution required reaching into the expansion itself. The `formal_method` proc-macro
+expansion now routes all cfg-bearing tokens through an isolated `allow` module, so the
+warnings are suppressed structurally at the point of generation rather than scattered
+callsite-by-callsite. The contracted wrapper function is emitted with a clean body, and
+tracing instrumentation is correctly gated under `#[cfg(not(kani))]` so it doesn't appear
+in Kani's symbolic execution model. A companion `UNEXPECTED_CFGS.md` white paper documents
+the full suppression strategy for contributors.
 
-The same experiment that landed `default = []` also brought **`elicit_polars` into the
-workspace** as a full member. The crate had previously been excluded due to a version conflict
-between `surrealdb-types`' geo 0.32 dependency and the workspace's geo 0.33. With elicitation
-no longer dragging geo into the polars feature tree, the conflict evaporates. `elicit_polars`
-now participates in CI alongside its 35 siblings.
+This was the majority of the engineering effort in this cycle. The result is a clean build
+with any combination of toolchains active.
 
-As a bonus discovery: the workspace had been on `nightly-2026-04-21` purely as a side effect
-of Creusot development. No workspace crate actually requires `#![feature(...)]`. The
-**toolchain is now `stable`** — `cargo creusot` manages its own nightly override internally
-and is unaffected. Everyday builds are now on stable 1.96.
+---
+
+## Cleaner builds, leaner dependencies
+
+`elicitation` now ships with `default = []`. The upshot for new users: your build only
+compiles what you actually use. Previously, a project that only needed JSON schemas would
+silently drag in geo, bevy, wgpu, and two dozen other heavy crates. With granular features,
+build times are proportional to what you declare.
+
+The `full` feature is still available as an explicit opt-in, and `dev` continues to enable
+everything for workspace-level development.
+
+> **Note:** if you're upgrading from 0.11.0, add `features = ["your-feature"]` to your
+> elicitation dependency for any domain types you use. The `full` feature restores prior
+> behavior exactly.
+
+As a related bonus: the workspace toolchain is now **`stable`**. It had been on
+`nightly-2026-04-21` purely as a Creusot side-effect; no workspace crate actually needs
+`#![feature(...)]`. `cargo creusot` manages its own nightly override internally and is
+unaffected.
 
 ---
 
@@ -58,12 +73,6 @@ support landed, allowing a single generator invocation to cover multi-crate work
 `why3find.json` generation, dependency scanning, and import priority resolution are all
 handled automatically. A `kani_skip_features` option was added for crates whose feature flags
 are incompatible with the Kani toolchain.
-
-The Kani reexport pipeline was tightened: `_kani_contracted` functions now carry doc
-comments, invariant fn re-exports are correctly gated under `#[cfg(kani)]`, and the
-`formal_method` expansion routes cfg-bearing tokens through an isolated `allow` module to
-suppress spurious `unexpected_cfgs` warnings. An `UNEXPECTED_CFGS.md` white paper documents
-the full suppression strategy for maintainers and contributors.
 
 `creusot-std` upgraded to 0.11.0 and the vendored copies were removed entirely. The shadow
 workspace sanitizer in the Creusot CLI was fixed, and `--no-check-version` is now passed to
