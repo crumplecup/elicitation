@@ -14,12 +14,12 @@
 //!
 //! | Type | Pattern | Notes |
 //! |------|---------|-------|
-//! | [`accesskit::Role`] | Select | 182 accessibility role variants |
-//! | [`accesskit::Action`] | Select | 22 unit action variants |
-//! | [`accesskit::Invalid`] | Select | 3 invalidity states |
-//! | [`accesskit::Toggled`] | Select | False / True / Mixed |
-//! | [`accesskit::Orientation`] | Select | Horizontal / Vertical |
-//! | [`accesskit::TextDirection`] | Select | 4 text direction variants |
+//! | `accesskit::Role` | Select | 182 accessibility role variants |
+//! | `accesskit::Action` | Select | 22 unit action variants |
+//! | `accesskit::Invalid` | Select | 3 invalidity states |
+//! | `accesskit::Toggled` | Select | False / True / Mixed |
+//! | `accesskit::Orientation` | Select | Horizontal / Vertical |
+//! | `accesskit::TextDirection` | Select | 4 text direction variants |
 //! | [`accesskit::SortDirection`] | Select | Ascending / Descending / Other |
 //! | [`accesskit::AriaCurrent`] | Select | 7 aria-current values |
 //! | [`accesskit::AutoComplete`] | Select | Inline / List / Both |

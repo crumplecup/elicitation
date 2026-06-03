@@ -1,4 +1,4 @@
-//! Elicitation for [`accesskit::TreeUpdate`].
+//! Elicitation for `accesskit::TreeUpdate`.
 //!
 //! `TreeUpdate` is the main message type for atomic accessibility tree updates.
 //! The `tree_id` field wraps a [`uuid::Uuid`] via [`accesskit::TreeId`].

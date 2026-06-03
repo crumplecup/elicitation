@@ -90,8 +90,10 @@ pub fn generate_kani_file_with_style(
         for name in &vsm.transitions {
             needed.insert(name.clone());
         }
-        // inv_fn is re-exported via kani_reexports at crate root — do NOT add to
-        // `needed` here or TypeResolver will resolve it to a private module path.
+        // inv_fn is a plain pub fn re-exported unconditionally at the crate root
+        // via the generated KANI REEXPORTS section — use the flat crate-root path.
+        // Do NOT add to `needed` here; TypeResolver would resolve it to its private
+        // module path, which is unreachable from the proof crate.
     }
 
     let resolver = TypeResolver::build(&vsm.source_file, &crate_name, import_style);

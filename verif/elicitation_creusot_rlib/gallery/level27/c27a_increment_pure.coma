@@ -4,20 +4,20 @@ let%span slevel27 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src
 let%span slevel27'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 68 4 68 9
 let%span slevel27'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 65 11 65 22
 let%span slevel27'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/gallery/level27.rs" 66 10 66 28
-let%span sord = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 162 41 162 91
-let%span sord'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 168 41 168 88
-let%span sord'1 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 174 41 174 88
-let%span sord'2 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 180 41 180 91
-let%span sord'3 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 186 41 186 72
-let%span sord'4 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 192 42 192 59
-let%span sord'5 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 193 42 193 59
-let%span sord'6 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 194 41 194 58
-let%span sord'7 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 200 42 200 72
-let%span sord'8 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 201 41 201 74
-let%span sord'9 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 207 42 207 75
-let%span sord'10 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 208 41 208 71
-let%span sord'11 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 214 41 214 86
-let%span sord'12 = "/home/erik/repos/elicitation/vendor/creusot-std/src/logic/ord.rs" 296 16 302 17
+let%span sord = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 162 41 162 102
+let%span sord'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 168 41 168 99
+let%span sord'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 174 41 174 99
+let%span sord'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 180 41 180 102
+let%span sord'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 186 41 186 83
+let%span sord'4 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 192 42 192 59
+let%span sord'5 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 193 42 193 59
+let%span sord'6 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 194 41 194 58
+let%span sord'7 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 200 42 200 83
+let%span sord'8 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 201 41 201 85
+let%span sord'9 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 207 42 207 86
+let%span sord'10 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 208 41 208 82
+let%span sord'11 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 214 41 214 97
+let%span sord'12 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/logic/ord.rs" 296 16 302 17
 
 use creusot.int.UInt32
 use creusot.prelude.Any

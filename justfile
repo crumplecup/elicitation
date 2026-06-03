@@ -205,14 +205,27 @@ lint package='':
     rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+        if ! cargo clippy --workspace --all-targets \
+            --exclude elicitation_creusot \
+            --exclude elicitation_kani \
+            -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
             exit 1
         fi
         rm -f "$LOG_FILE"
+        echo "🔍 Linting nightly-only crates (elicitation_creusot, elicitation_kani)"
+        if ! cargo +nightly clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint (nightly) failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
         echo "📖 Checking documentation"
-        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps 2>&1 | tee "$LOG_FILE"; then
+        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps \
+            --exclude elicitation_creusot \
+            --exclude elicitation_kani \
+            2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
             exit 1

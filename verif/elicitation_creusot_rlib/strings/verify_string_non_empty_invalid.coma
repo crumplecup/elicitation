@@ -10,7 +10,7 @@ let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/s
 let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 25 11 25 15
 let%span sstrings'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 27 44 27 96
 let%span sstrings'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 26 10 26 57
-let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 44 4 44 66
+let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 45 4 45 62
 
 use creusot.prelude.Char
 use seq.Seq

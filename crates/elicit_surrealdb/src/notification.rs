@@ -21,6 +21,8 @@ pub enum Action {
     Delete,
     /// The live query was killed.
     Killed,
+    /// An error occurred on the live query.
+    Error,
 }
 
 impl From<surrealdb_types::Action> for Action {
@@ -30,6 +32,7 @@ impl From<surrealdb_types::Action> for Action {
             surrealdb_types::Action::Update => Action::Update,
             surrealdb_types::Action::Delete => Action::Delete,
             surrealdb_types::Action::Killed => Action::Killed,
+            surrealdb_types::Action::Error => Action::Error,
         }
     }
 }
@@ -41,6 +44,7 @@ impl From<Action> for surrealdb_types::Action {
             Action::Update => surrealdb_types::Action::Update,
             Action::Delete => surrealdb_types::Action::Delete,
             Action::Killed => surrealdb_types::Action::Killed,
+            Action::Error => surrealdb_types::Action::Error,
         }
     }
 }

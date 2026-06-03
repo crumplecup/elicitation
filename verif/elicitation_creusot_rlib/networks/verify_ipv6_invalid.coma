@@ -13,7 +13,7 @@ let%span snetworks'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/
 let%span snetworks'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 68 11 68 15
 let%span snetworks'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 70 32 70 74
 let%span snetworks'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 69 10 69 57
-let%span snetworks'8 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/networks.rs" 240 4 240 37
+let%span snetworks'8 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/networks.rs" 241 4 241 59
 
 use creusot.int.UInt8
 use creusot.int.Int128
