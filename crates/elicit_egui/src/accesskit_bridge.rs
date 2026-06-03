@@ -10,9 +10,12 @@ use accesskit::{Node, NodeId, Rect, Role, Toggled};
 use elicit_ui::node_roles::*;
 use elicit_ui::{
     NodeRenderedEvidence, RolePreserved, UiNodeBridge, UiRenderBackend, WcagNodeProofs,
+    verify_wcag_contrast_proofs,
 };
 use elicitation::Established;
 use std::collections::BTreeMap;
+
+use crate::render_context::EguiRenderContext;
 
 // ── EguiBackend ───────────────────────────────────────────────────────────────
 
@@ -60,6 +63,29 @@ impl UiRenderBackend for EguiBackend {
 
 impl UiNodeBridge for EguiBackend {
     type Widget = Box<dyn FnOnce(&mut egui::Ui)>;
+
+    // ── Post-render hooks ─────────────────────────────────────────────────
+
+    /// Wrap the widget closure to run WCAG contrast checks after it draws.
+    ///
+    /// Captures `proofs` and the egui visual state at draw time to verify
+    /// that theme colours satisfy the declared contrast requirements.
+    ///
+    /// This is best-effort: only the theme's default text/background colours
+    /// are checked.  Widget-specific overrides (e.g. `colored_label`) are
+    /// outside the scope of this check.
+    fn wrap_widget(
+        &self,
+        widget: Box<dyn FnOnce(&mut egui::Ui)>,
+        proofs: &WcagNodeProofs,
+    ) -> Box<dyn FnOnce(&mut egui::Ui)> {
+        let proofs = *proofs;
+        Box::new(move |ui: &mut egui::Ui| {
+            widget(ui);
+            let ctx = EguiRenderContext::from_ui(ui);
+            verify_wcag_contrast_proofs(&ctx, &ui.min_rect(), &proofs);
+        })
+    }
 
     // ── Unknown / generic ─────────────────────────────────────────────────
 
