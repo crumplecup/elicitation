@@ -562,6 +562,14 @@ impl<P: Prop> Clone for Established<P> {
     }
 }
 
+// Established<P> is a ZST — there is exactly one value, so equality is trivial.
+impl<P: Prop> PartialEq for Established<P> {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+impl<P: Prop> Eq for Established<P> {}
+
 // Under Kani, `stub_verified` replaces a call with `kani::any()` of the
 // return type.  `Established<P>` is a ZST — its unique value is trivially
 // constructible, so any() just returns the unit token.
