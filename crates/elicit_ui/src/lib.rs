@@ -264,8 +264,8 @@ pub use palette::{
 };
 pub use spatial::{BoundingBox, LayoutContext};
 pub use text::{
-    FontStyle, FontWeight, ParagraphText, RichText, TextAlign, TextDecoration, TextLine,
-    TextModifier, TextSpan, TextStyle, UiColor,
+    FontFamily, FontStyle, FontWeight, LineHeight, ParagraphText, RichText, TextAlign,
+    TextDecoration, TextLine, TextModifier, TextSpan, TextStyle, UiColor, VerticalAlign,
 };
 pub use traits::{
     RenderContext, RenderVerifiable, UiBackend, UiEventBridge, UiEventDispatcher, UiInspector,

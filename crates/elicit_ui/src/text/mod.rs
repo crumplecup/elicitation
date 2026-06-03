@@ -84,6 +84,17 @@ pub enum UiColor {
         /// Blue channel (0–255).
         b: u8,
     },
+    /// 24-bit RGB with alpha (transparency).
+    Rgba {
+        /// Red channel (0–255).
+        r: u8,
+        /// Green channel (0–255).
+        g: u8,
+        /// Blue channel (0–255).
+        b: u8,
+        /// Alpha channel (0 = transparent, 255 = opaque).
+        a: u8,
+    },
     /// 256-colour palette index.
     Indexed {
         /// Palette index (0–255).
@@ -113,6 +124,7 @@ impl From<UiColor> for peniko::Color {
             UiColor::LightCyan => peniko::Color::from_rgb8(97, 214, 214),
             UiColor::Gray => peniko::Color::from_rgb8(242, 242, 242),
             UiColor::Rgb { r, g, b } => peniko::Color::from_rgb8(r, g, b),
+            UiColor::Rgba { r, g, b, a } => peniko::Color::from_rgba8(r, g, b, a),
             UiColor::Indexed { index } => ansi256_to_peniko(index),
         }
     }
@@ -262,6 +274,97 @@ pub enum TextDecoration {
 }
 
 // ---------------------------------------------------------------------------
+// Font family
+// ---------------------------------------------------------------------------
+
+/// Portable font family.
+///
+/// Bridges map this to the closest native type:
+/// - egui: [`egui::FontFamily`]
+/// - CSS/leptos: `font-family` property (`sans-serif`, `monospace`, or quoted name)
+/// - parley: [`parley::style::GenericFamily`] / [`parley::style::FontFamilyName`]
+/// - ratatui: no-op (terminal uses its own font)
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum FontFamily {
+    /// Default proportional (sans-serif) font.
+    Proportional,
+    /// Monospace font.
+    Monospace,
+    /// Named font family (e.g. `"Arial"`, `"JetBrains Mono"`).
+    Named {
+        /// Font family name.
+        name: String,
+    },
+}
+
+// ---------------------------------------------------------------------------
+// Line height
+// ---------------------------------------------------------------------------
+
+/// Portable line height.
+///
+/// Mirrors [`parley::style::LineHeight`] exactly.  Bridges map this to:
+/// - parley: direct 1-to-1 via [`From<LineHeight>`]
+/// - egui: `TextFormat::line_height` — `MetricsRelative` and `FontSizeRelative`
+///   are approximated as `font_size × factor`; `Absolute` is used directly
+/// - CSS/leptos: `line-height` property — relative variants emit a unitless number,
+///   `Absolute` emits a `px` value
+/// - ratatui: no-op (terminal line spacing is fixed)
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum LineHeight {
+    /// Multiple of the font's metrics-defined line height (ascender + descender + leading).
+    ///
+    /// Default CSS equivalent: `line-height: normal` ≈ `MetricsRelative(1.0)`.
+    MetricsRelative {
+        /// Multiplier, e.g. `1.2` for 120% of metrics height.
+        factor: f32,
+    },
+    /// Multiple of the font size (unitless CSS `line-height` behaviour).
+    FontSizeRelative {
+        /// Multiplier, e.g. `1.5` for 150% of font size.
+        factor: f32,
+    },
+    /// Absolute line height in points / pixels.
+    Absolute {
+        /// Height in points or CSS pixels.
+        value: f32,
+    },
+}
+
+impl From<LineHeight> for parley::style::LineHeight {
+    fn from(lh: LineHeight) -> Self {
+        match lh {
+            LineHeight::MetricsRelative { factor } => Self::MetricsRelative(factor),
+            LineHeight::FontSizeRelative { factor } => Self::FontSizeRelative(factor),
+            LineHeight::Absolute { value } => Self::Absolute(value),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Vertical alignment
+// ---------------------------------------------------------------------------
+
+/// Vertical alignment of a text span within its line.
+///
+/// Used for superscript (`Top`) and subscript (`Bottom`) effects.
+/// Bridges map this to:
+/// - egui: `TextFormat::valign`
+/// - CSS/leptos: `vertical-align` (`super`, `middle`, `sub`)
+/// - parley / ratatui: best-effort or no-op
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum VerticalAlign {
+    /// Align to top of the line — superscript effect when combined with a small font.
+    Top,
+    /// Align to the centre of the line (default for mixed-size runs).
+    Center,
+    /// Align to the bottom of the line — subscript effect when combined with a small font.
+    Bottom,
+}
+
+// ---------------------------------------------------------------------------
 // Style
 // ---------------------------------------------------------------------------
 
@@ -270,6 +373,11 @@ pub enum TextDecoration {
 /// Core fields (`fg`, `bg`, `modifiers`) are universally supported.
 /// Extended fields (`font_weight`, `font_style`, `decorations`) are used by
 /// GUI frontends (egui, wgpu) via the linebender bridge.
+///
+/// Rich typography fields (`font_size`, `font_family`, `letter_spacing`,
+/// `word_spacing`, `line_height`, `vertical_align`) target GUI frontends
+/// that support the full linebender/CSS rendering model.  Terminal frontends
+/// (ratatui) treat these as no-ops.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct TextStyle {
     /// Foreground colour.
@@ -290,6 +398,24 @@ pub struct TextStyle {
     /// Text decorations (GUI frontends only).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub decorations: Vec<TextDecoration>,
+    /// Font size in points (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_size: Option<f32>,
+    /// Font family override (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_family: Option<FontFamily>,
+    /// Extra letter spacing in points (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub letter_spacing: Option<f32>,
+    /// Extra word spacing in points (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub word_spacing: Option<f32>,
+    /// Line height override (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub line_height: Option<LineHeight>,
+    /// Vertical alignment within the line (GUI frontends only; ratatui: no-op).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vertical_align: Option<VerticalAlign>,
 }
 
 // ---------------------------------------------------------------------------
@@ -305,6 +431,11 @@ pub enum TextAlign {
     Center,
     /// Right-aligned.
     Right,
+    /// Justified (expand inter-word spacing to fill the line width).
+    ///
+    /// GUI frontends that support justify (egui, CSS/leptos) honour this directly.
+    /// Terminal frontends (ratatui) fall back to `Left`.
+    Justify,
 }
 
 // ---------------------------------------------------------------------------
