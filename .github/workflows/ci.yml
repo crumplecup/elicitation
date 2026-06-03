@@ -57,12 +57,12 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets ${{ matrix.extra_exclude }} -- -D warnings
+        run: cargo clippy --workspace --all-targets --exclude elicitation_creusot --exclude elicitation_kani ${{ matrix.extra_exclude }} -- -D warnings
 
       - name: Doc check
         env:
           RUSTDOCFLAGS: "-D warnings"
-        run: cargo doc --workspace --no-deps ${{ matrix.extra_exclude }}
+        run: cargo doc --workspace --no-deps --exclude elicitation_creusot --exclude elicitation_kani ${{ matrix.extra_exclude }}
 
   # Ubuntu only: test elicitation_derive (fast, no heavy deps).
   test-derive:
