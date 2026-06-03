@@ -19,6 +19,7 @@ fn paragraph_converts_to_label() {
             alignment: None,
             block: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&node);
@@ -47,6 +48,7 @@ fn list_converts_to_accesskit_list() {
             highlight_symbol: None,
             state: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&node);
@@ -67,6 +69,7 @@ fn gauge_preserves_progress() {
             style: None,
             gauge_style: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&node);
@@ -87,6 +90,7 @@ fn tabs_preserves_titles() {
             highlight_style: None,
             divider: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&node);
@@ -109,6 +113,7 @@ fn scrollbar_preserves_orientation() {
             track_style: None,
             state: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&node);
@@ -135,6 +140,7 @@ fn layout_creates_container_with_children() {
                     alignment: None,
                     block: None,
                 }),
+                proofs: Default::default(),
             },
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
@@ -145,6 +151,7 @@ fn layout_creates_container_with_children() {
                     alignment: None,
                     block: None,
                 }),
+                proofs: Default::default(),
             },
         ],
         margin: None,
@@ -182,7 +189,7 @@ fn accesskit_label_to_paragraph() {
 
     let tui_node = tree_update_to_tui_node(&update).unwrap();
     match tui_node {
-        TuiNode::Widget { widget } => match *widget {
+        TuiNode::Widget { widget, .. } => match *widget {
             WidgetJson::Paragraph { text, .. } => assert_eq!(text.to_plain_string(), "Hello"),
             other => panic!("Expected Paragraph, got: {other:?}"),
         },
@@ -207,7 +214,7 @@ fn accesskit_progress_to_gauge() {
 
     let tui_node = tree_update_to_tui_node(&update).unwrap();
     match tui_node {
-        TuiNode::Widget { widget } => match *widget {
+        TuiNode::Widget { widget, .. } => match *widget {
             WidgetJson::Gauge { ratio, label, .. } => {
                 assert!((ratio - 0.6).abs() < f64::EPSILON);
                 assert_eq!(label, Some("Downloading".into()));
@@ -229,13 +236,14 @@ fn paragraph_roundtrip() {
             alignment: None,
             block: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&original);
     let roundtripped = tree_update_to_tui_node(&update).unwrap();
 
     match roundtripped {
-        TuiNode::Widget { widget } => match *widget {
+        TuiNode::Widget { widget, .. } => match *widget {
             WidgetJson::Paragraph { text, .. } => assert_eq!(text.to_plain_string(), "Round trip"),
             other => panic!("Expected Paragraph, got: {other:?}"),
         },
@@ -253,13 +261,14 @@ fn gauge_roundtrip() {
             style: None,
             gauge_style: None,
         }),
+        proofs: Default::default(),
     };
 
     let update = tui_node_to_tree_update(&original);
     let roundtripped = tree_update_to_tui_node(&update).unwrap();
 
     match roundtripped {
-        TuiNode::Widget { widget } => match *widget {
+        TuiNode::Widget { widget, .. } => match *widget {
             WidgetJson::Gauge { ratio, label, .. } => {
                 assert!((ratio - 0.5).abs() < 0.01);
                 assert_eq!(label, Some("Half".into()));
@@ -278,12 +287,15 @@ fn layout_roundtrip_preserves_children_count() {
         children: vec![
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Clear),
+                proofs: Default::default(),
             },
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Clear),
+                proofs: Default::default(),
             },
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Clear),
+                proofs: Default::default(),
             },
         ],
         margin: None,

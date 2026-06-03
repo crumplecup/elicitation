@@ -748,6 +748,7 @@ fn test_event_paste_serde() {
 fn test_tui_node_widget_leaf() {
     let node = TuiNode::Widget {
         widget: Box::new(WidgetJson::Clear),
+        proofs: Default::default(),
     };
     let json = serde_json::to_string(&node).expect("serialize");
     assert!(json.contains(r#""node_type":"Widget"#));
@@ -773,6 +774,7 @@ fn test_tui_node_layout_with_children() {
                     alignment: None,
                     block: None,
                 }),
+                proofs: Default::default(),
             },
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
@@ -783,6 +785,7 @@ fn test_tui_node_layout_with_children() {
                     alignment: None,
                     block: None,
                 }),
+                proofs: Default::default(),
             },
         ],
         margin: None,
@@ -812,6 +815,7 @@ fn test_tui_node_nested_layouts() {
                         padding: None,
                     },
                 }),
+                proofs: Default::default(),
             },
             TuiNode::Layout {
                 direction: DirectionJson::Horizontal,
@@ -829,6 +833,7 @@ fn test_tui_node_nested_layouts() {
                             highlight_symbol: None,
                             state: None,
                         }),
+                        proofs: Default::default(),
                     },
                     TuiNode::Widget {
                         widget: Box::new(WidgetJson::Paragraph {
@@ -839,6 +844,7 @@ fn test_tui_node_nested_layouts() {
                             alignment: None,
                             block: None,
                         }),
+                        proofs: Default::default(),
                     },
                 ],
                 margin: None,
@@ -1001,7 +1007,8 @@ fn test_tui_node_from_raw_json() {
     assert_eq!(
         node,
         TuiNode::Widget {
-            widget: Box::new(WidgetJson::Clear)
+            widget: Box::new(WidgetJson::Clear),
+            proofs: Default::default(),
         }
     );
 }

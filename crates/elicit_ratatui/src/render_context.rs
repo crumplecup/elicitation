@@ -65,6 +65,22 @@ impl<'a> RenderContext for RatatuiRenderContext<'a> {
             background: bg,
         })
     }
+
+    /// Scan all cells in `area` for the first one with determinate RGB colours.
+    ///
+    /// Ratatui cells default to `Color::Reset` (terminal default) until a
+    /// widget writes to them.  Scanning finds the first cell that a widget
+    /// actually coloured, giving a representative sample for contrast checks.
+    fn sample_colors(&self, area: &Rect) -> Option<RenderColors> {
+        for row in 0..area.height {
+            for col in 0..area.width {
+                if let Some(colors) = self.colors_at(area, col, row) {
+                    return Some(colors);
+                }
+            }
+        }
+        None
+    }
 }
 
 /// Convert a ratatui [`Color`] to `[r, g, b]`, returning `None` for colours

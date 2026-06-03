@@ -23,7 +23,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
-use crate::wcag_verify::verify_wcag_proofs;
+use crate::wcag_verify::verify_wcag_contrast_proofs;
 use elicit_ui::ColorTheme;
 use elicitation::elicit_tool;
 
@@ -435,7 +435,7 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
             render_widget(frame, area, widget);
             let buf = frame.buffer_mut();
             let ctx = crate::RatatuiRenderContext::new(buf);
-            verify_wcag_proofs(&ctx, &area, proofs);
+            verify_wcag_contrast_proofs(&ctx, &area, proofs);
         }
         TuiNode::Layout {
             direction,

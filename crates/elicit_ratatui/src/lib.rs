@@ -127,6 +127,7 @@ mod tui_communicator;
 pub(crate) mod wcag_verify;
 mod widget_tools;
 
+pub use elicit_ui::{verify_wcag_contrast_proofs, wcag_contrast_ratio};
 #[cfg(feature = "runtime")]
 pub use event_tools::{EventPollParams, EventReadKeyParams, EventReadParams};
 pub use fragment_tools::{
@@ -183,7 +184,6 @@ pub use text_tools::{
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 #[cfg(feature = "runtime")]
 pub use tui_communicator::TuiCommunicator;
-pub use wcag_verify::{verify_wcag_proofs, wcag_contrast_ratio};
 pub use widget_tools::{
     BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
     ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
