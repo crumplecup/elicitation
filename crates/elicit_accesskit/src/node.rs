@@ -633,6 +633,15 @@ impl NodeJson {
         self
     }
 
+    /// Sets the layout orientation (horizontal or vertical).
+    ///
+    /// Consumed by the ratatui bridge to choose `DirectionJson::Horizontal`
+    /// vs `DirectionJson::Vertical` when this node has children.
+    pub fn with_orientation(mut self, v: Orientation) -> Self {
+        self.orientation = Some(v);
+        self
+    }
+
     /// Sets the toggled state.
     pub fn with_toggled(mut self, v: Toggled) -> Self {
         self.toggled = Some(v);
