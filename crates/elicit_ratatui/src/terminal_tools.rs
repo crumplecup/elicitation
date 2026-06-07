@@ -23,8 +23,8 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
-use crate::wcag_verify::verify_wcag_contrast_proofs;
 use elicit_ui::ColorTheme;
+use elicit_ui::verify_wcag_contrast_proofs;
 use elicitation::elicit_tool;
 
 /// Crossterm terminal type alias.

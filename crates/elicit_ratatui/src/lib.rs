@@ -77,7 +77,7 @@
 //!
 //! ## Runtime types (runtime feature)
 //!
-//! - [`TuiCommunicator`] — an [`ElicitCommunicator`] for terminal-based interactive applications
+//! - `TuiCommunicator` — an [`ElicitCommunicator`] for terminal-based interactive applications
 //!   - Supports `elicit_select` (numbered menu with single-keystroke selection)
 //!   - Supports `elicit_text` (free-form text input)
 //!   - Configurable prompt pane height

@@ -237,6 +237,60 @@ impl UiRenderBackend for RatatuiBackend {
 impl UiNodeBridge for RatatuiBackend {
     type Widget = TuiNode;
 
+    fn verify_node(&self, node: &Node, proofs: &WcagNodeProofs) {
+        #[cfg(debug_assertions)]
+        {
+            // SC 1.1.1 / 4.1.2: name_present — the AccessKit label must survive
+            // to render time; catching it here means a regression between factory
+            // validation and rendering is visible immediately.
+            if proofs.name_present.is_some() {
+                tracing::error!(
+                    role = ?node.role(),
+                    sc = "1.1.1/4.1.2",
+                    "name_present proof held but node has no accessible label",
+                );
+                debug_assert!(
+                    node.label().is_some(),
+                    "name_present proof held but node {:?} has no accessible label (SC 1.1.1/4.1.2)",
+                    node.role(),
+                );
+            }
+
+            // SC 1.3.1: heading nodes must carry a heading level in the AccessKit tree.
+            if proofs.heading_structure.is_some()
+                && node.role() == Role::Heading
+                && node.level().is_none()
+            {
+                tracing::error!(
+                    sc = "1.3.1",
+                    "heading_structure proof held but heading node has no level"
+                );
+                debug_assert!(
+                    false,
+                    "heading_structure proof held but heading node has no level (SC 1.3.1)"
+                );
+            }
+
+            // SC 4.1.3: alert/status nodes that carry an error_identified proof must
+            // have label text — the error description must reach the rendered node.
+            if proofs.error_identified.is_some() {
+                let role = node.role();
+                if role == Role::Alert || role == Role::Status {
+                    tracing::error!(
+                        role = ?role,
+                        sc = "4.1.3",
+                        "error_identified proof held but node has no label",
+                    );
+                    debug_assert!(
+                        node.label().is_some(),
+                        "error_identified proof held but {:?} node has no label (SC 4.1.3)",
+                        role,
+                    );
+                }
+            }
+        }
+    }
+
     // ── Unknown / generic ─────────────────────────────────────────────────
 
     fn bridge_unknown(
