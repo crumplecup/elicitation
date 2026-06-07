@@ -325,12 +325,18 @@ fn convert_accesskit_node(
             c.push(crate::serde_types::ConstraintJson::Length { value: 1 });
             c
         } else {
-            // Equal-fill distribution: each child gets an equal share of the space.
-            // Without explicit constraints, ratatui::Layout returns 0 chunks and
-            // nothing renders.
-            children
+            // A child node whose numeric_value is set gets Min{value} so it
+            // requests a minimum number of rows/columns.  All other children
+            // use Fill{1} (equal share of remaining space).
+            children_ids
                 .iter()
-                .map(|_| crate::serde_types::ConstraintJson::Fill { value: 1 })
+                .map(|cid| {
+                    node_map
+                        .get(cid)
+                        .and_then(|n| n.numeric_value())
+                        .map(|v| crate::serde_types::ConstraintJson::Min { value: v as u16 })
+                        .unwrap_or(crate::serde_types::ConstraintJson::Fill { value: 1 })
+                })
                 .collect()
         };
 
