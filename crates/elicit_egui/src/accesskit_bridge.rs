@@ -2987,10 +2987,10 @@ fn build_text_format(
             }
             TextModifier::Italic => italic = true,
             TextModifier::Underlined => {
-                underline = egui::Stroke::new(1.0, fg);
+                underline = egui::Stroke::new(1.0_f32, fg);
             }
             TextModifier::CrossedOut => {
-                strikethrough = egui::Stroke::new(1.0, fg);
+                strikethrough = egui::Stroke::new(1.0_f32, fg);
             }
             TextModifier::Dim => is_dim = true,
             TextModifier::Hidden => is_hidden = true,
@@ -3004,10 +3004,10 @@ fn build_text_format(
     for d in decorations {
         match d {
             TextDecoration::Underline => {
-                underline = egui::Stroke::new(1.0, fg);
+                underline = egui::Stroke::new(1.0_f32, fg);
             }
             TextDecoration::Strikethrough => {
-                strikethrough = egui::Stroke::new(1.0, fg);
+                strikethrough = egui::Stroke::new(1.0_f32, fg);
             }
             TextDecoration::Overline => {
                 // egui has no overline; silently ignored.
