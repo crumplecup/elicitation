@@ -3,8 +3,8 @@
 use std::sync::Arc;
 
 use elicitation::ElicitPlugin;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 
 use crate::context::WinitCtx;
 use winit::event_loop::EventLoopProxy;

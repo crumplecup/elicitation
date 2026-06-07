@@ -1,10 +1,10 @@
 //! [`WinitCtx`], [`WinitCmd`], and [`WinitError`] — the integration bridge
 //! between plugin tools and the embedding app's winit event loop.
 
+use elicitation::plugin::PluginContext;
 use elicitation::{
     WinitCursorIconSelect, WinitPhysicalSize, WinitWindowAttributes, WinitWindowLevelSelect,
 };
-use elicitation::plugin::PluginContext;
 use rmcp::ErrorData;
 use tokio::sync::oneshot;
 use uuid::Uuid;

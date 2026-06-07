@@ -4,8 +4,7 @@
 use std::sync::Arc;
 
 use elicitation::{
-    WinitCursorIconSelect, WinitWindowAttributes, WinitWindowLevelSelect,
-    elicit_tool,
+    WinitCursorIconSelect, WinitWindowAttributes, WinitWindowLevelSelect, elicit_tool,
 };
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
