@@ -162,7 +162,14 @@ impl<'a> GpuPixelContext<'a> {
         format: wgpu::TextureFormat,
         ppp: f32,
     ) -> Self {
-        Self { pixels, width, bytes_per_row, height, format, ppp }
+        Self {
+            pixels,
+            width,
+            bytes_per_row,
+            height,
+            format,
+            ppp,
+        }
     }
 
     /// Sample one pixel at physical coordinates `(x_px, y_px)`.
@@ -216,7 +223,10 @@ impl<'a> RenderContext for GpuPixelContext<'a> {
         let x = (area.left() * self.ppp) as u32 + col as u32;
         let y = (area.top() * self.ppp) as u32 + row as u32;
         let rgb = self.sample_pixel(x, y)?;
-        Some(RenderColors { foreground: rgb, background: rgb })
+        Some(RenderColors {
+            foreground: rgb,
+            background: rgb,
+        })
     }
 
     /// Estimate foreground and background colours using corner sampling + grid search.
@@ -284,6 +294,9 @@ impl<'a> RenderContext for GpuPixelContext<'a> {
             return None;
         }
 
-        Some(RenderColors { foreground: best_rgb, background: bg })
+        Some(RenderColors {
+            foreground: best_rgb,
+            background: bg,
+        })
     }
 }

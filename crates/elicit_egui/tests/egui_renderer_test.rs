@@ -659,3 +659,110 @@ fn builder_form_verify_render() {
     assert_eq!(stats.containers_rendered, 2, "window + form");
     assert_eq!(stats.nodes_visited, 5, "window + form + 3 children");
 }
+
+// ── Rich-text paragraph tests ──────────────────────────────────
+
+#[test]
+fn render_paragraph_rich_text_via_render_tree() {
+    use elicit_ui::{RichText, TextLine, TextSpan, TextStyle, UiColor};
+
+    let root_id = node_id(0);
+    let para_id = node_id(1);
+
+    let rich = elicit_ui::ParagraphText::Rich(RichText {
+        lines: vec![TextLine {
+            spans: vec![
+                TextSpan {
+                    content: "Hello ".to_string(),
+                    style: Some(TextStyle {
+                        fg: Some(UiColor::White),
+                        ..Default::default()
+                    }),
+                },
+                TextSpan {
+                    content: "world".to_string(),
+                    style: Some(TextStyle {
+                        fg: Some(UiColor::Green),
+                        ..Default::default()
+                    }),
+                },
+            ],
+            style: None,
+            alignment: None,
+        }],
+        style: None,
+        alignment: None,
+    });
+
+    let sidecar = format!("__rich_text__:{}", serde_json::to_string(&rich).unwrap());
+
+    let mut para = Node::new(Role::Paragraph);
+    para.set_class_name(&*sidecar);
+
+    let mut nodes = BTreeMap::new();
+    nodes.insert(root_id, window_root(vec![para_id]));
+    nodes.insert(para_id, para);
+
+    let ctx = egui_ctx();
+    let mut stats = RenderStats::default();
+    let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
+        (stats, _) = render_tree(ui, &nodes, root_id);
+    });
+
+    assert_eq!(
+        stats.widgets_rendered, 1,
+        "Rich paragraph renders as 1 widget"
+    );
+    assert_eq!(stats.nodes_visited, 2);
+}
+
+#[test]
+fn render_paragraph_plain_text_via_render_tree() {
+    let root_id = node_id(0);
+    let para_id = node_id(1);
+
+    // ParagraphText::Plain serializes as a bare JSON string (no wrapper key).
+    let sidecar = r#"__rich_text__:"simple text""#;
+
+    let mut para = Node::new(Role::Paragraph);
+    para.set_class_name(sidecar);
+
+    let mut nodes = BTreeMap::new();
+    nodes.insert(root_id, window_root(vec![para_id]));
+    nodes.insert(para_id, para);
+
+    let ctx = egui_ctx();
+    let mut stats = RenderStats::default();
+    let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
+        (stats, _) = render_tree(ui, &nodes, root_id);
+    });
+
+    assert_eq!(
+        stats.widgets_rendered, 1,
+        "Plain paragraph renders as 1 widget"
+    );
+}
+
+#[test]
+fn render_paragraph_no_sidecar_falls_back_to_label() {
+    let root_id = node_id(0);
+    let para_id = node_id(1);
+
+    let mut para = Node::new(Role::Paragraph);
+    para.set_value("Fallback text");
+
+    let mut nodes = BTreeMap::new();
+    nodes.insert(root_id, window_root(vec![para_id]));
+    nodes.insert(para_id, para);
+
+    let ctx = egui_ctx();
+    let mut stats = RenderStats::default();
+    let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
+        (stats, _) = render_tree(ui, &nodes, root_id);
+    });
+
+    assert_eq!(
+        stats.widgets_rendered, 1,
+        "Fallback paragraph renders as 1 widget"
+    );
+}

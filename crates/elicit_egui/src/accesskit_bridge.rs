@@ -2471,8 +2471,11 @@ fn render_node_recursive(
             ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
             stats.widgets_rendered += 1;
         }
+        Role::Paragraph => {
+            render_paragraph(ui, node);
+            stats.widgets_rendered += 1;
+        }
         Role::Label
-        | Role::Paragraph
         | Role::TextRun
         | Role::Heading
         | Role::Legend
@@ -2793,6 +2796,50 @@ fn parse_kv_coords_egui(desc: &str) -> std::collections::HashMap<&str, f32> {
 }
 
 // ── Rich-text paragraph helpers ────────────────────────────────────────────────
+
+/// Render a paragraph node to `ui`, using a [`egui::text::LayoutJob`] when the
+/// node carries a `__rich_text__:` sidecar, or falling back to plain text.
+fn render_paragraph(ui: &mut egui::Ui, node: &Node) {
+    use elicit_ui::{ParagraphText, TextAlign};
+    let rich =
+        node_json_rich_text(node).and_then(|v| serde_json::from_value::<ParagraphText>(v).ok());
+    match rich {
+        Some(ParagraphText::Rich(rich)) => {
+            let (halign, justify) = match rich.alignment {
+                Some(TextAlign::Center) => (egui::Align::Center, false),
+                Some(TextAlign::Right) => (egui::Align::RIGHT, false),
+                Some(TextAlign::Justify) => (egui::Align::LEFT, true),
+                _ => (egui::Align::LEFT, false),
+            };
+            let mut job = egui::text::LayoutJob {
+                halign,
+                justify,
+                ..Default::default()
+            };
+            for (li, line) in rich.lines.iter().enumerate() {
+                if li > 0 {
+                    let fmt = build_text_format(None, line.style.as_ref(), rich.style.as_ref());
+                    job.append("\n", 0.0, fmt);
+                }
+                for span in &line.spans {
+                    let fmt = build_text_format(
+                        span.style.as_ref(),
+                        line.style.as_ref(),
+                        rich.style.as_ref(),
+                    );
+                    job.append(&span.content, 0.0, fmt);
+                }
+            }
+            ui.label(job);
+        }
+        Some(ParagraphText::Plain(text)) => {
+            ui.label(&text);
+        }
+        None => {
+            ui.label(node_label(node));
+        }
+    }
+}
 
 /// Extract the `__rich_text__:` sidecar from the node's `class_name` field,
 /// returning the raw JSON value if present.
