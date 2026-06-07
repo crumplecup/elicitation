@@ -3039,21 +3039,19 @@ fn build_text_format(
     // Font size.
     let font_size = cascade!(font_size).copied().unwrap_or(14.0);
 
-    // Font family — Bold modifier maps to the "Bold" named family convention.
+    // Font family — bold text uses Proportional since egui bundles no bold
+    // font variant by default.  Callers that want true bold weight should
+    // register a font under `FontFamily::Name("Bold")` in their
+    // `FontDefinitions` and the named-family branch below will pick it up.
     let is_bold = modifiers.contains(&TextModifier::Bold)
         || cascade!(font_weight)
             .map(|w| *w == FontWeight::BOLD)
             .unwrap_or(false);
 
-    let font_family = if is_bold {
-        // egui bold convention: register a font under this name in your FontDefinitions.
-        egui::FontFamily::Name("Bold".into())
-    } else {
-        match cascade!(font_family) {
-            Some(FontFamily::Monospace) => egui::FontFamily::Monospace,
-            Some(FontFamily::Named { name }) => egui::FontFamily::Name(name.as_str().into()),
-            _ => egui::FontFamily::Proportional,
-        }
+    let font_family = match (is_bold, cascade!(font_family)) {
+        (_, Some(FontFamily::Monospace)) => egui::FontFamily::Monospace,
+        (false, Some(FontFamily::Named { name })) => egui::FontFamily::Name(name.as_str().into()),
+        _ => egui::FontFamily::Proportional,
     };
 
     // Italic via FontStyle.
