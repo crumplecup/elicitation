@@ -43,7 +43,7 @@ pub struct EguiBackend {
     /// Pending (rect, proofs, ppp) items awaiting GPU pixel readback verification.
     ///
     /// Populated by [`wrap_widget`](UiNodeBridge::wrap_widget) during the egui frame
-    /// and drained by [`post_frame`](EguiBackend::post_frame) after GPU readback.
+    /// and drained by `post_frame` after GPU readback.
     #[cfg(feature = "runtime-proofs")]
     pending: std::sync::Arc<std::sync::Mutex<Vec<(egui::Rect, WcagNodeProofs, f32)>>>,
 }
@@ -116,7 +116,7 @@ impl UiNodeBridge for EguiBackend {
     /// Wrap the widget closure to run WCAG contrast checks after it draws.
     ///
     /// With the `runtime-proofs` feature and debug builds, defers verification
-    /// to [`post_frame`](EguiBackend::post_frame) so actual GPU pixel data
+    /// to `post_frame` so actual GPU pixel data
     /// (from surface readback) is used instead of theme defaults.
     ///
     /// Without `runtime-proofs`, performs an immediate best-effort check using
