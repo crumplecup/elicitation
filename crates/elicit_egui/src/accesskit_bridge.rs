@@ -2931,7 +2931,7 @@ fn build_text_format(
     block_style: Option<&elicit_ui::TextStyle>,
 ) -> egui::text::TextFormat {
     use elicit_ui::{
-        FontFamily, FontStyle, FontWeight, LineHeight, TextDecoration, TextModifier, VerticalAlign,
+        FontFamily, FontStyle, LineHeight, TextDecoration, TextModifier, VerticalAlign,
     };
 
     // Helper: resolve a field through the three layers.
@@ -3039,18 +3039,16 @@ fn build_text_format(
     // Font size.
     let font_size = cascade!(font_size).copied().unwrap_or(14.0);
 
-    // Font family — bold text uses Proportional since egui bundles no bold
-    // font variant by default.  Callers that want true bold weight should
-    // register a font under `FontFamily::Name("Bold")` in their
-    // `FontDefinitions` and the named-family branch below will pick it up.
-    let is_bold = modifiers.contains(&TextModifier::Bold)
-        || cascade!(font_weight)
-            .map(|w| *w == FontWeight::BOLD)
-            .unwrap_or(false);
-
-    let font_family = match (is_bold, cascade!(font_family)) {
-        (_, Some(FontFamily::Monospace)) => egui::FontFamily::Monospace,
-        (false, Some(FontFamily::Named { name })) => egui::FontFamily::Name(name.as_str().into()),
+    // Font family — egui's default bundle ships only Proportional (Ubuntu
+    // Light) and Monospace (Ubuntu Mono).  Any other name, including "Bold",
+    // "Arial", etc., requires the caller to register it in FontDefinitions.
+    // Passing an unregistered name panics inside epaint's font atlas.
+    //
+    // Strategy: map everything to the two safe defaults.  Callers that need
+    // additional families register them and the IR should use a named family
+    // that matches the registered name exactly.
+    let font_family = match cascade!(font_family) {
+        Some(FontFamily::Monospace) => egui::FontFamily::Monospace,
         _ => egui::FontFamily::Proportional,
     };
 
