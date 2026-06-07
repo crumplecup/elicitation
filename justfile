@@ -97,8 +97,10 @@ setup-verifiers install_dir="~/repos":
 check package="":
     #!/usr/bin/env bash
     if [ -z "{{package}}" ]; then
-        echo "🔍 Checking entire workspace..."
-        cargo check --workspace
+        echo "🔍 Checking entire workspace (stable)..."
+        cargo check --workspace --exclude elicitation_creusot --exclude elicitation_kani
+        echo "🔍 Checking nightly-only crates..."
+        cargo +nightly check -p elicitation_creusot -p elicitation_kani
     else
         echo "🔍 Checking package: {{package}}"
         cargo check -p {{package}}
@@ -347,13 +349,26 @@ check-all package='':
         cargo fmt --all
 
         # Run lint (show output and log warnings/errors)
-        echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+        echo "🔍 Linting entire workspace (stable)"
+        if ! cargo clippy --workspace --all-targets \
+            --exclude elicitation_creusot \
+            --exclude elicitation_kani \
+            -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+            EXIT_CODE=1
+        fi
+        echo "🔍 Linting nightly-only crates (elicitation_creusot, elicitation_kani)"
+        if ! cargo +nightly clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
         # Run tests (show output and log failures)
-        if ! cargo test --workspace --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo test --workspace --lib --tests \
+            --exclude elicitation_creusot \
+            --exclude elicitation_kani \
+            2>&1 | tee -a "$LOG_FILE"; then
+            EXIT_CODE=1
+        fi
+        if ! cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
