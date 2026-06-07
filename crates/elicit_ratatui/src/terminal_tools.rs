@@ -19,7 +19,7 @@ use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
-use tracing::instrument;
+use tracing::{instrument, trace};
 use uuid::Uuid;
 
 use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
@@ -432,6 +432,28 @@ async fn terminal_draw(p: TerminalDrawParams) -> Result<CallToolResult, ErrorDat
 pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
     match node {
         TuiNode::Widget { widget, proofs } => {
+            // Trace multi-line paragraphs so we can verify card art reaches
+            // the terminal and see whether its dimensions fit the area.
+            if let WidgetJson::Paragraph {
+                text: ParagraphText::Plain(s),
+                ..
+            } = widget.as_ref()
+            {
+                let lines = s.lines().count();
+                let max_width = s.lines().map(|l| l.len()).max().unwrap_or(0);
+                if lines > 1 {
+                    trace!(
+                        area_w = area.width,
+                        area_h = area.height,
+                        content_lines = lines,
+                        content_max_w = max_width,
+                        fits_width = max_width <= area.width as usize,
+                        fits_height = lines <= area.height as usize,
+                        preview = &s[..s.len().min(40)],
+                        "render paragraph"
+                    );
+                }
+            }
             render_widget(frame, area, widget);
             let buf = frame.buffer_mut();
             let ctx = crate::RatatuiRenderContext::new(buf);
@@ -455,6 +477,13 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                     .vertical_margin(m.vertical);
             }
             let chunks = layout.split(area);
+            trace!(
+                ?direction,
+                n_children = children.len(),
+                area_w = area.width,
+                area_h = area.height,
+                "layout split"
+            );
             for (i, child) in children.iter().enumerate() {
                 if i < chunks.len() {
                     render_node(frame, chunks[i], child);
