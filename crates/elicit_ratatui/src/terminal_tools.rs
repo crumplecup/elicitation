@@ -439,19 +439,33 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                 ..
             } = widget.as_ref()
             {
-                let lines = s.lines().count();
-                let max_width = s.lines().map(|l| l.len()).max().unwrap_or(0);
-                if lines > 1 {
+                let line_vec: Vec<&str> = s.lines().collect();
+                if line_vec.len() > 1 {
+                    // Use display-column width (unicode_width), not byte length,
+                    // so multi-byte suit symbols (♣ ♥ ♦ ♠) are measured correctly.
+                    let max_display_w = line_vec
+                        .iter()
+                        .map(|l| unicode_width::UnicodeWidthStr::width(*l))
+                        .max()
+                        .unwrap_or(0);
                     trace!(
                         area_w = area.width,
                         area_h = area.height,
-                        content_lines = lines,
-                        content_max_w = max_width,
-                        fits_width = max_width <= area.width as usize,
-                        fits_height = lines <= area.height as usize,
-                        preview = &s[..s.len().min(40)],
+                        content_lines = line_vec.len(),
+                        content_max_display_w = max_display_w,
+                        fits_width = max_display_w <= area.width as usize,
+                        fits_height = line_vec.len() <= area.height as usize,
                         "render paragraph"
                     );
+                    // Log every line individually so no content is lost to truncation.
+                    for (i, line) in line_vec.iter().enumerate() {
+                        trace!(
+                            line = i,
+                            display_w = unicode_width::UnicodeWidthStr::width(*line),
+                            content = *line,
+                            "render paragraph line"
+                        );
+                    }
                 }
             }
             render_widget(frame, area, widget);
@@ -464,6 +478,7 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
             constraints,
             children,
             margin,
+            ..
         } => {
             let dir: ratatui::layout::Direction = (*direction).into();
             let layout_constraints: Vec<ratatui::layout::Constraint> =
@@ -477,11 +492,16 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                     .vertical_margin(m.vertical);
             }
             let chunks = layout.split(area);
+            // Log both the constraints we gave ratatui AND the areas it
+            // actually produced so we can see the full before/after in one line.
+            let chunk_heights: Vec<u16> = chunks.iter().map(|c| c.height).collect();
             trace!(
                 ?direction,
+                ?constraints,
                 n_children = children.len(),
                 area_w = area.width,
                 area_h = area.height,
+                ?chunk_heights,
                 "layout split"
             );
             for (i, child) in children.iter().enumerate() {
