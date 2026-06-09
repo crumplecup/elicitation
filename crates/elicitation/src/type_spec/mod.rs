@@ -146,6 +146,45 @@ pub struct TypeSpec {
     categories: Vec<SpecCategory>,
 }
 
+impl SpecEntry {
+    /// Creates a new [`SpecEntry`] with the given label and description.
+    ///
+    /// The `expression` field defaults to `None` and can be set via
+    /// [`SpecEntry::with_expression`].
+    pub fn new(label: impl Into<String>, description: impl Into<String>) -> Self {
+        Self {
+            label: label.into(),
+            description: description.into(),
+            expression: None,
+        }
+    }
+}
+
+impl SpecCategory {
+    /// Creates a new [`SpecCategory`] with the given name and entries.
+    pub fn new(name: impl Into<String>, entries: Vec<SpecEntry>) -> Self {
+        Self {
+            name: name.into(),
+            entries,
+        }
+    }
+}
+
+impl TypeSpec {
+    /// Creates a new [`TypeSpec`] with the given type name, summary, and categories.
+    pub fn new(
+        type_name: impl Into<String>,
+        summary: impl Into<String>,
+        categories: Vec<SpecCategory>,
+    ) -> Self {
+        Self {
+            type_name: type_name.into(),
+            summary: summary.into(),
+            categories,
+        }
+    }
+}
+
 impl TypeSpec {
     /// Build the standard Select-pattern [`TypeSpec`] for an enum.
     pub fn build_select(
