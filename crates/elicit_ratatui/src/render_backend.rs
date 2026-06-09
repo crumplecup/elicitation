@@ -200,16 +200,36 @@ fn text_widget(node: &Node, proofs: WcagNodeProofs) -> TuiNode {
     }
 }
 
+/// Build a vertical layout.
+///
+/// Constraint selection per child:
+/// - `TuiNode::StatusBar` → `Length{1}` (always exactly one row)
+/// - `TuiNode::Layout` with `size_hint` set → `Min{size_hint}` (content-driven minimum)
+/// - everything else → `Min{0}` (takes equal share of remaining space)
+#[tracing::instrument(skip(children), fields(n_children = children.len()))]
 fn vertical_layout(children: Vec<TuiNode>) -> TuiNode {
-    let constraints = vec![ConstraintJson::Min { value: 0 }; children.len().max(1)];
+    let constraints = children
+        .iter()
+        .map(|c| match c {
+            TuiNode::StatusBar { .. } => ConstraintJson::Length { value: 1 },
+            TuiNode::Layout {
+                size_hint: Some(h), ..
+            } => ConstraintJson::Min { value: *h },
+            _ => ConstraintJson::Min { value: 0 },
+        })
+        .collect::<Vec<_>>();
+    tracing::trace!(?constraints, "vertical_layout constraints");
     TuiNode::Layout {
         direction: DirectionJson::Vertical,
         constraints,
         children,
         margin: None,
+        size_hint: None,
     }
 }
 
+/// Build a horizontal layout distributing space equally among children.
+#[tracing::instrument(skip(children), fields(n_children = children.len()))]
 fn horizontal_layout(children: Vec<TuiNode>) -> TuiNode {
     let constraints = vec![ConstraintJson::Fill { value: 1 }; children.len().max(1)];
     TuiNode::Layout {
@@ -217,6 +237,7 @@ fn horizontal_layout(children: Vec<TuiNode>) -> TuiNode {
         constraints,
         children,
         margin: None,
+        size_hint: None,
     }
 }
 
@@ -356,6 +377,7 @@ impl UiNodeBridge for RatatuiBackend {
         )
     }
 
+    #[tracing::instrument(skip(self, children, proof, proofs), fields(n_children = children.len()))]
     fn bridge_window(
         &self,
         _node: &Node,
@@ -365,7 +387,37 @@ impl UiNodeBridge for RatatuiBackend {
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
-        let __w = { vertical_layout(children) };
+        // Window always contains [Banner, content..., Status].
+        // Banner and Status are single-row chrome; the content rows fill the rest.
+        // Using Length{1} (not Min{1}) prevents ratatui from giving chrome an
+        // equal share of the total height.
+        let n = children.len();
+        let constraints: Vec<ConstraintJson> = children
+            .iter()
+            .enumerate()
+            .map(|(i, c)| {
+                if i == 0 {
+                    // Banner: always 1 row
+                    ConstraintJson::Length { value: 1 }
+                } else if i == n - 1
+                    && matches!(c, TuiNode::StatusBar { .. } | TuiNode::Widget { .. })
+                {
+                    // Trailing status/widget: 1 row
+                    ConstraintJson::Length { value: 1 }
+                } else {
+                    // Content: fill remaining space
+                    ConstraintJson::Fill { value: 1 }
+                }
+            })
+            .collect();
+        tracing::debug!(?constraints, "bridge_window layout");
+        let __w = TuiNode::Layout {
+            direction: DirectionJson::Vertical,
+            constraints,
+            children,
+            margin: None,
+            size_hint: None,
+        };
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1448,6 +1500,7 @@ impl UiNodeBridge for RatatuiBackend {
 
     // ── Landmark sections ─────────────────────────────────────────────────
 
+    #[tracing::instrument(skip(self, children, proof, proofs), fields(n_children = children.len()))]
     fn bridge_main(
         &self,
         _node: &Node,
@@ -1486,6 +1539,7 @@ impl UiNodeBridge for RatatuiBackend {
         )
     }
 
+    #[tracing::instrument(skip(self, children, proof, proofs), fields(n_children = children.len()))]
     fn bridge_banner(
         &self,
         _node: &Node,
@@ -1495,7 +1549,15 @@ impl UiNodeBridge for RatatuiBackend {
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
-        let __w = { horizontal_layout(children) };
+        let mut __w = horizontal_layout(children);
+        // Banner is always a single-row title bar; carry size_hint=1 so the
+        // parent Window layout allocates Min{1} instead of an equal share.
+        if let TuiNode::Layout {
+            ref mut size_hint, ..
+        } = __w
+        {
+            *size_hint = Some(1);
+        }
         (
             __w,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
@@ -1676,6 +1738,11 @@ impl UiNodeBridge for RatatuiBackend {
         )
     }
 
+    #[tracing::instrument(skip(self, children, proof, proofs), fields(
+        orientation = ?_node.orientation(),
+        numeric_value = ?_node.numeric_value(),
+        n_children = children.len()
+    ))]
     fn bridge_group(
         &self,
         _node: &Node,
@@ -1684,10 +1751,27 @@ impl UiNodeBridge for RatatuiBackend {
         proof: Established<GroupNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
+        let size_hint = _node.numeric_value().map(|v| v as u16);
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
-        let __w = { vertical_layout(children) };
+        let mut layout = match _node.orientation() {
+            Some(accesskit::Orientation::Horizontal) => horizontal_layout(children),
+            _ => vertical_layout(children),
+        };
+        // Propagate size hint so the parent layout can allocate adequate space.
+        if let TuiNode::Layout {
+            size_hint: ref mut sh,
+            ..
+        } = layout
+        {
+            *sh = size_hint;
+        }
+        tracing::debug!(
+            direction = ?match &layout { TuiNode::Layout { direction, .. } => direction, _ => &DirectionJson::Vertical },
+            size_hint = ?size_hint,
+            "bridge_group produced layout"
+        );
         (
-            __w,
+            layout,
             Established::<RolePreserved>::prove(&NodeRenderedEvidence {
                 role: proof,
                 wcag: proofs,

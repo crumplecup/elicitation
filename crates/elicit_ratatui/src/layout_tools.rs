@@ -55,6 +55,7 @@ async fn layout_vertical(p: LayoutVerticalParams) -> Result<CallToolResult, Erro
         constraints: p.constraints,
         children: Vec::new(),
         margin: p.margin,
+        size_hint: None,
     };
     Ok(layout_result(&node))
 }
@@ -86,6 +87,7 @@ async fn layout_horizontal(p: LayoutHorizontalParams) -> Result<CallToolResult, 
         constraints: p.constraints,
         children: Vec::new(),
         margin: p.margin,
+        size_hint: None,
     };
     Ok(layout_result(&node))
 }

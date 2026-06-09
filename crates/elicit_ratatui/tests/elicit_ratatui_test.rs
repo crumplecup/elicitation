@@ -759,6 +759,7 @@ fn test_tui_node_widget_leaf() {
 #[test]
 fn test_tui_node_layout_with_children() {
     let tree = TuiNode::Layout {
+        size_hint: None,
         direction: DirectionJson::Vertical,
         constraints: vec![
             ConstraintJson::Percentage { value: 50 },
@@ -798,6 +799,7 @@ fn test_tui_node_layout_with_children() {
 #[test]
 fn test_tui_node_nested_layouts() {
     let tree = TuiNode::Layout {
+        size_hint: None,
         direction: DirectionJson::Vertical,
         constraints: vec![
             ConstraintJson::Length { value: 3 },
@@ -818,6 +820,7 @@ fn test_tui_node_nested_layouts() {
                 proofs: Default::default(),
             },
             TuiNode::Layout {
+                size_hint: None,
                 direction: DirectionJson::Horizontal,
                 constraints: vec![
                     ConstraintJson::Percentage { value: 30 },

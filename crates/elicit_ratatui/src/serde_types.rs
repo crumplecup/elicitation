@@ -1105,6 +1105,11 @@ pub enum TuiNode {
         /// Outer margin.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         margin: Option<MarginJson>,
+        /// Minimum rows (vertical) or columns (horizontal) this layout requests
+        /// from its parent.  Set from `node.numeric_value()` by bridge functions
+        /// so the parent can allocate adequate space.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        size_hint: Option<u16>,
     },
     /// A Zellij-style keybinding status bar rendered as a single-line strip.
     ///

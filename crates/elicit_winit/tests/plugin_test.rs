@@ -1,7 +1,6 @@
 //! Integration tests for `elicit_winit`.
 
 use elicit_winit::{Window, WinitError};
-use serde_json;
 use uuid::Uuid;
 
 // ── Window UUID serde ─────────────────────────────────────────────────────────

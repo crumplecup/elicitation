@@ -130,6 +130,7 @@ fn layout_creates_container_with_children() {
     let node = TuiNode::Layout {
         direction: DirectionJson::Vertical,
         constraints: vec![],
+        size_hint: None,
         children: vec![
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
@@ -284,6 +285,7 @@ fn layout_roundtrip_preserves_children_count() {
     let original = TuiNode::Layout {
         direction: DirectionJson::Horizontal,
         constraints: vec![],
+        size_hint: None,
         children: vec![
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Clear),

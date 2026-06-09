@@ -345,6 +345,7 @@ fn convert_accesskit_node(
             constraints,
             children,
             margin: None,
+            size_hint: None,
         }
     }
 }

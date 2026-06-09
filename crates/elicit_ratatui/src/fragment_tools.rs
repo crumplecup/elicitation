@@ -260,6 +260,7 @@ fn tui_node_to_code(node: &TuiNode, indent: usize) -> String {
             constraints,
             children,
             margin,
+            ..
         } => {
             let dir = match direction {
                 DirectionJson::Vertical => "Direction::Vertical",
