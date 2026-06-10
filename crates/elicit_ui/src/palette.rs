@@ -376,6 +376,10 @@ impl PaletteBuilder {
     /// with heuristic suggestions included in each report.
     #[instrument(skip(self))]
     pub fn build(self) -> Result<Palette, PaletteBuildError> {
+        self.build_inner(true)
+    }
+
+    fn build_inner(self, warn_on_failure: bool) -> Result<Palette, PaletteBuildError> {
         // ── Check for unset roles ─────────────────────────────────────────────
         let missing: Vec<SemanticRole> = SemanticRole::ALL
             .iter()
@@ -454,7 +458,14 @@ impl PaletteBuilder {
         }
 
         if !failures.is_empty() {
-            tracing::warn!(count = failures.len(), "palette contrast failures");
+            // Only warn when called directly by user code.  build_adjusted calls
+            // build_inner() which suppresses this warning — its intermediate
+            // failures are expected and already logged at debug level.
+            if warn_on_failure {
+                tracing::warn!(count = failures.len(), "palette contrast failures");
+            } else {
+                tracing::debug!(count = failures.len(), "palette contrast failures (adjusting)");
+            }
             return Err(PaletteBuildError::Contrast(failures));
         }
 
@@ -521,7 +532,7 @@ impl PaletteBuilder {
             );
 
             let builder = PaletteBuilder { colors };
-            match builder.build() {
+            match builder.build_inner(false) {
                 Ok(palette) => {
                     tracing::debug!(rounds = round, "palette converged");
                     return palette;
