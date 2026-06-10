@@ -129,8 +129,13 @@ rebuild: clean build
 test package="" test_name="":
     #!/usr/bin/env bash
     if [ -z "{{package}}" ]; then
-        # No package specified - run all tests
-        cargo test --workspace --lib --tests
+        # No package specified - run stable crates then nightly crates separately
+        echo "🧪 Testing stable workspace crates..."
+        cargo test --workspace --lib --tests \
+            --exclude elicitation_creusot \
+            --exclude elicitation_kani
+        echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
+        cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests
     elif [ -z "{{test_name}}" ]; then
         # Package specified, no test - run all tests for package
         cargo test --package {{package}} --lib --tests
@@ -141,11 +146,24 @@ test package="" test_name="":
 
 # Run tests with verbose output
 test-verbose:
-    cargo test --workspace --lib --tests -- --nocapture
+    #!/usr/bin/env bash
+    echo "🧪 Testing stable workspace crates..."
+    cargo test --workspace --lib --tests \
+        --exclude elicitation_creusot \
+        --exclude elicitation_kani \
+        -- --nocapture
+    echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
+    cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests -- --nocapture
 
 # Run doctests
 test-doc:
-    cargo test --workspace --doc
+    #!/usr/bin/env bash
+    echo "📖 Running doctests (stable crates)..."
+    cargo test --workspace --doc \
+        --exclude elicitation_creusot \
+        --exclude elicitation_kani
+    echo "📖 Running doctests (nightly-only crates)..."
+    cargo +nightly test -p elicitation_creusot -p elicitation_kani --doc
 
 # Run tests for a specific package
 test-package package test_name="":
