@@ -478,7 +478,7 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
             constraints,
             children,
             margin,
-            ..
+            size_hint,
         } => {
             let dir: ratatui::layout::Direction = (*direction).into();
             let layout_constraints: Vec<ratatui::layout::Constraint> =
@@ -508,6 +508,28 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                 if i < chunks.len() {
                     render_node(frame, chunks[i], child);
                 }
+            }
+            // Post-render assertion: if this layout declared a minimum height
+            // via size_hint (set by the CardHeightFits proof at IR construction
+            // time), verify ratatui actually honoured it.  Fires in debug builds
+            // only so it is zero-cost in release.
+            if let Some(hint) = size_hint {
+                let actual_h = area.height as usize;
+                let hint_usize = *hint as usize;
+                if actual_h < hint_usize {
+                    tracing::error!(
+                        actual_h,
+                        size_hint = hint,
+                        "size_hint violated at render time — \
+                         CardHeightFits proof did not hold: \
+                         ratatui allocated {actual_h} rows but {hint_usize} were required"
+                    );
+                }
+                debug_assert!(
+                    actual_h >= hint_usize,
+                    "CardHeightFits proof violated at render time: \
+                     area_h={actual_h} < size_hint={hint_usize}"
+                );
             }
         }
         TuiNode::StatusBar { chips, theme } => render_status_bar(frame, area, chips, *theme),
