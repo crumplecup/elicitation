@@ -19,6 +19,7 @@ accesskit = { workspace = true }
 inventory.workspace = true
 rmcp.workspace = true
 derive_more.workspace = true
+derive_setters = { workspace = true }
 schemars.workspace = true
 serde.workspace = true
 serde_json.workspace = true

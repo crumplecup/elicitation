@@ -47,139 +47,180 @@ use crate::{
 /// Covers all public properties from the accesskit 0.24 API. Fields that are
 /// absent on a node are `None` or empty `Vec`; the `From` conversions are
 /// lossless for all currently-exposed properties.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, derive_setters::Setters)]
 #[serde(rename_all = "camelCase")]
+#[setters(prefix = "with_", borrow_self = false, strip_option)]
 pub struct NodeJson {
     // ── Core ─────────────────────────────────────────────────────────────────
     /// The accessibility role of this node.
+    #[setters(skip)]
     pub role: crate::Role,
 
     /// IDs of this node's children in document order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the children.")]
     pub children: Vec<NodeId>,
 
     /// Actions supported by this node.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the actions.")]
     pub actions: Vec<Action>,
 
     // ── Text properties ──────────────────────────────────────────────────────
     /// The accessible label (primary name). Use [`NodeJson::description`] for
     /// supplementary information.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the label.")]
     pub label: Option<String>,
 
     /// Supplementary description beyond the primary label.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the description.")]
     pub description: Option<String>,
 
     /// The current value of a control (e.g. text field content, slider value
     /// as a string).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the value.")]
     pub value: Option<String>,
 
     /// Placeholder text shown when the control is empty.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the placeholder.")]
     pub placeholder: Option<String>,
 
     /// Tooltip text. Use only when the tooltip is the sole source of a name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the tooltip.")]
     pub tooltip: Option<String>,
 
     /// URL associated with this node (e.g. for links).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the url.")]
     pub url: Option<String>,
 
     /// Access key — a single character that activates this node.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the access key.")]
     pub access_key: Option<String>,
 
     /// Full keyboard shortcut string (e.g. "Ctrl+S").
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the keyboard shortcut.")]
     pub keyboard_shortcut: Option<String>,
 
     /// Role description override for custom controls.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the role description.")]
     pub role_description: Option<String>,
 
     /// State description override (replaces defaults like "checked").
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the state description.")]
     pub state_description: Option<String>,
 
     /// Author-assigned automation ID (must be unique among siblings).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the author id.")]
     pub author_id: Option<String>,
 
     /// CSS class name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the class name.")]
     pub class_name: Option<String>,
 
     /// HTML tag name.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the html tag.")]
     pub html_tag: Option<String>,
 
     /// Font family name (only when different from parent).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the font family.")]
     pub font_family: Option<String>,
+
+    /// Absolute path to a bundled font file used when rasterising this node.
+    ///
+    /// Bridges load this specific file into their font database instead of
+    /// scanning system fonts, ensuring consistent rendering across machines.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the font path.")]
+    pub font_path: Option<String>,
 
     /// Language tag (BCP 47, only when different from parent).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the language.")]
     pub language: Option<String>,
 
     /// Inner HTML (used only for top-level MathML nodes).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the inner html.")]
     pub inner_html: Option<String>,
 
     // ── Boolean flags ────────────────────────────────────────────────────────
     /// Whether this node is excluded from the accessibility tree.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is hidden.")]
     pub is_hidden: bool,
 
     /// Whether this node (or its group) disallows user input.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is disabled.")]
     pub is_disabled: bool,
 
     /// Whether this text widget allows focus/selection but not editing.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is read only.")]
     pub is_read_only: bool,
 
     /// Whether this field must be filled before form submission.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is required.")]
     pub is_required: bool,
 
     /// Whether multiple items can be selected simultaneously.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is multiselectable.")]
     pub is_multiselectable: bool,
 
     /// Whether this is a modal dialog.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is modal.")]
     pub is_modal: bool,
 
     /// Whether this node is in a busy/loading state.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is busy.")]
     pub is_busy: bool,
 
     /// Whether live region updates should be presented atomically.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is live atomic.")]
     pub is_live_atomic: bool,
 
     /// Whether the node clips its children.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the clips children.")]
     pub clips_children: bool,
 
     /// Whether the node is marked as bold.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is italic.")]
     pub is_italic: bool,
 
     /// Whether the node causes a hard line break.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is line breaking object.")]
     pub is_line_breaking_object: bool,
 
     /// Whether the node has been visited (e.g. a visited link).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is visited.")]
     pub is_visited: bool,
 
     /// Whether this node allows touch pass-through.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[setters(doc = "Sets the is touch transparent.")]
     pub is_touch_transparent: bool,
 
     /// Whether this node is selected (`Some(true)`), not selected (`Some(false)`),
@@ -187,6 +228,7 @@ pub struct NodeJson {
     ///
     /// Maps to `accesskit::Node::is_selected` / `set_selected` / `clear_selected`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(rename = "with_selected", doc = "Sets whether this node is selected.")]
     pub is_selected: Option<bool>,
 
     // ── Render IR extension ──────────────────────────────────────────────────
@@ -197,251 +239,310 @@ pub struct NodeJson {
     /// is stored as raw JSON so `elicit_accesskit` stays independent of
     /// `elicit_ui`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(rename = "with_rich_text_value", doc = "Sets the rich text render payload.")]
     pub rich_text: Option<serde_json::Value>,
 
     // ── Enum state properties ────────────────────────────────────────────────
     /// Whether the input value is invalid, and why.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the invalid.")]
     pub invalid: Option<Invalid>,
 
     /// Toggle state (true / false / mixed).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the toggled.")]
     pub toggled: Option<Toggled>,
 
     /// Orientation of a scrollbar, slider, or similar element.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the orientation.")]
     pub orientation: Option<Orientation>,
 
     /// Text direction.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the text direction.")]
     pub text_direction: Option<TextDirection>,
 
     /// Sorting direction for a table column or row header.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the sort direction.")]
     pub sort_direction: Option<SortDirection>,
 
     /// Which element the node represents in a multi-step process
     /// (ARIA `aria-current`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the aria current.")]
     pub aria_current: Option<AriaCurrent>,
 
     /// Autocomplete behavior for a combobox or textbox.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the auto complete.")]
     pub auto_complete: Option<AutoComplete>,
 
     /// Live region politeness.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the live.")]
     pub live: Option<Live>,
 
     /// Whether a popup is attached, and what kind.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the has popup.")]
     pub has_popup: Option<HasPopup>,
 
     /// List marker style.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the list style.")]
     pub list_style: Option<ListStyle>,
 
     /// Text alignment.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the text align.")]
     pub text_align: Option<TextAlign>,
 
     /// Vertical text offset (subscript / superscript).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the vertical offset.")]
     pub vertical_offset: Option<VerticalOffset>,
 
     // ── Numeric properties ───────────────────────────────────────────────────
     /// Current numeric value of a range control.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the numeric value.")]
     pub numeric_value: Option<f64>,
 
     /// Minimum allowed numeric value.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the min numeric value.")]
     pub min_numeric_value: Option<f64>,
 
     /// Maximum allowed numeric value.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the max numeric value.")]
     pub max_numeric_value: Option<f64>,
 
     /// Step size for incrementing/decrementing the numeric value.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the numeric value step.")]
     pub numeric_value_step: Option<f64>,
 
     /// Jump size for page increment/decrement actions.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the numeric value jump.")]
     pub numeric_value_jump: Option<f64>,
 
     /// Font size in points.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the font size.")]
     pub font_size: Option<f32>,
 
     /// Font weight.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the font weight.")]
     pub font_weight: Option<f32>,
 
     // ── Table properties ─────────────────────────────────────────────────────
     /// Number of rows (for tables/grids).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the row count.")]
     pub row_count: Option<usize>,
 
     /// Number of columns (for tables/grids).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the column count.")]
     pub column_count: Option<usize>,
 
     /// Zero-based row index of this cell.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the row index.")]
     pub row_index: Option<usize>,
 
     /// Zero-based column index of this cell.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the column index.")]
     pub column_index: Option<usize>,
 
     /// Number of rows this cell spans.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the row span.")]
     pub row_span: Option<usize>,
 
     /// Number of columns this cell spans.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the column span.")]
     pub column_span: Option<usize>,
 
     // ── Set/list properties ──────────────────────────────────────────────────
     /// Hierarchical level (e.g. heading level 1–6).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the level.")]
     pub level: Option<usize>,
 
     /// One-based position of this item within its set.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the position in set.")]
     pub position_in_set: Option<usize>,
 
     /// Total size of the set this item belongs to.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the size of set.")]
     pub size_of_set: Option<usize>,
 
     // ── Scroll properties ────────────────────────────────────────────────────
     /// Current horizontal scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll x.")]
     pub scroll_x: Option<f64>,
 
     /// Minimum horizontal scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll x min.")]
     pub scroll_x_min: Option<f64>,
 
     /// Maximum horizontal scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll x max.")]
     pub scroll_x_max: Option<f64>,
 
     /// Current vertical scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll y.")]
     pub scroll_y: Option<f64>,
 
     /// Minimum vertical scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll y min.")]
     pub scroll_y_min: Option<f64>,
 
     /// Maximum vertical scroll offset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the scroll y max.")]
     pub scroll_y_max: Option<f64>,
 
     // ── Color / text decoration ──────────────────────────────────────────────
     /// Foreground (text) color as RGBA packed u32.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the foreground color.")]
     pub foreground_color: Option<Color>,
 
     /// Background color as RGBA packed u32.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the background color.")]
     pub background_color: Option<Color>,
 
     /// Overline decoration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the overline.")]
     pub overline: Option<TextDecoration>,
 
     /// Strikethrough decoration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the strikethrough.")]
     pub strikethrough: Option<TextDecoration>,
 
     /// Underline decoration.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the underline.")]
     pub underline: Option<TextDecoration>,
 
     // ── Geometry ─────────────────────────────────────────────────────────────
     /// Bounding rectangle in the node's coordinate space.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the bounds.")]
     pub bounds: Option<Rect>,
 
     /// 2D affine transform relative to the parent.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the transform.")]
     pub transform: Option<Affine>,
 
     // ── Relationship node-id vecs ─────────────────────────────────────────────
     /// IDs of nodes that this node controls (ARIA `aria-controls`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the controls.")]
     pub controls: Vec<NodeId>,
 
     /// IDs of nodes that provide details for this node.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the details.")]
     pub details: Vec<NodeId>,
 
     /// IDs of nodes that describe this node (ARIA `aria-describedby`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the described by.")]
     pub described_by: Vec<NodeId>,
 
     /// IDs of nodes that the reading order flows to from this node.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the flow to.")]
     pub flow_to: Vec<NodeId>,
 
     /// IDs of nodes that label this node (ARIA `aria-labelledby`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the labelled by.")]
     pub labelled_by: Vec<NodeId>,
 
     /// IDs of nodes owned by this node but not descendants in the tree.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the owns.")]
     pub owns: Vec<NodeId>,
 
     /// IDs of all radio buttons in the same group as this one.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the radio group.")]
     pub radio_group: Vec<NodeId>,
 
     // ── Relationship single-node IDs ──────────────────────────────────────────
     /// The active descendant when focus stays on this container.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the active descendant.")]
     pub active_descendant: Option<NodeId>,
 
     /// The node that describes an error for this input.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the error message.")]
     pub error_message: Option<NodeId>,
 
     /// The in-page link target for this node.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the in page link target.")]
     pub in_page_link_target: Option<NodeId>,
 
     /// The member-of grouping node.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the member of.")]
     pub member_of: Option<NodeId>,
 
     /// The next node on the same text line.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the next on line.")]
     pub next_on_line: Option<NodeId>,
 
     /// The previous node on the same text line.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the previous on line.")]
     pub previous_on_line: Option<NodeId>,
 
     /// The popup node for this node (e.g. a combobox dropdown).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the popup for.")]
     pub popup_for: Option<NodeId>,
 
     // ── Subtree graft ─────────────────────────────────────────────────────────
     /// If set, this node grafts a subtree with the specified tree ID.
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the tree id.")]
     pub tree_id: Option<TreeId>,
 
     // ── Text analytics ────────────────────────────────────────────────────────
     /// Text selection range (anchor + focus positions).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[setters(doc = "Sets the text selection.")]
     pub text_selection: Option<TextSelection>,
 
     // ── Custom actions ────────────────────────────────────────────────────────
     /// Custom application-defined actions.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[setters(doc = "Sets the custom actions.")]
     pub custom_actions: Vec<CustomAction>,
 }
 
@@ -467,6 +568,7 @@ impl NodeJson {
             class_name: None,
             html_tag: None,
             font_family: None,
+            font_path: None,
             language: None,
             inner_html: None,
             is_hidden: false,
@@ -547,128 +649,17 @@ impl NodeJson {
 
     // ── Builder methods ───────────────────────────────────────────────────────
 
-    /// Sets the accessible label.
-    pub fn with_label(mut self, v: String) -> Self {
-        self.label = Some(v);
-        self
-    }
-
-    /// Sets the description.
-    pub fn with_description(mut self, v: String) -> Self {
-        self.description = Some(v);
-        self
-    }
-
-    /// Sets the CSS class name.
-    pub fn with_class_name(mut self, v: String) -> Self {
-        self.class_name = Some(v);
-        self
-    }
-
-    /// Sets the value.
-    pub fn with_value(mut self, v: String) -> Self {
-        self.value = Some(v);
-        self
-    }
-
-    /// Sets the placeholder.
-    pub fn with_placeholder(mut self, v: String) -> Self {
-        self.placeholder = Some(v);
-        self
-    }
-
-    /// Sets the children.
-    pub fn with_children(mut self, v: Vec<NodeId>) -> Self {
-        self.children = v;
-        self
-    }
-
     /// Appends a child node ID.
     pub fn push_child(mut self, id: NodeId) -> Self {
         self.children.push(id);
         self
     }
 
-    /// Adds a supported action.
+    /// Adds a supported action, deduplicating against existing actions.
     pub fn push_action(mut self, action: Action) -> Self {
         if !self.actions.contains(&action) {
             self.actions.push(action);
         }
-        self
-    }
-
-    /// Sets the bounds.
-    pub fn with_bounds(mut self, v: Rect) -> Self {
-        self.bounds = Some(v);
-        self
-    }
-
-    /// Sets `is_disabled`.
-    pub fn with_is_disabled(mut self, v: bool) -> Self {
-        self.is_disabled = v;
-        self
-    }
-
-    /// Sets `is_hidden`.
-    pub fn with_is_hidden(mut self, v: bool) -> Self {
-        self.is_hidden = v;
-        self
-    }
-
-    /// Sets `is_required`.
-    pub fn with_is_required(mut self, v: bool) -> Self {
-        self.is_required = v;
-        self
-    }
-
-    /// Sets `is_read_only`.
-    pub fn with_is_read_only(mut self, v: bool) -> Self {
-        self.is_read_only = v;
-        self
-    }
-
-    /// Sets the numeric value.
-    pub fn with_numeric_value(mut self, v: f64) -> Self {
-        self.numeric_value = Some(v);
-        self
-    }
-
-    /// Sets the layout orientation (horizontal or vertical).
-    ///
-    /// Consumed by the ratatui bridge to choose `DirectionJson::Horizontal`
-    /// vs `DirectionJson::Vertical` when this node has children.
-    pub fn with_orientation(mut self, v: Orientation) -> Self {
-        self.orientation = Some(v);
-        self
-    }
-
-    /// Sets the toggled state.
-    pub fn with_toggled(mut self, v: Toggled) -> Self {
-        self.toggled = Some(v);
-        self
-    }
-
-    /// Sets the invalid state.
-    pub fn with_invalid(mut self, v: Invalid) -> Self {
-        self.invalid = Some(v);
-        self
-    }
-
-    /// Sets the selected state.
-    ///
-    /// `Some(true)` = selected, `Some(false)` = explicitly not selected,
-    /// `None` = selection not applicable (the default).
-    pub fn with_selected(mut self, v: bool) -> Self {
-        self.is_selected = Some(v);
-        self
-    }
-
-    /// Attaches a rich-text render payload (serialised `elicit_ui::ParagraphText`).
-    ///
-    /// When set, the ratatui bridge renders this as a styled `Paragraph`
-    /// with per-span colours instead of highlighting the whole widget.
-    pub fn with_rich_text_value(mut self, value: serde_json::Value) -> Self {
-        self.rich_text = Some(value);
         self
     }
 }
@@ -728,6 +719,9 @@ impl From<&accesskit::Node> for NodeJson {
             class_name: n.class_name().map(str::to_owned),
             html_tag: n.html_tag().map(str::to_owned),
             font_family: n.font_family().map(str::to_owned),
+            font_path: n.tooltip().and_then(|t| {
+                t.strip_prefix("__font_path__:").map(str::to_owned)
+            }),
             language: n.language().map(str::to_owned),
             inner_html: n.inner_html().map(str::to_owned),
             is_hidden: n.is_hidden(),
@@ -876,6 +870,11 @@ impl From<NodeJson> for accesskit::Node {
         }
         if let Some(v) = j.font_family {
             n.set_font_family(v);
+        }
+        // font_path has no native accesskit field; encode in tooltip with a
+        // sentinel prefix so the bridge can recover it via node.tooltip().
+        if let Some(v) = j.font_path {
+            n.set_tooltip(format!("__font_path__:{v}"));
         }
         if let Some(v) = j.language {
             n.set_language(v);
