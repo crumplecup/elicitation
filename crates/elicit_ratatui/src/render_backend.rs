@@ -1345,11 +1345,16 @@ impl UiNodeBridge for RatatuiBackend {
         proofs: WcagNodeProofs,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
-            let alt = node_label(node);
-            let text = if alt.is_empty() {
-                "[image]".to_string()
+            // For card images the label carries the ASCII art (pre-formatted with
+            // newlines and borders).  Render it directly as monospace; if no label
+            // is set fall back to a short placeholder.
+            let label = node_label(node);
+            let text = if label.is_empty() {
+                node.url()
+                    .map(|u| format!("[image: {u}]"))
+                    .unwrap_or_else(|| "[image]".to_string())
             } else {
-                format!("[image: {alt}]")
+                label
             };
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
