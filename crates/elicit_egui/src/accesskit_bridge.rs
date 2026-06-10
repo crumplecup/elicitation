@@ -1155,9 +1155,9 @@ impl UiNodeBridge for EguiBackend {
                     // Cache key for this asset in egui's byte store.
                     let uri = format!("bytes://{path}");
                     let cache_key = egui::Id::new(&uri);
-                    let already_cached = ui.ctx().data(|d| {
-                        d.get_temp::<std::sync::Arc<[u8]>>(cache_key).is_some()
-                    });
+                    let already_cached = ui
+                        .ctx()
+                        .data(|d| d.get_temp::<std::sync::Arc<[u8]>>(cache_key).is_some());
                     if !already_cached {
                         match std::fs::read(path) {
                             Ok(bytes) => {
@@ -1195,14 +1195,17 @@ impl UiNodeBridge for EguiBackend {
                     let resp = ui.add(
                         egui::Image::new(uri.clone())
                             .max_size(available)
-                            .fit_to_exact_size(available)
+                            .fit_to_exact_size(available),
                     );
                     tracing::debug!(uri = %uri, rect = ?resp.rect, "bridge_image: widget placed");
                 } else if alt.is_empty() {
                     tracing::warn!("bridge_image: no url and no alt text");
                     ui.label("🖼 [image]");
                 } else {
-                    tracing::debug!(alt_len = alt.len(), "bridge_image: no url, rendering alt text");
+                    tracing::debug!(
+                        alt_len = alt.len(),
+                        "bridge_image: no url, rendering alt text"
+                    );
                     ui.label(format!("🖼 {alt}"));
                 }
             })
@@ -1646,9 +1649,7 @@ impl UiNodeBridge for EguiBackend {
         // numeric_value carries the expected height in character rows (art_height+1).
         // Convert to pixels for egui: use 20px per row as a reasonable card pixel height.
         // If not set, fall back to available height.
-        let min_h_px: Option<f32> = node
-            .numeric_value()
-            .map(|rows| (rows as f32) * 20.0);
+        let min_h_px: Option<f32> = node.numeric_value().map(|rows| (rows as f32) * 20.0);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
                 if horizontal {
@@ -1889,10 +1890,7 @@ impl UiNodeBridge for EguiBackend {
         let __w = {
             let text = node_label(node);
             Box::new(move |ui: &mut egui::Ui| {
-                ui.add(
-                    egui::Label::new(format!("• {text}"))
-                        .wrap_mode(egui::TextWrapMode::Wrap),
-                );
+                ui.add(egui::Label::new(format!("• {text}")).wrap_mode(egui::TextWrapMode::Wrap));
             })
         };
         (
@@ -3170,14 +3168,13 @@ fn node_is_horizontal(node: &Node, semantic_default: bool) -> bool {
     }
 }
 
+/// Opaque widget closure type used throughout the egui bridge.
+type EguiWidget = Box<dyn FnOnce(&mut egui::Ui)>;
+
 /// Render `children` in a horizontal or vertical egui strip depending on
 /// `horizontal`.  When horizontal each child is allocated equal width inside a
 /// top-down sub-UI so its own content stacks vertically.
-fn render_children_with_layout(
-    ui: &mut egui::Ui,
-    children: Vec<Box<dyn FnOnce(&mut egui::Ui)>>,
-    horizontal: bool,
-) {
+fn render_children_with_layout(ui: &mut egui::Ui, children: Vec<EguiWidget>, horizontal: bool) {
     if horizontal {
         ui.horizontal(|ui| {
             let n = children.len().max(1);
@@ -3187,7 +3184,9 @@ fn render_children_with_layout(
                 ui.allocate_ui_with_layout(
                     egui::vec2(col_w, h),
                     egui::Layout::top_down(egui::Align::Min),
-                    |ui| { c(ui); },
+                    |ui| {
+                        c(ui);
+                    },
                 );
             }
         });

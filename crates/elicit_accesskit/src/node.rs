@@ -239,7 +239,10 @@ pub struct NodeJson {
     /// is stored as raw JSON so `elicit_accesskit` stays independent of
     /// `elicit_ui`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    #[setters(rename = "with_rich_text_value", doc = "Sets the rich text render payload.")]
+    #[setters(
+        rename = "with_rich_text_value",
+        doc = "Sets the rich text render payload."
+    )]
     pub rich_text: Option<serde_json::Value>,
 
     // ── Enum state properties ────────────────────────────────────────────────
@@ -719,9 +722,9 @@ impl From<&accesskit::Node> for NodeJson {
             class_name: n.class_name().map(str::to_owned),
             html_tag: n.html_tag().map(str::to_owned),
             font_family: n.font_family().map(str::to_owned),
-            font_path: n.tooltip().and_then(|t| {
-                t.strip_prefix("__font_path__:").map(str::to_owned)
-            }),
+            font_path: n
+                .tooltip()
+                .and_then(|t| t.strip_prefix("__font_path__:").map(str::to_owned)),
             language: n.language().map(str::to_owned),
             inner_html: n.inner_html().map(str::to_owned),
             is_hidden: n.is_hidden(),

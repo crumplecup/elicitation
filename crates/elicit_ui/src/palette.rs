@@ -464,7 +464,10 @@ impl PaletteBuilder {
             if warn_on_failure {
                 tracing::warn!(count = failures.len(), "palette contrast failures");
             } else {
-                tracing::debug!(count = failures.len(), "palette contrast failures (adjusting)");
+                tracing::debug!(
+                    count = failures.len(),
+                    "palette contrast failures (adjusting)"
+                );
             }
             return Err(PaletteBuildError::Contrast(failures));
         }

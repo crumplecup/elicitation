@@ -3422,6 +3422,7 @@ version = "0.11.1"
 dependencies = [
  "accesskit 0.24.0",
  "derive_more",
+ "derive_setters",
  "elicitation",
  "elicitation_derive",
  "futures",
