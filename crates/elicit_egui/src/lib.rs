@@ -212,6 +212,11 @@ pub use render_context::EguiRenderContext;
 pub use render_context::GpuPixelContext;
 pub use winit_plugin::EguiWinitPlugin;
 
+// Re-export the runtime verification primitives so game crates can write:
+//   impl RenderVerifiable<EguiRenderContext> for MyProp { ... }
+//   elicit_egui::egui_verify_in_debug::<MyProp>(&ctx, &rect);
+pub use elicit_ui::{RenderVerifiable, verify_in_debug as egui_verify_in_debug};
+
 pub use container_tools::{
     BottomPanelParams, CollapsingParams, EmptyContainerParams, FrameParams, LeftPanelParams,
     MenuParams, PopupParams, RightPanelParams, ScrollAreaParams, TooltipParams, TopPanelParams,

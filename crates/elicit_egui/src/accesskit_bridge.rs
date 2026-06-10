@@ -186,20 +186,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_generic_container(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GenericContainerNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -213,20 +210,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_pane(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<PaneNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -240,20 +234,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_window(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<WindowNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -267,20 +258,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_document(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DocumentNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -294,20 +282,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_root_web_area(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RootWebAreaNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -321,20 +306,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_application(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ApplicationNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -573,19 +555,33 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_list_box(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ListBoxNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let lbl = node.label().map(|s| s.to_string()).unwrap_or_default();
+        let scroll_id = egui::Id::new(&lbl);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    if !lbl.is_empty() {
+                        ui.strong(&lbl);
+                        ui.separator();
                     }
+                    // Constrain horizontal to available width so labels wrap
+                    // rather than expanding the panel to the right.
+                    egui::ScrollArea::vertical()
+                        .id_salt(scroll_id)
+                        .auto_shrink([false; 2])
+                        .show(ui, |ui| {
+                            ui.set_max_width(ui.available_width());
+                            for c in children {
+                                c(ui);
+                            }
+                        });
                 });
             })
         };
@@ -895,12 +891,12 @@ impl UiNodeBridge for EguiBackend {
                 })
             }
             Some(ParagraphText::Plain(text)) => Box::new(move |ui: &mut egui::Ui| {
-                ui.label(&text);
+                ui.add(egui::Label::new(&text).wrap_mode(egui::TextWrapMode::Wrap));
             }),
             None => {
                 let text = node_label(node);
                 Box::new(move |ui: &mut egui::Ui| {
-                    ui.label(&text);
+                    ui.add(egui::Label::new(&text).wrap_mode(egui::TextWrapMode::Wrap));
                 })
             }
         };
@@ -1146,14 +1142,69 @@ impl UiNodeBridge for EguiBackend {
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
+            let url = node.url().map(|s| s.to_string());
             let alt = node_label(node);
-            let text = if alt.is_empty() {
-                "🖼 [image]".to_string()
-            } else {
-                format!("🖼 {alt}")
-            };
+            // font_path is encoded in tooltip with a sentinel prefix.
+            let font_path: Option<String> = node
+                .tooltip()
+                .and_then(|t| t.strip_prefix("__font_path__:").map(str::to_owned));
+            // font_family names the logical font; used to patch SVG font-family refs.
+            let font_family: Option<String> = node.font_family().map(str::to_owned);
             Box::new(move |ui: &mut egui::Ui| {
-                ui.label(&text);
+                if let Some(ref path) = url {
+                    // Cache key for this asset in egui's byte store.
+                    let uri = format!("bytes://{path}");
+                    let cache_key = egui::Id::new(&uri);
+                    let already_cached = ui.ctx().data(|d| {
+                        d.get_temp::<std::sync::Arc<[u8]>>(cache_key).is_some()
+                    });
+                    if !already_cached {
+                        match std::fs::read(path) {
+                            Ok(bytes) => {
+                                let processed = if path.ends_with(".svg") {
+                                    // Patch font-family references in the SVG so
+                                    // resvg resolves the bundled font specified by
+                                    // the IR node instead of falling back to whatever
+                                    // system font happens to be first (e.g. D050000L
+                                    // Dingbats, which maps 'J'/'Q'/'K' to symbols).
+                                    if let Some(ref name) = font_family {
+                                        String::from_utf8_lossy(&bytes)
+                                            .replace("Arial", name.as_str())
+                                            .replace("Bitstream Vera Sans", name.as_str())
+                                            .into_bytes()
+                                    } else {
+                                        bytes
+                                    }
+                                } else {
+                                    bytes
+                                };
+                                ui.ctx().include_bytes(uri.clone(), processed);
+                                tracing::debug!(
+                                    uri = %uri,
+                                    font_family = ?font_family,
+                                    font_path = ?font_path,
+                                    "bridge_image: asset cached"
+                                );
+                            }
+                            Err(e) => {
+                                tracing::error!(path = %path, error = %e, "bridge_image: failed to read asset");
+                            }
+                        }
+                    }
+                    let available = ui.available_size();
+                    let resp = ui.add(
+                        egui::Image::new(uri.clone())
+                            .max_size(available)
+                            .fit_to_exact_size(available)
+                    );
+                    tracing::debug!(uri = %uri, rect = ?resp.rect, "bridge_image: widget placed");
+                } else if alt.is_empty() {
+                    tracing::warn!("bridge_image: no url and no alt text");
+                    ui.label("🖼 [image]");
+                } else {
+                    tracing::debug!(alt_len = alt.len(), "bridge_image: no url, rendering alt text");
+                    ui.label(format!("🖼 {alt}"));
+                }
             })
         };
         (
@@ -1288,20 +1339,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_main(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<MainNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1315,20 +1363,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_navigation(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<NavigationNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1342,20 +1387,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_banner(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<BannerNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1369,20 +1411,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_content_info(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ContentInfoNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1396,20 +1435,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_complementary(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ComplementaryNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1423,19 +1459,18 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_form(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<FormNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
                 ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
+                    render_children_with_layout(ui, children, horizontal);
                 });
             })
         };
@@ -1450,20 +1485,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_search(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SearchNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1477,19 +1509,18 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_region(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RegionNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
                 ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
+                    render_children_with_layout(ui, children, horizontal);
                 });
             })
         };
@@ -1504,20 +1535,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_section(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SectionNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1531,20 +1559,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_section_header(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SectionHeaderNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1558,20 +1583,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_section_footer(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<SectionFooterNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.horizontal(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1585,19 +1607,18 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_article(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ArticleNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
                 ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
+                    render_children_with_layout(ui, children, horizontal);
                 });
             })
         };
@@ -1612,20 +1633,50 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_group(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<GroupNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        // Respect the orientation set by the IR builder.  Card rows are Group
+        // nodes with Orientation::Horizontal; other groups default vertical.
+        let horizontal = node.orientation() == Some(accesskit::Orientation::Horizontal);
+        // numeric_value carries the expected height in character rows (art_height+1).
+        // Convert to pixels for egui: use 20px per row as a reasonable card pixel height.
+        // If not set, fall back to available height.
+        let min_h_px: Option<f32> = node
+            .numeric_value()
+            .map(|rows| (rows as f32) * 20.0);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                if horizontal {
+                    let available_w = ui.available_width();
+                    // Reserve explicit height for groups that carry a size hint
+                    // (e.g. card rows), so images have real space to fill.
+                    let alloc_h = min_h_px.unwrap_or_else(|| ui.available_height());
+                    tracing::debug!(
+                        alloc_h,
+                        available_w,
+                        "bridge_group: horizontal, allocating height"
+                    );
+                    ui.allocate_ui_with_layout(
+                        egui::vec2(available_w, alloc_h),
+                        egui::Layout::left_to_right(egui::Align::Center),
+                        |ui| {
+                            for c in children {
+                                c(ui);
+                            }
+                        },
+                    );
+                } else {
+                    ui.vertical(|ui| {
+                        for c in children {
+                            c(ui);
+                        }
+                    });
+                }
             })
         };
         (
@@ -1666,19 +1717,18 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_details(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<DetailsNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
                 ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
+                    render_children_with_layout(ui, children, horizontal);
                 });
             })
         };
@@ -1789,19 +1839,33 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_list(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<ListNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let lbl = node.label().map(|s| s.to_string()).unwrap_or_default();
+        let scroll_id = egui::Id::new(&lbl);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    if !lbl.is_empty() {
+                        ui.strong(&lbl);
+                        ui.separator();
                     }
+                    // Constrain horizontal to available width so labels wrap
+                    // rather than expanding the panel to the right.
+                    egui::ScrollArea::vertical()
+                        .id_salt(scroll_id)
+                        .auto_shrink([false; 2])
+                        .show(ui, |ui| {
+                            ui.set_max_width(ui.available_width());
+                            for c in children {
+                                c(ui);
+                            }
+                        });
                 });
             })
         };
@@ -1825,7 +1889,10 @@ impl UiNodeBridge for EguiBackend {
         let __w = {
             let text = node_label(node);
             Box::new(move |ui: &mut egui::Ui| {
-                ui.label(format!("• {text}"));
+                ui.add(
+                    egui::Label::new(format!("• {text}"))
+                        .wrap_mode(egui::TextWrapMode::Wrap),
+                );
             })
         };
         (
@@ -1898,19 +1965,18 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_row(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RowNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        // Rows default horizontal; IR sets Orientation::Vertical to override.
+        let horizontal = node_is_horizontal(node, true);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                for c in children {
-                    c(ui);
-                }
-                ui.end_row();
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1970,20 +2036,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_row_group(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<RowGroupNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -1999,20 +2062,17 @@ impl UiNodeBridge for EguiBackend {
 
     fn bridge_tree(
         &self,
-        _node: &Node,
+        node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
         proof: Established<TreeNodeValid>,
         proofs: WcagNodeProofs,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let horizontal = node_is_horizontal(node, false);
         let __w = {
             Box::new(move |ui: &mut egui::Ui| {
-                ui.vertical(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
+                render_children_with_layout(ui, children, horizontal);
             })
         };
         (
@@ -3089,6 +3149,54 @@ fn build_text_format(
         line_height,
         valign,
         ..Default::default()
+    }
+}
+
+// ── Orientation helper ────────────────────────────────────────────────────────
+
+/// Returns `true` if the node's `orientation` is `Horizontal`, `false` if
+/// `Vertical`, or `semantic_default` when none is set.
+///
+/// The bridge calls this for every container so that layout direction comes
+/// from the IR, not from per-role hardcoding.  Game IR builders set
+/// `Orientation::Horizontal` on `Role::Row` column strips and
+/// `Orientation::Vertical` on `Role::Window` / `Role::Document` stacks to
+/// make intent explicit.
+fn node_is_horizontal(node: &Node, semantic_default: bool) -> bool {
+    match node.orientation() {
+        Some(accesskit::Orientation::Horizontal) => true,
+        Some(accesskit::Orientation::Vertical) => false,
+        None => semantic_default,
+    }
+}
+
+/// Render `children` in a horizontal or vertical egui strip depending on
+/// `horizontal`.  When horizontal each child is allocated equal width inside a
+/// top-down sub-UI so its own content stacks vertically.
+fn render_children_with_layout(
+    ui: &mut egui::Ui,
+    children: Vec<Box<dyn FnOnce(&mut egui::Ui)>>,
+    horizontal: bool,
+) {
+    if horizontal {
+        ui.horizontal(|ui| {
+            let n = children.len().max(1);
+            let col_w = ui.available_width() / n as f32;
+            let h = ui.available_height();
+            for c in children {
+                ui.allocate_ui_with_layout(
+                    egui::vec2(col_w, h),
+                    egui::Layout::top_down(egui::Align::Min),
+                    |ui| { c(ui); },
+                );
+            }
+        });
+    } else {
+        ui.vertical(|ui| {
+            for c in children {
+                c(ui);
+            }
+        });
     }
 }
 
