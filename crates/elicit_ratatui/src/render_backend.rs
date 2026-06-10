@@ -785,7 +785,10 @@ impl UiNodeBridge for RatatuiBackend {
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
-            let items: Vec<String> = children
+            // Render as a Paragraph with wrap: true instead of a List widget.
+            // Ratatui's List truncates items wider than the column; Paragraph
+            // wraps them so every character remains visible.
+            let text = children
                 .iter()
                 .map(|c| match c {
                     TuiNode::Widget { widget, .. } => match widget.as_ref() {
@@ -794,16 +797,17 @@ impl UiNodeBridge for RatatuiBackend {
                     },
                     _ => String::new(),
                 })
-                .collect();
+                .collect::<Vec<_>>()
+                .join("\n");
             let lbl = node.label().map(|s| s.to_string());
             TuiNode::Widget {
-                widget: Box::new(WidgetJson::List {
-                    items,
-                    block: lbl.map(titled_block),
+                widget: Box::new(WidgetJson::Paragraph {
+                    text: ParagraphText::Plain(text),
                     style: None,
-                    highlight_style: None,
-                    highlight_symbol: None,
-                    state: None,
+                    wrap: true,
+                    scroll: None,
+                    alignment: None,
+                    block: lbl.map(titled_block),
                 }),
                 proofs,
             }
@@ -1914,7 +1918,10 @@ impl UiNodeBridge for RatatuiBackend {
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
-            let items: Vec<String> = children
+            // Render as a Paragraph with wrap: true instead of a List widget.
+            // Ratatui's List truncates items wider than the column; Paragraph
+            // wraps them so every character remains visible.
+            let text = children
                 .iter()
                 .map(|c| match c {
                     TuiNode::Widget { widget, .. } => match widget.as_ref() {
@@ -1923,16 +1930,17 @@ impl UiNodeBridge for RatatuiBackend {
                     },
                     _ => String::new(),
                 })
-                .collect();
+                .collect::<Vec<_>>()
+                .join("\n");
             let lbl = node.label().map(|s| s.to_string());
             TuiNode::Widget {
-                widget: Box::new(WidgetJson::List {
-                    items,
-                    block: lbl.map(titled_block),
+                widget: Box::new(WidgetJson::Paragraph {
+                    text: ParagraphText::Plain(text),
                     style: None,
-                    highlight_style: None,
-                    highlight_symbol: None,
-                    state: None,
+                    wrap: true,
+                    scroll: None,
+                    alignment: None,
+                    block: lbl.map(titled_block),
                 }),
                 proofs,
             }
