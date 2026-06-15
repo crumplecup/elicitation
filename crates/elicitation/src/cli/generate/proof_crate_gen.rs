@@ -71,7 +71,16 @@ pub fn generate_proof_crate(
         .map(str::to_string)
         .unwrap_or_else(|| format!("{}_proofs", sources[0].name));
 
-    let (elicitation_rel, creusot_std_rel) = find_elicitation_paths(&first_root, out_dir)?;
+    let (elicitation_rel, elicitation_version, creusot_std_rel) =
+        find_elicitation_paths(&first_root, out_dir)?;
+
+    // Fallback: if neither path nor version resolved from source, preserve the
+    // existing dep from a prior generation run so regeneration stays idempotent.
+    let elicitation_preserved = if elicitation_rel.is_none() && elicitation_version.is_none() {
+        read_existing_elicitation_dep(out_dir)
+    } else {
+        None
+    };
     let workspace_root = find_workspace_root(&first_root);
     let workspace_pkg_fields = workspace_root
         .as_deref()
@@ -120,6 +129,8 @@ pub fn generate_proof_crate(
             &sources[0].name,
             &source_dep_lines,
             elicitation_rel.as_deref(),
+            elicitation_version.as_deref(),
+            elicitation_preserved.as_deref(),
             creusot_std_rel.as_deref(),
             &workspace_pkg_fields,
             &workspace_deps,
@@ -369,6 +380,8 @@ fn render_cargo_toml(
     primary_source: &str,
     source_dep_lines: &[&str],
     elicitation_rel: Option<&Path>,
+    elicitation_version: Option<&str>,
+    elicitation_preserved: Option<&str>,
     creusot_std_rel: Option<&Path>,
     workspace_pkg_fields: &[String],
     workspace_deps: &[String],
@@ -428,14 +441,15 @@ fn render_cargo_toml(
 
     let elicitation_dep = if in_workspace && workspace_deps.contains(&"elicitation".to_string()) {
         "elicitation = { workspace = true }".to_string()
+    } else if let Some(p) = elicitation_rel {
+        format!("elicitation = {{ path = \"{}\" }}", p.display())
+    } else if let Some(v) = elicitation_version {
+        format!("elicitation = {{ version = \"{}\" }}", v)
+    } else if let Some(existing) = elicitation_preserved {
+        existing.to_string()
     } else {
-        match elicitation_rel {
-            Some(p) => format!("elicitation = {{ path = \"{}\" }}", p.display()),
-            None => {
-                tracing::warn!("elicitation path not found; proof crate will lack it");
-                "# elicitation = { path = \"<path-to-elicitation>\" }  # TODO: set this".to_string()
-            }
-        }
+        tracing::warn!("elicitation dep not resolved; proof crate will lack it");
+        "# elicitation = { path = \"<path-to-elicitation>\" }  # TODO: set this".to_string()
     };
 
     let creusot_std_dep = if in_workspace && workspace_deps.contains(&"creusot-std".to_string()) {
@@ -536,41 +550,62 @@ fn render_generated_mod_rs(
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /// Locate the elicitation crate and vendored `creusot-std` by reading the
-/// source crate's `Cargo.toml` and following the `elicitation` path dep.
+/// source crate's `Cargo.toml`.
 ///
-/// Returns `(elicitation_rel, creusot_std_rel)` — both as paths relative to
-/// `from_dir` suitable for embedding in the generated `Cargo.toml`.
+/// Returns `(elicitation_rel, elicitation_version, creusot_std_rel)`:
+/// - `elicitation_rel`: path relative to `from_dir`, when source uses a path dep
+/// - `elicitation_version`: semver string, when source uses a registry version dep
+/// - `creusot_std_rel`: path to vendored `creusot-std`, relative to `from_dir`
+///
+/// Exactly one of `elicitation_rel` / `elicitation_version` is `Some` (or both
+/// `None` when elicitation is absent from the source manifest entirely).
 fn find_elicitation_paths(
     source_crate_root: &Path,
     from_dir: &Path,
-) -> anyhow::Result<(Option<PathBuf>, Option<PathBuf>)> {
+) -> anyhow::Result<(Option<PathBuf>, Option<String>, Option<PathBuf>)> {
     let cargo_toml_path = source_crate_root.join("Cargo.toml");
     let cargo_toml_text = match std::fs::read_to_string(&cargo_toml_path) {
         Ok(t) => t,
-        Err(_) => return Ok((None, None)),
+        Err(_) => return Ok((None, None, None)),
     };
 
     let table: toml::Table = match cargo_toml_text.parse() {
         Ok(t) => t,
-        Err(_) => return Ok((None, None)),
+        Err(_) => return Ok((None, None, None)),
     };
 
-    let elicitation_abs = table
-        .get("dependencies")
-        .and_then(|d| d.get("elicitation"))
+    let elicitation_entry = table.get("dependencies").and_then(|d| d.get("elicitation"));
+
+    // Path dep: `elicitation = { path = "..." }` — full path resolution.
+    let elicitation_path_str = elicitation_entry
         .and_then(|e| e.get("path"))
-        .and_then(|p| p.as_str())
-        .map(|p| {
-            let raw = Path::new(p);
-            if raw.is_absolute() {
-                raw.to_path_buf()
-            } else {
-                source_crate_root.join(raw)
-            }
-        });
+        .and_then(|p| p.as_str());
+
+    // Version dep (when no path): `elicitation = { version = "x.y.z" }` or
+    // the short form `elicitation = "x.y.z"`.
+    let elicitation_version = if elicitation_path_str.is_none() {
+        elicitation_entry
+            .and_then(|e| {
+                e.get("version")
+                    .and_then(|v| v.as_str())
+                    .or_else(|| e.as_str())
+            })
+            .map(str::to_string)
+    } else {
+        None
+    };
+
+    let elicitation_abs = elicitation_path_str.map(|p| {
+        let raw = Path::new(p);
+        if raw.is_absolute() {
+            raw.to_path_buf()
+        } else {
+            source_crate_root.join(raw)
+        }
+    });
 
     let Some(elicitation_crate_dir) = elicitation_abs else {
-        return Ok((None, None));
+        return Ok((None, elicitation_version, None));
     };
 
     let elicitation_rel = relative_path(from_dir, &elicitation_crate_dir).ok();
@@ -594,7 +629,36 @@ fn find_elicitation_paths(
         }
     };
 
-    Ok((elicitation_rel, creusot_std_rel))
+    Ok((elicitation_rel, None, creusot_std_rel))
+}
+
+/// Read the `elicitation` dep line from an existing generated `Cargo.toml`.
+///
+/// Used as a last-resort fallback when the source crate manifest provides
+/// neither a path nor a version dep for `elicitation`.  Preserving the
+/// existing line keeps repeated `generate proof-crate` runs idempotent.
+///
+/// Returns `None` if the file does not exist, cannot be read, or the only
+/// `elicitation` line is the TODO placeholder comment.
+fn read_existing_elicitation_dep(out_dir: &Path) -> Option<String> {
+    let path = out_dir.join("Cargo.toml");
+    let text = std::fs::read_to_string(&path).ok()?;
+    let mut in_deps = false;
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if trimmed == "[dependencies]" {
+            in_deps = true;
+            continue;
+        }
+        if trimmed.starts_with('[') {
+            in_deps = false;
+            continue;
+        }
+        if in_deps && trimmed.starts_with("elicitation") && !trimmed.starts_with('#') {
+            return Some(trimmed.to_string());
+        }
+    }
+    None
 }
 
 /// Read all dependency names from `[workspace.dependencies]` in the workspace
