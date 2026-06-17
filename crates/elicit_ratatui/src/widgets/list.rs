@@ -11,7 +11,9 @@ impl List {
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> List {
-        List(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        List(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Set the list style.
@@ -23,19 +25,25 @@ impl List {
     /// Style applied to the selected item.
     #[tracing::instrument(skip(self))]
     pub fn highlight_style(&self, style: crate::Style) -> List {
-        List(std::sync::Arc::new((*self.0).clone().highlight_style(*style.0)))
+        List(std::sync::Arc::new(
+            (*self.0).clone().highlight_style(*style.0),
+        ))
     }
 
     /// Symbol prefix for the selected item.
     #[tracing::instrument(skip(self))]
     pub fn highlight_symbol(&self, symbol: String) -> List {
-        List(std::sync::Arc::new((*self.0).clone().highlight_symbol(symbol)))
+        List(std::sync::Arc::new(
+            (*self.0).clone().highlight_symbol(symbol),
+        ))
     }
 
     /// Repeat the highlight symbol for each line of a multi-line item.
     #[tracing::instrument(skip(self))]
     pub fn repeat_highlight_symbol(&self, repeat: bool) -> List {
-        List(std::sync::Arc::new((*self.0).clone().repeat_highlight_symbol(repeat)))
+        List(std::sync::Arc::new(
+            (*self.0).clone().repeat_highlight_symbol(repeat),
+        ))
     }
 }
 impl serde::Serialize for List {
@@ -47,11 +55,16 @@ impl serde::Serialize for List {
 impl<'de> serde::Deserialize<'de> for List {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct ListJson { #[serde(default)] items: Vec<crate::ListItem> }
+        struct ListJson {
+            #[serde(default)]
+            items: Vec<crate::ListItem>,
+        }
         let ListJson { items } = ListJson::deserialize(d)?;
         let ratatui_items: Vec<ratatui::widgets::ListItem<'static>> =
             items.into_iter().map(|i| (*i.0).clone()).collect();
-        Ok(List(std::sync::Arc::new(ratatui::widgets::List::new(ratatui_items))))
+        Ok(List(std::sync::Arc::new(ratatui::widgets::List::new(
+            ratatui_items,
+        ))))
     }
 }
 mod emit_impls {

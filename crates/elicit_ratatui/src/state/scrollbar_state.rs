@@ -40,10 +40,8 @@ pub async fn scrollbar_state_new(
     p: ScrollbarStateNewParams,
 ) -> Result<CallToolResult, ErrorData> {
     let id = Uuid::new_v4();
-    ctx.lock_scrollbar_states()?.insert(
-        id,
-        ratatui::widgets::ScrollbarState::new(p.content_length),
-    );
+    ctx.lock_scrollbar_states()?
+        .insert(id, ratatui::widgets::ScrollbarState::new(p.content_length));
     ok_json(&id)
 }
 

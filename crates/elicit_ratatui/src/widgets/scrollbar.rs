@@ -11,7 +11,8 @@ impl Scrollbar {
     /// Set the track symbol.
     #[tracing::instrument(skip(self))]
     pub fn track_symbol(&self, symbol: Option<String>) -> Scrollbar {
-        let s: Option<&'static str> = symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
+        let s: Option<&'static str> =
+            symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
         Scrollbar(std::sync::Arc::new((*self.0).clone().track_symbol(s)))
     }
 
@@ -25,14 +26,16 @@ impl Scrollbar {
     /// Set the begin-arrow symbol.
     #[tracing::instrument(skip(self))]
     pub fn begin_symbol(&self, symbol: Option<String>) -> Scrollbar {
-        let s: Option<&'static str> = symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
+        let s: Option<&'static str> =
+            symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
         Scrollbar(std::sync::Arc::new((*self.0).clone().begin_symbol(s)))
     }
 
     /// Set the end-arrow symbol.
     #[tracing::instrument(skip(self))]
     pub fn end_symbol(&self, symbol: Option<String>) -> Scrollbar {
-        let s: Option<&'static str> = symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
+        let s: Option<&'static str> =
+            symbol.map(|s| -> &'static str { Box::leak(s.into_boxed_str()) });
         Scrollbar(std::sync::Arc::new((*self.0).clone().end_symbol(s)))
     }
 
@@ -71,7 +74,9 @@ impl<'de> serde::Deserialize<'de> for Scrollbar {
         let o = orientation
             .map(|o| o.into_inner())
             .unwrap_or(ratatui::widgets::ScrollbarOrientation::VerticalRight);
-        Ok(Scrollbar(std::sync::Arc::new(ratatui::widgets::Scrollbar::new(o))))
+        Ok(Scrollbar(std::sync::Arc::new(
+            ratatui::widgets::Scrollbar::new(o),
+        )))
     }
 }
 mod emit_impls {

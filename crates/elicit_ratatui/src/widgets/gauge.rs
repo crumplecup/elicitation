@@ -11,7 +11,9 @@ impl Gauge {
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> Gauge {
-        Gauge(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        Gauge(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Set ratio (0.0–1.0).
@@ -53,7 +55,9 @@ impl serde::Serialize for Gauge {
 impl<'de> serde::Deserialize<'de> for Gauge {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         serde::de::IgnoredAny::deserialize(d)?;
-        Ok(Gauge(std::sync::Arc::new(ratatui::widgets::Gauge::default())))
+        Ok(Gauge(std::sync::Arc::new(
+            ratatui::widgets::Gauge::default(),
+        )))
     }
 }
 mod emit_impls {

@@ -35,8 +35,8 @@ mod style;
 #[cfg(feature = "runtime")]
 mod terminal_tools;
 mod text;
-pub mod tui_node;
 pub mod tui_accesskit_convert;
+pub mod tui_node;
 pub(crate) mod wcag_verify;
 mod widgets;
 
@@ -60,11 +60,11 @@ pub use state::{
     table_state_selected_row,
 };
 pub use style::Style;
+#[cfg(feature = "runtime")]
+pub use terminal_tools::{render_node, render_widget};
 pub use text::{Line, Span, Text};
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 pub use tui_node::{TuiNode, WidgetJson};
-#[cfg(feature = "runtime")]
-pub use terminal_tools::{render_node, render_widget};
 pub use widgets::{
     Axis, BarChart, Block, Cell, Chart, Dataset, Gauge, LineGauge, List, ListItem, Paragraph, Row,
     Scrollbar, Sparkline, Table, Tabs,

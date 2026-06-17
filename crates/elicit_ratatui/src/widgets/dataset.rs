@@ -49,7 +49,9 @@ impl serde::Serialize for Dataset {
 impl<'de> serde::Deserialize<'de> for Dataset {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         serde::de::IgnoredAny::deserialize(d)?;
-        Ok(Dataset(std::sync::Arc::new(ratatui::widgets::Dataset::default())))
+        Ok(Dataset(std::sync::Arc::new(
+            ratatui::widgets::Dataset::default(),
+        )))
     }
 }
 mod emit_impls {

@@ -23,8 +23,9 @@ pub struct RatatuiCtx {
     pub(crate) table_states: Mutex<HashMap<Uuid, ratatui::widgets::TableState>>,
     pub(crate) scrollbar_states: Mutex<HashMap<Uuid, ratatui::widgets::ScrollbarState>>,
     #[cfg(feature = "runtime")]
-    pub(crate) terminals:
-        Mutex<HashMap<Uuid, ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>>>,
+    pub(crate) terminals: Mutex<
+        HashMap<Uuid, ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>>,
+    >,
 }
 
 impl RatatuiCtx {
@@ -62,9 +63,7 @@ impl RatatuiCtx {
     ) -> Result<MutexGuard<'_, HashMap<Uuid, ratatui::widgets::ScrollbarState>>, ErrorData> {
         self.scrollbar_states
             .lock()
-            .map_err(|_| {
-                ErrorData::internal_error("ratatui scrollbar_states lock poisoned", None)
-            })
+            .map_err(|_| ErrorData::internal_error("ratatui scrollbar_states lock poisoned", None))
     }
 
     #[cfg(feature = "runtime")]
@@ -74,10 +73,7 @@ impl RatatuiCtx {
     ) -> Result<
         MutexGuard<
             '_,
-            HashMap<
-                Uuid,
-                ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>,
-            >,
+            HashMap<Uuid, ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>>,
         >,
         ErrorData,
     > {

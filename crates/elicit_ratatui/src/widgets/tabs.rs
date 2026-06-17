@@ -11,7 +11,9 @@ impl Tabs {
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> Tabs {
-        Tabs(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        Tabs(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Select a tab by index.
@@ -29,7 +31,9 @@ impl Tabs {
     /// Style for the selected tab.
     #[tracing::instrument(skip(self))]
     pub fn highlight_style(&self, style: crate::Style) -> Tabs {
-        Tabs(std::sync::Arc::new((*self.0).clone().highlight_style(*style.0)))
+        Tabs(std::sync::Arc::new(
+            (*self.0).clone().highlight_style(*style.0),
+        ))
     }
 
     /// Divider string between tabs.
@@ -47,7 +51,9 @@ impl Tabs {
     /// Right padding inside each tab.
     #[tracing::instrument(skip(self))]
     pub fn padding_right(&self, padding: String) -> Tabs {
-        Tabs(std::sync::Arc::new((*self.0).clone().padding_right(padding)))
+        Tabs(std::sync::Arc::new(
+            (*self.0).clone().padding_right(padding),
+        ))
     }
 }
 impl serde::Serialize for Tabs {
@@ -59,9 +65,14 @@ impl serde::Serialize for Tabs {
 impl<'de> serde::Deserialize<'de> for Tabs {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct TabsJson { #[serde(default)] titles: Vec<String> }
+        struct TabsJson {
+            #[serde(default)]
+            titles: Vec<String>,
+        }
         let TabsJson { titles } = TabsJson::deserialize(d)?;
-        Ok(Tabs(std::sync::Arc::new(ratatui::widgets::Tabs::new(titles))))
+        Ok(Tabs(std::sync::Arc::new(ratatui::widgets::Tabs::new(
+            titles,
+        ))))
     }
 }
 mod emit_impls {

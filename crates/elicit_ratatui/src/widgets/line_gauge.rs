@@ -11,7 +11,9 @@ impl LineGauge {
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> LineGauge {
-        LineGauge(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        LineGauge(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Set ratio (0.0–1.0).
@@ -23,7 +25,9 @@ impl LineGauge {
     /// Set the label span.
     #[tracing::instrument(skip(self))]
     pub fn label(&self, label: crate::Span) -> LineGauge {
-        LineGauge(std::sync::Arc::new((*self.0).clone().label((*label.0).clone())))
+        LineGauge(std::sync::Arc::new(
+            (*self.0).clone().label((*label.0).clone()),
+        ))
     }
 
     /// Set the overall style.
@@ -35,13 +39,17 @@ impl LineGauge {
     /// Set the filled-portion line style.
     #[tracing::instrument(skip(self))]
     pub fn filled_style(&self, style: crate::Style) -> LineGauge {
-        LineGauge(std::sync::Arc::new((*self.0).clone().filled_style(*style.0)))
+        LineGauge(std::sync::Arc::new(
+            (*self.0).clone().filled_style(*style.0),
+        ))
     }
 
     /// Set the unfilled-portion line style.
     #[tracing::instrument(skip(self))]
     pub fn unfilled_style(&self, style: crate::Style) -> LineGauge {
-        LineGauge(std::sync::Arc::new((*self.0).clone().unfilled_style(*style.0)))
+        LineGauge(std::sync::Arc::new(
+            (*self.0).clone().unfilled_style(*style.0),
+        ))
     }
 }
 impl serde::Serialize for LineGauge {
@@ -53,7 +61,9 @@ impl serde::Serialize for LineGauge {
 impl<'de> serde::Deserialize<'de> for LineGauge {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         serde::de::IgnoredAny::deserialize(d)?;
-        Ok(LineGauge(std::sync::Arc::new(ratatui::widgets::LineGauge::default())))
+        Ok(LineGauge(std::sync::Arc::new(
+            ratatui::widgets::LineGauge::default(),
+        )))
     }
 }
 mod emit_impls {

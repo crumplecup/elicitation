@@ -20,12 +20,12 @@ pub use elicitation::BordersSelect as Borders;
 pub use elicitation::ColorSelect as Color;
 /// Direction select wrapper (Vertical / Horizontal).
 pub use elicitation::RatatuiDirectionSelect as Direction;
-/// Scrollbar-orientation select wrapper.
-pub use elicitation::ScrollbarOrientationSelect as ScrollbarOrientation;
 /// Margin survey wrapper (horizontal, vertical fields).
 pub use elicitation::RatatuiMargin as Margin;
 /// Padding survey wrapper (left, right, top, bottom fields).
 pub use elicitation::RatatuiPadding as Padding;
+/// Scrollbar-orientation select wrapper.
+pub use elicitation::ScrollbarOrientationSelect as ScrollbarOrientation;
 
 // ── elicit_newtype! wrappers — forward serde from ratatui's serde feature ────
 

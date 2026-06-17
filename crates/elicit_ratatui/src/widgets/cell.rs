@@ -23,9 +23,14 @@ impl serde::Serialize for Cell {
 impl<'de> serde::Deserialize<'de> for Cell {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct CellJson { #[serde(default)] content: String }
+        struct CellJson {
+            #[serde(default)]
+            content: String,
+        }
         let CellJson { content } = CellJson::deserialize(d)?;
-        Ok(Cell(std::sync::Arc::new(ratatui::widgets::Cell::new(content))))
+        Ok(Cell(std::sync::Arc::new(ratatui::widgets::Cell::new(
+            content,
+        ))))
     }
 }
 mod emit_impls {

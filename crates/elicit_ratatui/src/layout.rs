@@ -22,7 +22,10 @@ impl<'de> serde::Deserialize<'de> for Layout {
             #[serde(default)]
             constraints: Vec<crate::Constraint>,
         }
-        let LayoutJson { direction, constraints } = LayoutJson::deserialize(d)?;
+        let LayoutJson {
+            direction,
+            constraints,
+        } = LayoutJson::deserialize(d)?;
         let ratatui_constraints: Vec<ratatui::layout::Constraint> =
             constraints.into_iter().map(|c| (*c.0).clone()).collect();
         let layout = match direction.as_deref() {
@@ -40,19 +43,25 @@ impl Layout {
     /// Set the layout direction.
     #[tracing::instrument(skip(self))]
     pub fn direction(&self, direction: crate::Direction) -> Layout {
-        Layout(std::sync::Arc::new((*self.0).clone().direction(direction.into_inner())))
+        Layout(std::sync::Arc::new(
+            (*self.0).clone().direction(direction.into_inner()),
+        ))
     }
 
     /// Set horizontal margin only.
     #[tracing::instrument(skip(self))]
     pub fn horizontal_margin(&self, margin: u16) -> Layout {
-        Layout(std::sync::Arc::new((*self.0).clone().horizontal_margin(margin)))
+        Layout(std::sync::Arc::new(
+            (*self.0).clone().horizontal_margin(margin),
+        ))
     }
 
     /// Set vertical margin only.
     #[tracing::instrument(skip(self))]
     pub fn vertical_margin(&self, margin: u16) -> Layout {
-        Layout(std::sync::Arc::new((*self.0).clone().vertical_margin(margin)))
+        Layout(std::sync::Arc::new(
+            (*self.0).clone().vertical_margin(margin),
+        ))
     }
 
     /// Split the area and return the resulting `Rect`s.

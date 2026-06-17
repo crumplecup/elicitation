@@ -36,7 +36,9 @@ impl<'de> serde::Deserialize<'de> for Text {
                 ratatui::text::Line::from(ratatui_spans)
             })
             .collect();
-        Ok(Text(std::sync::Arc::new(ratatui::text::Text::from(ratatui_lines))))
+        Ok(Text(std::sync::Arc::new(ratatui::text::Text::from(
+            ratatui_lines,
+        ))))
     }
 }
 
@@ -57,7 +59,9 @@ impl Text {
     /// Set alignment on all lines.
     #[tracing::instrument(skip(self))]
     pub fn alignment(&self, align: crate::Alignment) -> Text {
-        Text(std::sync::Arc::new((*self.0).clone().alignment(align.into_inner())))
+        Text(std::sync::Arc::new(
+            (*self.0).clone().alignment(align.into_inner()),
+        ))
     }
 
     /// Apply a style patch to all spans.

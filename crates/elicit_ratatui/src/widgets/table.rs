@@ -8,17 +8,20 @@ elicit_newtype_traits!(Table, ratatui::widgets::Table<'static>, []);
 
 #[reflect_methods]
 impl Table {
-
     /// Set the header row.
     #[tracing::instrument(skip(self, header))]
     pub fn header(&self, header: crate::Row) -> Table {
-        Table(std::sync::Arc::new((*self.0).clone().header((*header.0).clone())))
+        Table(std::sync::Arc::new(
+            (*self.0).clone().header((*header.0).clone()),
+        ))
     }
 
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> Table {
-        Table(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        Table(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Set the table style.
@@ -30,19 +33,25 @@ impl Table {
     /// Style for the selected row.
     #[tracing::instrument(skip(self))]
     pub fn highlight_style(&self, style: crate::Style) -> Table {
-        Table(std::sync::Arc::new((*self.0).clone().row_highlight_style(*style.0)))
+        Table(std::sync::Arc::new(
+            (*self.0).clone().row_highlight_style(*style.0),
+        ))
     }
 
     /// Symbol prefix for the selected row.
     #[tracing::instrument(skip(self))]
     pub fn highlight_symbol(&self, symbol: String) -> Table {
-        Table(std::sync::Arc::new((*self.0).clone().highlight_symbol(symbol)))
+        Table(std::sync::Arc::new(
+            (*self.0).clone().highlight_symbol(symbol),
+        ))
     }
 
     /// Space between columns in characters.
     #[tracing::instrument(skip(self))]
     pub fn column_spacing(&self, spacing: u16) -> Table {
-        Table(std::sync::Arc::new((*self.0).clone().column_spacing(spacing)))
+        Table(std::sync::Arc::new(
+            (*self.0).clone().column_spacing(spacing),
+        ))
     }
 }
 impl serde::Serialize for Table {
@@ -65,7 +74,10 @@ impl<'de> serde::Deserialize<'de> for Table {
             rows.into_iter().map(|r| (*r.0).clone()).collect();
         let ratatui_widths: Vec<ratatui::layout::Constraint> =
             widths.into_iter().map(|c| (*c.0).clone()).collect();
-        Ok(Table(std::sync::Arc::new(ratatui::widgets::Table::new(ratatui_rows, ratatui_widths))))
+        Ok(Table(std::sync::Arc::new(ratatui::widgets::Table::new(
+            ratatui_rows,
+            ratatui_widths,
+        ))))
     }
 }
 mod emit_impls {

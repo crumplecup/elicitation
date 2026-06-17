@@ -37,7 +37,9 @@ impl Axis {
     /// Set axis labels alignment.
     #[tracing::instrument(skip(self))]
     pub fn labels_alignment(&self, align: crate::Alignment) -> Axis {
-        Axis(std::sync::Arc::new((*self.0).clone().labels_alignment(align.into_inner())))
+        Axis(std::sync::Arc::new(
+            (*self.0).clone().labels_alignment(align.into_inner()),
+        ))
     }
 }
 impl serde::Serialize for Axis {

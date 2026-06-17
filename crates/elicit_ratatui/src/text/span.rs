@@ -17,7 +17,9 @@ impl serde::Serialize for Span {
 impl<'de> serde::Deserialize<'de> for Span {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct SpanJson { content: String }
+        struct SpanJson {
+            content: String,
+        }
         let SpanJson { content } = SpanJson::deserialize(d)?;
         Ok(Span(std::sync::Arc::new(ratatui::text::Span::raw(content))))
     }

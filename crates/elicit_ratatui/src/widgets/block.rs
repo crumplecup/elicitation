@@ -23,7 +23,9 @@ impl Block {
     /// Set the border line style.
     #[tracing::instrument(skip(self))]
     pub fn border_type(&self, border_type: crate::BorderType) -> Block {
-        Block(std::sync::Arc::new((*self.0).clone().border_type(*border_type)))
+        Block(std::sync::Arc::new(
+            (*self.0).clone().border_type(*border_type),
+        ))
     }
 
     /// Set the block's overall style.
@@ -35,13 +37,17 @@ impl Block {
     /// Set the border style.
     #[tracing::instrument(skip(self))]
     pub fn border_style(&self, style: crate::Style) -> Block {
-        Block(std::sync::Arc::new((*self.0).clone().border_style(*style.0)))
+        Block(std::sync::Arc::new(
+            (*self.0).clone().border_style(*style.0),
+        ))
     }
 
     /// Set inner padding.
     #[tracing::instrument(skip(self))]
     pub fn padding(&self, padding: crate::Padding) -> Block {
-        Block(std::sync::Arc::new((*self.0).clone().padding(padding.into())))
+        Block(std::sync::Arc::new(
+            (*self.0).clone().padding(padding.into()),
+        ))
     }
 }
 

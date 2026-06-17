@@ -8,11 +8,12 @@ elicit_newtype_traits!(BarChart, ratatui::widgets::BarChart<'static>, []);
 
 #[reflect_methods]
 impl BarChart {
-
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> BarChart {
-        BarChart(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        BarChart(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Width of each bar in characters.
@@ -60,7 +61,9 @@ impl BarChart {
     /// Bar direction (Vertical or Horizontal).
     #[tracing::instrument(skip(self))]
     pub fn direction(&self, direction: crate::Direction) -> BarChart {
-        BarChart(std::sync::Arc::new((*self.0).clone().direction(direction.into_inner())))
+        BarChart(std::sync::Arc::new(
+            (*self.0).clone().direction(direction.into_inner()),
+        ))
     }
 }
 impl serde::Serialize for BarChart {
@@ -72,7 +75,9 @@ impl serde::Serialize for BarChart {
 impl<'de> serde::Deserialize<'de> for BarChart {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         serde::de::IgnoredAny::deserialize(d)?;
-        Ok(BarChart(std::sync::Arc::new(ratatui::widgets::BarChart::default())))
+        Ok(BarChart(std::sync::Arc::new(
+            ratatui::widgets::BarChart::default(),
+        )))
     }
 }
 mod emit_impls {

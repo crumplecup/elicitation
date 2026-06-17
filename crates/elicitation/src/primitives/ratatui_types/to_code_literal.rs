@@ -13,8 +13,7 @@ mod impls {
 
     impl ToCodeLiteral for ratatui::style::Style {
         fn to_code_literal(&self) -> TokenStream {
-            let json = crate::serde_json::to_string(self)
-                .unwrap_or_else(|_| "{}".to_string());
+            let json = crate::serde_json::to_string(self).unwrap_or_else(|_| "{}".to_string());
             quote::quote! {
                 ::serde_json::from_str::<::ratatui::style::Style>(#json).unwrap()
             }

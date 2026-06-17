@@ -11,7 +11,9 @@ impl Sparkline {
     /// Wrap in a block container.
     #[tracing::instrument(skip(self, block))]
     pub fn block(&self, block: crate::Block) -> Sparkline {
-        Sparkline(std::sync::Arc::new((*self.0).clone().block((*block.0).clone())))
+        Sparkline(std::sync::Arc::new(
+            (*self.0).clone().block((*block.0).clone()),
+        ))
     }
 
     /// Set the data values.
@@ -53,7 +55,9 @@ impl serde::Serialize for Sparkline {
 impl<'de> serde::Deserialize<'de> for Sparkline {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         serde::de::IgnoredAny::deserialize(d)?;
-        Ok(Sparkline(std::sync::Arc::new(ratatui::widgets::Sparkline::default())))
+        Ok(Sparkline(std::sync::Arc::new(
+            ratatui::widgets::Sparkline::default(),
+        )))
     }
 }
 mod emit_impls {

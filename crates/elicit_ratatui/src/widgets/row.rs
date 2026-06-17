@@ -41,11 +41,16 @@ impl serde::Serialize for Row {
 impl<'de> serde::Deserialize<'de> for Row {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct RowJson { #[serde(default)] cells: Vec<crate::Cell> }
+        struct RowJson {
+            #[serde(default)]
+            cells: Vec<crate::Cell>,
+        }
         let RowJson { cells } = RowJson::deserialize(d)?;
         let ratatui_cells: Vec<ratatui::widgets::Cell<'static>> =
             cells.into_iter().map(|c| (*c.0).clone()).collect();
-        Ok(Row(std::sync::Arc::new(ratatui::widgets::Row::new(ratatui_cells))))
+        Ok(Row(std::sync::Arc::new(ratatui::widgets::Row::new(
+            ratatui_cells,
+        ))))
     }
 }
 mod emit_impls {

@@ -23,9 +23,14 @@ impl serde::Serialize for ListItem {
 impl<'de> serde::Deserialize<'de> for ListItem {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct ListItemJson { #[serde(default)] content: String }
+        struct ListItemJson {
+            #[serde(default)]
+            content: String,
+        }
         let ListItemJson { content } = ListItemJson::deserialize(d)?;
-        Ok(ListItem(std::sync::Arc::new(ratatui::widgets::ListItem::new(content))))
+        Ok(ListItem(std::sync::Arc::new(
+            ratatui::widgets::ListItem::new(content),
+        )))
     }
 }
 mod emit_impls {

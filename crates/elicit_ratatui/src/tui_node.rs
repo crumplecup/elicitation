@@ -1012,7 +1012,6 @@ pub struct ScrollbarStateJson {
     pub viewport_content_length: Option<usize>,
 }
 
-
 // ---------------------------------------------------------------------------
 // TUI node tree (compositional)
 // ---------------------------------------------------------------------------
