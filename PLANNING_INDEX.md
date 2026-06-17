@@ -124,6 +124,39 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### elicit_ratatui Total Rewrite
+
+**Document:** [ELICIT_RATATUI_REWRITE_PLAN.md](ELICIT_RATATUI_REWRITE_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Full rewrite of `elicit_ratatui` as a real shadow crate.
+Delete the custom JSON DSL (`WidgetJson`, `property_tools`, `widget_tools`,
+etc.) and replace it with trenchcoat types, `#[reflect_methods]`, and a
+`StatefulPlugin` for terminal + stateful widget state — following
+`elicit_clap` and `elicit_redb` as reference implementations. The
+`RatatuiBackend`, `TuiCommunicator`, and AccessKit conversion code survive
+unchanged.
+
+---
+
+### elicit_gis Render Contract Seam
+
+**Document:** [ELICIT_GIS_RENDER_PLAN.md](ELICIT_GIS_RENDER_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Add a renderer-agnostic render seam to `elicit_gis` that uses
+upstream georust crates as the shared IR and proof-carrying contracts as the
+invariant boundary. The plan introduces render propositions, evidence bundles,
+descriptor sidecars, and object-safe traits that culminate in
+`Established<RenderableSceneValid>` without coupling producers to Bevy.
+
+**Architecture principle:** `elicit_gis` owns the contract language and trait
+seams; georust-facing `elicit_*` crates mint proofs against upstream payloads;
+consumer crates such as `elicit_bevy` read validated scene/layer/style IR and
+render mechanically.
+
 ### archive — Feature Parity with pgAdmin / DBeaver
 
 **Document:** [ARCHIVE_PARITY_PLAN.md](ARCHIVE_PARITY_PLAN.md)
