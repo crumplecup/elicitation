@@ -890,6 +890,45 @@ pub struct RenderFeaturePlacementDescriptor {
     pub z_index: Option<i32>,
 }
 
+/// Geodetic location of a 3D model's local origin.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderModelOriginDescriptor {
+    /// Longitude in decimal degrees (WGS 84 unless the layer declares another CRS).
+    pub longitude: f64,
+    /// Latitude in decimal degrees.
+    pub latitude: f64,
+    /// Optional altitude in meters.
+    pub altitude_meters: Option<f64>,
+    /// How the altitude should be interpreted by the renderer.
+    pub altitude_mode: RenderAltitudeMode,
+}
+
+/// Euler-angle orientation for a 3D model placed on the map.
+///
+/// Angles follow standard aerospace convention applied to the local ENU frame
+/// at the model origin: heading is clockwise from geographic North, tilt is
+/// positive nose-up, and roll is positive right-side-down.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderModelOrientationDescriptor {
+    /// Heading (yaw) in degrees, clockwise from geographic North.
+    pub heading_degrees: f64,
+    /// Tilt (pitch) in degrees, positive = nose up.
+    pub tilt_degrees: f64,
+    /// Roll in degrees, positive = right side down.
+    pub roll_degrees: f64,
+}
+
+/// Full placement transform for one 3D model placed on the map.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderModelPlacementDescriptor {
+    /// Geographic location of the model origin.
+    pub origin: RenderModelOriginDescriptor,
+    /// Orientation of the model in the local ENU frame.
+    pub orientation: RenderModelOrientationDescriptor,
+    /// Uniform scale factor applied to the model.
+    pub scale: f64,
+}
+
 /// Extrusion policy for polygons or bars in 2.5D/3D renderers.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RenderExtrusionDescriptor {
@@ -1105,7 +1144,10 @@ pub struct RenderRasterImageMetadataDescriptor {
 
 impl From<ImageInfo> for RenderRasterImageMetadataDescriptor {
     fn from(value: ImageInfo) -> Self {
-        let (width, height) = value.dimensions.map(|(width, height)| (Some(width), Some(height))).unwrap_or((None, None));
+        let (width, height) = value
+            .dimensions
+            .map(|(width, height)| (Some(width), Some(height)))
+            .unwrap_or((None, None));
         Self {
             width,
             height,
@@ -1143,6 +1185,15 @@ pub struct RenderRasterSourceDescriptor {
     pub asset: RenderAssetReference,
     /// World-space georeferencing sidecar.
     pub georeference: RenderRasterGeoreferenceDescriptor,
+}
+
+/// Raster source descriptor bundled with its GeoTIFF image metadata.
+#[derive(Debug)]
+pub struct RenderRasterSourceImageInfo {
+    /// Source descriptor.
+    pub source: RenderRasterSourceDescriptor,
+    /// GeoTIFF image metadata.
+    pub image_info: ImageInfo,
 }
 
 /// Tile addressing scheme used by a tile source.
@@ -1771,6 +1822,43 @@ pub struct RenderClearPolicyDescriptor {
     pub depth: Option<f32>,
 }
 
+/// Explicit physical viewport for one render view.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderViewportDescriptor {
+    /// Physical top-left position in pixels.
+    pub physical_position: [u32; 2],
+    /// Physical size in pixels.
+    pub physical_size: [u32; 2],
+    /// Optional normalized depth range `[min, max]`.
+    pub depth: Option<[f32; 2]>,
+}
+
+/// Explicit offscreen/main-pass resolution override for one render view.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderResolutionOverrideDescriptor {
+    /// Replacement render width in physical pixels.
+    pub width: u32,
+    /// Replacement render height in physical pixels.
+    pub height: u32,
+}
+
+/// One logical subview carved out of a larger camera layout.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderSubViewLayoutDescriptor {
+    /// Total logical width of the full multi-view image.
+    pub full_width: u32,
+    /// Total logical height of the full multi-view image.
+    pub full_height: u32,
+    /// Horizontal offset of this subview within the full image.
+    pub offset_x: f32,
+    /// Vertical offset of this subview within the full image.
+    pub offset_y: f32,
+    /// Width of this subview in logical pixels.
+    pub width: u32,
+    /// Height of this subview in logical pixels.
+    pub height: u32,
+}
+
 /// Camera-output policy for a render view.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RenderViewOutputDescriptor {
@@ -1780,6 +1868,12 @@ pub struct RenderViewOutputDescriptor {
     pub target: Option<RenderOutputTargetDescriptor>,
     /// Optional per-view clear policy override.
     pub clear_policy: Option<RenderClearPolicyDescriptor>,
+    /// Optional explicit physical viewport override.
+    pub viewport: Option<RenderViewportDescriptor>,
+    /// Optional explicit render-resolution override.
+    pub resolution_override: Option<RenderResolutionOverrideDescriptor>,
+    /// Optional logical subview layout within a larger composed image.
+    pub subview_layout: Option<RenderSubViewLayoutDescriptor>,
     /// Optional tonemapping operator.
     pub tonemapping: Option<RenderTonemappingDescriptor>,
     /// Optional MSAA policy.
@@ -1803,18 +1897,18 @@ pub struct RenderViewOutputDescriptor {
     /// Optional screen-space reflection policy.
     pub screen_space_reflections: Option<RenderScreenSpaceReflectionsDescriptor>,
     /// Optional screen-space ambient-occlusion policy.
-    pub screen_space_ambient_occlusion:
-        Option<RenderScreenSpaceAmbientOcclusionDescriptor>,
+    pub screen_space_ambient_occlusion: Option<RenderScreenSpaceAmbientOcclusionDescriptor>,
     /// Optional shadow-edge filtering policy.
     pub shadow_filtering_method: Option<RenderShadowFilteringMethod>,
     /// Optional quality hint for screen-space transmission.
-    pub screen_space_transmission_quality:
-        Option<RenderScreenSpaceTransmissionQuality>,
+    pub screen_space_transmission_quality: Option<RenderScreenSpaceTransmissionQuality>,
 }
 
 /// Renderer-agnostic map view.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RenderViewDescriptor {
+    /// Stable view identifier.
+    pub view_id: String,
     /// Optional CRS authority name such as `EPSG`.
     pub crs_authority: Option<String>,
     /// Optional CRS code such as `4326` or `3857`.
@@ -1841,6 +1935,35 @@ pub struct RenderViewDescriptor {
     pub world_space: Option<RenderWorldSpaceDescriptor>,
 }
 
+/// Policy for routing one layer across a scene's primary and auxiliary views.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum RenderViewParticipationMode {
+    /// Render the layer in every scene view.
+    All,
+    /// Render the layer only in the listed scene views.
+    IncludeListed,
+    /// Render the layer in every scene view except the listed ones.
+    ExcludeListed,
+}
+
+/// Per-layer participation policy across a scene's primary and auxiliary views.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderViewParticipationDescriptor {
+    /// Routing mode used to interpret the declared view identifiers.
+    pub mode: RenderViewParticipationMode,
+    /// Stable scene-view identifiers used by the routing mode.
+    pub view_ids: Vec<String>,
+}
+
+impl Default for RenderViewParticipationDescriptor {
+    fn default() -> Self {
+        Self {
+            mode: RenderViewParticipationMode::All,
+            view_ids: Vec::new(),
+        }
+    }
+}
+
 /// Per-layer metadata supplied before payload validation.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RenderLayerSpec {
@@ -1854,6 +1977,18 @@ pub struct RenderLayerSpec {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    ///
+    /// Resolution is expressed in renderer-neutral map units per pixel. A layer
+    /// is visible when `min_resolution ≤ current_resolution ≤ max_resolution`.
+    /// Either bound may be absent, meaning no constraint on that side.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
+    /// Optional time-visibility filter.  When `Some`, the layer is only
+    /// rendered when the scene's active [`RenderTimeContext`] intersects this
+    /// interval.  When `None` the layer is always rendered regardless of time.
+    pub time_filter: Option<RenderLayerTimeFilter>,
 }
 
 /// Per-scene metadata supplied before scene validation.
@@ -1861,8 +1996,32 @@ pub struct RenderLayerSpec {
 pub struct RenderSceneSpec {
     /// Stable scene identifier.
     pub scene_id: String,
-    /// Optional scene environment and lighting policy.
-    pub environment: Option<RenderSceneEnvironmentDescriptor>,
+}
+
+/// A point or interval in time expressed as Unix milliseconds (UTC).
+///
+/// Used to filter time-varying layers: a layer whose
+/// [`RenderLayerSpec::time_filter`] is `Some(filter)` is only visible when
+/// the scene's active `RenderTimeContext` intersects `filter`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderTimeContext {
+    /// Start of the active time window in Unix milliseconds (inclusive, UTC).
+    pub start_ms: i64,
+    /// End of the active time window in Unix milliseconds (inclusive, UTC).
+    /// When equal to `start_ms` this represents a single instant.
+    pub end_ms: i64,
+}
+
+/// Time-filter applied to a layer: the layer is only visible when the scene's
+/// active [`RenderTimeContext`] window intersects this interval.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderLayerTimeFilter {
+    /// Earliest time (inclusive) in Unix milliseconds at which the layer is
+    /// active.  `None` means the layer has no past boundary.
+    pub valid_from_ms: Option<i64>,
+    /// Latest time (inclusive) in Unix milliseconds at which the layer is
+    /// active.  `None` means the layer has no future boundary.
+    pub valid_until_ms: Option<i64>,
 }
 
 /// Renderer-neutral ambient light descriptor.
@@ -2067,21 +2226,29 @@ pub struct RenderSceneEnvironmentDescriptor {
     pub fog_volumes: Vec<RenderFogVolumeDescriptor>,
 }
 
+/// Explicit diffuse/specular cubemap pair for image-based lighting.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderIblCubemapsDescriptor {
+    /// Diffuse irradiance cubemap asset.
+    pub diffuse_map: RenderAssetReference,
+    /// Specular reflection cubemap asset.
+    pub specular_map: RenderAssetReference,
+}
+
+/// Single environment-map asset for image-based lighting.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderIblEnvironmentMapDescriptor {
+    /// Environment map asset used to derive lighting.
+    pub environment_map: RenderAssetReference,
+}
+
 /// Source material used to derive image-based lighting.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub enum RenderImageBasedLightingSourceDescriptor {
     /// Explicit diffuse/specular cubemap pair.
-    Cubemaps {
-        /// Diffuse irradiance cubemap asset.
-        diffuse_map: RenderAssetReference,
-        /// Specular reflection cubemap asset.
-        specular_map: RenderAssetReference,
-    },
+    Cubemaps(Box<RenderIblCubemapsDescriptor>),
     /// One upstream environment map asset from which lighting data is derived.
-    EnvironmentMap {
-        /// Environment map asset used to derive lighting.
-        environment_map: RenderAssetReference,
-    },
+    EnvironmentMap(Box<RenderIblEnvironmentMapDescriptor>),
     /// Lighting generated from the declared atmosphere.
     Atmosphere {
         /// Optional generated cubemap dimensions.
@@ -2286,8 +2453,8 @@ impl JsonSchema for RenderFeatureGeometry {
 /// Property-bearing vector feature payload carried directly in the render IR.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RenderFeatureRecord {
-    /// Optional stable feature identifier.
-    pub id: Option<String>,
+    /// Stable feature identifier — required for picking and incremental updates.
+    pub id: String,
     /// Feature geometry.
     pub geometry: RenderFeatureGeometry,
     /// Arbitrary feature properties used by style predicates and expressions.
@@ -2370,6 +2537,10 @@ pub struct RenderVectorLayerDescriptor {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
     /// Carried georust vector payload.
     pub payload: RenderVectorLayerPayload,
     /// Optional batching and instancing hints for the backend.
@@ -2391,6 +2562,10 @@ pub struct RenderRasterLayerDescriptor {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
     /// Externally resolvable raster source.
     pub source: RenderRasterSourceDescriptor,
     /// Raster header metadata.
@@ -2412,6 +2587,10 @@ pub struct RenderTileLayerDescriptor {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
     /// Externally resolvable tile source.
     pub source: RenderTileSourceDescriptor,
     /// Fully resolved tile style.
@@ -2431,6 +2610,10 @@ pub struct RenderTerrainLayerDescriptor {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
     /// Externally resolvable elevation source.
     pub source: RenderRasterSourceDescriptor,
     /// Raster header metadata.
@@ -2452,8 +2635,39 @@ pub struct RenderAnnotationLayerDescriptor {
     pub visible: bool,
     /// Overall layer opacity.
     pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the entire layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
     /// Explicit annotations rendered by the backend.
     pub annotations: Vec<RenderAnnotationDescriptor>,
+}
+
+/// Full 3D model layer descriptor for GLTF/GLB assets placed on the map.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderModelLayerDescriptor {
+    /// Stable layer identifier.
+    pub id: String,
+    /// User-facing layer name.
+    pub name: String,
+    /// Deterministic draw order.
+    pub draw_order: i32,
+    /// Default visibility.
+    pub visible: bool,
+    /// Overall layer opacity.
+    pub opacity: f32,
+    /// Explicit per-view routing policy for this layer.
+    pub view_participation: RenderViewParticipationDescriptor,
+    /// Optional map-resolution range outside which the layer is hidden.
+    pub resolution_range: Option<RenderScaleRangeDescriptor>,
+    /// GLTF/GLB or other 3D model asset reference.
+    pub asset: RenderAssetReference,
+    /// World-space placement: position, orientation, and scale.
+    pub placement: RenderModelPlacementDescriptor,
+    /// Optional shadow-casting and shadow-receiving policy.
+    pub shadow_participation: Option<RenderShadowParticipationDescriptor>,
+    /// Optional material intent applied to all model primitives.
+    pub material_override: Option<RenderMaterialIntentDescriptor>,
 }
 
 /// Discriminant describing which payload class produced a render layer.
@@ -2469,21 +2683,25 @@ pub enum RenderLayerKind {
     Terrain,
     /// Explicit annotations rendered independently from feature layers.
     Annotation,
+    /// A GLTF/GLB 3D model placed at an explicit geodetic location.
+    Model,
 }
 
 /// Full validated render layer.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub enum RenderLayerDescriptor {
     /// Vector layer.
-    Vector(RenderVectorLayerDescriptor),
+    Vector(Box<RenderVectorLayerDescriptor>),
     /// Raster layer.
-    Raster(RenderRasterLayerDescriptor),
+    Raster(Box<RenderRasterLayerDescriptor>),
     /// Tile layer.
-    Tile(RenderTileLayerDescriptor),
+    Tile(Box<RenderTileLayerDescriptor>),
     /// Terrain layer.
-    Terrain(RenderTerrainLayerDescriptor),
+    Terrain(Box<RenderTerrainLayerDescriptor>),
     /// Annotation layer.
-    Annotation(RenderAnnotationLayerDescriptor),
+    Annotation(Box<RenderAnnotationLayerDescriptor>),
+    /// 3D model layer.
+    Model(Box<RenderModelLayerDescriptor>),
 }
 
 /// Full validated render scene.
@@ -2491,8 +2709,10 @@ pub enum RenderLayerDescriptor {
 pub struct RenderSceneDescriptor {
     /// Stable scene identifier.
     pub scene_id: String,
-    /// The view used to interpret the scene.
+    /// The primary view used to interpret the scene.
     pub view: RenderViewDescriptor,
+    /// Optional auxiliary views rendered against the same validated layer set.
+    pub auxiliary_views: Vec<RenderViewDescriptor>,
     /// Optional scene environment and lighting policy.
     pub environment: Option<RenderSceneEnvironmentDescriptor>,
     /// Fully described render layers in draw order.
@@ -2507,8 +2727,17 @@ pub struct RenderSceneDescriptor {
     pub terrain_layer_count: usize,
     /// Number of annotation layers.
     pub annotation_layer_count: usize,
+    /// Number of auxiliary views beyond the primary scene view.
+    pub auxiliary_view_count: usize,
     /// Whether any layer in the scene includes labels.
     pub has_feature_labels: bool,
+    /// Optional layer-group hierarchy providing a logical tree view over the flat
+    /// `layers` list.  Empty when no grouping is specified.
+    pub layer_groups: Vec<RenderLayerGroupDescriptor>,
+    /// Active time window applied to all time-filtered layers in the scene.
+    /// When `None`, all layers are rendered regardless of their
+    /// [`RenderLayerSpec::time_filter`].
+    pub time_context: Option<RenderTimeContext>,
 }
 
 /// Orthogonal kind for incremental scene updates.
@@ -2520,6 +2749,12 @@ pub enum RenderSceneUpdateKind {
     ClearEnvironment,
     /// Replace the active scene view.
     ReplaceView,
+    /// Insert a new auxiliary view into the scene.
+    InsertAuxiliaryView,
+    /// Replace one existing auxiliary view.
+    ReplaceAuxiliaryView,
+    /// Remove one auxiliary view from the scene.
+    RemoveAuxiliaryView,
     /// Insert a new layer into the scene.
     InsertLayer,
     /// Replace an existing layer in the scene.
@@ -2534,6 +2769,8 @@ pub enum RenderSceneUpdateKind {
     SetLayerOpacity,
     /// Update one layer's draw order.
     SetLayerDrawOrder,
+    /// Update one layer's per-view routing policy.
+    SetLayerViewParticipation,
 }
 
 /// Incremental scene mutation for backends that support updates.
@@ -2557,6 +2794,29 @@ pub enum RenderSceneUpdateDescriptor {
         scene_id: String,
         /// Replacement view descriptor.
         view: RenderViewDescriptor,
+    },
+    /// Insert a new auxiliary scene view.
+    InsertAuxiliaryView {
+        /// Target scene identifier.
+        scene_id: String,
+        /// New auxiliary view descriptor.
+        view: RenderViewDescriptor,
+    },
+    /// Replace one existing auxiliary scene view.
+    ReplaceAuxiliaryView {
+        /// Target scene identifier.
+        scene_id: String,
+        /// Auxiliary view to replace.
+        target_view_id: String,
+        /// Replacement auxiliary view descriptor.
+        view: RenderViewDescriptor,
+    },
+    /// Remove one auxiliary scene view.
+    RemoveAuxiliaryView {
+        /// Target scene identifier.
+        scene_id: String,
+        /// Auxiliary view to remove.
+        target_view_id: String,
     },
     /// Insert a new validated layer, optionally before another layer.
     InsertLayer {
@@ -2619,4 +2879,80 @@ pub enum RenderSceneUpdateDescriptor {
         /// Replacement draw order.
         draw_order: i32,
     },
+    /// Update one layer's per-view routing policy.
+    SetLayerViewParticipation {
+        /// Target scene identifier.
+        scene_id: String,
+        /// Layer to update.
+        target_layer_id: String,
+        /// Replacement per-view routing policy.
+        view_participation: RenderViewParticipationDescriptor,
+    },
+}
+
+/// Screen-space point in logical pixels, origin at the top-left corner of the view.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderScreenPointDescriptor {
+    /// Horizontal offset in logical pixels from the left edge of the view.
+    pub x: f32,
+    /// Vertical offset in logical pixels from the top edge of the view.
+    pub y: f32,
+}
+
+/// Screen-space rectangle in logical pixels, origin at the top-left corner of the view.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderScreenRectDescriptor {
+    /// Horizontal offset of the rect origin in logical pixels.
+    pub x: f32,
+    /// Vertical offset of the rect origin in logical pixels.
+    pub y: f32,
+    /// Width of the rect in logical pixels.
+    pub width: f32,
+    /// Height of the rect in logical pixels.
+    pub height: f32,
+}
+
+/// A single picking hit returned by `GisRenderPickingMeta`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderPickHitDescriptor {
+    /// Layer that contains the hit feature.
+    pub layer_id: String,
+    /// Stable identifier of the hit feature.
+    pub feature_id: String,
+    /// Screen-space point at which the hit was recorded, in logical pixels.
+    pub screen_point: RenderScreenPointDescriptor,
+    /// Geodetic world-space point (longitude, latitude, altitude in metres) if
+    /// the backend can project the screen hit into geographic coordinates.
+    pub world_point: Option<[f64; 3]>,
+}
+
+/// A single child within a layer group — either a leaf layer reference or a nested group.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub enum RenderLayerGroupChild {
+    /// Stable layer identifier referencing an entry in `RenderSceneDescriptor::layers`.
+    Layer(String),
+    /// Nested sub-group (recursive, boxed to bound the type size).
+    Group(Box<RenderLayerGroupDescriptor>),
+}
+
+/// Logical grouping that projects a hierarchical view over the flat layer list.
+///
+/// The flat `RenderSceneDescriptor::layers` vec remains authoritative for
+/// rendering.  Groups are consumed by UI layer panels, bridge visibility-toggle
+/// logic, and group-level opacity cascades.  A group may contain any mix of
+/// direct layer references and nested sub-groups.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RenderLayerGroupDescriptor {
+    /// Stable group identifier.
+    pub id: String,
+    /// Human-readable group label shown in layer panels.
+    pub name: String,
+    /// Group-level visibility toggle; when `false` every child is hidden regardless
+    /// of its own `visible` flag.
+    pub visible: bool,
+    /// Group-level opacity multiplier in \[0.0, 1.0\]; multiplied with each
+    /// child layer's own opacity at render time.
+    pub opacity: f32,
+    /// Ordered child references — layers or nested sub-groups.
+    pub children: Vec<RenderLayerGroupChild>,
 }
