@@ -128,6 +128,11 @@ For compile-time macros (e.g. `sqlx::query!`), fragment tools emit verified Rust
 
 ## Contracts — Invariants as Types
 
+> **Deep dive**: [CONTRACTS.md](CONTRACTS.md) explains the full design
+> philosophy — why standards are type systems in prose, the `unsafe` analogy
+> for behavioral invariants, the three-tier proof landscape, and how the
+> VSM frame and content compose into a closed proof.
+
 Programs have invariants that hold regardless of execution path. Most frameworks leave them as
 comments or runtime checks — things developers know but the compiler doesn't. Elicitation makes
 them explicit in the type system.

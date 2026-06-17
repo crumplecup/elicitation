@@ -13,6 +13,7 @@
 | **Workspace** | No re-exports between workspace crates                     | [Workspace Organization](#workspace-organization) |
 | **Commits**   | Fix all errors/warnings before committing                  | [Workflow](#workflow)                             |
 | **Linting**   | Never use `#[allow]` - fix root cause instead              | [Linting](#linting)                               |
+| **Contracts** | See [CONTRACTS.md](CONTRACTS.md) for full design rationale | — |
 
 ---
 
