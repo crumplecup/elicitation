@@ -13,7 +13,7 @@ keywords = ["mcp", "ratatui", "terminal-ui", "elicitation", "agent"]
 categories = ["command-line-interface", "development-tools"]
 
 [dependencies]
-elicitation.workspace = true
+elicitation = { workspace = true, features = ["ratatui"] }
 elicitation_derive.workspace = true
 elicit_ui.workspace = true
 elicit_accesskit.workspace = true
@@ -28,7 +28,7 @@ serde_json.workspace = true
 tokio = { workspace = true, optional = true }
 tracing.workspace = true
 unicode-width.workspace = true
-uuid = { workspace = true, optional = true }
+uuid = { workspace = true, features = ["v4"] }
 quote.workspace = true
 
 [dev-dependencies]
@@ -37,8 +37,7 @@ serde_json.workspace = true
 
 [features]
 emit = ["elicitation/emit"]
-uuid = ["dep:uuid"]
-runtime = ["dep:crossterm", "dep:tokio", "dep:uuid", "ratatui/crossterm"]
+runtime = ["dep:crossterm", "dep:tokio", "ratatui/crossterm"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

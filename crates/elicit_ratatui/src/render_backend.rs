@@ -18,7 +18,7 @@ use elicit_ui::{
 };
 use elicitation::Established;
 
-use crate::serde_types::{
+use crate::tui_node::{
     AlignmentJson, ConstraintJson, DirectionJson, LineJson, ModifierJson, ParagraphText, RowJson,
     SpanJson, StyleJson, TextJson, TuiNode, WidgetJson,
 };
@@ -53,10 +53,10 @@ impl RatatuiBackend {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn titled_block(title: String) -> crate::serde_types::BlockJson {
-    crate::serde_types::BlockJson {
+fn titled_block(title: String) -> crate::tui_node::BlockJson {
+    crate::tui_node::BlockJson {
         title: Some(title),
-        borders: crate::serde_types::BordersJson::All,
+        borders: crate::tui_node::BordersJson::All,
         border_type: None,
         style: None,
         border_style: None,
@@ -127,8 +127,8 @@ fn ui_style_to_json(style: &TextStyle) -> StyleJson {
     }
 }
 
-fn ui_color_to_json(color: &UiColor) -> crate::serde_types::ColorJson {
-    use crate::serde_types::ColorJson;
+fn ui_color_to_json(color: &UiColor) -> crate::tui_node::ColorJson {
+    use crate::tui_node::ColorJson;
     match color {
         UiColor::Reset => ColorJson::Reset,
         UiColor::Black => ColorJson::Black,
@@ -2013,7 +2013,7 @@ impl UiNodeBridge for RatatuiBackend {
                 .map(|child| match child {
                     TuiNode::Widget { widget, .. } => match *widget {
                         WidgetJson::Paragraph { text, .. } => RowJson {
-                            cells: vec![crate::serde_types::CellJson {
+                            cells: vec![crate::tui_node::CellJson {
                                 content: text.to_plain_string(),
                                 style: None,
                             }],

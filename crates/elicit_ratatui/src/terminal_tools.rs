@@ -22,7 +22,7 @@ use serde::Deserialize;
 use tracing::{instrument, trace};
 use uuid::Uuid;
 
-use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
+use crate::tui_node::{BlockJson, ParagraphText, TuiNode, WidgetJson};
 use elicit_ui::ColorTheme;
 use elicit_ui::verify_wcag_contrast_proofs;
 use elicitation::elicit_tool;
@@ -692,7 +692,7 @@ pub fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
             highlight_style,
             ..
         } => {
-            let make_row = |r: &crate::serde_types::RowJson| -> ratatui::widgets::Row<'static> {
+            let make_row = |r: &crate::tui_node::RowJson| -> ratatui::widgets::Row<'static> {
                 let cells: Vec<ratatui::text::Text<'static>> = r
                     .cells
                     .iter()

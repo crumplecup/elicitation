@@ -5,7 +5,7 @@
 //! descriptions into the shared AccessKit IR for verification and
 //! cross-frontend translation.
 
-use crate::serde_types::{
+use crate::tui_node::{
     BlockJson, BordersJson, ColorJson, DirectionJson, LineJson, ModifierJson, ParagraphText,
     SpanJson, StyleJson, TextJson, TuiNode, WidgetJson,
 };
@@ -199,12 +199,12 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
         WidgetJson::Scrollbar { orientation, .. } => {
             let mut n = Node::new(Role::ScrollBar);
             match orientation {
-                crate::serde_types::ScrollbarOrientationJson::VerticalRight
-                | crate::serde_types::ScrollbarOrientationJson::VerticalLeft => {
+                crate::tui_node::ScrollbarOrientationJson::VerticalRight
+                | crate::tui_node::ScrollbarOrientationJson::VerticalLeft => {
                     n.set_orientation(accesskit::Orientation::Vertical);
                 }
-                crate::serde_types::ScrollbarOrientationJson::HorizontalBottom
-                | crate::serde_types::ScrollbarOrientationJson::HorizontalTop => {
+                crate::tui_node::ScrollbarOrientationJson::HorizontalBottom
+                | crate::tui_node::ScrollbarOrientationJson::HorizontalTop => {
                     n.set_orientation(accesskit::Orientation::Horizontal);
                 }
             }
@@ -318,11 +318,11 @@ fn convert_accesskit_node(
 
         let has_status_bar = matches!(children.last(), Some(TuiNode::StatusBar { .. }));
         let constraints = if has_status_bar {
-            let mut c: Vec<crate::serde_types::ConstraintJson> = children[..children.len() - 1]
+            let mut c: Vec<crate::tui_node::ConstraintJson> = children[..children.len() - 1]
                 .iter()
-                .map(|_| crate::serde_types::ConstraintJson::Min { value: 0 })
+                .map(|_| crate::tui_node::ConstraintJson::Min { value: 0 })
                 .collect();
-            c.push(crate::serde_types::ConstraintJson::Length { value: 1 });
+            c.push(crate::tui_node::ConstraintJson::Length { value: 1 });
             c
         } else {
             // A child node whose numeric_value is set gets Min{value} so it
@@ -334,8 +334,8 @@ fn convert_accesskit_node(
                     node_map
                         .get(cid)
                         .and_then(|n| n.numeric_value())
-                        .map(|v| crate::serde_types::ConstraintJson::Min { value: v as u16 })
-                        .unwrap_or(crate::serde_types::ConstraintJson::Fill { value: 1 })
+                        .map(|v| crate::tui_node::ConstraintJson::Min { value: v as u16 })
+                        .unwrap_or(crate::tui_node::ConstraintJson::Fill { value: 1 })
                 })
                 .collect()
         };
@@ -480,9 +480,9 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         Role::ScrollBar => WidgetJson::Scrollbar {
             orientation: match node.orientation() {
                 Some(accesskit::Orientation::Horizontal) => {
-                    crate::serde_types::ScrollbarOrientationJson::HorizontalBottom
+                    crate::tui_node::ScrollbarOrientationJson::HorizontalBottom
                 }
-                _ => crate::serde_types::ScrollbarOrientationJson::VerticalRight,
+                _ => crate::tui_node::ScrollbarOrientationJson::VerticalRight,
             },
             thumb_symbol: None,
             track_symbol: None,
