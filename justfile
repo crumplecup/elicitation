@@ -3,14 +3,26 @@
 # Common tasks for building, testing, and maintaining the Elicitation project.
 # Run `just` or `just --list` to see all available commands.
 
-# Cursor's sandbox intercepts execve and rustup sees argv[0]="cursor", breaking
-# the rustup shim at ~/.cargo/bin/cargo.  Use the real toolchain binary directly
-# when it is available; fall back to the shim for non-Cursor environments.
+# Cursor's sandbox intercepts execve so rustup shims see argv[0]="cursor" and
+# break.  Point directly at the real toolchain binaries when available so that
+# cargo and rustc are both the stable release — not the sandbox intercept.
+# We also clear CARGO_TARGET_DIR so builds use the workspace target/ directory
+# rather than the sandbox's shared cache (which may contain artifacts compiled
+# by a different rustc and trigger "incompatible version" link errors).
 cargo := if path_exists(home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo") == "true" {
     home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo"
 } else {
     "cargo"
 }
+
+rustc := if path_exists(home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc") == "true" {
+    home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc"
+} else {
+    "rustc"
+}
+
+export RUSTC := rustc
+export CARGO_TARGET_DIR := justfile_directory() / "target"
 
 # Default recipe to display help
 default:

@@ -1,6 +1,10 @@
 target/
 **/target/
 
+# Generated rustdoc output
+doc/
+**/doc/
+
 # Local environment — never commit secrets
 .env
 
