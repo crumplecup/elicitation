@@ -7,6 +7,7 @@ mod fgdc;
 mod iso_19111;
 mod iso_19115;
 mod ogc_sfs;
+mod render;
 mod rfc7946;
 
 pub use authority::{AuthorityCode, CrsInfo, DatumEnsembleInfo, EllipsoidParams, EpsgCode};
@@ -33,6 +34,64 @@ pub use iso_19115::{
 pub use ogc_sfs::{
     GeometryCollectionDescriptor, LineStringDescriptor, LinearRingDescriptor,
     MultiGeometryDescriptor, PointDescriptor, PolygonDescriptor, SfsCoordinate, SfsCoordinate3D,
+};
+pub use render::{
+    RenderAltitudeMode, RenderAmbientLightDescriptor, RenderAnnotationAnchorDescriptor,
+    RenderAnnotationDescriptor, RenderAnnotationGeometryAnchor, RenderAnnotationLayerDescriptor,
+    RenderAssetAccessPattern, RenderAssetColorSpace, RenderAssetIntegrityAlgorithm,
+    RenderAssetIntegrityDescriptor, RenderAssetReference, RenderAssetResidencyPolicy,
+    RenderAtmosphereDescriptor, RenderAtmosphereFalloffDescriptor,
+    RenderAtmospherePhaseFunctionDescriptor, RenderAtmosphereScatteringTermDescriptor,
+    RenderAutoExposureDescriptor, RenderBillboardMode,
+    RenderBloomCompositeMode, RenderBloomDescriptor, RenderBloomPrefilterDescriptor, RenderBrush,
+    RenderCascadeShadowConfigDescriptor,
+    RenderCameraProjectionDescriptor, RenderColorGradingDescriptor,
+    RenderChromaticAberrationDescriptor,
+    RenderColorGradingGlobalDescriptor, RenderColorGradingSectionDescriptor,
+    RenderDepthOfFieldDescriptor, RenderDepthOfFieldMode,
+    RenderDirectionalLightDescriptor, RenderExtrusionDescriptor,
+    RenderFeatureBatchingDescriptor, RenderFeatureBatchingStrategy,
+    RenderFeatureCollectionPayload, RenderFeatureGeometry, RenderFeaturePlacementDescriptor,
+    RenderFeaturePredicate, RenderFeatureRecord, RenderFeatureRecordPayload,
+    RenderFeatureStyleDescriptor, RenderFeatureStyleRuleDescriptor,
+    RenderFeatureSymbolizerDescriptor, RenderFillDescriptor, RenderFillRule,
+    RenderFaceCulling, RenderMaterialAlphaMode, RenderMaterialFamily,
+    RenderMaterialIntentDescriptor, RenderMaterialTextureBindingDescriptor,
+    RenderMaterialTextureSemantic, RenderOpaqueMethod, RenderPipelineDomain,
+    RenderPipelineIntentDescriptor, RenderPrepassKind,
+    RenderExposureDescriptor, RenderExposurePreset, RenderFogDescriptor,
+    RenderFogFalloffDescriptor, RenderFogVolumeDescriptor, RenderFogVolumeOffsetDescriptor,
+    RenderGeometryPayload, RenderGradient, RenderImageBasedLightingDescriptor,
+    RenderImageBasedLightingSourceDescriptor, RenderIrradianceVolumeDescriptor,
+    RenderLabelAnchor, RenderLabelCollisionPolicy, RenderLabelDescriptor,
+    RenderLabelPlacement, RenderLabelTextSource, RenderLayerDescriptor, RenderLayerKind,
+    RenderLayerSpec, RenderLightProbeDescriptor, RenderMotionBlurDescriptor,
+    RenderMsaaDescriptor, RenderNumericExpression, RenderNumericInterpolationMode,
+    RenderNumericInterpolationStopDescriptor, RenderNumericStepStopDescriptor,
+    RenderOutputTargetDescriptor,
+    RenderPointShape, RenderPointSymbolContent, RenderPointSymbolDescriptor,
+    RenderProbeRegionDescriptor, RenderRasterBandSelection, RenderRasterColorRampDescriptor,
+    RenderRasterDerivedProduct, RenderRasterGeoreferenceDescriptor,
+    RenderRasterImageMetadataDescriptor, RenderRasterLayerDescriptor, RenderRasterSampling,
+    RenderRasterSourceDescriptor, RenderRasterStyleDescriptor, RenderRasterValueTransform,
+    RenderScaleRangeDescriptor, RenderSceneDescriptor, RenderSceneEnvironmentDescriptor,
+    RenderSceneSpec, RenderSceneUpdateDescriptor, RenderSceneUpdateKind,
+    RenderScreenSpaceAmbientOcclusionDescriptor,
+    RenderScreenSpaceAmbientOcclusionQuality, RenderScreenSpaceReflectionsDescriptor,
+    RenderScreenSpaceTransmissionQuality, RenderSkyboxDescriptor, RenderStrokeDescriptor,
+    RenderShadowFilteringMethod, RenderShadowParticipationDescriptor,
+    RenderClearColorPolicy, RenderClearPolicyDescriptor,
+    RenderSunDiskDescriptor, RenderTerrainDrapeMode, RenderTerrainLayerDescriptor,
+    RenderTerrainLodDescriptor, RenderTerrainMeshMode,
+    RenderTerrainOverlayBlendMode, RenderTerrainOverlayDescriptor,
+    RenderTerrainOverlaySource, RenderTerrainShadingMode, RenderTerrainStyleDescriptor,
+    RenderTileAddressingScheme, RenderTileLayerDescriptor, RenderTileMissingTilePolicy,
+    RenderTilePayloadKind, RenderTileRefinementPriority, RenderTileRetryPolicyDescriptor,
+    RenderTileSourceDescriptor, RenderTileStreamingDescriptor, RenderTileStyleDescriptor,
+    RenderTonemappingDescriptor, RenderUpAxis,
+    RenderVectorLayerDescriptor, RenderVectorLayerPayload, RenderViewDescriptor,
+    RenderViewOutputDescriptor, RenderVolumetricFogDescriptor, RenderWorldOrigin,
+    RenderWorldSpaceDescriptor,
 };
 pub use rfc7946::{
     GeoJsonDocumentDescriptor, GeoJsonFeatureCollectionDescriptor, GeoJsonFeatureDescriptor,

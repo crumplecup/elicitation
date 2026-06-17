@@ -4,6 +4,7 @@ mod crs;
 mod fgdc;
 mod iso_19111;
 mod iso_19115;
+mod render;
 mod rfc7946;
 mod set_ops;
 mod sfs;
@@ -23,6 +24,31 @@ pub use iso_19111::{Iso19111Identified, Iso19111Scoped};
 pub use iso_19115::{
     Iso19115CitationFactory, Iso19115ContactMeta, Iso19115DateMeta, Iso19115ExtentFactory,
     Iso19115LineageFactory, Iso19115QualityMeta, Iso19115RecordFactory,
+};
+pub use render::{
+    GisRenderAmbientLightFactory, GisRenderAnnotationLayerFactory,
+    GisRenderAssetDependencyMeta,
+    GisRenderAtmosphereFactory, GisRenderAutoExposureFactory,
+    GisRenderBloomFactory, GisRenderCascadeShadowFactory,
+    GisRenderChromaticAberrationFactory, GisRenderColorGradingFactory,
+    GisRenderDepthOfFieldFactory, GisRenderDirectionalLightFactory,
+    GisRenderEnvironmentFactory, GisRenderExposureFactory,
+    GisRenderFeatureStyleFactory, GisRenderFogFactory, GisRenderFogVolumeFactory,
+    GisRenderImageBasedLightingFactory, GisRenderLayerMeta,
+    GisRenderLightProbeFactory, GisRenderMaterialIntentFactory,
+    GisRenderMotionBlurFactory, GisRenderRasterLayerFactory,
+    GisRenderRasterStyleFactory, GisRenderSceneFactory,
+    GisRenderSceneEnvironmentUpdateFactory, GisRenderSceneLayerStateUpdateFactory,
+    GisRenderSceneLayerStructureUpdateFactory, GisRenderSceneMeta,
+    GisRenderSceneUpdateFactory, GisRenderSceneUpdateMeta,
+    GisRenderSceneViewUpdateFactory,
+    GisRenderScreenSpaceAmbientOcclusionFactory,
+    GisRenderScreenSpaceReflectionsFactory, GisRenderShadowParticipationFactory,
+    GisRenderSkyboxFactory, GisRenderTerrainLayerFactory,
+    GisRenderTerrainStyleFactory, GisRenderTileLayerFactory, GisRenderTileStyleFactory,
+    GisRenderVectorLayerFactory, GisRenderViewFactory, GisRenderViewMeta,
+    GisRenderViewOutputFactory, GisRenderVolumetricFogFactory,
+    GisRenderWorldSpaceFactory, RenderBackend,
 };
 pub use rfc7946::{
     GeoJsonBackend, GeoJsonFeatureFactory, GeoJsonFeatureMeta, GeoJsonGeometryFactory,

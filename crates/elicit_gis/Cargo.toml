@@ -25,6 +25,13 @@ tracing.workspace = true
 strum = { workspace = true, features = ["derive"] }
 proc-macro2.workspace = true
 quote.workspace = true
+elicit_ui.workspace = true
+geo-types = { workspace = true, features = ["serde"] }
+geojson.workspace = true
+georaster.workspace = true
+peniko.workspace = true
+kurbo.workspace = true
+url.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }

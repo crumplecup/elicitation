@@ -3653,9 +3653,15 @@ name = "elicit_gis"
 version = "0.11.1"
 dependencies = [
  "derive_more",
+ "elicit_ui",
  "elicitation",
  "elicitation_derive",
  "futures",
+ "geo-types",
+ "geojson",
+ "georaster",
+ "kurbo",
+ "peniko",
  "proc-macro2",
  "quote",
  "rmcp",
@@ -3665,6 +3671,7 @@ dependencies = [
  "strum 0.28.0",
  "tokio",
  "tracing",
+ "url",
 ]
 
 [[package]]
