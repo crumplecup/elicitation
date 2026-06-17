@@ -3,6 +3,15 @@
 # Common tasks for building, testing, and maintaining the Elicitation project.
 # Run `just` or `just --list` to see all available commands.
 
+# Cursor's sandbox intercepts execve and rustup sees argv[0]="cursor", breaking
+# the rustup shim at ~/.cargo/bin/cargo.  Use the real toolchain binary directly
+# when it is available; fall back to the shim for non-Cursor environments.
+cargo := if path_exists(home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo") == "true" {
+    home_directory() / ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo"
+} else {
+    "cargo"
+}
+
 # Default recipe to display help
 default:
     @just --list
@@ -13,15 +22,15 @@ default:
 # Install all required development tools and verification tools
 setup:
     @echo "🔧 Installing development tools..."
-    cargo install just || true
-    cargo install cargo-audit || true
-    cargo install cargo-dist || true
-    cargo install cargo-release || true
-    cargo install git-cliff || true
-    cargo install omnibor-cli || true
-    cargo install cargo-hack || true
-    cargo install --locked cargo-nextest || true
-    cargo install cargo-semver-checks || true
+    {{cargo}} install just || true
+    {{cargo}} install cargo-audit || true
+    {{cargo}} install cargo-dist || true
+    {{cargo}} install cargo-release || true
+    {{cargo}} install git-cliff || true
+    {{cargo}} install omnibor-cli || true
+    {{cargo}} install cargo-hack || true
+    {{cargo}} install --locked cargo-nextest || true
+    {{cargo}} install cargo-semver-checks || true
     @echo "✅ All development tools installed"
     @echo ""
     @just setup-verifiers
@@ -38,8 +47,8 @@ setup-verifiers install_dir="~/repos":
         echo "✅ Kani already installed"
     else
         echo "📦 Installing Kani..."
-        cargo install --locked kani-verifier
-        cargo kani setup
+        {{cargo}} install --locked kani-verifier
+        {{cargo}} kani setup
     fi
     echo ""
     
@@ -98,26 +107,26 @@ check package="":
     #!/usr/bin/env bash
     if [ -z "{{package}}" ]; then
         echo "🔍 Checking entire workspace (stable)..."
-        cargo check --workspace --exclude elicitation_creusot --exclude elicitation_kani
+        {{cargo}} check --workspace --exclude elicitation_creusot --exclude elicitation_kani
         echo "🔍 Checking nightly-only crates..."
-        cargo +nightly check -p elicitation_creusot -p elicitation_kani
+        {{cargo}} +nightly check -p elicitation_creusot -p elicitation_kani
     else
         echo "🔍 Checking package: {{package}}"
-        cargo check -p {{package}}
+        {{cargo}} check -p {{package}}
     fi
 
 # Build specific package or entire workspace
 build package="":
     #!/usr/bin/env bash
     if [ -z "{{package}}" ]; then
-        cargo build --release
+        {{cargo}} build --release
     else
-        cargo build --release --package {{package}}
+        {{cargo}} build --release --package {{package}}
     fi
 
 # Clean build artifacts
 clean:
-    cargo clean
+    {{cargo}} clean
 
 # Clean and rebuild
 rebuild: clean build
@@ -131,48 +140,48 @@ test package="" test_name="":
     if [ -z "{{package}}" ]; then
         # No package specified - run stable crates then nightly crates separately
         echo "🧪 Testing stable workspace crates..."
-        cargo test --workspace --lib --tests \
+        {{cargo}} test --workspace --lib --tests \
             --exclude elicitation_creusot \
             --exclude elicitation_kani
         echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
-        cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests
+        {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests
     elif [ -z "{{test_name}}" ]; then
         # Package specified, no test - run all tests for package
-        cargo test --package {{package}} --lib --tests
+        {{cargo}} test --package {{package}} --lib --tests
     else
         # Package and test specified - run specific test
-        cargo test --package {{package}} --lib --tests {{test_name}} -- --nocapture
+        {{cargo}} test --package {{package}} --lib --tests {{test_name}} -- --nocapture
     fi
 
 # Run tests with verbose output
 test-verbose:
     #!/usr/bin/env bash
     echo "🧪 Testing stable workspace crates..."
-    cargo test --workspace --lib --tests \
+    {{cargo}} test --workspace --lib --tests \
         --exclude elicitation_creusot \
         --exclude elicitation_kani \
         -- --nocapture
     echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
-    cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests -- --nocapture
+    {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests -- --nocapture
 
 # Run doctests
 test-doc:
     #!/usr/bin/env bash
     echo "📖 Running doctests (stable crates)..."
-    cargo test --workspace --doc \
+    {{cargo}} test --workspace --doc \
         --exclude elicitation_creusot \
         --exclude elicitation_kani
     echo "📖 Running doctests (nightly-only crates)..."
-    cargo +nightly test -p elicitation_creusot -p elicitation_kani --doc
+    {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --doc
 
 # Run tests for a specific package
 test-package package test_name="":
     #!/usr/bin/env bash
     echo "📦 Testing {{package}}"
     if [ -n "{{test_name}}" ]; then
-        cargo test -p {{package}} --lib --tests {{test_name}} -- --nocapture
+        {{cargo}} test -p {{package}} --lib --tests {{test_name}} -- --nocapture
     else
-        cargo test -p {{package}} --lib --tests
+        {{cargo}} test -p {{package}} --lib --tests
     fi
 
 # Run API tests (rate-limited, expensive)
@@ -283,15 +292,15 @@ lint package='':
 
 # Run clippy and fix issues automatically
 lint-fix:
-    cargo clippy --workspace --all-targets --fix --allow-dirty --allow-staged
+    {{cargo}} clippy --workspace --all-targets --fix --allow-dirty --allow-staged
 
 # Check code formatting
 fmt-check:
-    cargo fmt --all -- --check
+    {{cargo}} fmt --all -- --check
 
 # Format all code
 fmt:
-    cargo fmt --all
+    {{cargo}} fmt --all
 
 # Check markdown files for issues
 lint-md:
@@ -364,7 +373,7 @@ check-all package='':
         echo "🔍 Running all checks on entire workspace..."
 
         # Run fmt (errors only)
-        cargo fmt --all
+        {{cargo}} fmt --all
 
         # Run lint (show output and log warnings/errors)
         echo "🔍 Linting entire workspace (stable)"
@@ -405,7 +414,7 @@ check-all package='':
         just fmt
         just lint "{{package}}" || exit 1
         just test-package "{{package}}" || exit 1
-        cargo test -p "{{package}}" --doc || exit 1
+        {{cargo}} test -p "{{package}}" --doc || exit 1
         echo "✅ All checks passed!"
     fi
 
@@ -419,12 +428,12 @@ fix-all: fmt lint-fix
 # Check for security vulnerabilities in dependencies
 audit:
     @command -v cargo-audit >/dev/null 2>&1 || (echo "❌ cargo-audit not installed. Run: just setup" && exit 1)
-    cargo audit
+    {{cargo}} audit
 
 # Update dependencies and check for vulnerabilities
 audit-fix:
-    cargo update
-    cargo audit
+    {{cargo}} update
+    {{cargo}} audit
 
 # Generate OmniBOR artifact tree for supply chain transparency
 omnibor:
@@ -438,7 +447,7 @@ security: audit omnibor
 # Check for semver compatibility against published crates.io baseline
 semver-check:
     @command -v cargo-semver-checks >/dev/null 2>&1 || (echo "❌ cargo-semver-checks not installed. Run: just setup" && exit 1)
-    cargo semver-checks --workspace
+    {{cargo}} semver-checks --workspace
 
 # Full Workflow (CI/CD)
 # ====================
@@ -461,7 +470,7 @@ pre-release: ci security semver-check
     git cliff --unreleased
     @echo ""
     @echo "📦 Testing release dry-run..."
-    cargo release --workspace --no-publish --no-push --no-tag --allow-branch '*'
+    {{cargo}} release --workspace --no-publish --no-push --no-tag --allow-branch '*'
     @echo ""
     @echo "🏗️  Building release artifacts..."
     just build
@@ -526,7 +535,7 @@ changelog-full:
 release-dry-run level="patch":
     @command -v cargo-release >/dev/null 2>&1 || (echo "❌ cargo-release not installed. Run: just setup" && exit 1)
     @echo "🔍 Dry-run release {{level}}..."
-    cargo release {{level}} --workspace --no-publish --no-push --no-tag --allow-branch '*'
+    {{cargo}} release {{level}} --workspace --no-publish --no-push --no-tag --allow-branch '*'
 
 # Execute release (bumps version, tags, pushes)
 release level="patch":
@@ -539,7 +548,7 @@ release level="patch":
     @echo ""
     @read -p "Continue? (y/N) " -n 1 -r; echo; \
     if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-        cargo release {{level}} --workspace --execute; \
+        {{cargo}} release {{level}} --workspace --execute; \
     else \
         echo "❌ Release cancelled"; \
         exit 1; \
@@ -550,7 +559,7 @@ release level="patch":
 
 # Build and open documentation
 doc:
-    cargo doc --workspace --no-deps --open
+    {{cargo}} doc --workspace --no-deps --open
 
 # Check documentation for issues (warnings treated as errors)
 doc-check:
@@ -558,7 +567,7 @@ doc-check:
 
 # Build and view documentation for a specific crate
 doc-crate crate:
-    cargo doc --package {{crate}} --no-deps --open
+    {{cargo}} doc --package {{crate}} --no-deps --open
 
 # Utility
 # =======
@@ -573,11 +582,11 @@ clean-all: clean
 # Check for outdated dependencies
 outdated:
     @command -v cargo-outdated >/dev/null 2>&1 || (echo "Installing cargo-outdated..." && cargo install cargo-outdated)
-    cargo outdated
+    {{cargo}} outdated
 
 # Update dependencies to latest compatible versions
 update-deps:
-    cargo update
+    {{cargo}} update
     @echo "✅ Dependencies updated. Run 'just test' to verify."
 
 # Show project statistics
@@ -607,7 +616,7 @@ env:
     rustc --version
     echo ""
     echo "Cargo version:"
-    cargo --version
+    {{cargo}} --version
     echo ""
     echo "Just version:"
     just --version
@@ -666,10 +675,10 @@ verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
         echo "🔬 Running all Kani verifications..."
-        cargo kani -p elicitation_kani --lib --all-features
+        {{cargo}} kani -p elicitation_kani --lib --all-features
     else
         echo "🔬 Running Kani harness: {{harness}}"
-        cargo kani -p elicitation_kani --lib --all-features --harness {{harness}}
+        {{cargo}} kani -p elicitation_kani --lib --all-features --harness {{harness}}
     fi
 
 # Run Kani verification for rand integration
@@ -708,7 +717,7 @@ verify-kani-rand harness="" csv="rand_kani_results.csv":
         echo "Note: RNG construction proofs skipped (rand uses inline asm)"
     else
         echo "🎲 Running rand Kani harness: {{harness}}"
-        cargo kani --harness {{harness}} -p elicitation_rand --features verification
+        {{cargo}} kani --harness {{harness}} -p elicitation_rand --features verification
     fi
 
 # Run Kani verification with CSV tracking (recommended)
@@ -861,7 +870,7 @@ verify-vsm-creusot-prove:
 # Regenerate VSM Creusot COMA files from elicit_proofs (run before verify-vsm-creusot-prove)
 verify-vsm-creusot-compile:
     PATH="${HOME}/.local/share/creusot/bin:${PATH}" \
-    cargo creusot prove -- -p elicit_proofs --features creusot
+    {{cargo}} creusot prove -- -p elicit_proofs --features creusot
 
 # Show goal-level summary
 verify-creusot-goal-summary goals="creusot_goal_results.csv":
@@ -904,7 +913,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 2-byte proof (output: utf8_2byte_proof.log)..."
-            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
+            {{cargo}} kani -p elicitation_kani_kani --all-features --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
             ;;
         3byte)
             echo "🔬 Kani UTF-8 3-Byte Symbolic Proof"
@@ -921,7 +930,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 3-byte proof (output: utf8_3byte_proof.log)..."
-            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
+            {{cargo}} kani -p elicitation_kani_kani --all-features --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
             ;;
         4byte)
             echo "🔬 Kani UTF-8 4-Byte Symbolic Proof"
@@ -938,7 +947,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 4-byte proof (output: utf8_4byte_proof.log)..."
-            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
+            {{cargo}} kani -p elicitation_kani_kani --all-features --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
             ;;
         all)
             echo "🔬 All Kani UTF-8 Symbolic Proofs"
@@ -984,10 +993,10 @@ verify-examples:
     @echo "🔬 Running verification examples..."
     @echo ""
     @echo "Kani example:"
-    cargo run --example kani_example --features verify-kani
+    {{cargo}} run --example kani_example --features verify-kani
     @echo ""
     @echo "Creusot example:"
-    cargo run --example creusot_example --features verify-creusot
+    {{cargo}} run --example creusot_example --features verify-creusot
     @echo ""
     @echo "✅ All examples passed"
 
