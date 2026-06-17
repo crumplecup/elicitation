@@ -16,6 +16,12 @@
 //! | [`GisRenderTerrainStyleFactory`] | terrain symbolization descriptors | `Established<RenderTerrainStyleValid>` |
 //! | [`GisRenderMaterialIntentFactory`] | material-family and texture-binding descriptors | `Established<RenderMaterialIntentValid>` |
 //! | [`GisRenderShadowParticipationFactory`] | shadow-participation descriptors | `Established<RenderShadowParticipationValid>` |
+//! | [`GisRenderOutputTargetFactory`] | render output-target descriptors | `Established<RenderOutputTargetValid>` |
+//! | [`GisRenderClearPolicyFactory`] | render clear-policy descriptors | `Established<RenderClearPolicyValid>` |
+//! | [`GisRenderViewportFactory`] | render viewport descriptors | `Established<RenderViewportValid>` |
+//! | [`GisRenderResolutionOverrideFactory`] | resolution-override descriptors | `Established<RenderResolutionOverrideValid>` |
+//! | [`GisRenderSubViewLayoutFactory`] | subview-layout descriptors | `Established<RenderSubViewLayoutValid>` |
+//! | [`GisRenderViewParticipationFactory`] | per-layer multi-view routing descriptors | `Established<RenderViewParticipationValid>` |
 //! | [`GisRenderViewOutputFactory`] | camera output and post-process descriptors | `Established<RenderViewOutputValid>` |
 //! | [`GisRenderExposureFactory`] | fixed exposure descriptors | `Established<RenderExposureValid>` |
 //! | [`GisRenderAutoExposureFactory`] | auto-exposure descriptors | `Established<RenderAutoExposureValid>` |
@@ -54,11 +60,14 @@
 //! | [`GisRenderTileLayerFactory`] | tile render layers from explicit tile sources | `Established<RenderableTileLayerValid>` |
 //! | [`GisRenderTerrainLayerFactory`] | terrain render layers from elevation rasters | `Established<RenderableTerrainLayerValid>` |
 //! | [`GisRenderAnnotationLayerFactory`] | explicit annotation layers from anchored symbolizers | `Established<RenderableAnnotationLayerValid>` |
-//! | [`GisRenderSceneFactory`] | full scenes from validated view + validated layers | `Established<RenderableSceneValid>` |
+//! | [`GisRenderModelLayerFactory`] | 3D GLTF/GLB model layers with geodetic placement | `Established<RenderableModelLayerValid>` |
+//! | [`GisRenderLayerGroupFactory`] | hierarchical layer groups over the flat layer list | `Established<RenderableLayerGroupValid>` |
+//! | [`GisRenderSceneFactory`] | full scenes from validated primary view + auxiliary views + validated layers + groups | `Established<RenderableSceneValid>` |
 //! | [`GisRenderSceneEnvironmentUpdateFactory`] | scene-environment updates | `Established<RenderableSceneUpdateValid>` |
 //! | [`GisRenderSceneViewUpdateFactory`] | scene-view updates | `Established<RenderableSceneUpdateValid>` |
 //! | [`GisRenderSceneLayerStructureUpdateFactory`] | layer insert/replace/remove/reorder updates | `Established<RenderableSceneUpdateValid>` |
 //! | [`GisRenderSceneLayerStateUpdateFactory`] | layer visibility/opacity/draw-order updates | `Established<RenderableSceneUpdateValid>` |
+//! | [`GisRenderSceneLayerViewParticipationUpdateFactory`] | layer multi-view routing updates | `Established<RenderableSceneUpdateValid>` |
 //! | [`GisRenderSceneUpdateFactory`] | all incremental scene updates | `Established<RenderableSceneUpdateValid>` |
 //!
 //! ## Role 2 — Orthogonal reporters
@@ -70,6 +79,10 @@
 //! | [`GisRenderAssetDependencyMeta`] | asset, material-family, and pipeline dependency queries for render descriptors |
 //! | [`GisRenderSceneUpdateMeta`] | operation kind and payload queries for incremental scene updates |
 //! | [`GisRenderSceneMeta`] | identifiers, layer counts, and scene-level label/raster presence |
+//! | [`GisRenderPickingMeta`] | screen-space hit-testing — maps screen points/rects to feature IDs |
+//! | [`GisRenderTimeMeta`] | temporal filtering — evaluates time-varying layer visibility |
+//! | [`GisRenderProjectionMeta`] | coordinate projection — converts between geographic and screen space |
+//! | [`GisRenderTileStreamingMeta`] | tile streaming lifecycle — in-flight requests, cache utilization, load progress |
 //!
 //! ## Role 3 — Backend supertrait
 //!
@@ -77,44 +90,46 @@
 //! interface without forcing the core [`crate::GisBackend`] aggregate to grow
 //! before producer/consumer crates implement the new render traits.
 
-use elicitation::Established;
-use geo_types::Geometry;
-use geojson::FeatureCollection;
-use georaster::geotiff::ImageInfo;
-
 use crate::{
     GisResult, LayerDrawOrderAssigned, LayerOpacityUnitInterval, LayerOrderDeterministic,
     RenderAmbientLightDescriptor, RenderAmbientLightValid, RenderAnnotationDescriptor,
-    RenderAtmosphereDescriptor, RenderAtmosphereValid, RenderAutoExposureDescriptor,
-    RenderAutoExposureValid, RenderBloomDescriptor, RenderBloomValid,
+    RenderAssetReference, RenderAtmosphereDescriptor, RenderAtmosphereValid,
+    RenderAutoExposureDescriptor, RenderAutoExposureValid, RenderBloomDescriptor, RenderBloomValid,
     RenderCascadeShadowConfigDescriptor, RenderCascadeShadowConfigValid,
     RenderChromaticAberrationDescriptor, RenderChromaticAberrationValid,
-    RenderColorGradingDescriptor, RenderColorGradingValid,
-    RenderDepthOfFieldDescriptor, RenderDepthOfFieldValid,
-    RenderDirectionalLightDescriptor, RenderDirectionalLightValid,
-    RenderExposureDescriptor, RenderExposureValid, RenderFeatureRecord,
-    RenderFeatureStyleDescriptor, RenderFeatureStyleValid, RenderFogDescriptor,
-    RenderFogValid, RenderFogVolumeDescriptor, RenderFogVolumeValid,
-    RenderAssetReference, RenderMaterialFamily, RenderPipelineDomain, RenderPrepassKind,
-    RenderImageBasedLightingDescriptor, RenderImageBasedLightingValid,
-    RenderLayerDescriptor, RenderLayerKind, RenderLayerSpec, RenderLightProbeDescriptor,
-    RenderLightProbeValid, RenderMotionBlurDescriptor, RenderMotionBlurValid,
-    RenderMaterialIntentDescriptor, RenderMaterialIntentValid,
-    RenderRasterSourceDescriptor, RenderRasterStyleDescriptor, RenderRasterStyleValid,
-    RenderSceneDescriptor, RenderSceneEnvironmentDescriptor, RenderSceneEnvironmentValid,
-    RenderSceneSpec, RenderSceneUpdateDescriptor, RenderSceneUpdateKind,
+    RenderClearPolicyDescriptor, RenderClearPolicyValid, RenderColorGradingDescriptor,
+    RenderColorGradingValid, RenderDepthOfFieldDescriptor, RenderDepthOfFieldValid,
+    RenderDirectionalLightDescriptor, RenderDirectionalLightValid, RenderExposureDescriptor,
+    RenderExposureValid, RenderFeatureRecord, RenderFeatureStyleDescriptor,
+    RenderFeatureStyleValid, RenderFogDescriptor, RenderFogValid, RenderFogVolumeDescriptor,
+    RenderFogVolumeValid, RenderImageBasedLightingDescriptor, RenderImageBasedLightingValid,
+    RenderLayerDescriptor, RenderLayerGroupDescriptor, RenderLayerKind, RenderLayerSpec,
+    RenderLayerTimeFilter, RenderLightProbeDescriptor, RenderLightProbeValid, RenderMaterialFamily,
+    RenderMaterialIntentDescriptor, RenderMaterialIntentValid, RenderModelPlacementDescriptor,
+    RenderMotionBlurDescriptor, RenderMotionBlurValid, RenderOutputTargetDescriptor,
+    RenderOutputTargetValid, RenderPickHitDescriptor, RenderPipelineDomain, RenderPrepassKind,
+    RenderRasterSourceImageInfo, RenderRasterStyleDescriptor, RenderRasterStyleValid,
+    RenderResolutionOverrideDescriptor, RenderResolutionOverrideValid, RenderScaleRangeDescriptor,
+    RenderSceneDescriptor, RenderSceneEnvironmentDescriptor, RenderSceneEnvironmentSelection,
+    RenderSceneEnvironmentValid, RenderSceneSpec, RenderSceneUpdateDescriptor,
+    RenderSceneUpdateKind, RenderScreenPointDescriptor, RenderScreenRectDescriptor,
     RenderScreenSpaceAmbientOcclusionDescriptor, RenderScreenSpaceAmbientOcclusionValid,
     RenderScreenSpaceReflectionsDescriptor, RenderScreenSpaceReflectionsValid,
-    RenderShadowParticipationDescriptor, RenderShadowParticipationValid,
-    RenderSkyboxDescriptor, RenderSkyboxValid, RenderTerrainStyleDescriptor,
-    RenderTerrainStyleValid, RenderTileSourceDescriptor, RenderTileStyleDescriptor,
-    RenderTileStyleValid, RenderViewDescriptor, RenderViewOutputDescriptor,
-    RenderViewOutputValid, RenderViewValid, RenderVolumetricFogDescriptor,
-    RenderVolumetricFogValid, RenderWorldSpaceDescriptor, RenderWorldSpaceValid,
-    RenderableAnnotationLayerValid, RenderableLayerValid, RenderableRasterLayerValid,
+    RenderShadowParticipationDescriptor, RenderShadowParticipationValid, RenderSkyboxDescriptor,
+    RenderSkyboxValid, RenderSubViewLayoutDescriptor, RenderSubViewLayoutValid,
+    RenderTerrainStyleDescriptor, RenderTerrainStyleValid, RenderTileSourceDescriptor,
+    RenderTileStyleDescriptor, RenderTileStyleValid, RenderTimeContext, RenderViewDescriptor,
+    RenderViewOutputDescriptor, RenderViewOutputValid, RenderViewParticipationDescriptor,
+    RenderViewParticipationValid, RenderViewValid, RenderViewportDescriptor, RenderViewportValid,
+    RenderVolumetricFogDescriptor, RenderVolumetricFogValid, RenderWorldSpaceDescriptor,
+    RenderWorldSpaceValid, RenderableAnnotationLayerValid, RenderableLayerGroupValid,
+    RenderableLayerValid, RenderableModelLayerValid, RenderableRasterLayerValid,
     RenderableSceneUpdateValid, RenderableSceneValid, RenderableTerrainLayerValid,
     RenderableTileLayerValid, RenderableVectorLayerValid,
 };
+use elicitation::Established;
+use geo_types::Geometry;
+use geojson::FeatureCollection;
 
 /// Validate renderer-agnostic vector symbolization descriptors.
 pub trait GisRenderFeatureStyleFactory: Send + Sync {
@@ -168,6 +183,60 @@ pub trait GisRenderShadowParticipationFactory: Send + Sync {
         &self,
         input: RenderShadowParticipationDescriptor,
     ) -> GisResult<Established<RenderShadowParticipationValid>>;
+}
+
+/// Validate render output-target descriptors.
+pub trait GisRenderOutputTargetFactory: Send + Sync {
+    /// Validate a render output-target descriptor.
+    fn build_render_output_target(
+        &self,
+        input: RenderOutputTargetDescriptor,
+    ) -> GisResult<Established<RenderOutputTargetValid>>;
+}
+
+/// Validate render clear-policy descriptors.
+pub trait GisRenderClearPolicyFactory: Send + Sync {
+    /// Validate a render clear-policy descriptor.
+    fn build_render_clear_policy(
+        &self,
+        input: RenderClearPolicyDescriptor,
+    ) -> GisResult<Established<RenderClearPolicyValid>>;
+}
+
+/// Validate render viewport descriptors.
+pub trait GisRenderViewportFactory: Send + Sync {
+    /// Validate a render viewport descriptor.
+    fn build_render_viewport(
+        &self,
+        input: RenderViewportDescriptor,
+    ) -> GisResult<Established<RenderViewportValid>>;
+}
+
+/// Validate render resolution-override descriptors.
+pub trait GisRenderResolutionOverrideFactory: Send + Sync {
+    /// Validate a render resolution-override descriptor.
+    fn build_render_resolution_override(
+        &self,
+        input: RenderResolutionOverrideDescriptor,
+    ) -> GisResult<Established<RenderResolutionOverrideValid>>;
+}
+
+/// Validate render subview-layout descriptors.
+pub trait GisRenderSubViewLayoutFactory: Send + Sync {
+    /// Validate a render subview-layout descriptor.
+    fn build_render_subview_layout(
+        &self,
+        input: RenderSubViewLayoutDescriptor,
+    ) -> GisResult<Established<RenderSubViewLayoutValid>>;
+}
+
+/// Validate per-layer multi-view routing descriptors.
+pub trait GisRenderViewParticipationFactory: Send + Sync {
+    /// Validate one per-layer view-participation descriptor.
+    fn build_render_view_participation(
+        &self,
+        input: RenderViewParticipationDescriptor,
+    ) -> GisResult<Established<RenderViewParticipationValid>>;
 }
 
 /// Validate renderer-agnostic camera output and post-process descriptors.
@@ -431,8 +500,7 @@ pub trait GisRenderRasterLayerFactory: Send + Sync {
     fn build_raster_layer_from_image_info(
         &self,
         spec: RenderLayerSpec,
-        source: RenderRasterSourceDescriptor,
-        image_info: ImageInfo,
+        source_info: RenderRasterSourceImageInfo,
         style: RenderRasterStyleDescriptor,
         style_proof: Established<RenderRasterStyleValid>,
         view: RenderViewDescriptor,
@@ -464,8 +532,7 @@ pub trait GisRenderTerrainLayerFactory: Send + Sync {
     fn build_terrain_layer_from_image_info(
         &self,
         spec: RenderLayerSpec,
-        source: RenderRasterSourceDescriptor,
-        image_info: ImageInfo,
+        source_info: RenderRasterSourceImageInfo,
         style: RenderTerrainStyleDescriptor,
         style_proof: Established<RenderTerrainStyleValid>,
         view: RenderViewDescriptor,
@@ -491,16 +558,69 @@ pub trait GisRenderAnnotationLayerFactory: Send + Sync {
     )>;
 }
 
+/// Build 3D model render layers from GLTF/GLB assets.
+pub trait GisRenderModelLayerFactory: Send + Sync {
+    /// Build a renderable 3D model layer from an asset reference and placement.
+    fn build_model_layer(
+        &self,
+        spec: RenderLayerSpec,
+        asset: RenderAssetReference,
+        placement: RenderModelPlacementDescriptor,
+        shadow_participation: Option<RenderShadowParticipationDescriptor>,
+        material_override: Option<RenderMaterialIntentDescriptor>,
+    ) -> GisResult<(
+        RenderLayerDescriptor,
+        Established<RenderableModelLayerValid>,
+    )>;
+}
+
+/// Build and validate a layer group descriptor.
+pub trait GisRenderLayerGroupFactory: Send + Sync {
+    /// Build a validated layer group from an identifier, name, visibility,
+    /// opacity, and ordered child layer-ID or nested-group references.
+    fn build_layer_group(
+        &self,
+        id: String,
+        name: String,
+        visible: bool,
+        opacity: f32,
+        children: Vec<RenderLayerGroupDescriptor>,
+        child_layer_ids: Vec<String>,
+    ) -> GisResult<(
+        RenderLayerGroupDescriptor,
+        Established<RenderableLayerGroupValid>,
+    )>;
+}
+
+/// Bundled scene content for [`GisRenderSceneFactory::build_render_scene`].
+///
+/// Groups the validated view, auxiliary views, layers, and layer-group tree
+/// into a single argument to stay within argument-count limits.
+pub struct RenderSceneContent {
+    /// Validated primary view.
+    pub view: RenderViewDescriptor,
+    /// Proof that the primary view is valid.
+    pub view_proof: Established<RenderViewValid>,
+    /// Optional validated auxiliary views rendered against the same layer set.
+    pub auxiliary_views: Vec<(RenderViewDescriptor, Established<RenderViewValid>)>,
+    /// Validated render layers in draw order.
+    pub layers: Vec<(RenderLayerDescriptor, Established<RenderableLayerValid>)>,
+    /// Optional validated layer groups providing a logical hierarchy over `layers`.
+    pub layer_groups: Vec<(
+        RenderLayerGroupDescriptor,
+        Established<RenderableLayerGroupValid>,
+    )>,
+}
+
 /// Compose validated render layers into a validated scene.
 pub trait GisRenderSceneFactory: Send + Sync {
-    /// Build a render scene from a validated view and validated layer receipts.
+    /// Build a render scene from a spec, environment selection, and bundled
+    /// validated view/layer/group content.
     fn build_render_scene(
         &self,
         spec: RenderSceneSpec,
-        environment_proof: Option<Established<RenderSceneEnvironmentValid>>,
-        view: RenderViewDescriptor,
-        view_proof: Established<RenderViewValid>,
-        layers: Vec<(RenderLayerDescriptor, Established<RenderableLayerValid>)>,
+        environment: RenderSceneEnvironmentSelection,
+        content: RenderSceneContent,
     ) -> GisResult<(RenderSceneDescriptor, Established<RenderableSceneValid>)>;
 }
 
@@ -512,24 +632,66 @@ pub trait GisRenderSceneEnvironmentUpdateFactory: Send + Sync {
         scene_id: String,
         environment: RenderSceneEnvironmentDescriptor,
         environment_proof: Established<RenderSceneEnvironmentValid>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Clear the active environment for a scene.
     fn build_render_scene_environment_clear(
         &self,
         scene_id: String,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 }
 
 /// Build scene-view updates.
 pub trait GisRenderSceneViewUpdateFactory: Send + Sync {
-    /// Replace the active view for a scene.
+    /// Replace the primary view for a scene.
     fn build_render_scene_view_replace(
         &self,
         scene_id: String,
         view: RenderViewDescriptor,
         view_proof: Established<RenderViewValid>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
+
+    /// Insert a new auxiliary view into a scene.
+    fn build_render_scene_auxiliary_view_insert(
+        &self,
+        scene_id: String,
+        view: RenderViewDescriptor,
+        view_proof: Established<RenderViewValid>,
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
+
+    /// Replace one auxiliary view in a scene.
+    fn build_render_scene_auxiliary_view_replace(
+        &self,
+        scene_id: String,
+        target_view_id: String,
+        view: RenderViewDescriptor,
+        view_proof: Established<RenderViewValid>,
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
+
+    /// Remove one auxiliary view from a scene.
+    fn build_render_scene_auxiliary_view_remove(
+        &self,
+        scene_id: String,
+        target_view_id: String,
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 }
 
 /// Build scene updates that change layer structure.
@@ -541,7 +703,10 @@ pub trait GisRenderSceneLayerStructureUpdateFactory: Send + Sync {
         layer: RenderLayerDescriptor,
         layer_proof: Established<RenderableLayerValid>,
         before_layer_id: Option<String>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Replace an existing layer in a scene.
     fn build_render_scene_layer_replace(
@@ -550,14 +715,20 @@ pub trait GisRenderSceneLayerStructureUpdateFactory: Send + Sync {
         target_layer_id: String,
         layer: RenderLayerDescriptor,
         layer_proof: Established<RenderableLayerValid>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Remove an existing layer from a scene.
     fn build_render_scene_layer_remove(
         &self,
         scene_id: String,
         target_layer_id: String,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Reorder a layer relative to another layer.
     fn build_render_scene_layer_move_before(
@@ -565,7 +736,10 @@ pub trait GisRenderSceneLayerStructureUpdateFactory: Send + Sync {
         scene_id: String,
         target_layer_id: String,
         before_layer_id: Option<String>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 }
 
 /// Build scene updates that change layer state.
@@ -576,7 +750,10 @@ pub trait GisRenderSceneLayerStateUpdateFactory: Send + Sync {
         scene_id: String,
         target_layer_id: String,
         visible: bool,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Update a layer's opacity.
     fn build_render_scene_layer_opacity_update(
@@ -585,7 +762,10 @@ pub trait GisRenderSceneLayerStateUpdateFactory: Send + Sync {
         target_layer_id: String,
         opacity: f32,
         opacity_proof: Established<LayerOpacityUnitInterval>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 
     /// Update a layer's draw order.
     fn build_render_scene_layer_draw_order_update(
@@ -594,7 +774,25 @@ pub trait GisRenderSceneLayerStateUpdateFactory: Send + Sync {
         target_layer_id: String,
         draw_order: i32,
         draw_order_proof: Established<LayerDrawOrderAssigned>,
-    ) -> GisResult<(RenderSceneUpdateDescriptor, Established<RenderableSceneUpdateValid>)>;
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
+}
+
+/// Build scene updates that change layer multi-view routing.
+pub trait GisRenderSceneLayerViewParticipationUpdateFactory: Send + Sync {
+    /// Update one layer's per-view routing policy.
+    fn build_render_scene_layer_view_participation_update(
+        &self,
+        scene_id: String,
+        target_layer_id: String,
+        view_participation: RenderViewParticipationDescriptor,
+        view_participation_proof: Established<RenderViewParticipationValid>,
+    ) -> GisResult<(
+        RenderSceneUpdateDescriptor,
+        Established<RenderableSceneUpdateValid>,
+    )>;
 }
 
 /// Build all supported incremental scene updates.
@@ -603,6 +801,7 @@ pub trait GisRenderSceneUpdateFactory:
     + GisRenderSceneViewUpdateFactory
     + GisRenderSceneLayerStructureUpdateFactory
     + GisRenderSceneLayerStateUpdateFactory
+    + GisRenderSceneLayerViewParticipationUpdateFactory
     + Send
     + Sync
 {
@@ -613,6 +812,7 @@ impl<T> GisRenderSceneUpdateFactory for T where
         + GisRenderSceneViewUpdateFactory
         + GisRenderSceneLayerStructureUpdateFactory
         + GisRenderSceneLayerStateUpdateFactory
+        + GisRenderSceneLayerViewParticipationUpdateFactory
         + Send
         + Sync
 {
@@ -635,16 +835,45 @@ pub trait GisRenderLayerMeta: Send + Sync {
     /// Report whether the layer is visible.
     fn layer_is_visible(&self, layer: &RenderLayerDescriptor) -> bool;
 
+    /// Report the layer's explicit per-view routing policy.
+    fn layer_view_participation<'a>(
+        &self,
+        layer: &'a RenderLayerDescriptor,
+    ) -> &'a RenderViewParticipationDescriptor;
+
     /// Re-establish that opacity is in the unit interval for a previously
     /// validated layer descriptor.
     fn layer_opacity(
         &self,
         layer: &RenderLayerDescriptor,
     ) -> GisResult<(f32, Established<LayerOpacityUnitInterval>)>;
+
+    /// Report the layer's optional map-resolution visibility range.
+    ///
+    /// Returns `None` when the layer carries no scale constraint.
+    fn layer_scale_range<'a>(
+        &self,
+        layer: &'a RenderLayerDescriptor,
+    ) -> Option<&'a RenderScaleRangeDescriptor>;
+
+    /// Report whether this layer should be visible at the given map resolution.
+    ///
+    /// `resolution` is in renderer-neutral map units per pixel (larger values
+    /// mean more zoomed out).  A layer with no `resolution_range` is always
+    /// visible.  Otherwise the layer is visible when
+    /// `min_resolution ≤ resolution ≤ max_resolution` (each bound optional).
+    fn layer_is_visible_at_resolution(
+        &self,
+        layer: &RenderLayerDescriptor,
+        resolution: f64,
+    ) -> bool;
 }
 
 /// Query orthogonal metadata from a render scene descriptor.
 pub trait GisRenderViewMeta: Send + Sync {
+    /// Stable view identifier.
+    fn view_id<'a>(&self, view: &'a RenderViewDescriptor) -> &'a str;
+
     /// Whether the view carries an explicit CRS authority/code pair.
     fn view_has_crs(&self, view: &RenderViewDescriptor) -> bool;
 
@@ -662,6 +891,15 @@ pub trait GisRenderViewMeta: Send + Sync {
 
     /// Whether the view carries an explicit clear-policy override.
     fn view_has_clear_policy(&self, view: &RenderViewDescriptor) -> bool;
+
+    /// Whether the view carries an explicit physical viewport override.
+    fn view_has_viewport(&self, view: &RenderViewDescriptor) -> bool;
+
+    /// Whether the view carries an explicit render-resolution override.
+    fn view_has_resolution_override(&self, view: &RenderViewDescriptor) -> bool;
+
+    /// Whether the view carries an explicit subview layout.
+    fn view_has_subview_layout(&self, view: &RenderViewDescriptor) -> bool;
 
     /// Whether the view requests HDR output.
     fn view_output_is_hdr(&self, view: &RenderViewDescriptor) -> bool;
@@ -697,19 +935,13 @@ pub trait GisRenderViewMeta: Send + Sync {
     fn view_has_screen_space_reflections(&self, view: &RenderViewDescriptor) -> bool;
 
     /// Whether the view carries screen-space ambient occlusion.
-    fn view_has_screen_space_ambient_occlusion(
-        &self,
-        view: &RenderViewDescriptor,
-    ) -> bool;
+    fn view_has_screen_space_ambient_occlusion(&self, view: &RenderViewDescriptor) -> bool;
 
     /// Whether the view carries an explicit shadow-filtering policy.
     fn view_has_shadow_filtering_method(&self, view: &RenderViewDescriptor) -> bool;
 
     /// Whether the view carries an explicit screen-space transmission-quality hint.
-    fn view_has_screen_space_transmission_quality(
-        &self,
-        view: &RenderViewDescriptor,
-    ) -> bool;
+    fn view_has_screen_space_transmission_quality(&self, view: &RenderViewDescriptor) -> bool;
 }
 
 /// Query declared asset and material-family dependencies from render descriptors.
@@ -733,22 +965,13 @@ pub trait GisRenderAssetDependencyMeta: Send + Sync {
     fn layer_prepasses(&self, layer: &RenderLayerDescriptor) -> Vec<RenderPrepassKind>;
 
     /// Declared asset dependencies needed to realize a full render scene.
-    fn scene_asset_dependencies(
-        &self,
-        scene: &RenderSceneDescriptor,
-    ) -> Vec<RenderAssetReference>;
+    fn scene_asset_dependencies(&self, scene: &RenderSceneDescriptor) -> Vec<RenderAssetReference>;
 
     /// Declared material families needed to realize a full render scene.
-    fn scene_material_families(
-        &self,
-        scene: &RenderSceneDescriptor,
-    ) -> Vec<RenderMaterialFamily>;
+    fn scene_material_families(&self, scene: &RenderSceneDescriptor) -> Vec<RenderMaterialFamily>;
 
     /// Declared pipeline domains needed to realize a full render scene.
-    fn scene_pipeline_domains(
-        &self,
-        scene: &RenderSceneDescriptor,
-    ) -> Vec<RenderPipelineDomain>;
+    fn scene_pipeline_domains(&self, scene: &RenderSceneDescriptor) -> Vec<RenderPipelineDomain>;
 
     /// Declared prepass requirements needed to realize a full render scene.
     fn scene_prepasses(&self, scene: &RenderSceneDescriptor) -> Vec<RenderPrepassKind>;
@@ -767,6 +990,10 @@ pub trait GisRenderSceneUpdateMeta: Send + Sync {
         &self,
         update: &'a RenderSceneUpdateDescriptor,
     ) -> Option<&'a str>;
+
+    /// Target view identifier when the operation addresses one auxiliary view.
+    fn update_target_view_id<'a>(&self, update: &'a RenderSceneUpdateDescriptor)
+    -> Option<&'a str>;
 
     /// Reference layer identifier when the operation is ordered relative to another layer.
     fn update_reference_layer_id<'a>(
@@ -806,6 +1033,12 @@ pub trait GisRenderSceneUpdateMeta: Send + Sync {
         &self,
         update: &RenderSceneUpdateDescriptor,
     ) -> GisResult<Option<(i32, Established<LayerDrawOrderAssigned>)>>;
+
+    /// Replacement per-view routing policy when present.
+    fn update_view_participation<'a>(
+        &self,
+        update: &'a RenderSceneUpdateDescriptor,
+    ) -> Option<&'a RenderViewParticipationDescriptor>;
 }
 
 /// Query orthogonal metadata from a render scene descriptor.
@@ -831,6 +1064,9 @@ pub trait GisRenderSceneMeta: Send + Sync {
     /// Number of annotation layers in the scene.
     fn scene_annotation_layer_count(&self, scene: &RenderSceneDescriptor) -> usize;
 
+    /// Number of auxiliary views beyond the primary scene view.
+    fn scene_auxiliary_view_count(&self, scene: &RenderSceneDescriptor) -> usize;
+
     /// Whether the scene contains at least one raster layer.
     fn scene_has_raster_layers(&self, scene: &RenderSceneDescriptor) -> bool;
 
@@ -842,6 +1078,9 @@ pub trait GisRenderSceneMeta: Send + Sync {
 
     /// Whether the scene contains at least one annotation layer.
     fn scene_has_annotation_layers(&self, scene: &RenderSceneDescriptor) -> bool;
+
+    /// Whether the scene contains auxiliary views beyond the primary view.
+    fn scene_has_auxiliary_views(&self, scene: &RenderSceneDescriptor) -> bool;
 
     /// Whether the scene contains at least one labeled layer.
     fn scene_has_feature_labels(&self, scene: &RenderSceneDescriptor) -> bool;
@@ -856,10 +1095,7 @@ pub trait GisRenderSceneMeta: Send + Sync {
     fn scene_has_volumetric_fog(&self, scene: &RenderSceneDescriptor) -> bool;
 
     /// Whether the scene carries explicit image-based lighting policy.
-    fn scene_has_image_based_lighting(
-        &self,
-        scene: &RenderSceneDescriptor,
-    ) -> bool;
+    fn scene_has_image_based_lighting(&self, scene: &RenderSceneDescriptor) -> bool;
 
     /// Whether the scene carries an explicit atmosphere descriptor.
     fn scene_has_atmosphere(&self, scene: &RenderSceneDescriptor) -> bool;
@@ -883,6 +1119,129 @@ pub trait GisRenderSceneMeta: Send + Sync {
     ) -> GisResult<Established<LayerOrderDeterministic>>;
 }
 
+/// Temporal filtering reporter — queries and evaluates time-varying layer visibility.
+pub trait GisRenderTimeMeta: Send + Sync {
+    /// Return the active time context for a scene, if one was set.
+    fn scene_time_context<'a>(
+        &self,
+        scene: &'a RenderSceneDescriptor,
+    ) -> Option<&'a RenderTimeContext>;
+
+    /// Return the time filter for a layer, if one is set.
+    fn layer_time_filter<'a>(
+        &self,
+        layer: &'a RenderLayerDescriptor,
+    ) -> Option<&'a RenderLayerTimeFilter>;
+
+    /// Return `true` if `layer` is visible under `context`.
+    ///
+    /// A layer with no time filter is always visible.  A layer with a filter
+    /// is visible when `context.start_ms <= valid_until_ms` and
+    /// `context.end_ms >= valid_from_ms` (intersection of the two intervals).
+    fn layer_is_visible_at_time(
+        &self,
+        layer: &RenderLayerDescriptor,
+        context: &RenderTimeContext,
+    ) -> bool;
+}
+
+/// Coordinate projection reporter — converts between geographic and screen space.
+///
+/// The bridge implementation delegates to the engine's camera/projection
+/// matrices.  `view_id` identifies which view in the scene to use; pass the
+/// primary view's identifier for single-view scenes.
+pub trait GisRenderProjectionMeta: Send + Sync {
+    /// Project a geodetic point (longitude, latitude, altitude in metres) into
+    /// screen-space coordinates for the named view.
+    ///
+    /// Returns `None` when the point lies outside the view frustum or when the
+    /// projection is undefined (e.g., behind the camera).
+    fn geographic_to_screen(
+        &self,
+        scene: &RenderSceneDescriptor,
+        view_id: &str,
+        longitude: f64,
+        latitude: f64,
+        altitude_meters: f64,
+    ) -> GisResult<Option<RenderScreenPointDescriptor>>;
+
+    /// Unproject a screen point to a geodetic ray cast.
+    ///
+    /// Returns the geodetic point (longitude, latitude, altitude) where the
+    /// ray intersects the terrain or a reference ellipsoid, or `None` if the
+    /// scene contains no terrain and the ray does not converge.
+    fn screen_to_geographic(
+        &self,
+        scene: &RenderSceneDescriptor,
+        view_id: &str,
+        point: RenderScreenPointDescriptor,
+    ) -> GisResult<Option<[f64; 3]>>;
+}
+
+/// Tile streaming lifecycle reporter — observes tile request, load, and eviction events.
+///
+/// The bridge implementation hooks into the engine's tile scheduler.
+/// All methods are infallible reporters; the IR does not alter engine state.
+pub trait GisRenderTileStreamingMeta: Send + Sync {
+    /// Return the number of tiles currently in flight (requested but not yet
+    /// resolved) for the named tile layer within the scene.
+    fn tile_requests_in_flight(
+        &self,
+        scene: &RenderSceneDescriptor,
+        layer_id: &str,
+    ) -> GisResult<u32>;
+
+    /// Return the number of tiles currently held in the backend tile cache for
+    /// the named tile layer.
+    fn tile_cache_utilization(
+        &self,
+        scene: &RenderSceneDescriptor,
+        layer_id: &str,
+    ) -> GisResult<u32>;
+
+    /// Return `true` if all currently visible tiles for the named layer have
+    /// been loaded and the scene is visually complete at the current zoom.
+    fn tile_layer_is_fully_loaded(
+        &self,
+        scene: &RenderSceneDescriptor,
+        layer_id: &str,
+    ) -> GisResult<bool>;
+
+    /// Return the fraction of visible tiles that have been loaded, in
+    /// `[0.0, 1.0]`.  Returns `1.0` when there are no pending tiles.
+    fn tile_layer_load_progress(
+        &self,
+        scene: &RenderSceneDescriptor,
+        layer_id: &str,
+    ) -> GisResult<f32>;
+}
+
+/// Hit-testing reporter — maps screen coordinates to feature identifiers.
+///
+/// The bridge implementation performs the actual spatial query against the
+/// engine's acceleration structure; the IR side only declares the contract.
+/// `layer_scope` restricts the query to the named layers when `Some`; passing
+/// `None` queries all layers in draw order.
+pub trait GisRenderPickingMeta: Send + Sync {
+    /// Return every feature whose geometry intersects the given screen point.
+    fn features_at_screen_point(
+        &self,
+        scene: &RenderSceneDescriptor,
+        view_id: &str,
+        point: RenderScreenPointDescriptor,
+        layer_scope: Option<&[&str]>,
+    ) -> GisResult<Vec<RenderPickHitDescriptor>>;
+
+    /// Return every feature whose geometry intersects the given screen rectangle.
+    fn features_in_screen_rect(
+        &self,
+        scene: &RenderSceneDescriptor,
+        view_id: &str,
+        rect: RenderScreenRectDescriptor,
+        layer_scope: Option<&[&str]>,
+    ) -> GisResult<Vec<RenderPickHitDescriptor>>;
+}
+
 /// Complete render backend — blanket supertrait for the render seam only.
 pub trait RenderBackend:
     GisRenderFeatureStyleFactory
@@ -891,6 +1250,12 @@ pub trait RenderBackend:
     + GisRenderTerrainStyleFactory
     + GisRenderMaterialIntentFactory
     + GisRenderShadowParticipationFactory
+    + GisRenderOutputTargetFactory
+    + GisRenderClearPolicyFactory
+    + GisRenderViewportFactory
+    + GisRenderResolutionOverrideFactory
+    + GisRenderSubViewLayoutFactory
+    + GisRenderViewParticipationFactory
     + GisRenderViewOutputFactory
     + GisRenderExposureFactory
     + GisRenderAutoExposureFactory
@@ -919,17 +1284,24 @@ pub trait RenderBackend:
     + GisRenderTileLayerFactory
     + GisRenderTerrainLayerFactory
     + GisRenderAnnotationLayerFactory
+    + GisRenderModelLayerFactory
+    + GisRenderLayerGroupFactory
     + GisRenderSceneFactory
     + GisRenderSceneEnvironmentUpdateFactory
     + GisRenderSceneViewUpdateFactory
     + GisRenderSceneLayerStructureUpdateFactory
     + GisRenderSceneLayerStateUpdateFactory
+    + GisRenderSceneLayerViewParticipationUpdateFactory
     + GisRenderSceneUpdateFactory
     + GisRenderLayerMeta
     + GisRenderViewMeta
     + GisRenderAssetDependencyMeta
     + GisRenderSceneUpdateMeta
     + GisRenderSceneMeta
+    + GisRenderTileStreamingMeta
+    + GisRenderProjectionMeta
+    + GisRenderPickingMeta
+    + GisRenderTimeMeta
     + Send
     + Sync
 {
@@ -942,6 +1314,12 @@ impl<T> RenderBackend for T where
         + GisRenderTerrainStyleFactory
         + GisRenderMaterialIntentFactory
         + GisRenderShadowParticipationFactory
+        + GisRenderOutputTargetFactory
+        + GisRenderClearPolicyFactory
+        + GisRenderViewportFactory
+        + GisRenderResolutionOverrideFactory
+        + GisRenderSubViewLayoutFactory
+        + GisRenderViewParticipationFactory
         + GisRenderViewOutputFactory
         + GisRenderExposureFactory
         + GisRenderAutoExposureFactory
@@ -970,17 +1348,24 @@ impl<T> RenderBackend for T where
         + GisRenderTileLayerFactory
         + GisRenderTerrainLayerFactory
         + GisRenderAnnotationLayerFactory
+        + GisRenderModelLayerFactory
+        + GisRenderLayerGroupFactory
         + GisRenderSceneFactory
         + GisRenderSceneEnvironmentUpdateFactory
         + GisRenderSceneViewUpdateFactory
         + GisRenderSceneLayerStructureUpdateFactory
         + GisRenderSceneLayerStateUpdateFactory
+        + GisRenderSceneLayerViewParticipationUpdateFactory
         + GisRenderSceneUpdateFactory
         + GisRenderLayerMeta
         + GisRenderViewMeta
         + GisRenderAssetDependencyMeta
         + GisRenderSceneUpdateMeta
         + GisRenderSceneMeta
+        + GisRenderTileStreamingMeta
+        + GisRenderProjectionMeta
+        + GisRenderPickingMeta
+        + GisRenderTimeMeta
         + Send
         + Sync
 {
