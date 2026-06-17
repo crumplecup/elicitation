@@ -1050,6 +1050,18 @@ impl<T: ToCodeLiteral> ToCodeLiteral for Box<T> {
     }
 }
 
+impl<T: ToCodeLiteral> ToCodeLiteral for std::sync::Arc<T> {
+    fn type_tokens() -> TokenStream {
+        let inner = <T as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::sync::Arc<#inner> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let inner = (**self).to_code_literal();
+        quote::quote! { ::std::sync::Arc::new(#inner) }
+    }
+}
+
 impl<A: ToCodeLiteral, B: ToCodeLiteral> ToCodeLiteral for (A, B) {
     fn type_tokens() -> TokenStream {
         let a = <A as ToCodeLiteral>::type_tokens();

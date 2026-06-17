@@ -41,6 +41,7 @@ mod alignment;
 mod border_type;
 mod color;
 mod direction;
+mod to_code_literal;
 mod trenchcoats;
 
 // ── Composite struct modules ─────────────────────────────────────────
