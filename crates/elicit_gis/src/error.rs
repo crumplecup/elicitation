@@ -50,6 +50,9 @@ pub enum GisErrorKind {
     /// Operation is not supported by this backend.
     #[display("Unsupported operation: {}", _0)]
     Unsupported(String),
+    /// A render descriptor contains an invalid or out-of-range field value.
+    #[display("Invalid render descriptor: {}", _0)]
+    InvalidDescriptor(String),
 }
 
 /// Geospatial operation error with source location.

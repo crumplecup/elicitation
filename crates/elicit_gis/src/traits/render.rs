@@ -566,8 +566,14 @@ pub trait GisRenderModelLayerFactory: Send + Sync {
         spec: RenderLayerSpec,
         asset: RenderAssetReference,
         placement: RenderModelPlacementDescriptor,
-        shadow_participation: Option<RenderShadowParticipationDescriptor>,
-        material_override: Option<RenderMaterialIntentDescriptor>,
+        shadow_participation: Option<(
+            RenderShadowParticipationDescriptor,
+            Established<RenderShadowParticipationValid>,
+        )>,
+        material_override: Option<(
+            RenderMaterialIntentDescriptor,
+            Established<RenderMaterialIntentValid>,
+        )>,
     ) -> GisResult<(
         RenderLayerDescriptor,
         Established<RenderableModelLayerValid>,
@@ -846,6 +852,7 @@ pub trait GisRenderLayerMeta: Send + Sync {
     fn layer_opacity(
         &self,
         layer: &RenderLayerDescriptor,
+        layer_proof: Established<RenderableLayerValid>,
     ) -> GisResult<(f32, Established<LayerOpacityUnitInterval>)>;
 
     /// Report the layer's optional map-resolution visibility range.
@@ -1001,23 +1008,29 @@ pub trait GisRenderSceneUpdateMeta: Send + Sync {
         update: &'a RenderSceneUpdateDescriptor,
     ) -> Option<&'a str>;
 
-    /// Replacement environment payload when present.
+    /// Replacement environment payload with sidecar proof when present.
     fn update_environment<'a>(
         &self,
         update: &'a RenderSceneUpdateDescriptor,
-    ) -> Option<&'a RenderSceneEnvironmentDescriptor>;
+        update_proof: Established<RenderableSceneUpdateValid>,
+    ) -> Option<(
+        &'a RenderSceneEnvironmentDescriptor,
+        Established<RenderSceneEnvironmentValid>,
+    )>;
 
-    /// Replacement view payload when present.
+    /// Replacement view payload with sidecar proof when present.
     fn update_view<'a>(
         &self,
         update: &'a RenderSceneUpdateDescriptor,
-    ) -> Option<&'a RenderViewDescriptor>;
+        update_proof: Established<RenderableSceneUpdateValid>,
+    ) -> Option<(&'a RenderViewDescriptor, Established<RenderViewValid>)>;
 
-    /// Replacement or inserted layer payload when present.
+    /// Replacement or inserted layer payload with sidecar proof when present.
     fn update_layer<'a>(
         &self,
         update: &'a RenderSceneUpdateDescriptor,
-    ) -> Option<&'a RenderLayerDescriptor>;
+        update_proof: Established<RenderableSceneUpdateValid>,
+    ) -> Option<(&'a RenderLayerDescriptor, Established<RenderableLayerValid>)>;
 
     /// Replacement visibility value when present.
     fn update_visibility(&self, update: &RenderSceneUpdateDescriptor) -> Option<bool>;
@@ -1026,12 +1039,14 @@ pub trait GisRenderSceneUpdateMeta: Send + Sync {
     fn update_opacity(
         &self,
         update: &RenderSceneUpdateDescriptor,
+        update_proof: Established<RenderableSceneUpdateValid>,
     ) -> GisResult<Option<(f32, Established<LayerOpacityUnitInterval>)>>;
 
     /// Replacement draw order with re-established proof when present.
     fn update_draw_order(
         &self,
         update: &RenderSceneUpdateDescriptor,
+        update_proof: Established<RenderableSceneUpdateValid>,
     ) -> GisResult<Option<(i32, Established<LayerDrawOrderAssigned>)>>;
 
     /// Replacement per-view routing policy when present.
@@ -1116,6 +1131,7 @@ pub trait GisRenderSceneMeta: Send + Sync {
     fn scene_layer_order_is_deterministic(
         &self,
         scene: &RenderSceneDescriptor,
+        scene_proof: Established<RenderableSceneValid>,
     ) -> GisResult<Established<LayerOrderDeterministic>>;
 }
 
