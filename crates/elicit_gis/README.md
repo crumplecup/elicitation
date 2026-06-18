@@ -62,6 +62,17 @@ consumers depend only on this crate.
                ▼               ▼               ▼
          elicit_geo       elicit_proj    elicit_geojson
        (geo + proj4rs)   (PROJ bindings) (geojson crate)
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │              Render Backend Traits (renderer-agnostic)                   │
+  │  33 leaf factories · 2 composers · 14 layer/scene factories              │
+  │  9 meta reporters · RenderBackend supertrait                             │
+  │  RenderSceneFactory → (RenderSceneDescriptor, Established<RenderableSceneValid>) │
+  └────────────────────────────┬─────────────────────────────────────────────┘
+                               │ sidecar proofs passed through meta pipeline
+                               ▼
+                         elicit_bevy
+                    (Bevy 0.18 backend)
 ```
 
 ### Domain partitioning
@@ -80,6 +91,10 @@ consumers depend only on this crate.
 | **FGDC validators** | `FgdcBoundingValidator` + 9 more | Validator — checks element constraints; returns `Established<P>` |
 | **FGDC factories** | `FgdcCitationFactory` + 10 more | Factory — builds FGDC sections with proof tokens |
 | **FGDC reporters** | `FgdcBoundingMeta` + 4 more | Reporter — reads FGDC field values |
+| **Render leaf factories** | `GisRenderFeatureStyleFactory` + 32 more | Factory — validates a single render descriptor; returns `Established<P>` |
+| **Render composers** | `GisRenderEnvironmentFactory`, `GisRenderViewFactory` | Factory — composes scene-environment and view descriptors from validated sub-proofs |
+| **Render layer/scene factories** | `GisRenderVectorLayerFactory` + 13 more | Factory — builds render layers, groups, scenes, and scene updates |
+| **Render reporters** | `GisRenderLayerMeta`, `GisRenderViewMeta` + 7 more | Reporter — reads render descriptor fields and runtime state |
 
 ---
 
@@ -328,6 +343,126 @@ pub trait GeoJsonFeatureFactory: Send + Sync {
 }
 ```
 
+### Render backend traits
+
+The render layer is a separate seam from the core geospatial domain. It connects
+validated geospatial payloads (vector, raster, terrain, annotation, model) to
+concrete rendering engines via a three-role taxonomy.
+
+**Role 1a — Leaf validators** (33 traits): each accepts one descriptor and,
+after validating field constraints, returns `Established<SpecificValid>`.
+The descriptor IS the credential — `Established::prove(&input)` is called
+after validation, with the input variable as the audit surface.
+
+```rust
+// Example: validate a bloom post-process descriptor
+pub trait GisRenderBloomFactory: Send + Sync {
+    fn build_render_bloom(
+        &self,
+        input: RenderBloomDescriptor,
+    ) -> GisResult<Established<RenderBloomValid>>;
+}
+```
+
+**Role 1b — Composers** (2 traits): assemble validated sub-proofs into
+aggregate environment and view descriptors.
+
+```rust
+pub trait GisRenderEnvironmentFactory: Send + Sync {
+    fn build_render_scene_environment(
+        &self,
+        input: RenderSceneEnvironmentDescriptor,
+    ) -> GisResult<(RenderSceneEnvironmentDescriptor, Established<RenderSceneEnvironmentValid>)>;
+}
+```
+
+**Role 1c — Layer and scene factories** (14 traits): build render layers from
+georust payloads, compose them into scenes, and produce incremental scene
+updates. Each returns a `(Descriptor, Established<Valid>)` pair.
+
+```rust
+pub trait GisRenderSceneFactory: Send + Sync {
+    fn build_render_scene(
+        &self,
+        spec: RenderSceneSpec,
+        // ...validated view and layer proofs...
+    ) -> GisResult<(RenderSceneDescriptor, Established<RenderableSceneValid>)>;
+}
+```
+
+**Role 2 — Reporters** (9 traits): read fields from already-built descriptors.
+Key reporter traits carry **sidecar proofs** — the caller passes the
+construction-time proof it already holds, and the reporter re-derives narrower
+sub-propositions via `ProvableFrom` exchange rather than re-validating:
+
+```rust
+pub trait GisRenderLayerMeta: Send + Sync {
+    // Caller passes the proof it built at factory time; reporter derives
+    // LayerOpacityUnitInterval from it — no re-validation.
+    fn layer_opacity(
+        &self,
+        layer: &RenderLayerDescriptor,
+        layer_proof: Established<RenderableLayerValid>,
+    ) -> GisResult<(f32, Established<LayerOpacityUnitInterval>)>;
+
+    // Scene update meta: sidecar lets update_environment return the
+    // sub-payload proof alongside the descriptor.
+    fn update_environment<'a>(
+        &self,
+        update: &'a RenderSceneUpdateDescriptor,
+        update_proof: Established<RenderableSceneUpdateValid>,
+    ) -> Option<(&'a RenderSceneEnvironmentDescriptor, Established<RenderSceneEnvironmentValid>)>;
+}
+```
+
+**`RenderBackend` supertrait**: composes all 58 render traits into a single
+interface so consumers can hold one `Arc<dyn RenderBackend>`:
+
+```rust
+pub trait RenderBackend:
+    GisRenderFeatureStyleFactory + GisRenderRasterStyleFactory
+    + /* ... 31 more leaf factories ... */
+    + GisRenderEnvironmentFactory + GisRenderViewFactory
+    + GisRenderVectorLayerFactory + /* ... 13 more layer/scene factories ... */
+    + GisRenderLayerMeta + GisRenderViewMeta + GisRenderSceneUpdateMeta
+    + GisRenderSceneMeta + GisRenderAssetDependencyMeta
+    + GisRenderPickingMeta + GisRenderTimeMeta
+    + GisRenderProjectionMeta + GisRenderTileStreamingMeta
+    + Send + Sync
+{}
+```
+
+#### Sidecar Proof Pattern
+
+The sidecar pattern is the render layer's answer to post-hoc validation.
+Instead of re-checking bounds on a descriptor that was already validated at
+factory time, the caller passes the construction-time proof as an extra
+parameter. The reporter calls `Established::prove(&sidecar_proof)` to mint
+a narrower sub-proposition, justified by the `ProvableFrom` impl that records
+the semantic relationship between the parent proof and the sub-proposition.
+
+```rust
+// ProvableFrom impl in contracts/render.rs:
+// RenderableLayerValid evidence included LayerOpacityUnitInterval in its spec
+// proofs — so a valid layer implies the opacity is already in [0.0, 1.0].
+impl ProvableFrom<Established<RenderableLayerValid>> for LayerOpacityUnitInterval {}
+
+// Reporter impl in the backend:
+fn layer_opacity(
+    &self,
+    layer: &RenderLayerDescriptor,
+    layer_proof: Established<RenderableLayerValid>,
+) -> GisResult<(f32, Established<LayerOpacityUnitInterval>)> {
+    // No bounds re-check — the proof already guarantees it.
+    Ok((layer.opacity_field(), Established::prove(&layer_proof)))
+}
+```
+
+The same pattern propagates through scene update meta: `update_environment`,
+`update_view`, and `update_layer` each accept an `Established<RenderableSceneUpdateValid>`
+sidecar and return the sub-payload proof alongside the descriptor, so the proof
+travels with the data rather than being discarded at the boundary.
+
 ### `GisBackend` supertrait
 
 ```rust
@@ -507,6 +642,45 @@ Evidence bundle types and their `ProvableFrom` implications:
 | `FgdcMetadataRefEvidence` | `contact: Established<FgdcContactInfoValid>` | `FgdcMetadataReferenceSectionValid` |
 | `FgdcRecordEvidence` | `identification`, `metadata_ref` (required) + `data_quality`, `spatial_org`, `spatial_ref`, `entity_attr`, `distribution` (optional) | `FgdcRecordValid` |
 
+### Render backend chains
+
+**Descriptor → Valid** (leaf factory path): the descriptor is the credential.
+After validation the factory calls `Established::prove(&descriptor)`.
+
+| Descriptor | Proposition proved |
+|---|---|
+| `RenderBloomDescriptor` | `RenderBloomValid` |
+| `RenderDepthOfFieldDescriptor` | `RenderDepthOfFieldValid` |
+| `RenderViewDescriptor` | `RenderViewValid` |
+| `RenderSceneEnvironmentDescriptor` | `RenderSceneEnvironmentValid` |
+| `RenderShadowParticipationDescriptor` | `RenderShadowParticipationValid` |
+| `RenderMaterialIntentDescriptor` | `RenderMaterialIntentValid` |
+| `RenderViewParticipationDescriptor` | `RenderViewParticipationValid` |
+| *(+ 26 more descriptor types)* | *(corresponding Valid propositions)* |
+
+**Evidence bundle → Valid** (layer and scene factory path):
+
+| Evidence bundle | Key required fields | Proposition proved |
+|---|---|---|
+| `RenderableVectorLayerEvidence` | `layer_spec_valid`, `feature_style_valid`, `vector_payload_declared` | `RenderableVectorLayerValid` |
+| `RenderableRasterLayerEvidence` | `layer_spec_valid`, `raster_source_valid`, `raster_style_valid` | `RenderableRasterLayerValid` |
+| `RenderableModelLayerEvidence` | `layer_spec_valid`, `model_asset_declared`, `model_placement_valid`, optional `shadow_participation_valid`, optional `material_override_valid` | `RenderableModelLayerValid` |
+| `RenderableSceneEvidence` | `scene_id_non_empty`, `scene_layer_list_declared`, `scene_view_declared`, `layer_order_deterministic` | `RenderableSceneValid` |
+| `RenderableSceneUpdateEvidence` | `operation_declared`, selection validity tokens for the specific update kind | `RenderableSceneUpdateValid` |
+
+**Sidecar proof exchange** (meta reporter path): the caller passes a parent
+proof; the reporter derives a narrower sub-proposition via `ProvableFrom`:
+
+| Sidecar passed | Sub-proposition derived | Semantic justification |
+|---|---|---|
+| `Established<RenderableLayerValid>` | `LayerOpacityUnitInterval` | Layer spec proofs include opacity-in-range |
+| `Established<RenderableSceneUpdateValid>` | `LayerOpacityUnitInterval` | Update factory required an opacity proof |
+| `Established<RenderableSceneUpdateValid>` | `LayerDrawOrderAssigned` | Update factory required a draw-order proof |
+| `Established<RenderableSceneUpdateValid>` | `RenderSceneEnvironmentValid` | Update factory required an environment proof |
+| `Established<RenderableSceneUpdateValid>` | `RenderViewValid` | Update factory required a view proof |
+| `Established<RenderableSceneUpdateValid>` | `RenderableLayerValid` | Update factory required a layer proof |
+| `Established<RenderableSceneValid>` | `LayerOrderDeterministic` | Scene evidence includes `layer_order_deterministic` |
+
 ---
 
 ## Descriptor Types
@@ -664,24 +838,28 @@ async fn reproject(
 
 ## Implementing a Custom Backend
 
-To implement `GisBackend` for a new geospatial driver:
+To implement `GisBackend` or `RenderBackend` for a new driver:
 
-1. Implement the factory traits (`SfsGeometryFactory`, `GeoJsonGeometryFactory`,
-   `GisCrsBuilder`, `Iso19115CitationFactory`, `Iso19115RecordFactory`, etc.).
-   Each method must validate/construct the object, then call
-   `Established::assert()` after success.
+1. **Implement the factory traits** (`SfsGeometryFactory`, `GisRenderBloomFactory`,
+   etc.). Each method validates/constructs the descriptor, then calls
+   `Established::prove(&descriptor)` — the descriptor variable is the credential.
+   For behavioral assertions (e.g., "geometry is projected") where no descriptor
+   exists, declare a `pub(crate)` ZST credential via `proof_credential!` and call
+   `Established::prove(&MyBackendCredential {})`. The method body is the audit surface.
 
-2. Implement the reporter traits (`SfsGeometryMeta`, `GisCrsLookup`,
-   `Iso19115ContactMeta`, etc.). These return plain data; no proof tokens.
+2. **Implement the reporter traits** (`SfsGeometryMeta`, `GisRenderLayerMeta`, etc.).
+   Reporters that carry sidecar proofs accept the caller's construction-time
+   `Established<P>` and re-derive sub-propositions via `Established::prove(&sidecar)`.
+   Add `ProvableFrom<Established<ParentValid>> for SubProp` impls in `contracts/render.rs`
+   to justify each exchange semantically.
 
-3. Implement `FgdcBackend` (supertrait of all 26 FGDC sub-traits). The
-   blanket impl for `GisBackend` is satisfied automatically once all sub-traits
-   are implemented.
+3. **Implement the supertrait blanket**. `GisBackend` and `RenderBackend` are
+   automatically satisfied once all sub-traits are in place.
 
-> **Note:** `Established::assert()` is the correct constructor for backend
-> implementations — the factory *is* the authority that the operation succeeded.
-> The credential-gated `Established::prove()` path is reserved for
-> evidence-bundle composition, not leaf-level construction.
+> **Never use `Established::assert()`** in backend implementations.
+> `assert()` has no credential — it is an unconditional bypass that audit tools
+> flag immediately. `prove(&input)` with a meaningful variable is always the
+> correct form, whether that input is a validated descriptor or a ZST credential.
 
 ---
 
@@ -701,8 +879,8 @@ To implement `GisBackend` for a new geospatial driver:
 
 ```text
 src/
-├── lib.rs                       pub use surface + GisBackend supertrait
-├── error.rs                     GisError / GisResult
+├── lib.rs                       pub use surface + GisBackend + RenderBackend supertraits
+├── error.rs                     GisError / GisResult / GisErrorKind (incl. InvalidDescriptor)
 ├── types/
 │   ├── mod.rs
 │   ├── authority.rs             AuthorityCode, EpsgCode, CrsInfo, DatumEnsembleInfo, EllipsoidParams
@@ -712,16 +890,23 @@ src/
 │   ├── iso_19115.rs             CitationDescriptor, MetadataDescriptor, ExtentDescriptor, Iso19115Date
 │   ├── ogc_sfs.rs               SfsCoordinate, PointDescriptor, PolygonDescriptor, MultiGeometryDescriptor
 │   ├── rfc7946.rs               GeoJsonPosition, GeoJsonGeometryKind, GeoJsonFeatureDescriptor
-│   └── fgdc.rs                  FgdcKeywordGroup, FgdcAttributeDescriptor, FgdcRecordDescriptor, …
+│   ├── fgdc.rs                  FgdcKeywordGroup, FgdcAttributeDescriptor, FgdcRecordDescriptor, …
+│   └── render.rs                RenderLayerDescriptor, RenderSceneDescriptor, RenderViewDescriptor,
+│                                RenderSceneUpdateDescriptor, RenderLayerSpec, RenderSceneSpec,
+│                                RenderBloomDescriptor, RenderAtmosphereDescriptor, … (all render IRs)
 ├── contracts/
 │   ├── mod.rs                   Re-exports + all Evidence bundle types listed
 │   ├── iso_19111.rs             265 props — CRS object model + ProvableFrom chains
 │   ├── iso_19115.rs             440 props — metadata object model + ProvableFrom chains
 │   ├── ogc_sfs.rs               278 props — SFS geometry invariants + ProvableFrom chains
 │   ├── rfc7946.rs               211 props — GeoJSON spec + ProvableFrom chains
-│   └── fgdc.rs                  160 props — FGDC section rules + ProvableFrom chains
+│   ├── fgdc.rs                  160 props — FGDC section rules + ProvableFrom chains
+│   └── render.rs                render propositions + evidence bundles + ProvableFrom chains:
+│                                · descriptor → valid (leaf factory path)
+│                                · evidence bundle → valid (layer/scene factory path)
+│                                · sidecar proof exchange (meta reporter path)
 └── traits/
-    ├── mod.rs                   Re-exports + GisBackend supertrait
+    ├── mod.rs                   Re-exports + GisBackend + RenderBackend supertraits
     ├── crs.rs                   GisCrsLookup, GisCrsBuilder, GisCrsTransformer
     ├── iso_19111.rs             Iso19111Identified, Iso19111Scoped
     ├── iso_19115.rs             Iso19115CitationFactory, Iso19115ExtentFactory, Iso19115LineageFactory,
@@ -732,7 +917,12 @@ src/
     ├── set_ops.rs               SfsSetOps
     ├── rfc7946.rs               GeoJsonGeometryFactory, GeoJsonFeatureFactory,
     │                            GeoJsonObjectMeta, GeoJsonFeatureMeta, GeoJsonBackend
-    └── fgdc.rs                  26 FGDC sub-traits + FgdcBackend supertrait
+    ├── fgdc.rs                  26 FGDC sub-traits + FgdcBackend supertrait
+    └── render.rs                58 render traits + RenderBackend supertrait:
+                                 · 33 leaf factories (GisRenderBloomFactory, …)
+                                 · 2 composers (GisRenderEnvironmentFactory, GisRenderViewFactory)
+                                 · 14 layer/scene factories (GisRenderVectorLayerFactory, …)
+                                 · 9 meta reporters (GisRenderLayerMeta, …)
 ```
 
 ---

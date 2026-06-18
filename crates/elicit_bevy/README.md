@@ -41,8 +41,8 @@ This approach has three advantages:
 
 | Metric | Count |
 |--------|-------|
-| Source lines | ~32,000 |
-| Unique exported symbols | ~556 |
+| Source lines | ~36,000 |
+| Unique exported symbols | ~560 |
 | Shadow type wrappers (`elicit_newtype!`) | 142 |
 | Method-surface blocks (`#[reflect_methods]`) | 153 |
 | Methods exposed as MCP tools via shadow types | ~640 |
@@ -51,6 +51,7 @@ This approach has three advantages:
 | Stateful workflow plugins | 5 |
 | Generator implementations | 3 |
 | Bevy subcrates covered | 31 |
+| GIS render traits implemented (`RenderBackend`) | 58 |
 
 ### Bevy Subcrates Covered
 
@@ -219,6 +220,102 @@ and `std::default::Default`.
 
 ---
 
+## GIS Render Backend
+
+`elicit_bevy` implements the full `RenderBackend` supertrait from `elicit_gis`,
+providing a Bevy 0.18 rendering engine for proof-carrying geospatial scenes.
+
+### `BevyGisBackend`
+
+The central implementation type. Wraps a shared `Arc<BevyGisRenderCtx>` so
+that stateful runtime reporters (tile streaming, picking, projection) can observe
+and update per-scene state while the proof pipeline remains pure.
+
+```rust
+use elicit_bevy::{BevyGisBackend, BevyGisRenderCtx};
+use std::sync::Arc;
+
+let ctx = Arc::new(BevyGisRenderCtx::new());
+let backend: BevyGisBackend = BevyGisBackend::new(ctx.clone());
+
+// backend implements all 58 GisRender* traits
+```
+
+### `BevyGisRenderCtx`
+
+Shared mutable runtime state for active GIS scenes — tile streaming counts,
+cache utilization, and scene registration. Kept separate from the proof pipeline
+so the `Arc<BevyGisRenderCtx>` can be injected as a Bevy resource while the
+backend struct itself remains `Clone + Send + Sync`.
+
+```rust
+ctx.register_scene("scene-001");
+ctx.record_tile_request("scene-001", "tile-layer-a");
+ctx.record_tile_loaded("scene-001", "tile-layer-a");
+```
+
+### Module layout
+
+```text
+src/gis_render_backend/
+├── mod.rs                BevyGisBackend struct + module declarations
+├── factories_leaf.rs     33 leaf factory impls (bloom, fog, atmosphere, …)
+│                         + 2 composer impls (environment, view)
+├── factories_layer.rs    14 layer/scene/update factory impls
+│                         + LayerSpecProofs type alias + validate_layer_spec
+├── meta_structural.rs    Field-read meta impls (LayerMeta, ViewMeta, SceneMeta,
+│                         SceneUpdateMeta, AssetDependencyMeta, TimeMeta)
+├── meta_runtime.rs       Runtime-state meta impls (PickingMeta, ProjectionMeta,
+│                         TileStreamingMeta) backed by BevyGisRenderCtx
+└── proof_credentials.rs  pub(crate) ZST credentials via proof_credential!
+                          for behavioral propositions
+```
+
+### Correctness-by-construction
+
+Every proof token in `BevyGisBackend` is minted by one of two mechanisms —
+neither is `Established::assert()`:
+
+**Descriptor-as-credential** (leaf factories): the validated descriptor is
+passed to `Established::prove(&descriptor)`. The factory method body is the
+bounded audit surface.
+
+```rust
+fn build_render_bloom(
+    &self,
+    input: RenderBloomDescriptor,
+) -> GisResult<Established<RenderBloomValid>> {
+    check_unit_interval_f32(input.intensity, "bloom intensity")?;
+    Ok(Established::prove(&input))   // descriptor is the credential
+}
+```
+
+**Sidecar proof exchange** (meta reporters): the caller passes the
+construction-time `Established<ParentValid>` it already holds. The reporter
+re-derives the needed sub-proposition with `Established::prove(&sidecar)`,
+backed by a `ProvableFrom` impl that records the semantic justification.
+No bounds re-checks, no re-validation:
+
+```rust
+fn layer_opacity(
+    &self,
+    layer: &RenderLayerDescriptor,
+    layer_proof: Established<RenderableLayerValid>,
+) -> GisResult<(f32, Established<LayerOpacityUnitInterval>)> {
+    // ProvableFrom<Established<RenderableLayerValid>> for LayerOpacityUnitInterval
+    // is justified: the layer spec evidence bundle required LayerOpacityUnitInterval.
+    Ok((layer_opacity_val(layer), Established::prove(&layer_proof)))
+}
+```
+
+Optional sub-descriptors (`shadow_participation`, `material_override`) travel
+as `Option<(Descriptor, Established<Valid>)>` tuples. Absence of the option
+means absence of the proof — there is no way to receive a descriptor without
+its accompanying proof, and no way to produce an orphan `Established` for a
+descriptor that was never validated.
+
+---
+
 ## Intentional Exclusions
 
 A small set of Bevy symbols are intentionally not shadowed:
@@ -237,7 +334,7 @@ A small set of Bevy symbols are intentionally not shadowed:
 An AI agent that wants to author a Bevy scene with a camera, a directional light, and a
 textured mesh might proceed as follows:
 
-```
+```text
 // Step 1: Build the camera descriptor
 bevy_render_workflow__create_camera_3d({})
 bevy_render_workflow__set_tonemapping({ "tonemapping": "AcesFitted" })
