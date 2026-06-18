@@ -3459,9 +3459,12 @@ version = "0.11.1"
 dependencies = [
  "bevy",
  "derive_more",
+ "elicit_gis",
  "elicitation",
  "elicitation_derive",
  "futures",
+ "geo-types",
+ "geojson",
  "inventory",
  "proc-macro2",
  "quote",

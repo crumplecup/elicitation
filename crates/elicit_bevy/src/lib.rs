@@ -61,6 +61,8 @@ pub mod color;
 mod derive_plugin;
 pub mod ecs;
 mod ecs_plugin;
+mod gis_render_backend;
+pub mod gis_render_plugin;
 pub mod gizmos;
 pub mod image;
 pub mod input;
@@ -338,6 +340,10 @@ pub use text::{
     StrikethroughColor, TextBackgroundColor, TextBounds, TextColor, TextFont, TextLayout, TextSpan,
     Underline, UnderlineColor,
 };
+
+// ── GIS render backend re-exports ─────────────────────────────────────────────
+pub use gis_render_backend::BevyGisBackend;
+pub use gis_render_plugin::BevyGisRenderCtx;
 
 // ── ui re-exports ─────────────────────────────────────────────────────────────
 pub use ui::{

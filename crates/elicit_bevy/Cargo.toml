@@ -16,6 +16,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 
 [dependencies]
 elicitation = { workspace = true, features = ["bevy-types", "uuid"] }
+elicit_gis.workspace = true
+geo-types.workspace = true
+geojson.workspace = true
 elicitation_derive.workspace = true
 bevy = { workspace = true, features = [
     "bevy_color",
