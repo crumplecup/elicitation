@@ -2675,7 +2675,21 @@ pub use emit_impls::{
     WorldOriginFinite, WorldUnitsPerMeterPositive, WorldVerticalExaggerationPositive,
 };
 
-use crate::RenderSceneEnvironmentDescriptor;
+use crate::{
+    RenderAmbientLightDescriptor, RenderAtmosphereDescriptor, RenderAutoExposureDescriptor,
+    RenderBloomDescriptor, RenderCascadeShadowConfigDescriptor,
+    RenderChromaticAberrationDescriptor, RenderClearPolicyDescriptor, RenderColorGradingDescriptor,
+    RenderDepthOfFieldDescriptor, RenderDirectionalLightDescriptor, RenderExposureDescriptor,
+    RenderFeatureStyleDescriptor, RenderFogDescriptor, RenderFogVolumeDescriptor,
+    RenderImageBasedLightingDescriptor, RenderLightProbeDescriptor, RenderMaterialIntentDescriptor,
+    RenderMotionBlurDescriptor, RenderOutputTargetDescriptor, RenderRasterStyleDescriptor,
+    RenderResolutionOverrideDescriptor, RenderSceneEnvironmentDescriptor,
+    RenderScreenSpaceAmbientOcclusionDescriptor, RenderScreenSpaceReflectionsDescriptor,
+    RenderShadowParticipationDescriptor, RenderSkyboxDescriptor, RenderSubViewLayoutDescriptor,
+    RenderTerrainStyleDescriptor, RenderTileStyleDescriptor, RenderViewDescriptor,
+    RenderViewOutputDescriptor, RenderViewParticipationDescriptor, RenderViewportDescriptor,
+    RenderVolumetricFogDescriptor, RenderWorldSpaceDescriptor,
+};
 use elicitation::{Established, contracts::ProvableFrom};
 
 /// Evidence that an asset reference is renderable.
@@ -5105,6 +5119,10 @@ pub struct RenderableModelLayerEvidence {
     pub model_asset_declared: Established<ModelAssetDeclared>,
     /// Proof that the model placement descriptor carries valid coordinates.
     pub model_placement_valid: Established<ModelPlacementValid>,
+    /// Sidecar proof for the optional shadow-participation descriptor.
+    pub shadow_participation_valid: Option<Established<RenderShadowParticipationValid>>,
+    /// Sidecar proof for the optional material-intent override descriptor.
+    pub material_override_valid: Option<Established<RenderMaterialIntentValid>>,
 }
 
 impl ProvableFrom<RenderableModelLayerEvidence> for RenderableModelLayerValid {}
@@ -5284,3 +5302,103 @@ impl ProvableFrom<Established<RenderableTileLayerValid>> for RenderableLayerVali
 impl ProvableFrom<Established<RenderableTerrainLayerValid>> for RenderableLayerValid {}
 impl ProvableFrom<Established<RenderableAnnotationLayerValid>> for RenderableLayerValid {}
 impl ProvableFrom<Established<RenderableModelLayerValid>> for RenderableLayerValid {}
+
+// ── Descriptor → Valid: leaf factory credentials ──────────────────────────────
+//
+// Each descriptor type IS the proof that the corresponding proposition holds.
+// Backend factory methods validate the descriptor, then call
+// `Established::prove(&input)` to mint the proof token.  Having the descriptor
+// in scope IS the credential; any validation beyond type construction is the
+// factory method's audit surface.
+
+impl ProvableFrom<RenderFeatureStyleDescriptor> for RenderFeatureStyleValid {}
+impl ProvableFrom<RenderRasterStyleDescriptor> for RenderRasterStyleValid {}
+impl ProvableFrom<RenderTileStyleDescriptor> for RenderTileStyleValid {}
+impl ProvableFrom<RenderTerrainStyleDescriptor> for RenderTerrainStyleValid {}
+impl ProvableFrom<RenderMaterialIntentDescriptor> for RenderMaterialIntentValid {}
+impl ProvableFrom<RenderShadowParticipationDescriptor> for RenderShadowParticipationValid {}
+impl ProvableFrom<RenderOutputTargetDescriptor> for RenderOutputTargetValid {}
+impl ProvableFrom<RenderClearPolicyDescriptor> for RenderClearPolicyValid {}
+impl ProvableFrom<RenderViewportDescriptor> for RenderViewportValid {}
+impl ProvableFrom<RenderResolutionOverrideDescriptor> for RenderResolutionOverrideValid {}
+impl ProvableFrom<RenderSubViewLayoutDescriptor> for RenderSubViewLayoutValid {}
+impl ProvableFrom<RenderViewParticipationDescriptor> for RenderViewParticipationValid {}
+impl ProvableFrom<RenderViewOutputDescriptor> for RenderViewOutputValid {}
+impl ProvableFrom<RenderExposureDescriptor> for RenderExposureValid {}
+impl ProvableFrom<RenderAutoExposureDescriptor> for RenderAutoExposureValid {}
+impl ProvableFrom<RenderColorGradingDescriptor> for RenderColorGradingValid {}
+impl ProvableFrom<RenderBloomDescriptor> for RenderBloomValid {}
+impl ProvableFrom<RenderDepthOfFieldDescriptor> for RenderDepthOfFieldValid {}
+impl ProvableFrom<RenderMotionBlurDescriptor> for RenderMotionBlurValid {}
+impl ProvableFrom<RenderChromaticAberrationDescriptor> for RenderChromaticAberrationValid {}
+impl ProvableFrom<RenderScreenSpaceReflectionsDescriptor> for RenderScreenSpaceReflectionsValid {}
+impl ProvableFrom<RenderScreenSpaceAmbientOcclusionDescriptor>
+    for RenderScreenSpaceAmbientOcclusionValid
+{
+}
+impl ProvableFrom<RenderWorldSpaceDescriptor> for RenderWorldSpaceValid {}
+impl ProvableFrom<RenderLightProbeDescriptor> for RenderLightProbeValid {}
+impl ProvableFrom<RenderImageBasedLightingDescriptor> for RenderImageBasedLightingValid {}
+impl ProvableFrom<RenderSkyboxDescriptor> for RenderSkyboxValid {}
+impl ProvableFrom<RenderAmbientLightDescriptor> for RenderAmbientLightValid {}
+impl ProvableFrom<RenderDirectionalLightDescriptor> for RenderDirectionalLightValid {}
+impl ProvableFrom<RenderAtmosphereDescriptor> for RenderAtmosphereValid {}
+impl ProvableFrom<RenderFogDescriptor> for RenderFogValid {}
+impl ProvableFrom<RenderVolumetricFogDescriptor> for RenderVolumetricFogValid {}
+impl ProvableFrom<RenderFogVolumeDescriptor> for RenderFogVolumeValid {}
+impl ProvableFrom<RenderCascadeShadowConfigDescriptor> for RenderCascadeShadowConfigValid {}
+impl ProvableFrom<RenderSceneEnvironmentDescriptor> for RenderSceneEnvironmentValid {}
+impl ProvableFrom<RenderViewDescriptor> for RenderViewValid {}
+
+// ── Payload-proof → selection-valid: update factory proof chain ───────────────
+//
+// When an update factory receives a validated payload proof from the caller, that
+// proof is itself the evidence that the corresponding selection is valid.  These
+// impls let the factory call `Established::prove(&received_proof_variable)` to
+// derive the selection-validity token directly from the received variable.
+
+impl ProvableFrom<Established<RenderSceneEnvironmentValid>>
+    for SceneUpdateEnvironmentSelectionValid
+{
+}
+impl ProvableFrom<Established<RenderViewValid>> for SceneUpdateViewSelectionValid {}
+impl ProvableFrom<Established<RenderableLayerValid>> for SceneUpdateLayerSelectionValid {}
+impl ProvableFrom<Established<LayerOpacityUnitInterval>> for SceneUpdateOpacitySelectionValid {}
+impl ProvableFrom<Established<LayerDrawOrderAssigned>> for SceneUpdateDrawOrderSelectionValid {}
+impl ProvableFrom<Established<RenderViewParticipationValid>>
+    for RenderableSceneLayerViewParticipationUpdateValid
+{
+}
+
+// ── Sidecar proof exchange: validated descriptor → sub-proposition ────────────
+//
+// Factory-built descriptors travel with a sidecar `Established<ValidType>` proof.
+// Meta methods accept the sidecar and re-derive narrower sub-propositions via
+// `prove(&sidecar)` instead of re-performing validation or minting from scratch.
+//
+// Each impl here is semantically justified by the evidence bundle that produced
+// the parent valid-proof: the sub-proposition was a required field in that bundle.
+
+// RenderableLayerValid evidence includes LayerOpacityUnitInterval in the spec proofs.
+impl ProvableFrom<Established<RenderableLayerValid>> for LayerOpacityUnitInterval {}
+
+// RenderableSceneUpdateValid evidence includes SceneUpdateOpacitySelectionValid,
+// which was derived from LayerOpacityUnitInterval via the update factory.
+impl ProvableFrom<Established<RenderableSceneUpdateValid>> for LayerOpacityUnitInterval {}
+
+// RenderableSceneUpdateValid evidence includes SceneUpdateDrawOrderSelectionValid,
+// which was derived from LayerDrawOrderAssigned via the update factory.
+impl ProvableFrom<Established<RenderableSceneUpdateValid>> for LayerDrawOrderAssigned {}
+
+// Update operations that carry a payload (environment/view/layer) had that
+// payload's proof required by the factory.  The update valid proof therefore
+// transitively certifies the sub-payload.  Meta methods use these impls to
+// carry the sub-proof forward via `prove(&update_proof)`.
+impl ProvableFrom<Established<RenderableSceneUpdateValid>> for RenderSceneEnvironmentValid {}
+impl ProvableFrom<Established<RenderableSceneUpdateValid>> for RenderViewValid {}
+impl ProvableFrom<Established<RenderableSceneUpdateValid>> for RenderableLayerValid {}
+
+// RenderableSceneValid evidence contains layer_order_deterministic, so a valid
+// scene implies deterministic order.  Meta methods accept the sidecar and
+// re-derive the sub-proposition via `prove`.
+impl ProvableFrom<Established<RenderableSceneValid>> for LayerOrderDeterministic {}
