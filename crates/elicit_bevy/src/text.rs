@@ -8,6 +8,74 @@ use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 use std::sync::Arc;
 
+// ── plain_elicitation! helper ─────────────────────────────────────────────────
+// For plain (non-newtype) Rust types that are Serialize + Deserialize + Default.
+macro_rules! plain_elicitation {
+    ($name:ident) => {
+        impl elicitation::Prompt for $name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+        impl elicitation::Elicitation for $name {
+            type Style = ();
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                let response = communicator
+                    .send_prompt(concat!("Enter value for ", stringify!($name)))
+                    .await?;
+                serde_json::from_str(&response)
+                    .or_else(|_| serde_json::from_str::<Self>(&format!("\"{}\"", response)))
+                    .map_err(|e| {
+                        elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                            format!("Invalid {}: {}", stringify!($name), e),
+                        ))
+                    })
+            }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
+            }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque(stringify!($name))
+            }
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque(stringify!($name))
+            }
+        }
+        impl elicitation::ElicitIntrospect for $name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: stringify!($name),
+                    description: None,
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+        impl elicitation::ElicitPromptTree for $name {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: stringify!($name).to_string(),
+                    type_name: stringify!($name).to_string(),
+                }
+            }
+        }
+        impl elicitation::ElicitSpec for $name {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(stringify!($name).to_string())
+                    .summary(concat!("Shadow type for `", stringify!($name), "`.").to_string())
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl elicitation::ElicitComplete for $name {}
+    };
+}
+
 // ── JustifyText ───────────────────────────────────────────────────────────────
 //
 // In Bevy 0.18 the type is `bevy::text::Justify`, aliased as `JustifyText`.
@@ -1068,6 +1136,194 @@ mod emit_impls_text_background_color {
 }
 
 impl elicitation::ElicitComplete for TextBackgroundColor {}
+
+// ── FontWidth ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::FontWidth`].
+///
+/// Visual width of a font as a ratio of its normal width. `1.0` = normal,
+/// `0.75` = condensed, `1.25` = expanded. Range: typically 0.5 to 2.0.
+#[derive(
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct FontWidth(pub f32);
+
+impl FontWidth {
+    /// 50% of normal width.
+    pub const ULTRA_CONDENSED: Self = Self(0.5);
+    /// 75% of normal width.
+    pub const CONDENSED: Self = Self(0.75);
+    /// 100% of normal width (default).
+    pub const NORMAL: Self = Self(1.0);
+    /// 125% of normal width.
+    pub const EXPANDED: Self = Self(1.25);
+    /// 200% of normal width.
+    pub const ULTRA_EXPANDED: Self = Self(2.0);
+}
+
+impl Default for FontWidth {
+    fn default() -> Self {
+        Self::NORMAL
+    }
+}
+
+impl From<FontWidth> for bevy::text::FontWidth {
+    fn from(v: FontWidth) -> Self {
+        bevy::text::FontWidth(v.0)
+    }
+}
+
+impl From<bevy::text::FontWidth> for FontWidth {
+    fn from(v: bevy::text::FontWidth) -> Self {
+        Self(v.0)
+    }
+}
+
+mod emit_impls_font_width {
+    use super::FontWidth;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for FontWidth {
+        fn to_code_literal(&self) -> TokenStream {
+            let w = self.0;
+            quote::quote! { ::bevy::text::FontWidth(#w) }
+        }
+    }
+}
+
+plain_elicitation!(FontWidth);
+
+// ── FontStyle ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::FontStyle`].
+///
+/// Whether the text is upright (normal), italic, or oblique.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[serde(tag = "style")]
+pub enum FontStyle {
+    /// Upright (normal).
+    #[default]
+    Normal,
+    /// Italic style.
+    Italic,
+    /// Oblique / slanted style. Contains optional slant angle in degrees.
+    Oblique {
+        /// Slant angle in degrees, if specified.
+        angle_deg: Option<f32>,
+    },
+}
+
+impl From<FontStyle> for bevy::text::FontStyle {
+    fn from(v: FontStyle) -> Self {
+        match v {
+            FontStyle::Normal => bevy::text::FontStyle::Normal,
+            FontStyle::Italic => bevy::text::FontStyle::Italic,
+            FontStyle::Oblique { angle_deg } => bevy::text::FontStyle::Oblique(angle_deg),
+        }
+    }
+}
+
+impl From<bevy::text::FontStyle> for FontStyle {
+    fn from(v: bevy::text::FontStyle) -> Self {
+        match v {
+            bevy::text::FontStyle::Normal => FontStyle::Normal,
+            bevy::text::FontStyle::Italic => FontStyle::Italic,
+            bevy::text::FontStyle::Oblique(angle_deg) => FontStyle::Oblique { angle_deg },
+        }
+    }
+}
+
+mod emit_impls_font_style {
+    use super::FontStyle;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for FontStyle {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                FontStyle::Normal => quote::quote! { ::bevy::text::FontStyle::Normal },
+                FontStyle::Italic => quote::quote! { ::bevy::text::FontStyle::Italic },
+                FontStyle::Oblique { angle_deg: None } => {
+                    quote::quote! { ::bevy::text::FontStyle::Oblique(None) }
+                }
+                FontStyle::Oblique { angle_deg: Some(a) } => {
+                    quote::quote! { ::bevy::text::FontStyle::Oblique(Some(#a)) }
+                }
+            }
+        }
+    }
+}
+
+plain_elicitation!(FontStyle);
+
+// ── LetterSpacing ─────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::LetterSpacing`].
+///
+/// Controls the space between characters in text. Positive values increase
+/// spacing; negative values bring characters closer together.
+#[derive(
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[serde(tag = "kind", content = "value")]
+pub enum LetterSpacing {
+    /// Fixed spacing in logical pixels.
+    Px(f32),
+    /// Spacing relative to the `RemSize` resource.
+    Rem(f32),
+}
+
+impl Default for LetterSpacing {
+    fn default() -> Self {
+        Self::Px(0.0)
+    }
+}
+
+impl From<LetterSpacing> for bevy::text::LetterSpacing {
+    fn from(v: LetterSpacing) -> Self {
+        match v {
+            LetterSpacing::Px(px) => bevy::text::LetterSpacing::Px(px),
+            LetterSpacing::Rem(rem) => bevy::text::LetterSpacing::Rem(rem),
+        }
+    }
+}
+
+impl From<bevy::text::LetterSpacing> for LetterSpacing {
+    fn from(v: bevy::text::LetterSpacing) -> Self {
+        match v {
+            bevy::text::LetterSpacing::Px(px) => LetterSpacing::Px(px),
+            bevy::text::LetterSpacing::Rem(rem) => LetterSpacing::Rem(rem),
+        }
+    }
+}
+
+mod emit_impls_letter_spacing {
+    use super::LetterSpacing;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for LetterSpacing {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                LetterSpacing::Px(px) => {
+                    quote::quote! { ::bevy::text::LetterSpacing::Px(#px) }
+                }
+                LetterSpacing::Rem(rem) => {
+                    quote::quote! { ::bevy::text::LetterSpacing::Rem(#rem) }
+                }
+            }
+        }
+    }
+}
+
+plain_elicitation!(LetterSpacing);
 
 // ── FontGenerator ─────────────────────────────────────────────────────────────
 

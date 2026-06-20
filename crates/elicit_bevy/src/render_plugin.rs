@@ -1078,10 +1078,14 @@ pub struct BevyDirectionalLightParams {
     #[serde(default)]
     #[to_code_literal(optional)]
     pub illuminance: Option<f32>,
-    /// Optional shadows-enabled flag.
+    /// Optional shadow map enable flag.
     #[serde(default)]
     #[to_code_literal(optional)]
-    pub shadows_enabled: Option<bool>,
+    pub shadow_maps_enabled: Option<bool>,
+    /// Optional contact shadows enable flag (bevy 0.19+).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub contact_shadows_enabled: Option<bool>,
 }
 
 /// Parameters for `bevy_render__global_ambient_light`.
@@ -1122,10 +1126,18 @@ pub struct BevyPointLightParams {
     #[serde(default)]
     #[to_code_literal(optional)]
     pub radius: Option<f32>,
-    /// Optional shadows-enabled flag.
+    /// Optional shadow map enable flag.
     #[serde(default)]
     #[to_code_literal(optional)]
-    pub shadows_enabled: Option<bool>,
+    pub shadow_maps_enabled: Option<bool>,
+    /// Optional contact shadows enable flag (bevy 0.19+).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub contact_shadows_enabled: Option<bool>,
+    /// Optional soft shadows enable flag (bevy 0.19+).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub soft_shadows_enabled: Option<bool>,
 }
 
 /// Parameters for `bevy_render__spot_light`.
@@ -1156,10 +1168,18 @@ pub struct BevySpotLightParams {
     #[serde(default)]
     #[to_code_literal(optional)]
     pub outer_angle: Option<f32>,
-    /// Optional shadows-enabled flag.
+    /// Optional shadow map enable flag.
     #[serde(default)]
     #[to_code_literal(optional)]
-    pub shadows_enabled: Option<bool>,
+    pub shadow_maps_enabled: Option<bool>,
+    /// Optional contact shadows enable flag (bevy 0.19+).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub contact_shadows_enabled: Option<bool>,
+    /// Optional soft shadows enable flag (bevy 0.19+).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub soft_shadows_enabled: Option<bool>,
 }
 
 /// Parameters for `bevy_render__directional_light_shadow_map`.
@@ -1358,6 +1378,88 @@ pub struct BevySunDiskParams {
     #[serde(default)]
     #[to_code_literal(optional)]
     pub intensity: Option<f32>,
+}
+
+/// Parameters for `bevy_render__parallax_correction`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(transparent)]
+pub struct BevyParallaxCorrectionParams(pub crate::ParallaxCorrection);
+
+/// Parameters for `bevy_render__screen_space_transmission`.
+///
+/// Emits a `ScreenSpaceTransmission` component (split out of `Camera3d` in bevy 0.19).
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct BevyScreenSpaceTransmissionParams {
+    /// Optional number of refraction steps (default: 1).
+    #[serde(default)]
+    pub steps: Option<usize>,
+    /// Optional quality level (default: medium).
+    #[serde(default)]
+    pub quality: Option<BevyScreenSpaceTransmissionQualityVariant>,
+}
+
+/// Parameters for `bevy_render__vignette`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, elicitation::ToCodeLiteral)]
+#[to_code_literal(
+    path = "::bevy::post_process::effect_stack::Vignette",
+    default_update,
+    default_expr = "::bevy::post_process::effect_stack::Vignette::default()"
+)]
+pub struct BevyVignetteParams {
+    /// Optional vignette intensity (0.0–1.0).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub intensity: Option<f32>,
+    /// Optional radius of the clear central area (0.0–1.0).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub radius: Option<f32>,
+    /// Optional softness of the vignette edge.
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub smoothness: Option<f32>,
+    /// Optional roundness of the vignette shape (0.0 = rectangular, 1.0 = circular).
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub roundness: Option<f32>,
+    /// Optional screen-space center as [x, y] (0.0–1.0, default [0.5, 0.5]).
+    #[serde(default)]
+    #[to_code_literal(optional, to_tokens = "bevy_vec2_tokens")]
+    pub center: Option<[f32; 2]>,
+    /// Optional edge compensation factor.
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub edge_compensation: Option<f32>,
+}
+
+/// Parameters for `bevy_render__lens_distortion`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, elicitation::ToCodeLiteral)]
+#[to_code_literal(
+    path = "::bevy::post_process::effect_stack::LensDistortion",
+    default_update,
+    default_expr = "::bevy::post_process::effect_stack::LensDistortion::default()"
+)]
+pub struct BevyLensDistortionParams {
+    /// Overall distortion strength.
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub intensity: Option<f32>,
+    /// Scale factor applied to the distorted image.
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub scale: Option<f32>,
+    /// Per-axis distortion multiplier as [x, y].
+    #[serde(default)]
+    #[to_code_literal(optional, to_tokens = "bevy_vec2_tokens")]
+    pub multiplier: Option<[f32; 2]>,
+    /// Distortion center as [x, y] in normalized screen space.
+    #[serde(default)]
+    #[to_code_literal(optional, to_tokens = "bevy_vec2_tokens")]
+    pub center: Option<[f32; 2]>,
+    /// Curvature of the distortion at screen edges.
+    #[serde(default)]
+    #[to_code_literal(optional)]
+    pub edge_curvature: Option<f32>,
 }
 
 /// Parameters for `bevy_render__not_shadow_caster`.
@@ -2181,6 +2283,11 @@ fn uvec2_array_tokens(value: &[u32; 2]) -> TokenStream {
     quote! { ::bevy::math::UVec2::new(#x, #y) }
 }
 
+fn bevy_vec2_tokens(value: &[f32; 2]) -> TokenStream {
+    let [x, y] = *value;
+    quote! { ::bevy::math::Vec2::new(#x, #y) }
+}
+
 fn viewport_depth_tokens(depth: &Option<[f32; 2]>) -> TokenStream {
     let [min, max] = depth.unwrap_or([0.0, 1.0]);
     quote! { #min..#max }
@@ -2399,12 +2506,6 @@ fn validate_camera_3d_depth_load_op(
         }
         BevyCamera3dDepthLoadOpParams::Load => Ok(()),
     }
-}
-
-fn validate_screen_space_transmission_quality(
-    _params: &BevyScreenSpaceTransmissionQualityParams,
-) -> Result<(), ErrorData> {
-    Ok(())
 }
 
 fn validate_main_pass_resolution_override(
@@ -2667,7 +2768,49 @@ impl_bevy_literal_emit!(
     BevyCascadeShadowConfigParams,
     BevyOrthographicProjectionParams,
     BevyStandardMaterialParams,
+    BevyVignetteParams,
+    BevyLensDistortionParams,
 );
+
+impl EmitCode for BevyParallaxCorrectionParams {
+    fn emit_code(&self) -> TokenStream {
+        use elicitation::emit_code::ToCodeLiteral;
+        self.0.to_code_literal()
+    }
+
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        bevy_dep()
+    }
+}
+
+impl EmitCode for BevyScreenSpaceTransmissionParams {
+    fn emit_code(&self) -> TokenStream {
+        use elicitation::emit_code::ToCodeLiteral;
+        let steps = self
+            .steps
+            .map(|s| quote! { steps: #s, })
+            .unwrap_or_default();
+        let quality = self
+            .quality
+            .as_ref()
+            .map(|q| {
+                let q = q.to_code_literal();
+                quote! { quality: #q, }
+            })
+            .unwrap_or_default();
+        quote! {
+            ::bevy::pbr::ScreenSpaceTransmission {
+                #steps
+                #quality
+                ..::std::default::Default::default()
+            }
+        }
+    }
+
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        bevy_dep()
+    }
+}
 
 fn emit_uv_channel_variant_tokens(variant: &BevyUvChannelVariant) -> TokenStream {
     let variant = match variant {
@@ -3270,6 +3413,13 @@ elicitation::register_emit!("fog_volume", BevyFogVolumeParams);
 elicitation::register_emit!("light_probe", BevyLightProbeParams);
 elicitation::register_emit!("irradiance_volume", BevyIrradianceVolumeParams);
 elicitation::register_emit!("sun_disk", BevySunDiskParams);
+elicitation::register_emit!("parallax_correction", BevyParallaxCorrectionParams);
+elicitation::register_emit!(
+    "screen_space_transmission",
+    BevyScreenSpaceTransmissionParams
+);
+elicitation::register_emit!("vignette", BevyVignetteParams);
+elicitation::register_emit!("lens_distortion", BevyLensDistortionParams);
 elicitation::register_emit!("not_shadow_caster", BevyNotShadowCasterParams);
 elicitation::register_emit!("not_shadow_receiver", BevyNotShadowReceiverParams);
 elicitation::register_emit!(
@@ -3400,10 +3550,6 @@ fn validate_standard_material(params: &BevyStandardMaterialParams) -> Result<(),
     Ok(())
 }
 
-fn validate_uv_channel(_params: &BevyUvChannelParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
 fn validate_parallax_mapping_method(
     params: &BevyParallaxMappingMethodParams,
 ) -> Result<(), ErrorData> {
@@ -3417,18 +3563,6 @@ fn validate_parallax_mapping_method(
             }
         }
     }
-    Ok(())
-}
-
-fn validate_opaque_renderer_method(
-    _params: &BevyOpaqueRendererMethodParams,
-) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_default_opaque_renderer_method(
-    _params: &BevyDefaultOpaqueRendererMethodParams,
-) -> Result<(), ErrorData> {
     Ok(())
 }
 
@@ -3457,36 +3591,6 @@ fn validate_skybox(params: &BevySkyboxParams) -> Result<(), ErrorData> {
     let _ = parse_expr(&params.image_expr, "skybox image")?;
     validate_optional_expr(&params.rotation_expr, "skybox rotation")?;
     validate_optional_non_negative_f32(params.brightness, "skybox brightness")
-}
-
-fn validate_depth_prepass(_params: &BevyDepthPrepassParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_normal_prepass(_params: &BevyNormalPrepassParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_motion_vector_prepass(
-    _params: &BevyMotionVectorPrepassParams,
-) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_deferred_prepass(_params: &BevyDeferredPrepassParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_depth_prepass_double_buffer(
-    _params: &BevyDepthPrepassDoubleBufferParams,
-) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_deferred_prepass_double_buffer(
-    _params: &BevyDeferredPrepassDoubleBufferParams,
-) -> Result<(), ErrorData> {
-    Ok(())
 }
 
 fn validate_ambient_light(params: &BevyAmbientLightParams) -> Result<(), ErrorData> {
@@ -3557,10 +3661,6 @@ fn validate_atmosphere_environment_map_light(
     Ok(())
 }
 
-fn validate_volumetric_light(_params: &BevyVolumetricLightParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
 fn validate_volumetric_fog(params: &BevyVolumetricFogParams) -> Result<(), ErrorData> {
     validate_optional_expr(&params.ambient_color_expr, "volumetric fog ambient color")?;
     validate_optional_non_negative_f32(
@@ -3597,10 +3697,6 @@ fn validate_fog_volume(params: &BevyFogVolumeParams) -> Result<(), ErrorData> {
     Ok(())
 }
 
-fn validate_light_probe(_params: &BevyLightProbeParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
 fn validate_irradiance_volume(params: &BevyIrradianceVolumeParams) -> Result<(), ErrorData> {
     let _ = parse_expr(&params.voxels_expr, "irradiance volume voxels")?;
     validate_optional_non_negative_f32(params.intensity, "irradiance volume intensity")?;
@@ -3612,24 +3708,17 @@ fn validate_sun_disk(params: &BevySunDiskParams) -> Result<(), ErrorData> {
     validate_optional_non_negative_f32(params.intensity, "sun disk intensity")
 }
 
-fn validate_not_shadow_caster(_params: &BevyNotShadowCasterParams) -> Result<(), ErrorData> {
-    Ok(())
+fn validate_vignette(params: &BevyVignetteParams) -> Result<(), ErrorData> {
+    validate_optional_non_negative_f32(params.intensity, "vignette intensity")?;
+    validate_optional_non_negative_f32(params.radius, "vignette radius")?;
+    validate_optional_non_negative_f32(params.smoothness, "vignette smoothness")?;
+    validate_optional_non_negative_f32(params.roundness, "vignette roundness")?;
+    validate_optional_non_negative_f32(params.edge_compensation, "vignette edge_compensation")
 }
 
-fn validate_not_shadow_receiver(_params: &BevyNotShadowReceiverParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_transmitted_shadow_receiver(
-    _params: &BevyTransmittedShadowReceiverParams,
-) -> Result<(), ErrorData> {
-    Ok(())
-}
-
-fn validate_shadow_filtering_method(
-    _params: &BevyShadowFilteringMethodParams,
-) -> Result<(), ErrorData> {
-    Ok(())
+fn validate_lens_distortion(params: &BevyLensDistortionParams) -> Result<(), ErrorData> {
+    validate_optional_non_negative_f32(params.intensity, "lens distortion intensity")?;
+    validate_optional_non_negative_f32(params.scale, "lens distortion scale")
 }
 
 fn validate_cluster_far_z_mode(params: &BevyClusterFarZModeParams) -> Result<(), ErrorData> {
@@ -3758,16 +3847,8 @@ fn validate_mesh_material_2d(params: &BevyMeshMaterial2dParams) -> Result<(), Er
     Ok(())
 }
 
-fn validate_wireframe(_params: &BevyWireframeParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
 fn validate_wireframe_color(params: &BevyWireframeColorParams) -> Result<(), ErrorData> {
     let _ = parse_expr(&params.color_expr, "wireframe_color color")?;
-    Ok(())
-}
-
-fn validate_no_wireframe(_params: &BevyNoWireframeParams) -> Result<(), ErrorData> {
     Ok(())
 }
 
@@ -3780,16 +3861,8 @@ fn validate_mesh_3d_wireframe(params: &BevyMesh3dWireframeParams) -> Result<(), 
     Ok(())
 }
 
-fn validate_wireframe_2d(_params: &BevyWireframe2dParams) -> Result<(), ErrorData> {
-    Ok(())
-}
-
 fn validate_wireframe_2d_color(params: &BevyWireframe2dColorParams) -> Result<(), ErrorData> {
     let _ = parse_expr(&params.color_expr, "wireframe_2d_color color")?;
-    Ok(())
-}
-
-fn validate_no_wireframe_2d(_params: &BevyNoWireframe2dParams) -> Result<(), ErrorData> {
     Ok(())
 }
 
@@ -4235,7 +4308,6 @@ async fn camera_3d_depth_load_op(
 async fn screen_space_transmission_quality(
     p: BevyScreenSpaceTransmissionQualityParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_screen_space_transmission_quality(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4329,7 +4401,6 @@ async fn alpha_mode(p: BevyRenderAlphaModeParams) -> Result<CallToolResult, Erro
 )]
 #[instrument(skip_all)]
 async fn uv_channel(p: BevyUvChannelParams) -> Result<CallToolResult, ErrorData> {
-    validate_uv_channel(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4357,7 +4428,6 @@ async fn parallax_mapping_method(
 async fn opaque_renderer_method(
     p: BevyOpaqueRendererMethodParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_opaque_renderer_method(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4371,7 +4441,6 @@ async fn opaque_renderer_method(
 async fn default_opaque_renderer_method(
     p: BevyDefaultOpaqueRendererMethodParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_default_opaque_renderer_method(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4443,7 +4512,6 @@ async fn skybox(p: BevySkyboxParams) -> Result<CallToolResult, ErrorData> {
 )]
 #[instrument(skip_all)]
 async fn depth_prepass(p: BevyDepthPrepassParams) -> Result<CallToolResult, ErrorData> {
-    validate_depth_prepass(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4455,7 +4523,6 @@ async fn depth_prepass(p: BevyDepthPrepassParams) -> Result<CallToolResult, Erro
 )]
 #[instrument(skip_all)]
 async fn normal_prepass(p: BevyNormalPrepassParams) -> Result<CallToolResult, ErrorData> {
-    validate_normal_prepass(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4469,7 +4536,6 @@ async fn normal_prepass(p: BevyNormalPrepassParams) -> Result<CallToolResult, Er
 async fn motion_vector_prepass(
     p: BevyMotionVectorPrepassParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_motion_vector_prepass(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4481,7 +4547,6 @@ async fn motion_vector_prepass(
 )]
 #[instrument(skip_all)]
 async fn deferred_prepass(p: BevyDeferredPrepassParams) -> Result<CallToolResult, ErrorData> {
-    validate_deferred_prepass(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4495,7 +4560,6 @@ async fn deferred_prepass(p: BevyDeferredPrepassParams) -> Result<CallToolResult
 async fn depth_prepass_double_buffer(
     p: BevyDepthPrepassDoubleBufferParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_depth_prepass_double_buffer(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4509,7 +4573,6 @@ async fn depth_prepass_double_buffer(
 async fn deferred_prepass_double_buffer(
     p: BevyDeferredPrepassDoubleBufferParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_deferred_prepass_double_buffer(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4653,7 +4716,6 @@ async fn atmosphere_environment_map_light(
 )]
 #[instrument(skip_all)]
 async fn volumetric_light(p: BevyVolumetricLightParams) -> Result<CallToolResult, ErrorData> {
-    validate_volumetric_light(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4689,7 +4751,6 @@ async fn fog_volume(p: BevyFogVolumeParams) -> Result<CallToolResult, ErrorData>
 )]
 #[instrument(skip_all)]
 async fn light_probe(p: BevyLightProbeParams) -> Result<CallToolResult, ErrorData> {
-    validate_light_probe(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4719,13 +4780,60 @@ async fn sun_disk(p: BevySunDiskParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "bevy_render",
+    name = "parallax_correction",
+    description = "Emit a `ParallaxCorrection` component controlling environment-map parallax on light probes (bevy 0.19+). Use `auto` to match the probe bounds or `custom` for explicit half-extents.",
+    emit = None
+)]
+#[instrument(skip_all)]
+async fn parallax_correction(p: BevyParallaxCorrectionParams) -> Result<CallToolResult, ErrorData> {
+    ok_source(p.emit_code().to_string())
+}
+
+#[elicit_tool(
+    plugin = "bevy_render",
+    name = "screen_space_transmission",
+    description = "Emit a `ScreenSpaceTransmission` component for refractive materials (bevy 0.19+). Separated from `Camera3d` — add this component to the camera.",
+    emit = None
+)]
+#[instrument(skip_all)]
+async fn screen_space_transmission(
+    p: BevyScreenSpaceTransmissionParams,
+) -> Result<CallToolResult, ErrorData> {
+    ok_source(p.emit_code().to_string())
+}
+
+#[elicit_tool(
+    plugin = "bevy_render",
+    name = "vignette",
+    description = "Emit a `Vignette` post-process component that darkens screen edges (bevy 0.19+).",
+    emit = None
+)]
+#[instrument(skip_all)]
+async fn vignette(p: BevyVignetteParams) -> Result<CallToolResult, ErrorData> {
+    validate_vignette(&p)?;
+    ok_source(p.emit_code().to_string())
+}
+
+#[elicit_tool(
+    plugin = "bevy_render",
+    name = "lens_distortion",
+    description = "Emit a `LensDistortion` post-process component for barrel/pincushion lens effects (bevy 0.19+).",
+    emit = None
+)]
+#[instrument(skip_all)]
+async fn lens_distortion(p: BevyLensDistortionParams) -> Result<CallToolResult, ErrorData> {
+    validate_lens_distortion(&p)?;
+    ok_source(p.emit_code().to_string())
+}
+
+#[elicit_tool(
+    plugin = "bevy_render",
     name = "not_shadow_caster",
     description = "Emit the `NotShadowCaster` marker component to disable mesh shadow casting.",
     emit = None
 )]
 #[instrument(skip_all)]
 async fn not_shadow_caster(p: BevyNotShadowCasterParams) -> Result<CallToolResult, ErrorData> {
-    validate_not_shadow_caster(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4737,7 +4845,6 @@ async fn not_shadow_caster(p: BevyNotShadowCasterParams) -> Result<CallToolResul
 )]
 #[instrument(skip_all)]
 async fn not_shadow_receiver(p: BevyNotShadowReceiverParams) -> Result<CallToolResult, ErrorData> {
-    validate_not_shadow_receiver(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4751,7 +4858,6 @@ async fn not_shadow_receiver(p: BevyNotShadowReceiverParams) -> Result<CallToolR
 async fn transmitted_shadow_receiver(
     p: BevyTransmittedShadowReceiverParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_transmitted_shadow_receiver(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4765,7 +4871,6 @@ async fn transmitted_shadow_receiver(
 async fn shadow_filtering_method(
     p: BevyShadowFilteringMethodParams,
 ) -> Result<CallToolResult, ErrorData> {
-    validate_shadow_filtering_method(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4887,7 +4992,6 @@ async fn mesh_material_2d(p: BevyMeshMaterial2dParams) -> Result<CallToolResult,
 )]
 #[instrument(skip_all)]
 async fn wireframe(p: BevyWireframeParams) -> Result<CallToolResult, ErrorData> {
-    validate_wireframe(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4911,7 +5015,6 @@ async fn wireframe_color(p: BevyWireframeColorParams) -> Result<CallToolResult, 
 )]
 #[instrument(skip_all)]
 async fn no_wireframe(p: BevyNoWireframeParams) -> Result<CallToolResult, ErrorData> {
-    validate_no_wireframe(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4947,7 +5050,6 @@ async fn mesh_3d_wireframe(p: BevyMesh3dWireframeParams) -> Result<CallToolResul
 )]
 #[instrument(skip_all)]
 async fn wireframe_2d(p: BevyWireframe2dParams) -> Result<CallToolResult, ErrorData> {
-    validate_wireframe_2d(&p)?;
     ok_source(p.emit_code().to_string())
 }
 
@@ -4971,7 +5073,6 @@ async fn wireframe_2d_color(p: BevyWireframe2dColorParams) -> Result<CallToolRes
 )]
 #[instrument(skip_all)]
 async fn no_wireframe_2d(p: BevyNoWireframe2dParams) -> Result<CallToolResult, ErrorData> {
-    validate_no_wireframe_2d(&p)?;
     ok_source(p.emit_code().to_string())
 }
 

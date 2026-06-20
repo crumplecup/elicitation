@@ -1,4 +1,4 @@
-//! `elicit_bevy` — Bevy 0.18 shadow crate for MCP-based game development.
+//! `elicit_bevy` — Bevy 0.19 shadow crate for MCP-based game development.
 //!
 //! Each Bevy type is wrapped in an `Arc<T>` newtype.  The wrappers expose
 //! every public instance method as an rmcp `#[tool]` via `#[reflect_methods]`,
@@ -16,19 +16,19 @@
 //! | [`input_focus`] | AutoFocus, TabIndex, TabGroup, InputFocusVisible, AutoNavigationConfig |
 //! | [`time`] | Timer, TimerMode, Stopwatch |
 //! | [`window`] | Window, WindowMode, PresentMode, … |
-//! | [`camera`] | Camera, Projection, Visibility |
+//! | [`camera`] | Camera, Projection, Visibility, ScreenSpaceTransmission |
 //! | [`pbr`] | StandardMaterial, AlphaMode, Tonemapping, FogFalloff |
-//! | [`light`] | AmbientLight, DirectionalLight, PointLight, SpotLight |
+//! | [`light`] | AmbientLight, DirectionalLight, PointLight, SpotLight, ParallaxCorrection |
 //! | [`ui`] | Val, UiRect, BorderRadius, layout enums, FocusPolicy, BoxSizing, GridAutoFlow, ZIndex, GlobalZIndex, BackgroundColor, BorderColor, Outline, AutoDirectionalNavigation |
 //! | [`sprite`] | Sprite, Anchor, SpriteImageMode, SpriteScalingMode, SpritePickingCamera, SpritePickingMode, SpritePickingSettings |
-//! | [`text`] | TextFont, JustifyText, LineBreak |
+//! | [`text`] | TextFont, JustifyText, LineBreak, FontWeight, FontStyle, FontWidth, LetterSpacing |
 //! | [`audio`] | PlaybackSettings, PlaybackMode, Volume |
 //! | [`animation`] | RepeatAnimation, AnimationTargetId |
 //! | [`anti_alias`] | Sensitivity, Fxaa, SmaaPreset, Smaa, ContrastAdaptiveSharpening |
 //! | [`picking`] | Pickable, PickingInteraction |
 //! | [`mesh`] | PrimitiveTopology, Indices |
 //! | [`gizmos`] | GizmoLineStyle, GizmoLineJoint, GizmoLineConfig, GizmoConfig |
-//! | [`post_process`] | AutoExposure, Bloom, BloomCompositeMode, BloomPrefilter, ChromaticAberration, DepthOfFieldMode, DepthOfField, MotionBlur |
+//! | [`post_process`] | AutoExposure, Bloom, BloomCompositeMode, BloomPrefilter, ChromaticAberration, DepthOfFieldMode, DepthOfField, MotionBlur, Vignette, LensDistortion |
 //! | [`ecs`] | Entity |
 //! | [`app`] | App (shadow), AppExit |
 //! | [`plugin_group`] | PluginGroup (shadow trait), PluginGroupBuilder, DefaultPlugins |
@@ -264,7 +264,8 @@ pub use color::{Color, Hsla, Hsva, Hwba, Laba, Lcha, LinearRgba, Oklaba, Oklcha,
 // ── light re-exports ─────────────────────────────────────────────────────────
 pub use light::{
     AmbientLight, DirectionalLight, EnvironmentMapLight, GeneratedEnvironmentMapLight,
-    GlobalAmbientLight, LightProbe, PointLight, ShadowFilteringMethod, SpotLight,
+    GlobalAmbientLight, LightProbe, ParallaxCorrection, PointLight, ShadowFilteringMethod,
+    SpotLight,
 };
 
 // ── math re-exports ──────────────────────────────────────────────────────────
@@ -302,15 +303,15 @@ pub use gizmos::{
 // ── post_process re-exports ───────────────────────────────────────────────────
 pub use post_process::{
     AutoExposure, Bloom, BloomCompositeMode, BloomPrefilter, ChromaticAberration, DepthOfField,
-    DepthOfFieldMode, MotionBlur,
+    DepthOfFieldMode, LensDistortion, MotionBlur, Vignette,
 };
 
 // ── camera re-exports ─────────────────────────────────────────────────────────
 pub use camera::{
     Camera, Camera2d, Camera3d, Camera3dDepthLoadOp, ClearColor, ClearColorConfig,
     InheritedVisibility, MsaaWriteback, OrthographicProjection, PerspectiveProjection,
-    PhysicalCameraParameters, Projection, ScalingMode, ScreenSpaceTransmissionQuality,
-    ViewVisibility, Visibility,
+    PhysicalCameraParameters, Projection, ScalingMode, ScreenSpaceTransmission,
+    ScreenSpaceTransmissionQuality, ViewVisibility, Visibility,
 };
 
 // ── input re-exports ──────────────────────────────────────────────────────────
@@ -352,9 +353,9 @@ pub use sprite::{
 
 // ── text re-exports ───────────────────────────────────────────────────────────
 pub use text::{
-    FontGenerator, FontHinting, FontSmoothing, FontWeight, JustifyText, LineBreak, Strikethrough,
-    StrikethroughColor, TextBackgroundColor, TextBounds, TextColor, TextFont, TextLayout, TextSpan,
-    Underline, UnderlineColor,
+    FontGenerator, FontHinting, FontSmoothing, FontStyle, FontWeight, FontWidth, JustifyText,
+    LetterSpacing, LineBreak, Strikethrough, StrikethroughColor, TextBackgroundColor, TextBounds,
+    TextColor, TextFont, TextLayout, TextSpan, Underline, UnderlineColor,
 };
 
 // ── GIS render backend re-exports ─────────────────────────────────────────────

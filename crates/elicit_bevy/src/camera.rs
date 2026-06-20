@@ -1095,6 +1095,73 @@ mod emit_impls_camera3d {
 
 shadow_elicitation!(Camera3d);
 
+// ── ScreenSpaceTransmission ───────────────────────────────────────────────────
+
+/// Shadow of [`bevy::pbr::ScreenSpaceTransmission`].
+///
+/// Camera component for screen-space specular transmission. Moved out of
+/// `Camera3d` in bevy 0.19; add this alongside `Camera3d` to enable the effect.
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct ScreenSpaceTransmission {
+    /// Number of render passes for transmissive layers. `0` disables screen-space
+    /// refraction and falls back to the environment map. Default: `1`.
+    pub steps: usize,
+    /// Quality of the specular transmission blur. Higher quality is more GPU-intensive.
+    pub quality: ScreenSpaceTransmissionQuality,
+}
+
+impl Default for ScreenSpaceTransmission {
+    fn default() -> Self {
+        let d = bevy::pbr::ScreenSpaceTransmission::default();
+        Self {
+            steps: d.steps,
+            quality: match d.quality {
+                bevy::pbr::ScreenSpaceTransmissionQuality::Low => {
+                    ScreenSpaceTransmissionQuality::Low
+                }
+                bevy::pbr::ScreenSpaceTransmissionQuality::Medium => {
+                    ScreenSpaceTransmissionQuality::Medium
+                }
+                bevy::pbr::ScreenSpaceTransmissionQuality::High => {
+                    ScreenSpaceTransmissionQuality::High
+                }
+                bevy::pbr::ScreenSpaceTransmissionQuality::Ultra => {
+                    ScreenSpaceTransmissionQuality::Ultra
+                }
+            },
+        }
+    }
+}
+
+impl From<ScreenSpaceTransmission> for bevy::pbr::ScreenSpaceTransmission {
+    fn from(v: ScreenSpaceTransmission) -> Self {
+        bevy::pbr::ScreenSpaceTransmission {
+            steps: v.steps,
+            quality: v.quality.into(),
+        }
+    }
+}
+
+mod emit_impls_sst {
+    use super::ScreenSpaceTransmission;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for ScreenSpaceTransmission {
+        fn to_code_literal(&self) -> TokenStream {
+            let steps = self.steps;
+            let quality = self.quality.to_code_literal();
+            quote::quote! {
+                ::bevy::pbr::ScreenSpaceTransmission {
+                    steps: #steps,
+                    quality: #quality,
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(ScreenSpaceTransmission);
+
 // ── ClearColor ────────────────────────────────────────────────────────────────
 
 // Shadow of [`bevy::camera::ClearColor`].

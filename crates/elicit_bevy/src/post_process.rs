@@ -6,8 +6,10 @@
 //! [`bevy::post_process::dof::DepthOfFieldMode`],
 //! [`bevy::post_process::dof::DepthOfField`],
 //! [`bevy::post_process::motion_blur::MotionBlur`],
-//! [`bevy::post_process::auto_exposure::AutoExposure`], and
-//! [`bevy::post_process::effect_stack::ChromaticAberration`].
+//! [`bevy::post_process::auto_exposure::AutoExposure`],
+//! [`bevy::post_process::effect_stack::ChromaticAberration`],
+//! [`bevy::post_process::effect_stack::Vignette`], and
+//! [`bevy::post_process::effect_stack::LensDistortion`].
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
@@ -692,3 +694,213 @@ mod emit_impls_chromatic_aberration {
     }
 }
 impl elicitation::ElicitComplete for ChromaticAberration {}
+
+// ── Vignette ──────────────────────────────────────────────────────────────────
+
+elicit_newtype!(bevy::post_process::effect_stack::Vignette, as Vignette, nodebug);
+elicit_newtype_traits!(Vignette, bevy::post_process::effect_stack::Vignette, []);
+
+impl serde::Serialize for Vignette {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let inner = &*self.0;
+        let mut st = s.serialize_struct("Vignette", 7)?;
+        st.serialize_field("intensity", &inner.intensity)?;
+        st.serialize_field("radius", &inner.radius)?;
+        st.serialize_field("smoothness", &inner.smoothness)?;
+        st.serialize_field("roundness", &inner.roundness)?;
+        st.serialize_field("center_x", &inner.center.x)?;
+        st.serialize_field("center_y", &inner.center.y)?;
+        st.serialize_field("edge_compensation", &inner.edge_compensation)?;
+        st.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for Vignette {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let def = bevy::post_process::effect_stack::Vignette::default();
+        let v = serde_json::Value::deserialize(d)?;
+        Ok(Vignette(std::sync::Arc::new(
+            bevy::post_process::effect_stack::Vignette {
+                intensity: v["intensity"].as_f64().unwrap_or(def.intensity as f64) as f32,
+                radius: v["radius"].as_f64().unwrap_or(def.radius as f64) as f32,
+                smoothness: v["smoothness"].as_f64().unwrap_or(def.smoothness as f64) as f32,
+                roundness: v["roundness"].as_f64().unwrap_or(def.roundness as f64) as f32,
+                center: bevy::math::Vec2::new(
+                    v["center_x"].as_f64().unwrap_or(def.center.x as f64) as f32,
+                    v["center_y"].as_f64().unwrap_or(def.center.y as f64) as f32,
+                ),
+                edge_compensation: v["edge_compensation"]
+                    .as_f64()
+                    .unwrap_or(def.edge_compensation as f64)
+                    as f32,
+                ..def
+            },
+        )))
+    }
+}
+impl From<Vignette> for bevy::post_process::effect_stack::Vignette {
+    fn from(v: Vignette) -> Self {
+        (*v.0).clone()
+    }
+}
+
+#[reflect_methods]
+impl Vignette {
+    /// Returns the vignette intensity (0 = no effect, 1 = fully black corners).
+    #[tracing::instrument(skip(self))]
+    pub fn intensity(&self) -> f32 {
+        self.0.intensity
+    }
+
+    /// Returns the radius of the unvignetted center area.
+    #[tracing::instrument(skip(self))]
+    pub fn radius(&self) -> f32 {
+        self.0.radius
+    }
+
+    /// Returns the edge softness.
+    #[tracing::instrument(skip(self))]
+    pub fn smoothness(&self) -> f32 {
+        self.0.smoothness
+    }
+}
+
+mod emit_impls_vignette {
+    use super::Vignette;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for Vignette {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = &*self.0;
+            let intensity = inner.intensity;
+            let radius = inner.radius;
+            let smoothness = inner.smoothness;
+            let roundness = inner.roundness;
+            let cx = inner.center.x;
+            let cy = inner.center.y;
+            let edge = inner.edge_compensation;
+            quote::quote! {
+                ::bevy::post_process::effect_stack::Vignette {
+                    intensity: #intensity,
+                    radius: #radius,
+                    smoothness: #smoothness,
+                    roundness: #roundness,
+                    center: ::bevy::math::Vec2::new(#cx, #cy),
+                    edge_compensation: #edge,
+                    ..::std::default::Default::default()
+                }
+            }
+        }
+    }
+}
+impl elicitation::ElicitComplete for Vignette {}
+
+// ── LensDistortion ────────────────────────────────────────────────────────────
+
+elicit_newtype!(
+    bevy::post_process::effect_stack::LensDistortion,
+    as LensDistortion,
+    nodebug
+);
+elicit_newtype_traits!(
+    LensDistortion,
+    bevy::post_process::effect_stack::LensDistortion,
+    []
+);
+
+impl serde::Serialize for LensDistortion {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let inner = &*self.0;
+        let mut st = s.serialize_struct("LensDistortion", 6)?;
+        st.serialize_field("intensity", &inner.intensity)?;
+        st.serialize_field("scale", &inner.scale)?;
+        st.serialize_field("multiplier_x", &inner.multiplier.x)?;
+        st.serialize_field("multiplier_y", &inner.multiplier.y)?;
+        st.serialize_field("center_x", &inner.center.x)?;
+        st.serialize_field("center_y", &inner.center.y)?;
+        st.serialize_field("edge_curvature", &inner.edge_curvature)?;
+        st.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for LensDistortion {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let def = bevy::post_process::effect_stack::LensDistortion::default();
+        let v = serde_json::Value::deserialize(d)?;
+        Ok(LensDistortion(std::sync::Arc::new(
+            bevy::post_process::effect_stack::LensDistortion {
+                intensity: v["intensity"].as_f64().unwrap_or(def.intensity as f64) as f32,
+                scale: v["scale"].as_f64().unwrap_or(def.scale as f64) as f32,
+                multiplier: bevy::math::Vec2::new(
+                    v["multiplier_x"]
+                        .as_f64()
+                        .unwrap_or(def.multiplier.x as f64) as f32,
+                    v["multiplier_y"]
+                        .as_f64()
+                        .unwrap_or(def.multiplier.y as f64) as f32,
+                ),
+                center: bevy::math::Vec2::new(
+                    v["center_x"].as_f64().unwrap_or(def.center.x as f64) as f32,
+                    v["center_y"].as_f64().unwrap_or(def.center.y as f64) as f32,
+                ),
+                edge_curvature: v["edge_curvature"]
+                    .as_f64()
+                    .unwrap_or(def.edge_curvature as f64) as f32,
+            },
+        )))
+    }
+}
+impl From<LensDistortion> for bevy::post_process::effect_stack::LensDistortion {
+    fn from(v: LensDistortion) -> Self {
+        (*v.0).clone()
+    }
+}
+
+#[reflect_methods]
+impl LensDistortion {
+    /// Returns the distortion intensity (positive = barrel, negative = pincushion).
+    #[tracing::instrument(skip(self))]
+    pub fn intensity(&self) -> f32 {
+        self.0.intensity
+    }
+
+    /// Returns the scale factor applied to crop edge artifacts.
+    #[tracing::instrument(skip(self))]
+    pub fn scale(&self) -> f32 {
+        self.0.scale
+    }
+
+    /// Returns the edge curvature parameter.
+    #[tracing::instrument(skip(self))]
+    pub fn edge_curvature(&self) -> f32 {
+        self.0.edge_curvature
+    }
+}
+
+mod emit_impls_lens_distortion {
+    use super::LensDistortion;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for LensDistortion {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = &*self.0;
+            let intensity = inner.intensity;
+            let scale = inner.scale;
+            let mx = inner.multiplier.x;
+            let my = inner.multiplier.y;
+            let cx = inner.center.x;
+            let cy = inner.center.y;
+            let edge = inner.edge_curvature;
+            quote::quote! {
+                ::bevy::post_process::effect_stack::LensDistortion {
+                    intensity: #intensity,
+                    scale: #scale,
+                    multiplier: ::bevy::math::Vec2::new(#mx, #my),
+                    center: ::bevy::math::Vec2::new(#cx, #cy),
+                    edge_curvature: #edge,
+                }
+            }
+        }
+    }
+}
+impl elicitation::ElicitComplete for LensDistortion {}

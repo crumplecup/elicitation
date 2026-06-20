@@ -221,10 +221,11 @@ impl serde::Serialize for DirectionalLight {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let l = &*self.0;
-        let mut map = serializer.serialize_map(Some(3))?;
+        let mut map = serializer.serialize_map(Some(4))?;
         map.serialize_entry("color", &format!("{:?}", l.color))?;
         map.serialize_entry("illuminance", &l.illuminance)?;
         map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
+        map.serialize_entry("contact_shadows_enabled", &l.contact_shadows_enabled)?;
         map.end()
     }
 }
@@ -244,10 +245,14 @@ impl<'de> serde::Deserialize<'de> for DirectionalLight {
             ) -> Result<DirectionalLight, A::Error> {
                 let mut illuminance: Option<f32> = None;
                 let mut shadow_maps_enabled: Option<bool> = None;
+                let mut contact_shadows_enabled: Option<bool> = None;
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "illuminance" => illuminance = Some(map.next_value()?),
                         "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
+                        "contact_shadows_enabled" => {
+                            contact_shadows_enabled = Some(map.next_value()?);
+                        }
                         _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -259,6 +264,9 @@ impl<'de> serde::Deserialize<'de> for DirectionalLight {
                 }
                 if let Some(s) = shadow_maps_enabled {
                     l.shadow_maps_enabled = s;
+                }
+                if let Some(c) = contact_shadows_enabled {
+                    l.contact_shadows_enabled = c;
                 }
                 Ok(DirectionalLight(Arc::new(l)))
             }
@@ -281,10 +289,16 @@ impl DirectionalLight {
         self.0.illuminance
     }
 
-    /// Returns `true` if shadows are enabled.
+    /// Returns `true` if shadow maps are enabled.
     #[tracing::instrument(skip(self))]
     pub fn directional_light_shadows_enabled(&self) -> bool {
         self.0.shadow_maps_enabled
+    }
+
+    /// Returns `true` if contact shadows are enabled.
+    #[tracing::instrument(skip(self))]
+    pub fn directional_light_contact_shadows_enabled(&self) -> bool {
+        self.0.contact_shadows_enabled
     }
 
     /// Creates a default directional light with the given illuminance.
@@ -314,10 +328,12 @@ mod emit_impls_directional {
         fn to_code_literal(&self) -> TokenStream {
             let illuminance = self.0.illuminance;
             let shadows = self.0.shadow_maps_enabled;
+            let contact = self.0.contact_shadows_enabled;
             quote::quote! {
                 ::elicit_bevy::DirectionalLight::from(::bevy::light::DirectionalLight {
                     illuminance: #illuminance,
                     shadow_maps_enabled: #shadows,
+                    contact_shadows_enabled: #contact,
                     ..Default::default()
                 })
             }
@@ -342,12 +358,13 @@ impl serde::Serialize for PointLight {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let l = &*self.0;
-        let mut map = serializer.serialize_map(Some(5))?;
+        let mut map = serializer.serialize_map(Some(6))?;
         map.serialize_entry("color", &format!("{:?}", l.color))?;
         map.serialize_entry("intensity", &l.intensity)?;
         map.serialize_entry("range", &l.range)?;
         map.serialize_entry("radius", &l.radius)?;
         map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
+        map.serialize_entry("contact_shadows_enabled", &l.contact_shadows_enabled)?;
         map.end()
     }
 }
@@ -365,11 +382,15 @@ impl<'de> serde::Deserialize<'de> for PointLight {
                 let mut intensity: Option<f32> = None;
                 let mut range: Option<f32> = None;
                 let mut shadow_maps_enabled: Option<bool> = None;
+                let mut contact_shadows_enabled: Option<bool> = None;
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "intensity" => intensity = Some(map.next_value()?),
                         "range" => range = Some(map.next_value()?),
                         "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
+                        "contact_shadows_enabled" => {
+                            contact_shadows_enabled = Some(map.next_value()?);
+                        }
                         _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -384,6 +405,9 @@ impl<'de> serde::Deserialize<'de> for PointLight {
                 }
                 if let Some(s) = shadow_maps_enabled {
                     l.shadow_maps_enabled = s;
+                }
+                if let Some(c) = contact_shadows_enabled {
+                    l.contact_shadows_enabled = c;
                 }
                 Ok(PointLight(Arc::new(l)))
             }
@@ -418,10 +442,16 @@ impl PointLight {
         self.0.radius
     }
 
-    /// Returns `true` if shadows are enabled.
+    /// Returns `true` if shadow maps are enabled.
     #[tracing::instrument(skip(self))]
     pub fn point_light_shadows_enabled(&self) -> bool {
         self.0.shadow_maps_enabled
+    }
+
+    /// Returns `true` if contact shadows are enabled.
+    #[tracing::instrument(skip(self))]
+    pub fn point_light_contact_shadows_enabled(&self) -> bool {
+        self.0.contact_shadows_enabled
     }
 
     /// Creates a point light with the given intensity and range.
@@ -453,11 +483,13 @@ mod emit_impls_point {
             let intensity = self.0.intensity;
             let range = self.0.range;
             let shadows = self.0.shadow_maps_enabled;
+            let contact = self.0.contact_shadows_enabled;
             quote::quote! {
                 ::elicit_bevy::PointLight::from(::bevy::light::PointLight {
                     intensity: #intensity,
                     range: #range,
                     shadow_maps_enabled: #shadows,
+                    contact_shadows_enabled: #contact,
                     ..Default::default()
                 })
             }
@@ -482,12 +514,13 @@ impl serde::Serialize for SpotLight {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let l = &*self.0;
-        let mut map = serializer.serialize_map(Some(7))?;
+        let mut map = serializer.serialize_map(Some(8))?;
         map.serialize_entry("color", &format!("{:?}", l.color))?;
         map.serialize_entry("intensity", &l.intensity)?;
         map.serialize_entry("range", &l.range)?;
         map.serialize_entry("radius", &l.radius)?;
         map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
+        map.serialize_entry("contact_shadows_enabled", &l.contact_shadows_enabled)?;
         map.serialize_entry("inner_angle", &l.inner_angle)?;
         map.serialize_entry("outer_angle", &l.outer_angle)?;
         map.end()
@@ -507,6 +540,7 @@ impl<'de> serde::Deserialize<'de> for SpotLight {
                 let mut intensity: Option<f32> = None;
                 let mut range: Option<f32> = None;
                 let mut shadow_maps_enabled: Option<bool> = None;
+                let mut contact_shadows_enabled: Option<bool> = None;
                 let mut inner_angle: Option<f32> = None;
                 let mut outer_angle: Option<f32> = None;
                 while let Some(key) = map.next_key::<String>()? {
@@ -514,6 +548,9 @@ impl<'de> serde::Deserialize<'de> for SpotLight {
                         "intensity" => intensity = Some(map.next_value()?),
                         "range" => range = Some(map.next_value()?),
                         "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
+                        "contact_shadows_enabled" => {
+                            contact_shadows_enabled = Some(map.next_value()?);
+                        }
                         "inner_angle" => inner_angle = Some(map.next_value()?),
                         "outer_angle" => outer_angle = Some(map.next_value()?),
                         _ => {
@@ -530,6 +567,9 @@ impl<'de> serde::Deserialize<'de> for SpotLight {
                 }
                 if let Some(s) = shadow_maps_enabled {
                     l.shadow_maps_enabled = s;
+                }
+                if let Some(c) = contact_shadows_enabled {
+                    l.contact_shadows_enabled = c;
                 }
                 if let Some(a) = inner_angle {
                     l.inner_angle = a;
@@ -570,10 +610,16 @@ impl SpotLight {
         self.0.radius
     }
 
-    /// Returns `true` if shadows are enabled.
+    /// Returns `true` if shadow maps are enabled.
     #[tracing::instrument(skip(self))]
     pub fn spot_light_shadows_enabled(&self) -> bool {
         self.0.shadow_maps_enabled
+    }
+
+    /// Returns `true` if contact shadows are enabled.
+    #[tracing::instrument(skip(self))]
+    pub fn spot_light_contact_shadows_enabled(&self) -> bool {
+        self.0.contact_shadows_enabled
     }
 
     /// Returns the inner cone half-angle in radians.
@@ -600,10 +646,12 @@ mod emit_impls_spot {
             let range = self.0.range;
             let inner = self.0.inner_angle;
             let outer = self.0.outer_angle;
+            let contact = self.0.contact_shadows_enabled;
             quote::quote! {
                 ::elicit_bevy::SpotLight::from(::bevy::light::SpotLight {
                     intensity: #intensity,
                     range: #range,
+                    contact_shadows_enabled: #contact,
                     inner_angle: #inner,
                     outer_angle: #outer,
                     ..Default::default()
@@ -739,6 +787,88 @@ mod emit_impls_light_probe {
 }
 
 unit_elicitation!(LightProbe, bevy::light::LightProbe);
+
+// ── ParallaxCorrection ────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::light::ParallaxCorrection`].
+///
+/// Controls parallax correction for reflection probes. By default Bevy
+/// automatically adds `Auto` to every entity that has both [`LightProbe`] and
+/// `EnvironmentMapLight`, so you only need this if you want to opt out or
+/// supply custom correction bounds.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[serde(tag = "kind")]
+pub enum ParallaxCorrection {
+    /// No parallax correction; reflections are treated as infinitely distant.
+    None,
+    /// Correction bounds match the light probe's own bounding box (default).
+    #[default]
+    Auto,
+    /// Manually specified half-extents in light probe local space.
+    Custom {
+        /// Half-extent on the X axis.
+        x: f32,
+        /// Half-extent on the Y axis.
+        y: f32,
+        /// Half-extent on the Z axis.
+        z: f32,
+    },
+}
+
+impl From<ParallaxCorrection> for bevy::light::ParallaxCorrection {
+    fn from(v: ParallaxCorrection) -> Self {
+        match v {
+            ParallaxCorrection::None => bevy::light::ParallaxCorrection::None,
+            ParallaxCorrection::Auto => bevy::light::ParallaxCorrection::Auto,
+            ParallaxCorrection::Custom { x, y, z } => {
+                bevy::light::ParallaxCorrection::Custom(bevy::math::Vec3::new(x, y, z))
+            }
+        }
+    }
+}
+
+impl From<bevy::light::ParallaxCorrection> for ParallaxCorrection {
+    fn from(v: bevy::light::ParallaxCorrection) -> Self {
+        match v {
+            bevy::light::ParallaxCorrection::None => ParallaxCorrection::None,
+            bevy::light::ParallaxCorrection::Auto => ParallaxCorrection::Auto,
+            bevy::light::ParallaxCorrection::Custom(e) => ParallaxCorrection::Custom {
+                x: e.x,
+                y: e.y,
+                z: e.z,
+            },
+        }
+    }
+}
+
+mod emit_impls_parallax_correction {
+    use super::ParallaxCorrection;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for ParallaxCorrection {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                ParallaxCorrection::None => quote::quote! {
+                    ::bevy::light::ParallaxCorrection::None
+                },
+                ParallaxCorrection::Auto => quote::quote! {
+                    ::bevy::light::ParallaxCorrection::Auto
+                },
+                ParallaxCorrection::Custom { x, y, z } => quote::quote! {
+                    ::bevy::light::ParallaxCorrection::Custom(
+                        ::bevy::math::Vec3::new(#x, #y, #z)
+                    )
+                },
+            }
+        }
+    }
+}
+
+unit_elicitation!(ParallaxCorrection, bevy::light::ParallaxCorrection);
+// Note: unit_elicitation! uses Ok(Self::default()) which returns Auto.
 
 // ── GlobalAmbientLight ────────────────────────────────────────────────────────
 
