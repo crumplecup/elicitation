@@ -49,6 +49,9 @@ bevy = { workspace = true, features = [
     "bevy_winit",
     "x11",
     "wayland",
+    "tonemapping_luts",
+    "ktx2",
+    "zstd_rust",
     "serialize",
 ] }
 rmcp.workspace = true
