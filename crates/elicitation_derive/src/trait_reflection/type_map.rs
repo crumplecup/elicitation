@@ -66,6 +66,32 @@ impl TypeMap {
         self.0.is_empty()
     }
 
+    /// Apply `type_map` substitutions to `ty` **preserving reference wrappers**.
+    ///
+    /// Unlike [`apply_to_type`] (which strips `&T`/`&mut T` to the owned proxy for
+    /// use in param structs), this variant keeps the reference:
+    ///
+    /// - `&MappedType`     → `&ProxyType`
+    /// - `&mut MappedType` → `&mut ProxyType`
+    /// - `MappedType`      → `ProxyType`
+    /// - Anything else     → unchanged
+    ///
+    /// Used for shadow Rust trait signatures where lifetimes must be preserved.
+    pub fn apply_to_type_ref_preserving(&self, ty: &Type) -> Type {
+        if self.is_empty() {
+            return ty.clone();
+        }
+        if let Type::Reference(r) = ty
+            && let Some(proxy) = self.find_proxy(r.elem.as_ref())
+        {
+            let mut new_r = r.clone();
+            *new_r.elem = proxy.clone();
+            return Type::Reference(new_r);
+        }
+        // Fall back to the regular substitution for owned / generic types.
+        self.apply_to_type(ty)
+    }
+
     /// Find the proxy type for `ty` if a direct mapping exists.
     ///
     /// Comparison is done on the stringified type to avoid span differences.
@@ -92,14 +118,31 @@ impl TypeMap {
         })
     }
 
-    /// Returns `true` if `ty` is a `&T` (non-slice) reference where `T` itself
-    /// has a direct entry in the type map.
+    /// Returns `true` if `ty` is a `&T` (non-slice, non-mut) reference where `T`
+    /// itself has a direct entry in the type map.
     ///
     /// This is used by the vtable generator to produce two-step bindings
     /// (`let x = T::from(p.x); let x = &x;`) when the original parameter type
-    /// was a reference to a mapped type.
+    /// was a shared reference to a mapped type.
     pub fn is_ref_to_mapped(&self, ty: &Type) -> bool {
         if let Type::Reference(r) = ty
+            && r.mutability.is_none()
+            && !matches!(r.elem.as_ref(), Type::Slice(_))
+        {
+            return self.find_proxy(r.elem.as_ref()).is_some();
+        }
+        false
+    }
+
+    /// Returns `true` if `ty` is a `&mut T` (non-slice) reference where `T`
+    /// has a direct entry in the type map.
+    ///
+    /// This is used by the vtable generator to produce two-step bindings
+    /// (`let mut x_owned = T::from(p.x); let x = &mut x_owned;`) so the
+    /// owned, potentially-mutated value remains accessible after the call.
+    pub fn is_mut_ref_to_mapped(&self, ty: &Type) -> bool {
+        if let Type::Reference(r) = ty
+            && r.mutability.is_some()
             && !matches!(r.elem.as_ref(), Type::Slice(_))
         {
             return self.find_proxy(r.elem.as_ref()).is_some();
@@ -123,10 +166,10 @@ impl TypeMap {
         if let Some(proxy) = self.find_proxy(ty) {
             return proxy.clone();
         }
-        // Strip `&T` reference when the inner type is mapped.
+        // Strip `&T` or `&mut T` reference when the inner type is mapped.
         // The caller (param struct) will hold the owned proxy; the vtable will
-        // reborrow before passing to the trait method.
-        if self.is_ref_to_mapped(ty)
+        // reborrow (`&` or `&mut`) before passing to the trait method.
+        if (self.is_ref_to_mapped(ty) || self.is_mut_ref_to_mapped(ty))
             && let Type::Reference(r) = ty
         {
             return self.apply_to_type(r.elem.as_ref());

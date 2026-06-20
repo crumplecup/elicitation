@@ -29,6 +29,7 @@ use syn::{ItemImpl, ItemTrait, Path, Token, parse::Parse, parse::ParseStream};
 pub mod factory;
 pub mod naming;
 pub mod params;
+pub mod shadow_trait;
 pub mod type_map;
 pub mod vtable;
 
@@ -38,35 +39,46 @@ use type_map::TypeMap;
 
 // ── Attribute argument parsing ────────────────────────────────────────────────
 
-/// Parsed attribute argument: trait path + optional type_map entries.
+/// Parsed attribute argument: trait path + optional type_map entries + shadow_trait flag.
 ///
 /// Syntax: `#[reflect_trait(diesel::Insertable)]`
 /// or:     `#[reflect_trait(clap::CommandFactory, type_map(clap::Command => crate::Command))]`
+/// or:     `#[reflect_trait(bevy::app::Plugin, type_map(bevy::app::App => crate::App), shadow_trait)]`
 struct ReflectTraitAttr {
     trait_path: Path,
     type_map: TypeMap,
+    /// When `true`, also generate a shadow Rust trait (using proxy types) and a
+    /// blanket `impl RealTrait for T where T: ShadowTrait`.
+    shadow_trait: bool,
 }
 
 impl Parse for ReflectTraitAttr {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let trait_path: Path = input.parse()?;
         let mut type_map = TypeMap::default();
-        // Optionally parse `, type_map(...)`
-        if input.peek(Token![,]) {
+        let mut shadow_trait = false;
+        // Parse optional `, type_map(...)` and/or `, shadow_trait`
+        while input.peek(Token![,]) {
             let _: Token![,] = input.parse()?;
-            // Expect the keyword `type_map`
+            if input.is_empty() {
+                break;
+            }
             let kw: syn::Ident = input.parse()?;
-            if kw != "type_map" {
+            if kw == "type_map" {
+                type_map = input.parse::<TypeMap>()?;
+            } else if kw == "shadow_trait" {
+                shadow_trait = true;
+            } else {
                 return Err(syn::Error::new_spanned(
                     kw,
-                    "#[reflect_trait]: expected `type_map(...)` after trait path",
+                    "#[reflect_trait]: expected `type_map(...)` or `shadow_trait`",
                 ));
             }
-            type_map = input.parse::<TypeMap>()?;
         }
         Ok(ReflectTraitAttr {
             trait_path,
             type_map,
+            shadow_trait,
         })
     }
 }
@@ -102,19 +114,20 @@ pub fn expand(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     let ReflectTraitAttr {
         trait_path,
         type_map,
+        shadow_trait: emit_shadow_trait,
     } = syn::parse2::<ReflectTraitAttr>(attr)?;
     let trait_path_str = path_to_string(&trait_path);
 
     // Try parsing as ItemTrait first (preferred — allows bodyless methods),
     // then fall back to ItemImpl for backward compatibility.
+    let parsed_trait: Option<ItemTrait>;
     let methods: Vec<MethodInfo> = if let Ok(trait_item) = syn::parse2::<ItemTrait>(item.clone()) {
-        let vis = &trait_item.vis;
-        let _ = vis;
-        MethodInfo::from_trait_items(&trait_item.items)?
+        let methods = MethodInfo::from_trait_items(&trait_item.items)?;
+        parsed_trait = Some(trait_item);
+        methods
     } else {
+        parsed_trait = None;
         let impl_block = syn::parse2::<ItemImpl>(item)?;
-        let vis = &impl_block.self_ty;
-        let _ = vis;
         MethodInfo::from_impl_items(&impl_block.items)?
     };
 
@@ -162,6 +175,19 @@ pub fn expand(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         proc_macro2::Span::call_site(),
     );
 
+    // Optionally generate a shadow Rust trait + blanket impl.
+    let shadow_ts = if emit_shadow_trait {
+        let input_trait = parsed_trait.as_ref().ok_or_else(|| {
+            syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "#[reflect_trait] with `shadow_trait` requires a `trait` block (not an `impl` block)",
+            )
+        })?;
+        shadow_trait::shadow_trait_tokens(input_trait, &trait_path, &type_map, &gen_vis)?
+    } else {
+        quote! {}
+    };
+
     Ok(quote! {
         // ── Param structs ──────────────────────────────────────────────────
         #(#param_structs)*
@@ -187,6 +213,9 @@ pub fn expand(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         {
             #factory_name::prime::<T>();
         }
+
+        // ── Shadow Rust trait + blanket impl ───────────────────────────────
+        #shadow_ts
     })
 }
 

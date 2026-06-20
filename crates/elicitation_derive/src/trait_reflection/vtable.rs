@@ -34,7 +34,7 @@
 //! ```
 
 use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
+use quote::{ToTokens, format_ident, quote};
 use syn::{Path, ReturnType};
 
 use super::{
@@ -97,7 +97,17 @@ pub fn vtable_tokens(
                     // type_map handled this: use proxy_decode for the substituted type
                     let field_access = quote! { p.#name };
                     let conversion = type_map.proxy_decode(field_access, &substituted);
-                    if type_map.is_ref_to_mapped(ty) {
+                    if type_map.is_mut_ref_to_mapped(ty) {
+                        // Original type was `&mut T`: decode to an owned mut variable so the
+                        // owned value remains accessible after the call (for unit-return methods
+                        // that mutate an argument and should return it).  The reborrow gives the
+                        // trait method the `&mut OriginalT` it expects.
+                        let owned_name = format_ident!("{}_owned", name);
+                        quote! {
+                            let mut #owned_name = #conversion;
+                            let #name = &mut #owned_name;
+                        }
+                    } else if type_map.is_ref_to_mapped(ty) {
                         // Original type was `&T`: decode to owned T, then reborrow so the
                         // bound name `#name` has type `&OriginalT` as the trait expects.
                         quote! {
@@ -124,8 +134,28 @@ pub fn vtable_tokens(
                 let result_conversion = if let Some(ret) = ret_ty {
                     type_map.proxy_encode(quote! { result }, ret)
                 } else {
-                    // Unit return: serialize as `null`
-                    quote! { ::elicitation::ElicitProxy::into_proxy(result) }
+                    // Unit return (`()`).  If the method mutates a `&mut MappedType` argument
+                    // in place, return that argument so the caller can observe the mutation.
+                    // Otherwise return JSON null.
+                    let first_mut_mapped = m
+                        .params
+                        .iter()
+                        .find(|p| type_map.is_mut_ref_to_mapped(p.ty.as_ref()));
+                    if let Some(param) = first_mut_mapped {
+                        let owned_name = format_ident!("{}_owned", param.name);
+                        // Encode the (now-mutated) owned value back to its proxy type.
+                        let inner_ty = if let syn::Type::Reference(r) = param.ty.as_ref() {
+                            r.elem.as_ref()
+                        } else {
+                            unreachable!("is_mut_ref_to_mapped guarantees a reference type")
+                        };
+                        let encode_expr = type_map.proxy_encode(quote! { #owned_name }, inner_ty);
+                        // Explicitly drop `result` (unit `()`) to avoid unused-variable warning.
+                        quote! { { let _ = result; #encode_expr } }
+                    } else {
+                        // Pure unit return: serialize as JSON null.
+                        quote! { { let _ = result; ::serde_json::Value::Null } }
+                    }
                 };
 
                 let call = if m.has_self {

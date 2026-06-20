@@ -33,6 +33,11 @@ pub struct MethodInfo {
     pub has_self: bool,
     /// True if the receiver is `self` (consuming / by-value), i.e. not `&self` or `&mut self`.
     pub consuming_self: bool,
+    /// Default method body from a `trait` item, if present.
+    ///
+    /// Used by `shadow_trait` generation to preserve default implementations
+    /// in the generated shadow Rust trait.
+    pub default_body: Option<syn::Block>,
 }
 
 /// A single non-self parameter.
@@ -49,7 +54,11 @@ impl MethodInfo {
         items
             .iter()
             .map(|item| match item {
-                syn::TraitItem::Fn(f) => Self::from_sig(&f.sig),
+                syn::TraitItem::Fn(f) => {
+                    let mut info = Self::from_sig(&f.sig)?;
+                    info.default_body = f.default.clone();
+                    Ok(info)
+                }
                 _ => Err(syn::Error::new_spanned(
                     item,
                     "#[reflect_trait] trait body may only contain method signatures",
@@ -111,6 +120,7 @@ impl MethodInfo {
             return_type: sig.output.clone(),
             has_self,
             consuming_self,
+            default_body: None,
         })
     }
 
