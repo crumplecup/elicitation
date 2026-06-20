@@ -259,4 +259,7 @@ pub trait PluginTools {
 use crate::gis_render_plugin::BevyGisPlugin;
 impl_bevy__app__plugin!(BevyGisPlugin);
 
+use crate::scene_setup_plugin::BevySceneSetupPlugin;
+impl_bevy__app__plugin!(BevySceneSetupPlugin);
+
 // Factories are already public via `pub struct` in the macro expansions above.

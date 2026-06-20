@@ -93,6 +93,7 @@ mod render_plugin;
 mod render_workflow_plugin;
 pub mod scene;
 mod scene_plugin;
+mod scene_setup_plugin;
 pub mod sprite;
 pub mod state;
 pub mod text;
@@ -357,6 +358,9 @@ pub use text::{
     LetterSpacing, LineBreak, Strikethrough, StrikethroughColor, TextBackgroundColor, TextBounds,
     TextColor, TextFont, TextLayout, TextSpan, Underline, UnderlineColor,
 };
+
+// ── scene setup re-exports ────────────────────────────────────────────────────
+pub use scene_setup_plugin::{BevySceneSetupPlugin, SceneSetupDescriptor};
 
 // ── GIS render backend re-exports ─────────────────────────────────────────────
 pub use gis_render_backend::BevyGisBackend;
