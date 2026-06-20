@@ -980,7 +980,7 @@ shadow_elicitation!(Camera3dDepthLoadOp);
 
 // ── ScreenSpaceTransmissionQuality ────────────────────────────────────────────
 
-/// Shadow of [`bevy::camera::ScreenSpaceTransmissionQuality`].
+/// Shadow of [`bevy::pbr::ScreenSpaceTransmissionQuality`].
 ///
 /// Quality of the screen-space specular transmission blur effect applied behind
 /// transmissive objects. Higher quality is more GPU-intensive.
@@ -999,20 +999,16 @@ pub enum ScreenSpaceTransmissionQuality {
     Ultra,
 }
 
-impl From<ScreenSpaceTransmissionQuality> for bevy::camera::ScreenSpaceTransmissionQuality {
+impl From<ScreenSpaceTransmissionQuality> for bevy::pbr::ScreenSpaceTransmissionQuality {
     fn from(v: ScreenSpaceTransmissionQuality) -> Self {
         match v {
-            ScreenSpaceTransmissionQuality::Low => {
-                bevy::camera::ScreenSpaceTransmissionQuality::Low
-            }
+            ScreenSpaceTransmissionQuality::Low => bevy::pbr::ScreenSpaceTransmissionQuality::Low,
             ScreenSpaceTransmissionQuality::Medium => {
-                bevy::camera::ScreenSpaceTransmissionQuality::Medium
+                bevy::pbr::ScreenSpaceTransmissionQuality::Medium
             }
-            ScreenSpaceTransmissionQuality::High => {
-                bevy::camera::ScreenSpaceTransmissionQuality::High
-            }
+            ScreenSpaceTransmissionQuality::High => bevy::pbr::ScreenSpaceTransmissionQuality::High,
             ScreenSpaceTransmissionQuality::Ultra => {
-                bevy::camera::ScreenSpaceTransmissionQuality::Ultra
+                bevy::pbr::ScreenSpaceTransmissionQuality::Ultra
             }
         }
     }
@@ -1026,16 +1022,16 @@ mod emit_impls_sstq {
         fn to_code_literal(&self) -> TokenStream {
             match self {
                 ScreenSpaceTransmissionQuality::Low => {
-                    quote::quote! { ::bevy::camera::ScreenSpaceTransmissionQuality::Low }
+                    quote::quote! { ::bevy::pbr::ScreenSpaceTransmissionQuality::Low }
                 }
                 ScreenSpaceTransmissionQuality::Medium => {
-                    quote::quote! { ::bevy::camera::ScreenSpaceTransmissionQuality::Medium }
+                    quote::quote! { ::bevy::pbr::ScreenSpaceTransmissionQuality::Medium }
                 }
                 ScreenSpaceTransmissionQuality::High => {
-                    quote::quote! { ::bevy::camera::ScreenSpaceTransmissionQuality::High }
+                    quote::quote! { ::bevy::pbr::ScreenSpaceTransmissionQuality::High }
                 }
                 ScreenSpaceTransmissionQuality::Ultra => {
-                    quote::quote! { ::bevy::camera::ScreenSpaceTransmissionQuality::Ultra }
+                    quote::quote! { ::bevy::pbr::ScreenSpaceTransmissionQuality::Ultra }
                 }
             }
         }
@@ -1049,19 +1045,15 @@ shadow_elicitation!(ScreenSpaceTransmissionQuality);
 /// Shadow of [`bevy::camera::Camera3d`].
 ///
 /// Component enabling the main 3D render graph for a [`Camera`].
-/// Serializes `depth_load_op`, `depth_texture_usages` (raw bitflags u32),
-/// `screen_space_specular_transmission_steps`, and
-/// `screen_space_specular_transmission_quality`.
+/// Serializes `depth_load_op` and `depth_texture_usages` (raw bitflags u32).
+/// Screen-space specular transmission settings moved to the separate
+/// `ScreenSpaceTransmission` component in bevy 0.19.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Camera3d {
     /// Depth clear operation for the main 3D pass.
     pub depth_load_op: Camera3dDepthLoadOp,
     /// Raw `TextureUsages` bitflags for the depth texture.
     pub depth_texture_usages: u32,
-    /// Number of transmissive-pass steps (layers of transparency).
-    pub screen_space_specular_transmission_steps: usize,
-    /// Quality of the screen-space specular transmission blur.
-    pub screen_space_specular_transmission_quality: ScreenSpaceTransmissionQuality,
 }
 
 impl Default for Camera3d {
@@ -1070,8 +1062,6 @@ impl Default for Camera3d {
         Self {
             depth_load_op: Camera3dDepthLoadOp::default(),
             depth_texture_usages: TextureUsages::RENDER_ATTACHMENT.bits(),
-            screen_space_specular_transmission_steps: 1,
-            screen_space_specular_transmission_quality: ScreenSpaceTransmissionQuality::default(),
         }
     }
 }
@@ -1081,10 +1071,6 @@ impl From<Camera3d> for bevy::camera::Camera3d {
         bevy::camera::Camera3d {
             depth_load_op: v.depth_load_op.into(),
             depth_texture_usages: bevy::camera::Camera3dDepthTextureUsage(v.depth_texture_usages),
-            screen_space_specular_transmission_steps: v.screen_space_specular_transmission_steps,
-            screen_space_specular_transmission_quality: v
-                .screen_space_specular_transmission_quality
-                .into(),
         }
     }
 }
@@ -1097,16 +1083,10 @@ mod emit_impls_camera3d {
         fn to_code_literal(&self) -> TokenStream {
             let depth_op = self.depth_load_op.to_code_literal();
             let tex_usages = self.depth_texture_usages;
-            let steps = self.screen_space_specular_transmission_steps;
-            let quality = self
-                .screen_space_specular_transmission_quality
-                .to_code_literal();
             quote::quote! {
                 ::bevy::camera::Camera3d {
                     depth_load_op: #depth_op,
                     depth_texture_usages: ::bevy::camera::Camera3dDepthTextureUsage(#tex_usages),
-                    screen_space_specular_transmission_steps: #steps,
-                    screen_space_specular_transmission_quality: #quality,
                 }
             }
         }

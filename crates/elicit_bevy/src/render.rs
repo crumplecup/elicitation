@@ -235,7 +235,7 @@ shadow_elicitation!(MipBias);
 
 // ── OcclusionCulling ──────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::render::experimental::occlusion_culling::OcclusionCulling`].
+/// Shadow of [`bevy::render::occlusion_culling::OcclusionCulling`].
 ///
 /// Marker component enabling GPU-driven occlusion culling for a camera.
 /// Entities occluded by closer geometry are skipped during rendering.
@@ -244,9 +244,9 @@ shadow_elicitation!(MipBias);
 )]
 pub struct OcclusionCulling;
 
-impl From<OcclusionCulling> for bevy::render::experimental::occlusion_culling::OcclusionCulling {
+impl From<OcclusionCulling> for bevy::render::occlusion_culling::OcclusionCulling {
     fn from(_: OcclusionCulling) -> Self {
-        bevy::render::experimental::occlusion_culling::OcclusionCulling
+        bevy::render::occlusion_culling::OcclusionCulling
     }
 }
 
@@ -264,7 +264,7 @@ mod emit_impls_occlusion_culling {
 
 unit_elicitation!(
     OcclusionCulling,
-    bevy::render::experimental::occlusion_culling::OcclusionCulling
+    bevy::render::occlusion_culling::OcclusionCulling
 );
 
 // ── Msaa ─────────────────────────────────────────────────────────────────────
@@ -331,7 +331,7 @@ shadow_elicitation!(Msaa);
 
 // ── Hdr ──────────────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::render::view::Hdr`].
+/// Shadow of [`bevy::camera::Hdr`].
 ///
 /// Marker component enabling HDR rendering on a camera entity.
 /// Adds support for high dynamic range lighting values in the intermediate
@@ -341,9 +341,9 @@ shadow_elicitation!(Msaa);
 )]
 pub struct Hdr;
 
-impl From<Hdr> for bevy::render::view::Hdr {
+impl From<Hdr> for bevy::camera::Hdr {
     fn from(_: Hdr) -> Self {
-        bevy::render::view::Hdr
+        bevy::camera::Hdr
     }
 }
 
@@ -354,12 +354,12 @@ mod emit_impls_hdr {
 
     impl ToCodeLiteral for Hdr {
         fn to_code_literal(&self) -> TokenStream {
-            quote::quote! { ::bevy::render::view::Hdr }
+            quote::quote! { ::bevy::camera::Hdr }
         }
     }
 }
 
-unit_elicitation!(Hdr, bevy::render::view::Hdr);
+unit_elicitation!(Hdr, bevy::camera::Hdr);
 
 // ── ColorGradingSection ───────────────────────────────────────────────────────
 

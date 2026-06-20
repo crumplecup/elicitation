@@ -43,6 +43,8 @@ impl JustifyText {
             bevy::text::Justify::Center => "Center",
             bevy::text::Justify::Right => "Right",
             bevy::text::Justify::Justified => "Justified",
+            bevy::text::Justify::Start => "Start",
+            bevy::text::Justify::End => "End",
         }
     }
 
@@ -262,7 +264,15 @@ impl serde::Serialize for TextFont {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(2))?;
-        map.serialize_entry("font_size", &self.0.font_size)?;
+        let font_size_px = match self.0.font_size {
+            bevy::text::FontSize::Px(v) => v,
+            bevy::text::FontSize::Rem(v) => v,
+            bevy::text::FontSize::Vw(v)
+            | bevy::text::FontSize::Vh(v)
+            | bevy::text::FontSize::VMin(v)
+            | bevy::text::FontSize::VMax(v) => v,
+        };
+        map.serialize_entry("font_size", &font_size_px)?;
         map.serialize_entry(
             "font_smoothing",
             &FontSmoothing::from(self.0.font_smoothing),
@@ -294,7 +304,7 @@ impl<'de> serde::Deserialize<'de> for TextFont {
                 }
                 let mut t = bevy::text::TextFont::default();
                 if let Some(s) = font_size {
-                    t.font_size = s;
+                    t.font_size = bevy::text::FontSize::Px(s);
                 }
                 if let Some(sm) = font_smoothing {
                     t.font_smoothing = *sm.0;
@@ -311,7 +321,14 @@ impl TextFont {
     /// Returns the font size in logical pixels.
     #[tracing::instrument(skip(self))]
     pub fn font_size(&self) -> f32 {
-        self.0.font_size
+        match self.0.font_size {
+            bevy::text::FontSize::Px(v) => v,
+            bevy::text::FontSize::Rem(v) => v,
+            bevy::text::FontSize::Vw(v)
+            | bevy::text::FontSize::Vh(v)
+            | bevy::text::FontSize::VMin(v)
+            | bevy::text::FontSize::VMax(v) => v,
+        }
     }
 
     /// Returns the font smoothing mode.
@@ -324,7 +341,7 @@ impl TextFont {
     #[tracing::instrument(skip(self))]
     pub fn with_font_size(&self, size: f32) -> TextFont {
         let mut t = (*self.0).clone();
-        t.font_size = size;
+        t.font_size = bevy::text::FontSize::Px(size);
         TextFont::from(t)
     }
 
@@ -332,7 +349,7 @@ impl TextFont {
     #[tracing::instrument(skip(self))]
     pub fn new_text_font(&self, font_size: f32) -> TextFont {
         TextFont::from(bevy::text::TextFont {
-            font_size,
+            font_size: bevy::text::FontSize::Px(font_size),
             ..Default::default()
         })
     }
@@ -345,11 +362,18 @@ mod emit_impls_text_font {
 
     impl ToCodeLiteral for TextFont {
         fn to_code_literal(&self) -> TokenStream {
-            let size = self.0.font_size;
+            let size = match self.0.font_size {
+                bevy::text::FontSize::Px(v) => v,
+                bevy::text::FontSize::Rem(v) => v,
+                bevy::text::FontSize::Vw(v)
+                | bevy::text::FontSize::Vh(v)
+                | bevy::text::FontSize::VMin(v)
+                | bevy::text::FontSize::VMax(v) => v,
+            };
             quote::quote! {
                 ::elicit_bevy::TextFont::from({
                     let mut t = ::bevy::text::TextFont::default();
-                    t.font_size = #size;
+                    t.font_size = ::bevy::text::FontSize::Px(#size);
                     t
                 })
             }
@@ -429,6 +453,8 @@ impl serde::Serialize for TextLayout {
             bevy::text::Justify::Center => "Center",
             bevy::text::Justify::Right => "Right",
             bevy::text::Justify::Justified => "Justified",
+            bevy::text::Justify::Start => "Start",
+            bevy::text::Justify::End => "End",
         };
         let linebreak = match self.0.linebreak {
             bevy::text::LineBreak::WordBoundary => "WordBoundary",
@@ -498,6 +524,8 @@ impl TextLayout {
             bevy::text::Justify::Center => "Center",
             bevy::text::Justify::Right => "Right",
             bevy::text::Justify::Justified => "Justified",
+            bevy::text::Justify::Start => "Start",
+            bevy::text::Justify::End => "End",
         }
     }
 
@@ -1086,7 +1114,6 @@ impl elicitation::Generator for FontGenerator {
     fn generate(&self) -> bevy::text::Font {
         let data = std::fs::read(&self.path)
             .unwrap_or_else(|e| panic!("FontGenerator: failed to read '{}': {e}", self.path));
-        bevy::text::Font::try_from_bytes(data)
-            .unwrap_or_else(|e| panic!("FontGenerator: invalid font '{}': {e}", self.path))
+        bevy::text::Font::from_bytes(data)
     }
 }

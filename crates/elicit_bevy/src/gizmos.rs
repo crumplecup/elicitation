@@ -6,9 +6,9 @@
 //! [`bevy::gizmos::config::GizmoConfig`],
 //! [`bevy::gizmos::aabb::AabbGizmoConfigGroup`],
 //! [`bevy::gizmos::aabb::ShowAabbGizmo`],
-//! [`bevy::gizmos::light::LightGizmoColor`],
-//! [`bevy::gizmos::light::ShowLightGizmo`], and
-//! [`bevy::gizmos::light::LightGizmoConfigGroup`].
+//! [`bevy::light::gizmos::LightGizmoColor`],
+//! [`bevy::light::gizmos::ShowLightGizmo`], and
+//! [`bevy::light::gizmos::LightGizmoConfigGroup`].
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
@@ -463,7 +463,7 @@ macro_rules! shadow_elicitation {
 
 // ── LightGizmoColor ───────────────────────────────────────────────────────────
 
-/// Shadow for [`bevy::gizmos::light::LightGizmoColor`].
+/// Shadow for [`bevy::light::gizmos::LightGizmoColor`].
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum LightGizmoColor {
     /// User-specified color.
@@ -477,7 +477,7 @@ pub enum LightGizmoColor {
     ByLightType,
 }
 
-impl From<LightGizmoColor> for bevy::gizmos::light::LightGizmoColor {
+impl From<LightGizmoColor> for bevy::light::gizmos::LightGizmoColor {
     fn from(v: LightGizmoColor) -> Self {
         match v {
             LightGizmoColor::Manual(c) => Self::Manual(bevy::color::Color::from(c)),
@@ -488,15 +488,15 @@ impl From<LightGizmoColor> for bevy::gizmos::light::LightGizmoColor {
     }
 }
 
-impl From<bevy::gizmos::light::LightGizmoColor> for LightGizmoColor {
-    fn from(v: bevy::gizmos::light::LightGizmoColor) -> Self {
+impl From<bevy::light::gizmos::LightGizmoColor> for LightGizmoColor {
+    fn from(v: bevy::light::gizmos::LightGizmoColor) -> Self {
         match v {
-            bevy::gizmos::light::LightGizmoColor::Manual(c) => {
+            bevy::light::gizmos::LightGizmoColor::Manual(c) => {
                 Self::Manual(crate::Color(std::sync::Arc::new(c)))
             }
-            bevy::gizmos::light::LightGizmoColor::Varied => Self::Varied,
-            bevy::gizmos::light::LightGizmoColor::MatchLightColor => Self::MatchLightColor,
-            bevy::gizmos::light::LightGizmoColor::ByLightType => Self::ByLightType,
+            bevy::light::gizmos::LightGizmoColor::Varied => Self::Varied,
+            bevy::light::gizmos::LightGizmoColor::MatchLightColor => Self::MatchLightColor,
+            bevy::light::gizmos::LightGizmoColor::ByLightType => Self::ByLightType,
         }
     }
 }
@@ -510,16 +510,16 @@ mod emit_light_gizmo_color {
             match self {
                 LightGizmoColor::Manual(c) => {
                     let inner = c.to_code_literal();
-                    quote::quote! { ::bevy::gizmos::light::LightGizmoColor::Manual(#inner) }
+                    quote::quote! { ::bevy::light::gizmos::LightGizmoColor::Manual(#inner) }
                 }
                 LightGizmoColor::Varied => {
-                    quote::quote! { ::bevy::gizmos::light::LightGizmoColor::Varied }
+                    quote::quote! { ::bevy::light::gizmos::LightGizmoColor::Varied }
                 }
                 LightGizmoColor::MatchLightColor => {
-                    quote::quote! { ::bevy::gizmos::light::LightGizmoColor::MatchLightColor }
+                    quote::quote! { ::bevy::light::gizmos::LightGizmoColor::MatchLightColor }
                 }
                 LightGizmoColor::ByLightType => {
-                    quote::quote! { ::bevy::gizmos::light::LightGizmoColor::ByLightType }
+                    quote::quote! { ::bevy::light::gizmos::LightGizmoColor::ByLightType }
                 }
             }
         }
@@ -572,7 +572,7 @@ shadow_elicitation!(ShowAabbGizmo);
 
 // ── ShowLightGizmo ────────────────────────────────────────────────────────────
 
-/// Shadow for [`bevy::gizmos::light::ShowLightGizmo`].
+/// Shadow for [`bevy::light::gizmos::ShowLightGizmo`].
 ///
 /// Add to a light entity to visualize it with a debug gizmo.
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -581,10 +581,10 @@ pub struct ShowLightGizmo {
     pub color: Option<LightGizmoColor>,
 }
 
-impl From<ShowLightGizmo> for bevy::gizmos::light::ShowLightGizmo {
+impl From<ShowLightGizmo> for bevy::light::gizmos::ShowLightGizmo {
     fn from(v: ShowLightGizmo) -> Self {
         Self {
-            color: v.color.map(bevy::gizmos::light::LightGizmoColor::from),
+            color: v.color.map(bevy::light::gizmos::LightGizmoColor::from),
         }
     }
 }
@@ -597,12 +597,12 @@ mod emit_show_light_gizmo {
         fn to_code_literal(&self) -> TokenStream {
             match &self.color {
                 None => {
-                    quote::quote! { ::bevy::gizmos::light::ShowLightGizmo { color: None } }
+                    quote::quote! { ::bevy::light::gizmos::ShowLightGizmo { color: None } }
                 }
                 Some(c) => {
                     let color = c.to_code_literal();
                     quote::quote! {
-                        ::bevy::gizmos::light::ShowLightGizmo { color: Some(#color) }
+                        ::bevy::light::gizmos::ShowLightGizmo { color: Some(#color) }
                     }
                 }
             }
@@ -614,7 +614,7 @@ shadow_elicitation!(ShowLightGizmo);
 
 // ── LightGizmoConfigGroup ─────────────────────────────────────────────────────
 
-/// Shadow for [`bevy::gizmos::light::LightGizmoConfigGroup`].
+/// Shadow for [`bevy::light::gizmos::LightGizmoConfigGroup`].
 ///
 /// Resource configuring how all light gizmos appear by default.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -629,11 +629,13 @@ pub struct LightGizmoConfigGroup {
     pub spot_light_color: crate::Color,
     /// Color for directional light gizmos when `color` is [`LightGizmoColor::ByLightType`].
     pub directional_light_color: crate::Color,
+    /// Color for rect light gizmos when `color` is [`LightGizmoColor::ByLightType`].
+    pub rect_light_color: crate::Color,
 }
 
 impl Default for LightGizmoConfigGroup {
     fn default() -> Self {
-        let upstream = bevy::gizmos::light::LightGizmoConfigGroup::default();
+        let upstream = bevy::light::gizmos::LightGizmoConfigGroup::default();
         Self {
             draw_all: upstream.draw_all,
             color: LightGizmoColor::from(upstream.color),
@@ -642,18 +644,20 @@ impl Default for LightGizmoConfigGroup {
             directional_light_color: crate::Color(std::sync::Arc::new(
                 upstream.directional_light_color,
             )),
+            rect_light_color: crate::Color(std::sync::Arc::new(upstream.rect_light_color)),
         }
     }
 }
 
-impl From<LightGizmoConfigGroup> for bevy::gizmos::light::LightGizmoConfigGroup {
+impl From<LightGizmoConfigGroup> for bevy::light::gizmos::LightGizmoConfigGroup {
     fn from(v: LightGizmoConfigGroup) -> Self {
         Self {
             draw_all: v.draw_all,
-            color: bevy::gizmos::light::LightGizmoColor::from(v.color),
+            color: bevy::light::gizmos::LightGizmoColor::from(v.color),
             point_light_color: bevy::color::Color::from(v.point_light_color),
             spot_light_color: bevy::color::Color::from(v.spot_light_color),
             directional_light_color: bevy::color::Color::from(v.directional_light_color),
+            rect_light_color: bevy::color::Color::from(v.rect_light_color),
         }
     }
 }
@@ -669,13 +673,15 @@ mod emit_light_gizmo_config_group {
             let point = self.point_light_color.to_code_literal();
             let spot = self.spot_light_color.to_code_literal();
             let dir = self.directional_light_color.to_code_literal();
+            let rect = self.rect_light_color.to_code_literal();
             quote::quote! {
-                ::bevy::gizmos::light::LightGizmoConfigGroup {
+                ::bevy::light::gizmos::LightGizmoConfigGroup {
                     draw_all: #draw_all,
                     color: #color,
                     point_light_color: #point,
                     spot_light_color: #spot,
                     directional_light_color: #dir,
+                    rect_light_color: #rect,
                 }
             }
         }

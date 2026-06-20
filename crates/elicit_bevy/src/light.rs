@@ -224,7 +224,7 @@ impl serde::Serialize for DirectionalLight {
         let mut map = serializer.serialize_map(Some(3))?;
         map.serialize_entry("color", &format!("{:?}", l.color))?;
         map.serialize_entry("illuminance", &l.illuminance)?;
-        map.serialize_entry("shadows_enabled", &l.shadows_enabled)?;
+        map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
         map.end()
     }
 }
@@ -243,11 +243,11 @@ impl<'de> serde::Deserialize<'de> for DirectionalLight {
                 mut map: A,
             ) -> Result<DirectionalLight, A::Error> {
                 let mut illuminance: Option<f32> = None;
-                let mut shadows_enabled: Option<bool> = None;
+                let mut shadow_maps_enabled: Option<bool> = None;
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "illuminance" => illuminance = Some(map.next_value()?),
-                        "shadows_enabled" => shadows_enabled = Some(map.next_value()?),
+                        "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
                         _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -257,8 +257,8 @@ impl<'de> serde::Deserialize<'de> for DirectionalLight {
                 if let Some(i) = illuminance {
                     l.illuminance = i;
                 }
-                if let Some(s) = shadows_enabled {
-                    l.shadows_enabled = s;
+                if let Some(s) = shadow_maps_enabled {
+                    l.shadow_maps_enabled = s;
                 }
                 Ok(DirectionalLight(Arc::new(l)))
             }
@@ -284,7 +284,7 @@ impl DirectionalLight {
     /// Returns `true` if shadows are enabled.
     #[tracing::instrument(skip(self))]
     pub fn directional_light_shadows_enabled(&self) -> bool {
-        self.0.shadows_enabled
+        self.0.shadow_maps_enabled
     }
 
     /// Creates a default directional light with the given illuminance.
@@ -300,7 +300,7 @@ impl DirectionalLight {
     #[tracing::instrument(skip(self))]
     pub fn directional_light_with_shadows(&self, enabled: bool) -> DirectionalLight {
         let mut l = *self.0;
-        l.shadows_enabled = enabled;
+        l.shadow_maps_enabled = enabled;
         DirectionalLight::from(l)
     }
 }
@@ -313,11 +313,11 @@ mod emit_impls_directional {
     impl ToCodeLiteral for DirectionalLight {
         fn to_code_literal(&self) -> TokenStream {
             let illuminance = self.0.illuminance;
-            let shadows = self.0.shadows_enabled;
+            let shadows = self.0.shadow_maps_enabled;
             quote::quote! {
                 ::elicit_bevy::DirectionalLight::from(::bevy::light::DirectionalLight {
                     illuminance: #illuminance,
-                    shadows_enabled: #shadows,
+                    shadow_maps_enabled: #shadows,
                     ..Default::default()
                 })
             }
@@ -347,7 +347,7 @@ impl serde::Serialize for PointLight {
         map.serialize_entry("intensity", &l.intensity)?;
         map.serialize_entry("range", &l.range)?;
         map.serialize_entry("radius", &l.radius)?;
-        map.serialize_entry("shadows_enabled", &l.shadows_enabled)?;
+        map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
         map.end()
     }
 }
@@ -364,12 +364,12 @@ impl<'de> serde::Deserialize<'de> for PointLight {
             fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<PointLight, A::Error> {
                 let mut intensity: Option<f32> = None;
                 let mut range: Option<f32> = None;
-                let mut shadows_enabled: Option<bool> = None;
+                let mut shadow_maps_enabled: Option<bool> = None;
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "intensity" => intensity = Some(map.next_value()?),
                         "range" => range = Some(map.next_value()?),
-                        "shadows_enabled" => shadows_enabled = Some(map.next_value()?),
+                        "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
                         _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -382,8 +382,8 @@ impl<'de> serde::Deserialize<'de> for PointLight {
                 if let Some(r) = range {
                     l.range = r;
                 }
-                if let Some(s) = shadows_enabled {
-                    l.shadows_enabled = s;
+                if let Some(s) = shadow_maps_enabled {
+                    l.shadow_maps_enabled = s;
                 }
                 Ok(PointLight(Arc::new(l)))
             }
@@ -421,7 +421,7 @@ impl PointLight {
     /// Returns `true` if shadows are enabled.
     #[tracing::instrument(skip(self))]
     pub fn point_light_shadows_enabled(&self) -> bool {
-        self.0.shadows_enabled
+        self.0.shadow_maps_enabled
     }
 
     /// Creates a point light with the given intensity and range.
@@ -438,7 +438,7 @@ impl PointLight {
     #[tracing::instrument(skip(self))]
     pub fn point_light_with_shadows(&self, enabled: bool) -> PointLight {
         let mut l = *self.0;
-        l.shadows_enabled = enabled;
+        l.shadow_maps_enabled = enabled;
         PointLight::from(l)
     }
 }
@@ -452,12 +452,12 @@ mod emit_impls_point {
         fn to_code_literal(&self) -> TokenStream {
             let intensity = self.0.intensity;
             let range = self.0.range;
-            let shadows = self.0.shadows_enabled;
+            let shadows = self.0.shadow_maps_enabled;
             quote::quote! {
                 ::elicit_bevy::PointLight::from(::bevy::light::PointLight {
                     intensity: #intensity,
                     range: #range,
-                    shadows_enabled: #shadows,
+                    shadow_maps_enabled: #shadows,
                     ..Default::default()
                 })
             }
@@ -487,7 +487,7 @@ impl serde::Serialize for SpotLight {
         map.serialize_entry("intensity", &l.intensity)?;
         map.serialize_entry("range", &l.range)?;
         map.serialize_entry("radius", &l.radius)?;
-        map.serialize_entry("shadows_enabled", &l.shadows_enabled)?;
+        map.serialize_entry("shadow_maps_enabled", &l.shadow_maps_enabled)?;
         map.serialize_entry("inner_angle", &l.inner_angle)?;
         map.serialize_entry("outer_angle", &l.outer_angle)?;
         map.end()
@@ -506,14 +506,14 @@ impl<'de> serde::Deserialize<'de> for SpotLight {
             fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<SpotLight, A::Error> {
                 let mut intensity: Option<f32> = None;
                 let mut range: Option<f32> = None;
-                let mut shadows_enabled: Option<bool> = None;
+                let mut shadow_maps_enabled: Option<bool> = None;
                 let mut inner_angle: Option<f32> = None;
                 let mut outer_angle: Option<f32> = None;
                 while let Some(key) = map.next_key::<String>()? {
                     match key.as_str() {
                         "intensity" => intensity = Some(map.next_value()?),
                         "range" => range = Some(map.next_value()?),
-                        "shadows_enabled" => shadows_enabled = Some(map.next_value()?),
+                        "shadow_maps_enabled" => shadow_maps_enabled = Some(map.next_value()?),
                         "inner_angle" => inner_angle = Some(map.next_value()?),
                         "outer_angle" => outer_angle = Some(map.next_value()?),
                         _ => {
@@ -528,8 +528,8 @@ impl<'de> serde::Deserialize<'de> for SpotLight {
                 if let Some(r) = range {
                     l.range = r;
                 }
-                if let Some(s) = shadows_enabled {
-                    l.shadows_enabled = s;
+                if let Some(s) = shadow_maps_enabled {
+                    l.shadow_maps_enabled = s;
                 }
                 if let Some(a) = inner_angle {
                     l.inner_angle = a;
@@ -573,7 +573,7 @@ impl SpotLight {
     /// Returns `true` if shadows are enabled.
     #[tracing::instrument(skip(self))]
     pub fn spot_light_shadows_enabled(&self) -> bool {
-        self.0.shadows_enabled
+        self.0.shadow_maps_enabled
     }
 
     /// Returns the inner cone half-angle in radians.
@@ -629,7 +629,7 @@ macro_rules! unit_elicitation {
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 _communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
-                Ok(Self)
+                Ok(Self::default())
             }
             fn kani_proof() -> elicitation::proc_macro2::TokenStream {
                 elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
@@ -685,16 +685,37 @@ macro_rules! unit_elicitation {
 
 /// Shadow of [`bevy::light::LightProbe`].
 ///
-/// Marker component indicating that an entity contributes to a light probe
+/// Component indicating that an entity contributes to a light probe
 /// (environment map or irradiance volume) in the Bevy render world.
-#[derive(
-    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
-)]
-pub struct LightProbe;
+/// The `falloff` field controls interior falloff as a ratio (0..=1) per axis.
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct LightProbe {
+    /// Falloff ratio per axis (each in 0..=1). Defaults to `[0.1, 0.1, 0.1]`.
+    pub falloff: [f32; 3],
+}
+
+impl Default for LightProbe {
+    fn default() -> Self {
+        let d = bevy::light::LightProbe::default();
+        Self {
+            falloff: [d.falloff.x, d.falloff.y, d.falloff.z],
+        }
+    }
+}
 
 impl From<LightProbe> for bevy::light::LightProbe {
-    fn from(_: LightProbe) -> Self {
-        bevy::light::LightProbe
+    fn from(v: LightProbe) -> Self {
+        bevy::light::LightProbe {
+            falloff: bevy::math::Vec3::new(v.falloff[0], v.falloff[1], v.falloff[2]),
+        }
+    }
+}
+
+impl From<bevy::light::LightProbe> for LightProbe {
+    fn from(v: bevy::light::LightProbe) -> Self {
+        Self {
+            falloff: [v.falloff.x, v.falloff.y, v.falloff.z],
+        }
     }
 }
 
@@ -705,7 +726,14 @@ mod emit_impls_light_probe {
 
     impl ToCodeLiteral for LightProbe {
         fn to_code_literal(&self) -> TokenStream {
-            quote::quote! { ::bevy::light::LightProbe }
+            let fx = self.falloff[0];
+            let fy = self.falloff[1];
+            let fz = self.falloff[2];
+            quote::quote! {
+                ::bevy::light::LightProbe {
+                    falloff: ::bevy::math::Vec3::new(#fx, #fy, #fz),
+                }
+            }
         }
     }
 }

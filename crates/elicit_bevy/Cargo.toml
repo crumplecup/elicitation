@@ -41,6 +41,7 @@ bevy = { workspace = true, features = [
     "bevy_core_pipeline",
     "bevy_asset",
     "bevy_scene",
+    "bevy_world_serialization",
     "bevy_picking",
     "sprite_picking",
     "bevy_state",
@@ -48,6 +49,7 @@ bevy = { workspace = true, features = [
     "serialize",
 ] }
 rmcp.workspace = true
+ref-cast.workspace = true
 schemars.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

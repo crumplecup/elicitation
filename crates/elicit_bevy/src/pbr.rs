@@ -11,10 +11,10 @@ use std::sync::Arc;
 
 // ── AlphaMode ─────────────────────────────────────────────────────────────────
 
-elicit_newtype!(bevy::render::alpha::AlphaMode, as AlphaMode);
-elicit_newtype_traits!(AlphaMode, bevy::render::alpha::AlphaMode, [eq]);
+elicit_newtype!(bevy::material::AlphaMode, as AlphaMode);
+elicit_newtype_traits!(AlphaMode, bevy::material::AlphaMode, [eq]);
 
-impl From<AlphaMode> for bevy::render::alpha::AlphaMode {
+impl From<AlphaMode> for bevy::material::AlphaMode {
     fn from(v: AlphaMode) -> Self {
         *v.0
     }
@@ -26,26 +26,26 @@ impl serde::Serialize for AlphaMode {
 
         let mut map = serializer.serialize_map(Some(2))?;
         match *self.0 {
-            bevy::render::alpha::AlphaMode::Opaque => {
+            bevy::material::AlphaMode::Opaque => {
                 map.serialize_entry("variant", "Opaque")?;
             }
-            bevy::render::alpha::AlphaMode::Mask(threshold) => {
+            bevy::material::AlphaMode::Mask(threshold) => {
                 map.serialize_entry("variant", "Mask")?;
                 map.serialize_entry("threshold", &threshold)?;
             }
-            bevy::render::alpha::AlphaMode::Blend => {
+            bevy::material::AlphaMode::Blend => {
                 map.serialize_entry("variant", "Blend")?;
             }
-            bevy::render::alpha::AlphaMode::Premultiplied => {
+            bevy::material::AlphaMode::Premultiplied => {
                 map.serialize_entry("variant", "Premultiplied")?;
             }
-            bevy::render::alpha::AlphaMode::AlphaToCoverage => {
+            bevy::material::AlphaMode::AlphaToCoverage => {
                 map.serialize_entry("variant", "AlphaToCoverage")?;
             }
-            bevy::render::alpha::AlphaMode::Add => {
+            bevy::material::AlphaMode::Add => {
                 map.serialize_entry("variant", "Add")?;
             }
-            bevy::render::alpha::AlphaMode::Multiply => {
+            bevy::material::AlphaMode::Multiply => {
                 map.serialize_entry("variant", "Multiply")?;
             }
         }
@@ -84,13 +84,13 @@ impl<'de> serde::Deserialize<'de> for AlphaMode {
                 }
 
                 let inner = match variant.as_deref() {
-                    Some("Opaque") => bevy::render::alpha::AlphaMode::Opaque,
-                    Some("Mask") => bevy::render::alpha::AlphaMode::Mask(threshold.unwrap_or(0.5)),
-                    Some("Blend") => bevy::render::alpha::AlphaMode::Blend,
-                    Some("Premultiplied") => bevy::render::alpha::AlphaMode::Premultiplied,
-                    Some("AlphaToCoverage") => bevy::render::alpha::AlphaMode::AlphaToCoverage,
-                    Some("Add") => bevy::render::alpha::AlphaMode::Add,
-                    Some("Multiply") => bevy::render::alpha::AlphaMode::Multiply,
+                    Some("Opaque") => bevy::material::AlphaMode::Opaque,
+                    Some("Mask") => bevy::material::AlphaMode::Mask(threshold.unwrap_or(0.5)),
+                    Some("Blend") => bevy::material::AlphaMode::Blend,
+                    Some("Premultiplied") => bevy::material::AlphaMode::Premultiplied,
+                    Some("AlphaToCoverage") => bevy::material::AlphaMode::AlphaToCoverage,
+                    Some("Add") => bevy::material::AlphaMode::Add,
+                    Some("Multiply") => bevy::material::AlphaMode::Multiply,
                     Some(other) => {
                         return Err(de::Error::unknown_variant(
                             other,
@@ -122,38 +122,38 @@ impl AlphaMode {
     #[tracing::instrument(skip(self))]
     pub fn variant_name(&self) -> String {
         match *self.0 {
-            bevy::render::alpha::AlphaMode::Opaque => "Opaque".to_string(),
-            bevy::render::alpha::AlphaMode::Mask(_) => "Mask".to_string(),
-            bevy::render::alpha::AlphaMode::Blend => "Blend".to_string(),
-            bevy::render::alpha::AlphaMode::Premultiplied => "Premultiplied".to_string(),
-            bevy::render::alpha::AlphaMode::AlphaToCoverage => "AlphaToCoverage".to_string(),
-            bevy::render::alpha::AlphaMode::Add => "Add".to_string(),
-            bevy::render::alpha::AlphaMode::Multiply => "Multiply".to_string(),
+            bevy::material::AlphaMode::Opaque => "Opaque".to_string(),
+            bevy::material::AlphaMode::Mask(_) => "Mask".to_string(),
+            bevy::material::AlphaMode::Blend => "Blend".to_string(),
+            bevy::material::AlphaMode::Premultiplied => "Premultiplied".to_string(),
+            bevy::material::AlphaMode::AlphaToCoverage => "AlphaToCoverage".to_string(),
+            bevy::material::AlphaMode::Add => "Add".to_string(),
+            bevy::material::AlphaMode::Multiply => "Multiply".to_string(),
         }
     }
 
     /// Returns `true` if this is `AlphaMode::Opaque`.
     #[tracing::instrument(skip(self))]
     pub fn is_opaque(&self) -> bool {
-        matches!(*self.0, bevy::render::alpha::AlphaMode::Opaque)
+        matches!(*self.0, bevy::material::AlphaMode::Opaque)
     }
 
     /// Returns `true` if this is `AlphaMode::Mask`.
     #[tracing::instrument(skip(self))]
     pub fn is_mask(&self) -> bool {
-        matches!(*self.0, bevy::render::alpha::AlphaMode::Mask(_))
+        matches!(*self.0, bevy::material::AlphaMode::Mask(_))
     }
 
     /// Returns `true` if this is `AlphaMode::Blend`.
     #[tracing::instrument(skip(self))]
     pub fn is_blend(&self) -> bool {
-        matches!(*self.0, bevy::render::alpha::AlphaMode::Blend)
+        matches!(*self.0, bevy::material::AlphaMode::Blend)
     }
 
     /// Returns the mask threshold if this is `AlphaMode::Mask`.
     #[tracing::instrument(skip(self))]
     pub fn get_mask_threshold(&self) -> Option<f32> {
-        if let bevy::render::alpha::AlphaMode::Mask(c) = *self.0 {
+        if let bevy::material::AlphaMode::Mask(c) = *self.0 {
             Some(c)
         } else {
             None
@@ -163,19 +163,19 @@ impl AlphaMode {
     /// Constructs an `AlphaMode::Opaque`.
     #[tracing::instrument(skip(self))]
     pub fn opaque(&self) -> AlphaMode {
-        AlphaMode::from(bevy::render::alpha::AlphaMode::Opaque)
+        AlphaMode::from(bevy::material::AlphaMode::Opaque)
     }
 
     /// Constructs an `AlphaMode::Mask` with the given threshold.
     #[tracing::instrument(skip(self))]
     pub fn mask(&self, threshold: f32) -> AlphaMode {
-        AlphaMode::from(bevy::render::alpha::AlphaMode::Mask(threshold))
+        AlphaMode::from(bevy::material::AlphaMode::Mask(threshold))
     }
 
     /// Constructs an `AlphaMode::Blend`.
     #[tracing::instrument(skip(self))]
     pub fn blend(&self) -> AlphaMode {
-        AlphaMode::from(bevy::render::alpha::AlphaMode::Blend)
+        AlphaMode::from(bevy::material::AlphaMode::Blend)
     }
 }
 
@@ -187,26 +187,26 @@ mod emit_impls_alpha_mode {
     impl ToCodeLiteral for AlphaMode {
         fn to_code_literal(&self) -> TokenStream {
             match *self.0 {
-                bevy::render::alpha::AlphaMode::Opaque => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Opaque)
+                bevy::material::AlphaMode::Opaque => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Opaque)
                 },
-                bevy::render::alpha::AlphaMode::Mask(c) => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Mask(#c))
+                bevy::material::AlphaMode::Mask(c) => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Mask(#c))
                 },
-                bevy::render::alpha::AlphaMode::Blend => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Blend)
+                bevy::material::AlphaMode::Blend => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Blend)
                 },
-                bevy::render::alpha::AlphaMode::Premultiplied => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Premultiplied)
+                bevy::material::AlphaMode::Premultiplied => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Premultiplied)
                 },
-                bevy::render::alpha::AlphaMode::AlphaToCoverage => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::AlphaToCoverage)
+                bevy::material::AlphaMode::AlphaToCoverage => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::AlphaToCoverage)
                 },
-                bevy::render::alpha::AlphaMode::Add => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Add)
+                bevy::material::AlphaMode::Add => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Add)
                 },
-                bevy::render::alpha::AlphaMode::Multiply => quote::quote! {
-                    ::elicit_bevy::AlphaMode::from(::bevy::render::alpha::AlphaMode::Multiply)
+                bevy::material::AlphaMode::Multiply => quote::quote! {
+                    ::elicit_bevy::AlphaMode::from(::bevy::material::AlphaMode::Multiply)
                 },
             }
         }
@@ -251,6 +251,7 @@ impl<'de> serde::Deserialize<'de> for Tonemapping {
             }
             "TonyMcMapface" => bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
             "BlenderFilmic" => bevy::core_pipeline::tonemapping::Tonemapping::BlenderFilmic,
+            "KhronosPbrNeutral" => bevy::core_pipeline::tonemapping::Tonemapping::KhronosPbrNeutral,
             _ => {
                 return Err(D::Error::unknown_variant(
                     &s,
@@ -263,6 +264,7 @@ impl<'de> serde::Deserialize<'de> for Tonemapping {
                         "SomewhatBoringDisplayTransform",
                         "TonyMcMapface",
                         "BlenderFilmic",
+                        "KhronosPbrNeutral",
                     ],
                 ));
             }
@@ -287,6 +289,7 @@ impl Tonemapping {
             }
             bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface => "TonyMcMapface",
             bevy::core_pipeline::tonemapping::Tonemapping::BlenderFilmic => "BlenderFilmic",
+            bevy::core_pipeline::tonemapping::Tonemapping::KhronosPbrNeutral => "KhronosPbrNeutral",
         }
     }
 
@@ -333,10 +336,10 @@ impl elicitation::ElicitComplete for Tonemapping {}
 
 // ── UvChannel ─────────────────────────────────────────────────────────────────
 
-elicit_newtype!(bevy::pbr::UvChannel, as UvChannel);
-elicit_newtype_traits!(UvChannel, bevy::pbr::UvChannel, [eq]);
+elicit_newtype!(bevy::mesh::UvChannel, as UvChannel);
+elicit_newtype_traits!(UvChannel, bevy::mesh::UvChannel, [eq]);
 
-impl From<UvChannel> for bevy::pbr::UvChannel {
+impl From<UvChannel> for bevy::mesh::UvChannel {
     fn from(v: UvChannel) -> Self {
         v.0.as_ref().clone()
     }
@@ -353,8 +356,8 @@ impl<'de> serde::Deserialize<'de> for UvChannel {
         use serde::de::Error as _;
         let s = String::deserialize(deserializer)?;
         let inner = match s.as_str() {
-            "Uv0" => bevy::pbr::UvChannel::Uv0,
-            "Uv1" => bevy::pbr::UvChannel::Uv1,
+            "Uv0" => bevy::mesh::UvChannel::Uv0,
+            "Uv1" => bevy::mesh::UvChannel::Uv1,
             _ => return Err(D::Error::unknown_variant(&s, &["Uv0", "Uv1"])),
         };
         Ok(UvChannel(Arc::new(inner)))
@@ -367,21 +370,21 @@ impl UvChannel {
     #[tracing::instrument(skip(self))]
     pub fn as_str(&self) -> &'static str {
         match *self.0 {
-            bevy::pbr::UvChannel::Uv0 => "Uv0",
-            bevy::pbr::UvChannel::Uv1 => "Uv1",
+            bevy::mesh::UvChannel::Uv0 => "Uv0",
+            bevy::mesh::UvChannel::Uv1 => "Uv1",
         }
     }
 
     /// Returns `true` if this is `UvChannel::Uv0`.
     #[tracing::instrument(skip(self))]
     pub fn is_uv0(&self) -> bool {
-        matches!(*self.0, bevy::pbr::UvChannel::Uv0)
+        matches!(*self.0, bevy::mesh::UvChannel::Uv0)
     }
 
     /// Returns `true` if this is `UvChannel::Uv1`.
     #[tracing::instrument(skip(self))]
     pub fn is_uv1(&self) -> bool {
-        matches!(*self.0, bevy::pbr::UvChannel::Uv1)
+        matches!(*self.0, bevy::mesh::UvChannel::Uv1)
     }
 }
 
@@ -394,7 +397,7 @@ mod emit_impls_uv_channel {
         fn to_code_literal(&self) -> TokenStream {
             let variant = quote::format_ident!("{}", self.as_str());
             quote::quote! {
-                ::elicit_bevy::UvChannel::from(::bevy::pbr::UvChannel::#variant)
+                ::elicit_bevy::UvChannel::from(::bevy::mesh::UvChannel::#variant)
             }
         }
     }
@@ -536,10 +539,14 @@ impl elicitation::ElicitComplete for ParallaxMappingMethod {}
 
 // ── OpaqueRendererMethod ──────────────────────────────────────────────────────
 
-elicit_newtype!(bevy::pbr::OpaqueRendererMethod, as OpaqueRendererMethod);
-elicit_newtype_traits!(OpaqueRendererMethod, bevy::pbr::OpaqueRendererMethod, [eq]);
+elicit_newtype!(bevy::material::OpaqueRendererMethod, as OpaqueRendererMethod);
+elicit_newtype_traits!(
+    OpaqueRendererMethod,
+    bevy::material::OpaqueRendererMethod,
+    [eq]
+);
 
-impl From<OpaqueRendererMethod> for bevy::pbr::OpaqueRendererMethod {
+impl From<OpaqueRendererMethod> for bevy::material::OpaqueRendererMethod {
     fn from(v: OpaqueRendererMethod) -> Self {
         *v.0
     }
@@ -556,9 +563,9 @@ impl<'de> serde::Deserialize<'de> for OpaqueRendererMethod {
         use serde::de::Error as _;
         let s = String::deserialize(deserializer)?;
         let inner = match s.as_str() {
-            "Auto" => bevy::pbr::OpaqueRendererMethod::Auto,
-            "Forward" => bevy::pbr::OpaqueRendererMethod::Forward,
-            "Deferred" => bevy::pbr::OpaqueRendererMethod::Deferred,
+            "Auto" => bevy::material::OpaqueRendererMethod::Auto,
+            "Forward" => bevy::material::OpaqueRendererMethod::Forward,
+            "Deferred" => bevy::material::OpaqueRendererMethod::Deferred,
             _ => {
                 return Err(D::Error::unknown_variant(
                     &s,
@@ -576,22 +583,22 @@ impl OpaqueRendererMethod {
     #[tracing::instrument(skip(self))]
     pub fn as_str(&self) -> &'static str {
         match *self.0 {
-            bevy::pbr::OpaqueRendererMethod::Auto => "Auto",
-            bevy::pbr::OpaqueRendererMethod::Forward => "Forward",
-            bevy::pbr::OpaqueRendererMethod::Deferred => "Deferred",
+            bevy::material::OpaqueRendererMethod::Auto => "Auto",
+            bevy::material::OpaqueRendererMethod::Forward => "Forward",
+            bevy::material::OpaqueRendererMethod::Deferred => "Deferred",
         }
     }
 
     /// Returns `true` if this is `OpaqueRendererMethod::Forward`.
     #[tracing::instrument(skip(self))]
     pub fn is_forward(&self) -> bool {
-        matches!(*self.0, bevy::pbr::OpaqueRendererMethod::Forward)
+        matches!(*self.0, bevy::material::OpaqueRendererMethod::Forward)
     }
 
     /// Returns `true` if this is `OpaqueRendererMethod::Deferred`.
     #[tracing::instrument(skip(self))]
     pub fn is_deferred(&self) -> bool {
-        matches!(*self.0, bevy::pbr::OpaqueRendererMethod::Deferred)
+        matches!(*self.0, bevy::material::OpaqueRendererMethod::Deferred)
     }
 }
 
@@ -605,7 +612,7 @@ mod emit_impls_opaque {
             let variant = quote::format_ident!("{}", self.as_str());
             quote::quote! {
                 ::elicit_bevy::OpaqueRendererMethod::from(
-                    ::bevy::pbr::OpaqueRendererMethod::#variant
+                    ::bevy::material::OpaqueRendererMethod::#variant
                 )
             }
         }
@@ -1321,7 +1328,7 @@ shadow_elicitation!(AtmosphereMode);
 /// Shadow of [`bevy::pbr::AtmosphereSettings`].
 ///
 /// Performance-tuning component for atmosphere LUT sizes and sample counts.
-/// Usually left at defaults; attach to a camera entity alongside [`Atmosphere`](bevy::pbr::Atmosphere).
+/// Usually left at defaults; attach to a camera entity alongside `bevy::light::Atmosphere`.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct AtmosphereSettings {
     /// Transmittance LUT dimensions (width, height).
@@ -1344,8 +1351,6 @@ pub struct AtmosphereSettings {
     pub aerial_view_lut_samples: u32,
     /// Maximum distance (meters) for aerial-view LUT evaluation.
     pub aerial_view_lut_max_distance: f32,
-    /// Scene-unit to meters conversion factor.
-    pub scene_units_to_m: f32,
     /// Sample count per fragment for raymarched sky rendering.
     pub sky_max_samples: u32,
     /// Atmosphere rendering algorithm.
@@ -1366,7 +1371,6 @@ impl Default for AtmosphereSettings {
             sky_view_lut_samples: d.sky_view_lut_samples,
             aerial_view_lut_samples: d.aerial_view_lut_samples,
             aerial_view_lut_max_distance: d.aerial_view_lut_max_distance,
-            scene_units_to_m: d.scene_units_to_m,
             sky_max_samples: d.sky_max_samples,
             rendering_method: AtmosphereMode::from(d.rendering_method),
         }
@@ -1386,7 +1390,6 @@ impl From<AtmosphereSettings> for bevy::pbr::AtmosphereSettings {
             sky_view_lut_samples: v.sky_view_lut_samples,
             aerial_view_lut_samples: v.aerial_view_lut_samples,
             aerial_view_lut_max_distance: v.aerial_view_lut_max_distance,
-            scene_units_to_m: v.scene_units_to_m,
             sky_max_samples: v.sky_max_samples,
             rendering_method: v.rendering_method.into(),
         }
@@ -1410,7 +1413,6 @@ mod emit_impls_atmosphere_settings {
             let svlsamp = self.sky_view_lut_samples;
             let avlsamp = self.aerial_view_lut_samples;
             let avmax = self.aerial_view_lut_max_distance;
-            let s2m = self.scene_units_to_m;
             let skymax = self.sky_max_samples;
             let method = self.rendering_method.to_code_literal();
             quote::quote! {
@@ -1425,7 +1427,6 @@ mod emit_impls_atmosphere_settings {
                     sky_view_lut_samples: #svlsamp,
                     aerial_view_lut_samples: #avlsamp,
                     aerial_view_lut_max_distance: #avmax,
-                    scene_units_to_m: #s2m,
                     sky_max_samples: #skymax,
                     rendering_method: #method,
                 }

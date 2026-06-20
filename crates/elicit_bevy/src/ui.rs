@@ -1859,56 +1859,56 @@ mod emit_impls_interaction {
 
 impl elicitation::ElicitComplete for Interaction {}
 
-// ── OverflowClipBox ───────────────────────────────────────────────────────────
+// ── VisualBox ─────────────────────────────────────────────────────────────────
 
-elicit_newtype!(bevy::ui::OverflowClipBox, as OverflowClipBox, forward_serde);
-elicit_newtype_traits!(OverflowClipBox, bevy::ui::OverflowClipBox, [eq]);
+elicit_newtype!(bevy::ui::VisualBox, as VisualBox, forward_serde);
+elicit_newtype_traits!(VisualBox, bevy::ui::VisualBox, [eq]);
 
-impl From<OverflowClipBox> for bevy::ui::OverflowClipBox {
-    fn from(v: OverflowClipBox) -> Self {
+impl From<VisualBox> for bevy::ui::VisualBox {
+    fn from(v: VisualBox) -> Self {
         *v.0
     }
 }
 
 #[reflect_methods]
-impl OverflowClipBox {
+impl VisualBox {
     /// Returns `true` if this is the content box.
     #[tracing::instrument(skip(self))]
     pub fn is_content_box(&self) -> bool {
-        matches!(*self.0, bevy::ui::OverflowClipBox::ContentBox)
+        matches!(*self.0, bevy::ui::VisualBox::ContentBox)
     }
 
     /// Returns `true` if this is the padding box.
     #[tracing::instrument(skip(self))]
     pub fn is_padding_box(&self) -> bool {
-        matches!(*self.0, bevy::ui::OverflowClipBox::PaddingBox)
+        matches!(*self.0, bevy::ui::VisualBox::PaddingBox)
     }
 
     /// Returns `true` if this is the border box.
     #[tracing::instrument(skip(self))]
     pub fn is_border_box(&self) -> bool {
-        matches!(*self.0, bevy::ui::OverflowClipBox::BorderBox)
+        matches!(*self.0, bevy::ui::VisualBox::BorderBox)
     }
 }
 
-mod emit_impls_overflow_clip_box {
-    use super::OverflowClipBox;
+mod emit_impls_visual_box {
+    use super::VisualBox;
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
 
-    impl ToCodeLiteral for OverflowClipBox {
+    impl ToCodeLiteral for VisualBox {
         fn to_code_literal(&self) -> TokenStream {
             let json = serde_json::to_string(&*self.0).unwrap_or_default();
             quote::quote! {
-                ::elicit_bevy::OverflowClipBox::from(
-                    ::serde_json::from_str::<::bevy::ui::OverflowClipBox>(#json).unwrap()
+                ::elicit_bevy::VisualBox::from(
+                    ::serde_json::from_str::<::bevy::ui::VisualBox>(#json).unwrap()
                 )
             }
         }
     }
 }
 
-impl elicitation::ElicitComplete for OverflowClipBox {}
+impl elicitation::ElicitComplete for VisualBox {}
 
 // ── OverflowClipMargin ────────────────────────────────────────────────────────
 
@@ -1925,8 +1925,8 @@ impl From<OverflowClipMargin> for bevy::ui::OverflowClipMargin {
 impl OverflowClipMargin {
     /// Returns the visual box setting.
     #[tracing::instrument(skip(self))]
-    pub fn get_visual_box(&self) -> OverflowClipBox {
-        OverflowClipBox::from(self.0.visual_box)
+    pub fn get_visual_box(&self) -> VisualBox {
+        VisualBox::from(self.0.visual_box)
     }
 
     /// Returns the margin in logical pixels.

@@ -436,7 +436,7 @@ impl Default for BevyCamera3dDepthLoadOpParams {
     elicitation::ToCodeLiteral,
 )]
 #[serde(rename_all = "snake_case")]
-#[to_code_literal(path = "::bevy::camera::ScreenSpaceTransmissionQuality")]
+#[to_code_literal(path = "::bevy::pbr::ScreenSpaceTransmissionQuality")]
 pub enum BevyScreenSpaceTransmissionQualityVariant {
     /// Lowest quality.
     Low,
@@ -544,7 +544,7 @@ pub struct BevyColorParams {
 /// Parameters for `bevy_render__alpha_mode`.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, elicitation::ToCodeLiteral)]
 #[serde(tag = "variant", rename_all = "snake_case")]
-#[to_code_literal(path = "::bevy::render::alpha::AlphaMode")]
+#[to_code_literal(path = "::bevy::material::AlphaMode")]
 pub enum BevyRenderAlphaModeParams {
     /// `AlphaMode::Opaque`
     Opaque,
@@ -570,7 +570,7 @@ pub enum BevyRenderAlphaModeParams {
 /// Supported Bevy UV channels.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, elicitation::ToCodeLiteral)]
 #[serde(rename_all = "snake_case")]
-#[to_code_literal(path = "::bevy::pbr::UvChannel")]
+#[to_code_literal(path = "::bevy::mesh::UvChannel")]
 pub enum BevyUvChannelVariant {
     /// Use the first UV set.
     Uv0,
@@ -614,7 +614,7 @@ pub enum BevyParallaxMappingMethodParams {
 /// Supported Bevy opaque renderer methods.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, elicitation::ToCodeLiteral)]
 #[serde(rename_all = "snake_case")]
-#[to_code_literal(path = "::bevy::pbr::OpaqueRendererMethod")]
+#[to_code_literal(path = "::bevy::material::OpaqueRendererMethod")]
 pub enum BevyOpaqueRendererMethodVariant {
     /// Let Bevy pick based on the default resource.
     Auto,
@@ -2674,7 +2674,7 @@ fn emit_uv_channel_variant_tokens(variant: &BevyUvChannelVariant) -> TokenStream
         BevyUvChannelVariant::Uv0 => quote! { Uv0 },
         BevyUvChannelVariant::Uv1 => quote! { Uv1 },
     };
-    quote! { ::bevy::pbr::UvChannel::#variant }
+    quote! { ::bevy::mesh::UvChannel::#variant }
 }
 
 fn default_opaque_renderer_method_tokens(

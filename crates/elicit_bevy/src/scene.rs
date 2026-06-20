@@ -2,32 +2,36 @@
 //!
 //! ## Note on `Scene` and `DynamicScene`
 //!
-//! [`bevy::scene::Scene`] and [`bevy::scene::DynamicScene`] implement [`bevy::asset::Asset`]
-//! and are loaded / accessed via `Handle<Scene>` / `Handle<DynamicScene>`. These
+//! `bevy::scene::Scene` implements [`bevy::asset::Asset`]
+//! and is loaded / accessed via `Handle<Scene>`. These
 //! handles are managed by the `AssetServer` and cannot be directly instantiated
 //! as MCP values.
 //!
-//! For scene spawning, attach [`bevy::scene::SceneRoot`] or
-//! [`bevy::scene::DynamicSceneRoot`] as components on an entity. The
-//! [`SceneInstanceReady`] event fires on the parent entity once the scene has
+//! For scene spawning, attach `bevy::scene::SceneRoot` as a component on an
+//! entity. The
+//! [`WorldInstanceReady`] event fires on the parent entity once the scene has
 //! fully spawned.
 //!
-//! ## SceneInstanceReady
+//! ## WorldInstanceReady
 //!
-//! [`SceneInstanceReady`] is an entity event (`#[derive(EntityEvent)]`) that
-//! carries the spawned entity and its [`bevy::scene::InstanceId`]. It is
-//! wrapped here so agents can inspect the payload when it arrives over MCP.
+//! [`WorldInstanceReady`] is an entity event that carries the spawned entity
+//! and its instance ID. It is wrapped here so agents can inspect the payload
+//! when it arrives over MCP.
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 use std::sync::Arc;
 
-// ── SceneInstanceReady ────────────────────────────────────────────────────────
+// ── WorldInstanceReady ────────────────────────────────────────────────────────
 
-elicit_newtype!(bevy::scene::SceneInstanceReady, as SceneInstanceReady);
-elicit_newtype_traits!(SceneInstanceReady, bevy::scene::SceneInstanceReady, [eq]);
+elicit_newtype!(bevy::world_serialization::WorldInstanceReady, as WorldInstanceReady);
+elicit_newtype_traits!(
+    WorldInstanceReady,
+    bevy::world_serialization::WorldInstanceReady,
+    [eq]
+);
 
-impl serde::Serialize for SceneInstanceReady {
+impl serde::Serialize for WorldInstanceReady {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeMap;
         let mut map = serializer.serialize_map(Some(2))?;
@@ -38,24 +42,24 @@ impl serde::Serialize for SceneInstanceReady {
     }
 }
 
-impl<'de> serde::Deserialize<'de> for SceneInstanceReady {
+impl<'de> serde::Deserialize<'de> for WorldInstanceReady {
     fn deserialize<D: serde::Deserializer<'de>>(_deserializer: D) -> Result<Self, D::Error> {
-        // SceneInstanceReady is an ECS event produced by Bevy's scene spawner.
+        // WorldInstanceReady is an ECS event produced by Bevy's scene spawner.
         // It cannot be constructed externally (InstanceId::new is private).
         Err(serde::de::Error::custom(
-            "SceneInstanceReady cannot be deserialized; observe it via the ECS event system",
+            "WorldInstanceReady cannot be deserialized; observe it via the ECS event system",
         ))
     }
 }
 
-impl From<SceneInstanceReady> for bevy::scene::SceneInstanceReady {
-    fn from(v: SceneInstanceReady) -> Self {
+impl From<WorldInstanceReady> for bevy::world_serialization::WorldInstanceReady {
+    fn from(v: WorldInstanceReady) -> Self {
         Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
     }
 }
 
 #[reflect_methods]
-impl SceneInstanceReady {
+impl WorldInstanceReady {
     /// Returns the bits of the entity whose scene instance is ready.
     ///
     /// Pass this value to `Entity::from_bits_constructor` to reconstruct the entity.
@@ -64,10 +68,9 @@ impl SceneInstanceReady {
         self.0.entity.to_bits()
     }
 
-    /// Returns the [`InstanceId`](bevy::scene::InstanceId) as its debug string.
+    /// Returns the instance ID as its debug string.
     ///
-    /// Useful for correlating the ready event with the ID returned by
-    /// [`bevy::scene::SceneSpawner::spawn`].
+    /// Useful for correlating the ready event with the spawned scene instance.
     #[tracing::instrument(skip(self))]
     pub fn instance_id_string(&self) -> String {
         format!("{:?}", self.0.instance_id)
@@ -77,18 +80,18 @@ impl SceneInstanceReady {
 // ── ElicitComplete + ToCodeLiteral ───────────────────────────────────────────
 
 mod emit_impls {
-    use super::SceneInstanceReady;
+    use super::WorldInstanceReady;
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
 
-    impl ToCodeLiteral for SceneInstanceReady {
+    impl ToCodeLiteral for WorldInstanceReady {
         fn to_code_literal(&self) -> TokenStream {
             let bits = self.0.entity.to_bits();
             quote::quote! {
-                // SceneInstanceReady is an ECS event, not constructed directly.
+                // WorldInstanceReady is an ECS event, not constructed directly.
                 // This literal reconstructs the entity reference only.
                 compile_error!(
-                    "SceneInstanceReady cannot be constructed as a code literal; \
+                    "WorldInstanceReady cannot be constructed as a code literal; \
                      observe it via the ECS event system instead."
                 );
                 let _ = #bits;
@@ -97,7 +100,7 @@ mod emit_impls {
     }
 }
 
-impl elicitation::ElicitComplete for SceneInstanceReady {}
+impl elicitation::ElicitComplete for WorldInstanceReady {}
 
 // ── Name ──────────────────────────────────────────────────────────────────────
 

@@ -234,34 +234,34 @@ fn standard_material_params_emit_extended_surface_fields() {
 
     assert!(source.contains("::bevy::pbr::StandardMaterial{"));
     assert!(source.contains("base_color:Color::srgb(0.9,0.7,0.6),"));
-    assert!(source.contains("base_color_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("base_color_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains("base_color_texture:Some(asset_server.load(\"materials/base.png\")),"));
     assert!(source.contains("emissive:LinearRgba::rgb(0.1,0.0,0.0),"));
-    assert!(source.contains("emissive_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("emissive_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source.contains("emissive_texture:Some(asset_server.load(\"materials/emissive.png\")),")
     );
     assert!(source.contains("emissive_exposure_weight:0.25"));
     assert!(source.contains("metallic:0.65"));
     assert!(source.contains("perceptual_roughness:0.2"));
-    assert!(source.contains("metallic_roughness_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("metallic_roughness_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "metallic_roughness_texture:Some(asset_server.load(\"materials/metal_rough.png\")),"
     ));
     assert!(source.contains("reflectance:0.55"));
     assert!(source.contains("specular_tint:Color::srgb(0.95,0.9,0.85),"));
     assert!(source.contains("diffuse_transmission:0.35"));
-    assert!(source.contains("diffuse_transmission_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("diffuse_transmission_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "diffuse_transmission_texture:Some(asset_server.load(\"materials/diffuse_transmission.png\")),"
     ));
     assert!(source.contains("specular_transmission:0.6"));
-    assert!(source.contains("specular_transmission_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("specular_transmission_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "specular_transmission_texture:Some(asset_server.load(\"materials/specular_transmission.png\")),"
     ));
     assert!(source.contains("thickness:0.15"));
-    assert!(source.contains("thickness_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("thickness_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source.contains("thickness_texture:Some(asset_server.load(\"materials/thickness.png\")),")
     );
@@ -269,38 +269,38 @@ fn standard_material_params_emit_extended_surface_fields() {
     assert!(source.contains("attenuation_distance:12"));
     assert!(source.contains("attenuation_color:Color::srgb(0.85,0.95,1.0),"));
     assert!(source.contains("clearcoat:0.4"));
-    assert!(source.contains("clearcoat_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("clearcoat_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source.contains("clearcoat_texture:Some(asset_server.load(\"materials/clearcoat.png\")),")
     );
     assert!(source.contains("clearcoat_perceptual_roughness:0.3"));
-    assert!(source.contains("clearcoat_roughness_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("clearcoat_roughness_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "clearcoat_roughness_texture:Some(asset_server.load(\"materials/clearcoat_roughness.png\")),"
     ));
-    assert!(source.contains("clearcoat_normal_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("clearcoat_normal_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "clearcoat_normal_texture:Some(asset_server.load(\"materials/clearcoat_normal.png\")),"
     ));
     assert!(source.contains("anisotropy_strength:0.7"));
     assert!(source.contains("anisotropy_rotation:1.57"));
-    assert!(source.contains("anisotropy_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("anisotropy_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source
             .contains("anisotropy_texture:Some(asset_server.load(\"materials/anisotropy.png\")),")
     );
-    assert!(source.contains("normal_map_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("normal_map_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source.contains("normal_map_texture:Some(asset_server.load(\"materials/normal.png\")),")
     );
     assert!(source.contains("flip_normal_map_y:true"));
-    assert!(source.contains("occlusion_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("occlusion_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains("occlusion_texture:Some(asset_server.load(\"materials/ao.png\")),"));
-    assert!(source.contains("specular_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("specular_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(
         source.contains("specular_texture:Some(asset_server.load(\"materials/specular.png\")),")
     );
-    assert!(source.contains("specular_tint_channel:::bevy::pbr::UvChannel::Uv1,"));
+    assert!(source.contains("specular_tint_channel:::bevy::mesh::UvChannel::Uv1,"));
     assert!(source.contains(
         "specular_tint_texture:Some(asset_server.load(\"materials/specular_tint.png\")),"
     ));
@@ -340,7 +340,7 @@ fn alpha_mode_and_tonemapping_emit_expected_variants() {
     let alpha_source = normalize(&alpha.emit_code().to_string());
     let tonemapping_source = normalize(&tonemapping.emit_code().to_string());
 
-    assert!(alpha_source.contains("::bevy::render::alpha::AlphaMode::Mask(0.33"));
+    assert!(alpha_source.contains("::bevy::material::AlphaMode::Mask(0.33"));
     assert!(tonemapping_source.contains("::bevy::core_pipeline::tonemapping::Tonemapping::AgX"));
 }
 
@@ -466,8 +466,7 @@ fn camera_view_helpers_emit_current_bevy_paths() {
 
     assert!(depth_load_source.contains("::bevy::camera::Camera3dDepthLoadOp::Clear(0.25"));
     assert!(
-        transmission_quality_source
-            .contains("::bevy::camera::ScreenSpaceTransmissionQuality::Ultra")
+        transmission_quality_source.contains("::bevy::pbr::ScreenSpaceTransmissionQuality::Ultra")
     );
     assert!(main_pass_resolution_source.contains(
         "::bevy::camera::MainPassResolutionOverride(::bevy::math::UVec2::new(1600u32,900u32))"
@@ -536,7 +535,7 @@ fn material_enum_and_lightmap_helpers_emit_current_bevy_paths() {
 
     assert_eq!(
         normalize(&uv_channel.emit_code().to_string()),
-        "::bevy::pbr::UvChannel::Uv1"
+        "::bevy::mesh::UvChannel::Uv1"
     );
     assert_eq!(
         normalize(&parallax.emit_code().to_string()),
@@ -544,7 +543,7 @@ fn material_enum_and_lightmap_helpers_emit_current_bevy_paths() {
     );
     assert_eq!(
         normalize(&opaque.emit_code().to_string()),
-        "::bevy::pbr::OpaqueRendererMethod::Deferred"
+        "::bevy::material::OpaqueRendererMethod::Deferred"
     );
     assert_eq!(
         normalize(&default_opaque.emit_code().to_string()),

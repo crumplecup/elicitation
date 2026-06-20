@@ -133,7 +133,7 @@ impl<'de> serde::Deserialize<'de> for Pickable {
 }
 impl From<Pickable> for bevy::picking::Pickable {
     fn from(v: Pickable) -> Self {
-        Arc::try_unwrap(v.0).unwrap_or_else(|arc| (*arc).clone())
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
     }
 }
 
@@ -554,7 +554,7 @@ shadow_elicitation!(DirectlyHovered);
 
 /// Shadow of [`bevy::picking::PickingSettings`].
 #[derive(
-    Debug, Clone, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct PickingSettings {
     /// Enables and disables all picking features.
@@ -565,6 +565,21 @@ pub struct PickingSettings {
     pub is_hover_enabled: bool,
     /// Enables or disables picking for window entities.
     pub is_window_picking_enabled: bool,
+    /// Maximum duration in milliseconds between clicks to count as a multi-click.
+    pub multi_click_interval_ms: u64,
+}
+
+impl Default for PickingSettings {
+    fn default() -> Self {
+        let d = bevy::picking::PickingSettings::default();
+        Self {
+            is_enabled: d.is_enabled,
+            is_input_enabled: d.is_input_enabled,
+            is_hover_enabled: d.is_hover_enabled,
+            is_window_picking_enabled: d.is_window_picking_enabled,
+            multi_click_interval_ms: d.multi_click_interval.as_millis() as u64,
+        }
+    }
 }
 
 impl From<bevy::picking::PickingSettings> for PickingSettings {
@@ -574,6 +589,7 @@ impl From<bevy::picking::PickingSettings> for PickingSettings {
             is_input_enabled: v.is_input_enabled,
             is_hover_enabled: v.is_hover_enabled,
             is_window_picking_enabled: v.is_window_picking_enabled,
+            multi_click_interval_ms: v.multi_click_interval.as_millis() as u64,
         }
     }
 }
@@ -585,6 +601,7 @@ impl From<PickingSettings> for bevy::picking::PickingSettings {
             is_input_enabled: v.is_input_enabled,
             is_hover_enabled: v.is_hover_enabled,
             is_window_picking_enabled: v.is_window_picking_enabled,
+            multi_click_interval: std::time::Duration::from_millis(v.multi_click_interval_ms),
         }
     }
 }
@@ -600,12 +617,14 @@ mod emit_impls_picking_settings {
             let input = self.is_input_enabled;
             let hover = self.is_hover_enabled;
             let window = self.is_window_picking_enabled;
+            let interval_ms = self.multi_click_interval_ms;
             quote::quote! {
                 ::bevy::picking::PickingSettings {
                     is_enabled: #enabled,
                     is_input_enabled: #input,
                     is_hover_enabled: #hover,
                     is_window_picking_enabled: #window,
+                    multi_click_interval: ::std::time::Duration::from_millis(#interval_ms),
                 }
             }
         }
