@@ -214,12 +214,49 @@ bevy_marker_factory! {
 
 // ── bevy::app::Plugin ────────────────────────────────────────────────────────
 
-bevy_marker_factory! {
-    factory = PluginToolsFactory,
-    prime_fn = prime_bevy_plugin,
-    trait_path = bevy::app::Plugin,
-    trait_name_str = "bevy::app::Plugin",
-    description = "Marker factory — confirms T: Plugin is registered.",
+/// Expose [`bevy::app::Plugin`] as shadow Rust trait + MCP tools.
+///
+/// With `shadow_trait`, this generates:
+/// - A `Plugin` trait using `crate::App` in all signatures (drop-in for `bevy::app::Plugin`)
+/// - A blanket `impl bevy::app::Plugin for T where T: Plugin + 'static`
+/// - MCP tool factories for all methods
+///
+/// Methods:
+/// - `build(app)` — apply this plugin to an `App`; returns the mutated `App`
+/// - `ready(app)` — `true` when the plugin is ready for `finish` to be called
+/// - `finish(app)` — finalize setup after all plugins have built; returns mutated `App`
+/// - `cleanup(app)` — teardown; returns mutated `App`
+/// - `name()` — the plugin's canonical name string
+/// - `is_unique()` — whether only one instance may be added to an `App`
+#[reflect_trait(bevy::app::Plugin,
+    type_map(bevy::app::App => crate::App),
+    shadow_trait)]
+pub trait PluginTools {
+    /// Apply this plugin to an `App`, registering its systems and resources.
+    fn build(&self, app: &mut bevy::app::App);
+    /// Returns `true` when the plugin is ready for `finish` to be called.
+    fn ready(&self, _app: &bevy::app::App) -> bool {
+        true
+    }
+    /// Perform any final setup that requires all other plugins to have been built.
+    fn finish(&self, _app: &mut bevy::app::App) {}
+    /// Clean up resources registered by this plugin.
+    fn cleanup(&self, _app: &mut bevy::app::App) {}
+    /// Returns the canonical name for this plugin.
+    fn name(&self) -> &str {
+        ::std::any::type_name::<Self>()
+    }
+    /// Returns `true` if only one instance of this plugin may be added to an `App`.
+    fn is_unique(&self) -> bool {
+        true
+    }
 }
+
+// `impl_bevy__app__plugin!` is a proc-macro-generated `#[macro_export]` macro
+// and cannot be referenced by path from other modules within this crate.
+// The macro IS in scope here (same file), so concrete types from other modules
+// that implement `crate::Plugin` have their Bevy bridge generated here.
+use crate::gis_render_plugin::BevyGisPlugin;
+impl_bevy__app__plugin!(BevyGisPlugin);
 
 // Factories are already public via `pub struct` in the macro expansions above.

@@ -1,12 +1,169 @@
-//! Bevy application exit status wrapper.
+//! Bevy application and exit status wrappers.
 //!
-//! The `App` struct itself is stateful and non-instantiable over MCP.
-//! Only `AppExit` is wrapped here. Full `App` access should be handled
-//! through a custom Phase 3C workflow plugin.
+//! [`App`] is a newtype around `bevy::app::App` that can be constructed and
+//! queried over MCP.  Because `bevy::app::App` is `!Send + !Sync` (its runner
+//! closure is not thread-safe), MCP tool methods on `App` are synchronous —
+//! the agent calls them on the same thread that owns the app.
+//!
+//! [`AppExit`] wraps `bevy::app::AppExit` via `Arc` and is fully MCP-capable.
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 use std::sync::Arc;
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+/// Shadow of `bevy::app::App`.
+///
+/// Newtype wrapper that owns `bevy::app::App` and exposes its builder API as
+/// MCP tools via `#[reflect_methods]`.  Builder methods consume `self` and
+/// return the updated wrapper, matching Bevy's own convention.
+///
+/// `#[repr(transparent)]` makes it safe to cast `&bevy::app::App` ↔ `&App`
+/// via [`ref_cast::RefCast`], which the blanket `bevy::app::Plugin` impl uses
+/// for shared-reference parameters (e.g., `ready`).
+///
+/// For descriptor-based, fully async MCP app construction use
+/// [`BevyAppPlugin`](crate::BevyAppPlugin).
+#[repr(transparent)]
+#[derive(ref_cast::RefCast)]
+pub struct App(pub bevy::app::App);
+
+impl App {
+    /// Create a new Bevy application.
+    #[tracing::instrument]
+    pub fn new() -> Self {
+        App(bevy::app::App::new())
+    }
+
+    /// Add a plugin or plugin group.
+    ///
+    /// This is not exposed as an MCP tool because `Plugins<M>` is generic.
+    /// Use the typed variants (`add_gis_plugin`, etc.) for MCP access.
+    pub fn add_plugins<M>(mut self, plugins: impl bevy::app::Plugins<M>) -> Self {
+        self.0.add_plugins(plugins);
+        self
+    }
+
+    /// Run the application to completion and return the exit status.
+    pub fn run(mut self) -> bevy::app::AppExit {
+        self.0.run()
+    }
+}
+
+impl Default for App {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl std::fmt::Debug for App {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("App").finish_non_exhaustive()
+    }
+}
+
+impl Clone for App {
+    /// Returns a fresh `App`; Bevy's `App` is not `Clone`, so no ECS state is preserved.
+    ///
+    /// This matches the round-trip behaviour of our `Deserialize` impl (which also
+    /// creates a fresh app from any JSON input), so no information is lost beyond
+    /// what serialisation already loses.
+    fn clone(&self) -> Self {
+        App(bevy::app::App::new())
+    }
+}
+
+impl From<bevy::app::App> for App {
+    fn from(app: bevy::app::App) -> Self {
+        App(app)
+    }
+}
+
+impl From<App> for bevy::app::App {
+    fn from(wrapper: App) -> Self {
+        wrapper.0
+    }
+}
+
+impl serde::Serialize for App {
+    /// Serializes as `{}`.  `bevy::app::App` carries runtime ECS state that
+    /// has no meaningful JSON representation.
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        serializer.serialize_map(Some(0))?.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for App {
+    /// Deserializes from any map object by constructing a fresh
+    /// `bevy::app::App::new()`.
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{MapAccess, Visitor};
+        struct AppVisitor;
+        impl<'de> Visitor<'de> for AppVisitor {
+            type Value = App;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "an empty object {{}} for a Bevy App handle")
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<App, A::Error> {
+                while map.next_entry::<String, serde::de::IgnoredAny>()?.is_some() {}
+                Ok(App(bevy::app::App::new()))
+            }
+        }
+        deserializer.deserialize_map(AppVisitor)
+    }
+}
+
+impl schemars::JsonSchema for App {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("App")
+    }
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({ "type": "object" })
+    }
+}
+
+#[reflect_methods]
+impl App {
+    /// Construct a fresh Bevy application.
+    ///
+    /// The `&self` receiver is ignored; this is a factory constructor.
+    #[tracing::instrument(skip(self))]
+    pub fn new_app(&self) -> App {
+        App(bevy::app::App::new())
+    }
+
+    /// Add the GIS render backend plugin and return the updated app.
+    ///
+    /// Creates a fresh [`BevyGisRenderCtx`](crate::BevyGisRenderCtx) and
+    /// registers [`BevyGisBackend`](crate::BevyGisBackend) as a Bevy ECS
+    /// resource accessible in systems via `Res<BevyGisBackend>`.
+    ///
+    /// This is a consuming method: the input `App` is consumed.
+    #[tracing::instrument(skip(self))]
+    pub fn add_gis_plugin(mut self) -> App {
+        use crate::{BevyGisBackend, BevyGisPlugin, BevyGisRenderCtx};
+        let ctx = Arc::new(BevyGisRenderCtx::new());
+        let backend = BevyGisBackend::new(ctx);
+        self.0.add_plugins(BevyGisPlugin::new(backend));
+        self
+    }
+}
+
+mod emit_impls_app {
+    use super::App;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for App {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::bevy::app::App::new() }
+        }
+    }
+}
+
+// ── AppExit ───────────────────────────────────────────────────────────────────
 
 elicit_newtype!(bevy::app::AppExit, as AppExit);
 elicit_newtype_traits!(AppExit, bevy::app::AppExit, [eq]);

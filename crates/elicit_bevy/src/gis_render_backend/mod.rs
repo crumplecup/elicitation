@@ -8,15 +8,21 @@ mod proof_credentials;
 
 use std::sync::Arc;
 
+use bevy::ecs::resource::Resource;
+
 use crate::BevyGisRenderCtx;
 
 /// Bevy implementation of the renderer-agnostic GIS render backend.
 ///
 /// Wraps a shared [`BevyGisRenderCtx`] so that the stateful runtime reporters
 /// (tile streaming, picking, projection) can observe and update scene state.
-#[derive(Clone)]
+///
+/// Can be inserted into a Bevy [`World`](bevy::ecs::world::World) as a resource
+/// via [`BevyGisPlugin`](crate::BevyGisPlugin) and then accessed in systems with
+/// `Res<BevyGisBackend>`.
+#[derive(Clone, Resource)]
 pub struct BevyGisBackend {
-    ctx: Arc<BevyGisRenderCtx>,
+    pub(crate) ctx: Arc<BevyGisRenderCtx>,
 }
 
 impl BevyGisBackend {
