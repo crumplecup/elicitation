@@ -46,6 +46,9 @@ bevy = { workspace = true, features = [
     "sprite_picking",
     "bevy_state",
     "bevy_input_focus",
+    "bevy_winit",
+    "x11",
+    "wayland",
     "serialize",
 ] }
 rmcp.workspace = true
