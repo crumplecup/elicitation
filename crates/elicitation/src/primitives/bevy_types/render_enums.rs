@@ -1,7 +1,7 @@
-//! Bevy 0.18 render-related enum elicitation.
+//! Bevy 0.19 render-related enum elicitation.
 //!
 //! Covers:
-//! - [`BevyAlphaMode`] — owned trenchcoat for `bevy::render::alpha::AlphaMode`
+//! - [`BevyAlphaMode`] — owned trenchcoat for `bevy::material::AlphaMode`
 //!   (has a data variant `Mask(f32)`, so requires the full owned-enum pattern).
 //! - [`BevyTonemapping`] — select-trenchcoat wrapper for
 //!   `bevy::core_pipeline::tonemapping::Tonemapping`.
@@ -76,7 +76,7 @@ impl Select for BevyAlphaModeKind {
     }
 }
 
-/// Owned trenchcoat for [`bevy::render::alpha::AlphaMode`].
+/// Owned trenchcoat for [`bevy::material::AlphaMode`].
 ///
 /// `AlphaMode::Mask(f32)` carries a threshold value, so this uses the full
 /// owned-enum pattern rather than a simple `select_trenchcoat!` wrapper.
@@ -99,21 +99,21 @@ pub enum BevyAlphaMode {
     Multiply,
 }
 
-impl From<bevy::render::alpha::AlphaMode> for BevyAlphaMode {
-    fn from(a: bevy::render::alpha::AlphaMode) -> Self {
+impl From<bevy::material::AlphaMode> for BevyAlphaMode {
+    fn from(a: bevy::material::AlphaMode) -> Self {
         match a {
-            bevy::render::alpha::AlphaMode::Opaque => Self::Opaque,
-            bevy::render::alpha::AlphaMode::Mask(t) => Self::Mask(t),
-            bevy::render::alpha::AlphaMode::Blend => Self::Blend,
-            bevy::render::alpha::AlphaMode::Premultiplied => Self::Premultiplied,
-            bevy::render::alpha::AlphaMode::AlphaToCoverage => Self::AlphaToCoverage,
-            bevy::render::alpha::AlphaMode::Add => Self::Add,
-            bevy::render::alpha::AlphaMode::Multiply => Self::Multiply,
+            bevy::material::AlphaMode::Opaque => Self::Opaque,
+            bevy::material::AlphaMode::Mask(t) => Self::Mask(t),
+            bevy::material::AlphaMode::Blend => Self::Blend,
+            bevy::material::AlphaMode::Premultiplied => Self::Premultiplied,
+            bevy::material::AlphaMode::AlphaToCoverage => Self::AlphaToCoverage,
+            bevy::material::AlphaMode::Add => Self::Add,
+            bevy::material::AlphaMode::Multiply => Self::Multiply,
         }
     }
 }
 
-impl From<BevyAlphaMode> for bevy::render::alpha::AlphaMode {
+impl From<BevyAlphaMode> for bevy::material::AlphaMode {
     fn from(a: BevyAlphaMode) -> Self {
         match a {
             BevyAlphaMode::Opaque => Self::Opaque,
@@ -129,7 +129,7 @@ impl From<BevyAlphaMode> for bevy::render::alpha::AlphaMode {
 
 impl BevyAlphaMode {
     /// Converts this wrapper into the upstream type.
-    pub fn into_inner(self) -> bevy::render::alpha::AlphaMode {
+    pub fn into_inner(self) -> bevy::material::AlphaMode {
         self.into()
     }
 }
@@ -145,10 +145,7 @@ impl Prompt for BevyAlphaMode {
 impl Elicitation for BevyAlphaMode {
     type Style = BevyAlphaModeStyle;
 
-    #[tracing::instrument(
-        skip(communicator),
-        fields(type_name = "bevy::render::alpha::AlphaMode")
-    )]
+    #[tracing::instrument(skip(communicator), fields(type_name = "bevy::material::AlphaMode"))]
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send {
@@ -199,7 +196,7 @@ impl ElicitIntrospect for BevyAlphaMode {
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
-            type_name: "bevy::render::alpha::AlphaMode",
+            type_name: "bevy::material::AlphaMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
                 variants: vec![
@@ -247,7 +244,7 @@ impl crate::ElicitPromptTree for BevyAlphaMode {
             prompt: Self::prompt()
                 .unwrap_or("Choose an alpha mode:")
                 .to_string(),
-            type_name: "bevy::render::alpha::AlphaMode".to_string(),
+            type_name: "bevy::material::AlphaMode".to_string(),
             options: BevyAlphaModeKind::labels(),
             branches: vec![
                 None,                               // Opaque
@@ -266,32 +263,32 @@ impl crate::emit_code::ToCodeLiteral for BevyAlphaMode {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
             BevyAlphaMode::Opaque => {
-                quote::quote! { bevy::render::alpha::AlphaMode::Opaque }
+                quote::quote! { bevy::material::AlphaMode::Opaque }
             }
             BevyAlphaMode::Mask(t) => {
                 let t_lit = crate::emit_code::ToCodeLiteral::to_code_literal(t);
-                quote::quote! { bevy::render::alpha::AlphaMode::Mask(#t_lit) }
+                quote::quote! { bevy::material::AlphaMode::Mask(#t_lit) }
             }
             BevyAlphaMode::Blend => {
-                quote::quote! { bevy::render::alpha::AlphaMode::Blend }
+                quote::quote! { bevy::material::AlphaMode::Blend }
             }
             BevyAlphaMode::Premultiplied => {
-                quote::quote! { bevy::render::alpha::AlphaMode::Premultiplied }
+                quote::quote! { bevy::material::AlphaMode::Premultiplied }
             }
             BevyAlphaMode::AlphaToCoverage => {
-                quote::quote! { bevy::render::alpha::AlphaMode::AlphaToCoverage }
+                quote::quote! { bevy::material::AlphaMode::AlphaToCoverage }
             }
             BevyAlphaMode::Add => {
-                quote::quote! { bevy::render::alpha::AlphaMode::Add }
+                quote::quote! { bevy::material::AlphaMode::Add }
             }
             BevyAlphaMode::Multiply => {
-                quote::quote! { bevy::render::alpha::AlphaMode::Multiply }
+                quote::quote! { bevy::material::AlphaMode::Multiply }
             }
         }
     }
 
     fn type_tokens() -> proc_macro2::TokenStream {
-        quote::quote! { bevy::render::alpha::AlphaMode }
+        quote::quote! { bevy::material::AlphaMode }
     }
 }
 
@@ -323,6 +320,8 @@ pub enum BevyTonemapping {
     TonyMcMapface,
     /// Blender filmic display transform (requires `tonemapping_luts`).
     BlenderFilmic,
+    /// Khronos PBR Neutral tonemapping (requires `tonemapping_luts`).
+    KhronosPbrNeutral,
 }
 
 impl From<bevy::core_pipeline::tonemapping::Tonemapping> for BevyTonemapping {
@@ -337,6 +336,7 @@ impl From<bevy::core_pipeline::tonemapping::Tonemapping> for BevyTonemapping {
             T::SomewhatBoringDisplayTransform => Self::SomewhatBoringDisplayTransform,
             T::TonyMcMapface => Self::TonyMcMapface,
             T::BlenderFilmic => Self::BlenderFilmic,
+            T::KhronosPbrNeutral => Self::KhronosPbrNeutral,
         }
     }
 }
@@ -353,6 +353,7 @@ impl From<BevyTonemapping> for bevy::core_pipeline::tonemapping::Tonemapping {
             BevyTonemapping::SomewhatBoringDisplayTransform => T::SomewhatBoringDisplayTransform,
             BevyTonemapping::TonyMcMapface => T::TonyMcMapface,
             BevyTonemapping::BlenderFilmic => T::BlenderFilmic,
+            BevyTonemapping::KhronosPbrNeutral => T::KhronosPbrNeutral,
         }
     }
 }
@@ -383,6 +384,7 @@ impl Select for BevyTonemapping {
             Self::SomewhatBoringDisplayTransform,
             Self::TonyMcMapface,
             Self::BlenderFilmic,
+            Self::KhronosPbrNeutral,
         ]
     }
 
@@ -396,6 +398,7 @@ impl Select for BevyTonemapping {
             "SomewhatBoringDisplayTransform".to_string(),
             "TonyMcMapface".to_string(),
             "BlenderFilmic".to_string(),
+            "KhronosPbrNeutral".to_string(),
         ]
     }
 
@@ -409,6 +412,7 @@ impl Select for BevyTonemapping {
             "SomewhatBoringDisplayTransform" => Some(Self::SomewhatBoringDisplayTransform),
             "TonyMcMapface" => Some(Self::TonyMcMapface),
             "BlenderFilmic" => Some(Self::BlenderFilmic),
+            "KhronosPbrNeutral" => Some(Self::KhronosPbrNeutral),
             _ => None,
         }
     }
@@ -492,7 +496,7 @@ impl crate::ElicitPromptTree for BevyTonemapping {
                 .to_string(),
             type_name: "bevy::core_pipeline::tonemapping::Tonemapping".to_string(),
             options: Self::labels(),
-            branches: vec![None; 8],
+            branches: vec![None; 9],
         }
     }
 }
@@ -523,6 +527,9 @@ impl crate::emit_code::ToCodeLiteral for BevyTonemapping {
             },
             BevyTonemapping::BlenderFilmic => quote::quote! {
                 bevy::core_pipeline::tonemapping::Tonemapping::BlenderFilmic
+            },
+            BevyTonemapping::KhronosPbrNeutral => quote::quote! {
+                bevy::core_pipeline::tonemapping::Tonemapping::KhronosPbrNeutral
             },
         }
     }

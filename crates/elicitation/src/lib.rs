@@ -790,8 +790,8 @@ pub use primitives::bevy_types::{
     ui::{
         BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyBorderRadius, BevyBoxSizing,
         BevyDisplay, BevyFlexDirection, BevyFlexWrap, BevyJustifyContent, BevyJustifyItems,
-        BevyJustifySelf, BevyOverflowAxis, BevyOverflowClipBox, BevyPositionType, BevyUiRect,
-        BevyVal,
+        BevyJustifySelf, BevyOverflowAxis, BevyOverflowClipMargin, BevyPositionType, BevyUiRect,
+        BevyVal, BevyVisualBox,
     },
     vec::BevyVec3A,
     window::{

@@ -5,7 +5,8 @@
 //! - [`BevyAlignItems`], [`BevyJustifyItems`], [`BevyAlignSelf`], [`BevyJustifySelf`],
 //!   [`BevyAlignContent`], [`BevyJustifyContent`], [`BevyDisplay`], [`BevyBoxSizing`],
 //!   [`BevyFlexDirection`], [`BevyFlexWrap`], [`BevyPositionType`], [`BevyOverflowAxis`],
-//!   [`BevyOverflowClipBox`] — select-trenchcoats for layout enums
+//!   [`BevyVisualBox`] — select-trenchcoats for layout enums
+//! - [`BevyOverflowClipMargin`] — survey trenchcoat for `bevy::ui::OverflowClipMargin`
 //! - [`BevyUiRect`] — survey trenchcoat for `bevy::ui::UiRect`
 //! - [`BevyBorderRadius`] — survey trenchcoat for `bevy::ui::BorderRadius`
 
@@ -274,18 +275,143 @@ impl_ui_select!(
 crate::select_trenchcoat!(bevy::ui::OverflowAxis, as BevyOverflowAxis, serde);
 crate::select_trenchcoat_traits!(BevyOverflowAxis, bevy::ui::OverflowAxis, [copy, eq]);
 
-// ── OverflowClipBox ───────────────────────────────────────────────────────────
+// ── VisualBox ─────────────────────────────────────────────────────────────────
 
 impl_ui_select!(
-    type     = bevy::ui::OverflowClipBox,
-    style    = BevyOverflowClipBoxStyle,
+    type     = bevy::ui::VisualBox,
+    style    = BevyVisualBoxStyle,
     prompt   = "Choose the clip boundary box:",
-    kani_var = "bevy::ui::OverflowClipBox::PaddingBox",
+    kani_var = "bevy::ui::VisualBox::PaddingBox",
     variants = [Self::ContentBox, Self::PaddingBox, Self::BorderBox]
 );
 
-crate::select_trenchcoat!(bevy::ui::OverflowClipBox, as BevyOverflowClipBox, serde);
-crate::select_trenchcoat_traits!(BevyOverflowClipBox, bevy::ui::OverflowClipBox, [copy, eq]);
+crate::select_trenchcoat!(bevy::ui::VisualBox, as BevyVisualBox, serde);
+crate::select_trenchcoat_traits!(BevyVisualBox, bevy::ui::VisualBox, [copy, eq]);
+
+// ── BevyOverflowClipMargin ────────────────────────────────────────────────────
+
+/// Trenchcoat for [`bevy::ui::OverflowClipMargin`].
+///
+/// Specifies the visible area for clipped overflow: a [`BevyVisualBox`] reference
+/// box (ContentBox, PaddingBox, or BorderBox) plus an optional margin in logical
+/// pixels that widens the clipping region.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct BevyOverflowClipMargin {
+    /// Which box model box to clip against.
+    pub visual_box: BevyVisualBox,
+    /// Extra unclipped margin beyond the visual box, in logical pixels.
+    pub margin: f32,
+}
+
+impl From<bevy::ui::OverflowClipMargin> for BevyOverflowClipMargin {
+    fn from(o: bevy::ui::OverflowClipMargin) -> Self {
+        Self {
+            visual_box: BevyVisualBox(o.visual_box),
+            margin: o.margin,
+        }
+    }
+}
+
+impl From<BevyOverflowClipMargin> for bevy::ui::OverflowClipMargin {
+    fn from(b: BevyOverflowClipMargin) -> Self {
+        Self {
+            visual_box: b.visual_box.into_inner(),
+            margin: b.margin,
+        }
+    }
+}
+
+crate::default_style!(BevyOverflowClipMargin => BevyOverflowClipMarginStyle);
+
+impl Prompt for BevyOverflowClipMargin {
+    fn prompt() -> Option<&'static str> {
+        Some("Overflow clip margin (visual box + margin):")
+    }
+}
+
+impl Elicitation for BevyOverflowClipMargin {
+    type Style = BevyOverflowClipMarginStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let visual_box = BevyVisualBox::elicit(communicator).await?;
+        let margin = f32::elicit(communicator).await?;
+        Ok(Self { visual_box, margin })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <f32 as Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <f32 as Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <f32 as Elicitation>::creusot_proof()
+    }
+}
+
+impl ElicitIntrospect for BevyOverflowClipMargin {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "bevy::ui::OverflowClipMargin",
+            description: Some("Overflow clip boundary: visual box + margin in logical pixels"),
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "visual_box",
+                        type_name: "bevy::ui::VisualBox",
+                        prompt: Some("Clip reference box (ContentBox/PaddingBox/BorderBox):"),
+                    },
+                    FieldInfo {
+                        name: "margin",
+                        type_name: "f32",
+                        prompt: Some("Extra clip margin in logical pixels:"),
+                    },
+                ],
+            },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for BevyOverflowClipMargin {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Some("Overflow clip margin:".to_string()),
+            type_name: "bevy::ui::OverflowClipMargin".to_string(),
+            fields: vec![
+                (
+                    "visual_box".to_string(),
+                    Box::new(BevyVisualBox::prompt_tree()),
+                ),
+                ("margin".to_string(), Box::new(f32::prompt_tree())),
+            ],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for BevyOverflowClipMargin {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let vb = match self.visual_box.0 {
+            bevy::ui::VisualBox::ContentBox => {
+                quote::quote! { bevy::ui::VisualBox::ContentBox }
+            }
+            bevy::ui::VisualBox::PaddingBox => {
+                quote::quote! { bevy::ui::VisualBox::PaddingBox }
+            }
+            bevy::ui::VisualBox::BorderBox => {
+                quote::quote! { bevy::ui::VisualBox::BorderBox }
+            }
+        };
+        let margin = self.margin;
+        quote::quote! {
+            bevy::ui::OverflowClipMargin { visual_box: #vb, margin: #margin }
+        }
+    }
+}
 
 // ── BevyVal ───────────────────────────────────────────────────────────────────
 //

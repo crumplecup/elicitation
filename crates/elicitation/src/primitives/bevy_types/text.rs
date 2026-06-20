@@ -98,13 +98,15 @@ macro_rules! impl_bevy_text_select {
 impl_bevy_text_select! {
     type     = bevy::text::Justify,
     style    = JustifyStyle,
-    prompt   = "Text justification (Left/Center/Right/Justified):",
+    prompt   = "Text justification (Left/Center/Right/Justified/Start/End):",
     kani_var = "Left",
     variants = [
         bevy::text::Justify::Left,
         bevy::text::Justify::Center,
         bevy::text::Justify::Right,
         bevy::text::Justify::Justified,
+        bevy::text::Justify::Start,
+        bevy::text::Justify::End,
     ]
 }
 
@@ -256,6 +258,8 @@ impl crate::emit_code::ToCodeLiteral for BevyTextLayout {
             bevy::text::Justify::Center => quote::quote! { bevy::text::Justify::Center },
             bevy::text::Justify::Right => quote::quote! { bevy::text::Justify::Right },
             bevy::text::Justify::Justified => quote::quote! { bevy::text::Justify::Justified },
+            bevy::text::Justify::Start => quote::quote! { bevy::text::Justify::Start },
+            bevy::text::Justify::End => quote::quote! { bevy::text::Justify::End },
         };
         let lb = match self.linebreak.0 {
             bevy::text::LineBreak::WordBoundary => {

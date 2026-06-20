@@ -14,7 +14,7 @@ mod bevy_impls {
         BevyGamepadButton, BevyGlobalTransform, BevyJustify, BevyJustifyContent, BevyJustifyItems,
         BevyJustifySelf, BevyKeyCode, BevyLine2d, BevyLine3d, BevyLineBreak, BevyMat3A,
         BevyMonitorSelection, BevyMouseButton, BevyOrthographicProjection, BevyOverflowAxis,
-        BevyOverflowClipBox, BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable,
+        BevyOverflowClipMargin, BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable,
         BevyPickingInteraction, BevyPlane2d, BevyPlane3d, BevyPlaybackMode, BevyPlaybackSettings,
         BevyPointLight, BevyPositionType, BevyPresentMode, BevyQuat, BevyRay2d, BevyRay3d,
         BevyRectangle, BevyRegularPolygon, BevyRepeatAnimation, BevyRhombus, BevyScalingMode,
@@ -379,10 +379,14 @@ mod bevy_impls {
         summary = "Single-axis overflow handling: Visible, Clip, Hidden, or Scroll."
     );
 
-    impl_bevy_select_spec!(
-        type    = BevyOverflowClipBox,
-        name    = "BevyOverflowClipBox",
-        summary = "Overflow clip reference box: ContentBox or PaddingBox."
+    impl_bevy_survey_spec!(
+        type    = BevyOverflowClipMargin,
+        name    = "BevyOverflowClipMargin",
+        summary = "Overflow clip margin: visual box (ContentBox/PaddingBox/BorderBox) plus margin px.",
+        fields  = [
+            ("visual_box", "Reference box for clipping: ContentBox, PaddingBox, or BorderBox."),
+            ("margin", "Extra margin beyond the visual box in logical pixels."),
+        ]
     );
 
     impl_bevy_variants_spec!(
@@ -1124,7 +1128,7 @@ mod bevy_impls {
     impl ElicitComplete for BevyJustifyItems {}
     impl ElicitComplete for BevyJustifySelf {}
     impl ElicitComplete for BevyOverflowAxis {}
-    impl ElicitComplete for BevyOverflowClipBox {}
+    impl ElicitComplete for BevyOverflowClipMargin {}
     impl ElicitComplete for BevyPositionType {}
     impl ElicitComplete for BevyPresentMode {}
     impl ElicitComplete for BevyWindowLevel {}

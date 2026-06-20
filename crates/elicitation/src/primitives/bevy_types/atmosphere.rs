@@ -1,11 +1,11 @@
-//! Bevy 0.18 atmosphere type elicitation.
+//! Bevy 0.19 atmosphere type elicitation.
 //!
 //! Covers:
-//! - [`BevyFalloff`] — owned trenchcoat for `bevy::pbr::Falloff`.
-//! - [`BevyPhaseFunction`] — owned trenchcoat for `bevy::pbr::PhaseFunction`.
-//! - [`BevyScatteringTerm`] — owned local struct for `bevy::pbr::ScatteringTerm`.
+//! - [`BevyFalloff`] — owned trenchcoat for `bevy::light::atmosphere::Falloff`.
+//! - [`BevyPhaseFunction`] — owned trenchcoat for `bevy::light::atmosphere::PhaseFunction`.
+//! - [`BevyScatteringTerm`] — owned local struct for `bevy::light::atmosphere::ScatteringTerm`.
 //! - [`BevyAtmosphere`] — owned local struct for the serializable fields of
-//!   `bevy::pbr::Atmosphere` (the `Handle<ScatteringMedium>` field is excluded).
+//!   `bevy::light::Atmosphere` (the `Handle<ScatteringMedium>` field is excluded).
 
 use super::vec::BevyVec3;
 use crate::{
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 // ── BevyFalloff ───────────────────────────────────────────────────────────────
 
-/// Owned trenchcoat for [`bevy::pbr::Falloff`].
+/// Owned trenchcoat for [`bevy::light::atmosphere::Falloff`].
 ///
 /// Covers `Linear`, `Exponential`, and `Tent` variants; the `Curve` variant
 /// (which holds an `Arc<dyn Curve<f32>>`) is not serializable and is excluded.
@@ -41,7 +41,7 @@ pub enum BevyFalloff {
     },
 }
 
-impl From<BevyFalloff> for bevy::pbr::Falloff {
+impl From<BevyFalloff> for bevy::light::atmosphere::Falloff {
     fn from(f: BevyFalloff) -> Self {
         match f {
             BevyFalloff::Linear => Self::Linear,
@@ -51,17 +51,19 @@ impl From<BevyFalloff> for bevy::pbr::Falloff {
     }
 }
 
-impl From<&bevy::pbr::Falloff> for BevyFalloff {
-    fn from(f: &bevy::pbr::Falloff) -> Self {
+impl From<&bevy::light::atmosphere::Falloff> for BevyFalloff {
+    fn from(f: &bevy::light::atmosphere::Falloff) -> Self {
         match f {
-            bevy::pbr::Falloff::Linear => Self::Linear,
-            bevy::pbr::Falloff::Exponential { scale } => Self::Exponential { scale: *scale },
-            bevy::pbr::Falloff::Tent { center, width } => Self::Tent {
+            bevy::light::atmosphere::Falloff::Linear => Self::Linear,
+            bevy::light::atmosphere::Falloff::Exponential { scale } => {
+                Self::Exponential { scale: *scale }
+            }
+            bevy::light::atmosphere::Falloff::Tent { center, width } => Self::Tent {
                 center: *center,
                 width: *width,
             },
             // Curve variant is not serializable; fall back to Linear.
-            bevy::pbr::Falloff::Curve(_) => Self::Linear,
+            bevy::light::atmosphere::Falloff::Curve(_) => Self::Linear,
         }
     }
 }
@@ -213,7 +215,7 @@ impl ElicitIntrospect for BevyFalloff {
 
 // ── BevyPhaseFunction ─────────────────────────────────────────────────────────
 
-/// Owned trenchcoat for [`bevy::pbr::PhaseFunction`].
+/// Owned trenchcoat for [`bevy::light::atmosphere::PhaseFunction`].
 ///
 /// Covers `Isotropic`, `Rayleigh`, and `Mie`; the `Curve` variant is excluded.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -230,7 +232,7 @@ pub enum BevyPhaseFunction {
     },
 }
 
-impl From<BevyPhaseFunction> for bevy::pbr::PhaseFunction {
+impl From<BevyPhaseFunction> for bevy::light::atmosphere::PhaseFunction {
     fn from(f: BevyPhaseFunction) -> Self {
         match f {
             BevyPhaseFunction::Isotropic => Self::Isotropic,
@@ -240,16 +242,18 @@ impl From<BevyPhaseFunction> for bevy::pbr::PhaseFunction {
     }
 }
 
-impl From<&bevy::pbr::PhaseFunction> for BevyPhaseFunction {
-    fn from(f: &bevy::pbr::PhaseFunction) -> Self {
+impl From<&bevy::light::atmosphere::PhaseFunction> for BevyPhaseFunction {
+    fn from(f: &bevy::light::atmosphere::PhaseFunction) -> Self {
         match f {
-            bevy::pbr::PhaseFunction::Isotropic => Self::Isotropic,
-            bevy::pbr::PhaseFunction::Rayleigh => Self::Rayleigh,
-            bevy::pbr::PhaseFunction::Mie { asymmetry } => Self::Mie {
+            bevy::light::atmosphere::PhaseFunction::Isotropic => Self::Isotropic,
+            bevy::light::atmosphere::PhaseFunction::Rayleigh => Self::Rayleigh,
+            bevy::light::atmosphere::PhaseFunction::Mie { asymmetry } => Self::Mie {
                 asymmetry: *asymmetry,
             },
-            // Curve variant is not serializable; fall back to Isotropic.
-            bevy::pbr::PhaseFunction::Curve(_) => Self::Isotropic,
+            // Non-serializable variants fall back to Isotropic.
+            bevy::light::atmosphere::PhaseFunction::Curve(_)
+            | bevy::light::atmosphere::PhaseFunction::ChromaticCurve(_)
+            | bevy::light::atmosphere::PhaseFunction::ChromaticTexture(_) => Self::Isotropic,
         }
     }
 }
@@ -384,7 +388,7 @@ impl ElicitIntrospect for BevyPhaseFunction {
 
 // ── BevyScatteringTerm ────────────────────────────────────────────────────────
 
-/// Owned Survey for [`bevy::pbr::ScatteringTerm`].
+/// Owned Survey for [`bevy::light::atmosphere::ScatteringTerm`].
 ///
 /// Represents one optical element (e.g. Rayleigh gas or Mie aerosol) that
 /// composes a [`bevy::pbr::ScatteringMedium`].
@@ -400,7 +404,7 @@ pub struct BevyScatteringTerm {
     pub phase: BevyPhaseFunction,
 }
 
-impl From<BevyScatteringTerm> for bevy::pbr::ScatteringTerm {
+impl From<BevyScatteringTerm> for bevy::light::atmosphere::ScatteringTerm {
     fn from(t: BevyScatteringTerm) -> Self {
         Self {
             absorption: t.absorption.into_inner(),
@@ -411,8 +415,8 @@ impl From<BevyScatteringTerm> for bevy::pbr::ScatteringTerm {
     }
 }
 
-impl From<&bevy::pbr::ScatteringTerm> for BevyScatteringTerm {
-    fn from(t: &bevy::pbr::ScatteringTerm) -> Self {
+impl From<&bevy::light::atmosphere::ScatteringTerm> for BevyScatteringTerm {
+    fn from(t: &bevy::light::atmosphere::ScatteringTerm) -> Self {
         Self {
             absorption: t.absorption.into(),
             scattering: t.scattering.into(),
@@ -507,7 +511,7 @@ impl ElicitIntrospect for BevyScatteringTerm {
 
 // ── BevyAtmosphere ────────────────────────────────────────────────────────────
 
-/// Owned Survey for the serializable fields of [`bevy::pbr::Atmosphere`].
+/// Owned Survey for the serializable fields of [`bevy::light::Atmosphere`].
 ///
 /// The `medium: Handle<ScatteringMedium>` field is excluded; code generation
 /// must supply the handle — e.g. via `Atmosphere::earthlike(medium)` — or
@@ -633,12 +637,16 @@ impl crate::ElicitPromptTree for BevyFalloff {
 impl crate::emit_code::ToCodeLiteral for BevyFalloff {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            Self::Linear => quote::quote! { bevy::pbr::Falloff::Linear },
+            Self::Linear => {
+                quote::quote! { bevy::light::atmosphere::Falloff::Linear }
+            }
             Self::Exponential { scale } => {
-                quote::quote! { bevy::pbr::Falloff::Exponential { scale: #scale } }
+                quote::quote! { bevy::light::atmosphere::Falloff::Exponential { scale: #scale } }
             }
             Self::Tent { center, width } => {
-                quote::quote! { bevy::pbr::Falloff::Tent { center: #center, width: #width } }
+                quote::quote! {
+                    bevy::light::atmosphere::Falloff::Tent { center: #center, width: #width }
+                }
             }
         }
     }
@@ -670,10 +678,16 @@ impl crate::ElicitPromptTree for BevyPhaseFunction {
 impl crate::emit_code::ToCodeLiteral for BevyPhaseFunction {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         match self {
-            Self::Isotropic => quote::quote! { bevy::pbr::PhaseFunction::Isotropic },
-            Self::Rayleigh => quote::quote! { bevy::pbr::PhaseFunction::Rayleigh },
+            Self::Isotropic => {
+                quote::quote! { bevy::light::atmosphere::PhaseFunction::Isotropic }
+            }
+            Self::Rayleigh => {
+                quote::quote! { bevy::light::atmosphere::PhaseFunction::Rayleigh }
+            }
             Self::Mie { asymmetry } => {
-                quote::quote! { bevy::pbr::PhaseFunction::Mie { asymmetry: #asymmetry } }
+                quote::quote! {
+                    bevy::light::atmosphere::PhaseFunction::Mie { asymmetry: #asymmetry }
+                }
             }
         }
     }
@@ -704,7 +718,7 @@ impl crate::emit_code::ToCodeLiteral for BevyScatteringTerm {
         let falloff = crate::emit_code::ToCodeLiteral::to_code_literal(&self.falloff);
         let phase = crate::emit_code::ToCodeLiteral::to_code_literal(&self.phase);
         quote::quote! {
-            bevy::pbr::ScatteringTerm {
+            bevy::light::atmosphere::ScatteringTerm {
                 absorption: #absorption,
                 scattering: #scattering,
                 falloff: #falloff,
@@ -737,7 +751,7 @@ impl crate::emit_code::ToCodeLiteral for BevyAtmosphere {
         let top_radius = self.top_radius;
         let ground_albedo = crate::emit_code::ToCodeLiteral::to_code_literal(&self.ground_albedo);
         quote::quote! {
-            bevy::pbr::Atmosphere {
+            bevy::light::Atmosphere {
                 bottom_radius: #bottom_radius,
                 top_radius: #top_radius,
                 ground_albedo: #ground_albedo,

@@ -1,4 +1,4 @@
-//! Bevy 0.18 PBR material and light type elicitation.
+//! Bevy 0.19 PBR material and light type elicitation.
 //!
 //! Covers:
 //! - [`BevyStandardMaterial`] — scalar fields from `bevy::pbr::StandardMaterial`
@@ -452,7 +452,7 @@ bevy_light_struct!(
     [color_g: f32, "Color green (0.0–1.0):"],
     [color_b: f32, "Color blue (0.0–1.0):"],
     [illuminance: f32, "Illuminance in lux (e.g. 10000):"],
-    [shadows_enabled: bool, "Cast shadows?"],
+    [shadow_maps_enabled: bool, "Cast shadows?"],
 );
 
 impl From<&bevy::light::DirectionalLight> for BevyDirectionalLight {
@@ -464,7 +464,7 @@ impl From<&bevy::light::DirectionalLight> for BevyDirectionalLight {
             color_g: rgb[1],
             color_b: rgb[2],
             illuminance: l.illuminance,
-            shadows_enabled: l.shadows_enabled,
+            shadow_maps_enabled: l.shadow_maps_enabled,
         }
     }
 }
@@ -479,7 +479,7 @@ impl From<BevyDirectionalLight> for bevy::light::DirectionalLight {
                 alpha: 1.0,
             }),
             illuminance: b.illuminance,
-            shadows_enabled: b.shadows_enabled,
+            shadow_maps_enabled: b.shadow_maps_enabled,
             ..Default::default()
         }
     }
@@ -491,14 +491,14 @@ impl crate::emit_code::ToCodeLiteral for BevyDirectionalLight {
         let g = crate::emit_code::ToCodeLiteral::to_code_literal(&self.color_g);
         let b = crate::emit_code::ToCodeLiteral::to_code_literal(&self.color_b);
         let illum = crate::emit_code::ToCodeLiteral::to_code_literal(&self.illuminance);
-        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadows_enabled);
+        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadow_maps_enabled);
         quote::quote! {
             bevy::light::DirectionalLight {
                 color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
                     red: #r, green: #g, blue: #b, alpha: 1.0,
                 }),
                 illuminance: #illum,
-                shadows_enabled: #shad,
+                shadow_maps_enabled: #shad,
                 ..bevy::light::DirectionalLight::default()
             }
         }
@@ -522,7 +522,7 @@ bevy_light_struct!(
     [intensity: f32, "Luminous power in lumens (e.g. 800):"],
     [range: f32, "Range in world units:"],
     [radius: f32, "Source radius (affects specular highlights):"],
-    [shadows_enabled: bool, "Cast shadows?"],
+    [shadow_maps_enabled: bool, "Cast shadows?"],
 );
 
 impl From<&bevy::light::PointLight> for BevyPointLight {
@@ -536,7 +536,7 @@ impl From<&bevy::light::PointLight> for BevyPointLight {
             intensity: l.intensity,
             range: l.range,
             radius: l.radius,
-            shadows_enabled: l.shadows_enabled,
+            shadow_maps_enabled: l.shadow_maps_enabled,
         }
     }
 }
@@ -553,7 +553,7 @@ impl From<BevyPointLight> for bevy::light::PointLight {
             intensity: b.intensity,
             range: b.range,
             radius: b.radius,
-            shadows_enabled: b.shadows_enabled,
+            shadow_maps_enabled: b.shadow_maps_enabled,
             ..Default::default()
         }
     }
@@ -567,7 +567,7 @@ impl crate::emit_code::ToCodeLiteral for BevyPointLight {
         let intensity = crate::emit_code::ToCodeLiteral::to_code_literal(&self.intensity);
         let range = crate::emit_code::ToCodeLiteral::to_code_literal(&self.range);
         let radius = crate::emit_code::ToCodeLiteral::to_code_literal(&self.radius);
-        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadows_enabled);
+        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadow_maps_enabled);
         quote::quote! {
             bevy::light::PointLight {
                 color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
@@ -576,7 +576,7 @@ impl crate::emit_code::ToCodeLiteral for BevyPointLight {
                 intensity: #intensity,
                 range: #range,
                 radius: #radius,
-                shadows_enabled: #shad,
+                shadow_maps_enabled: #shad,
                 ..bevy::light::PointLight::default()
             }
         }
@@ -602,7 +602,7 @@ bevy_light_struct!(
     [radius: f32, "Source radius:"],
     [outer_angle: f32, "Outer cone half-angle in radians (0 < angle ≤ π/2):"],
     [inner_angle: f32, "Inner cone half-angle in radians (0 ≤ angle < outer_angle):"],
-    [shadows_enabled: bool, "Cast shadows?"],
+    [shadow_maps_enabled: bool, "Cast shadows?"],
 );
 
 impl From<&bevy::light::SpotLight> for BevySpotLight {
@@ -618,7 +618,7 @@ impl From<&bevy::light::SpotLight> for BevySpotLight {
             radius: l.radius,
             outer_angle: l.outer_angle,
             inner_angle: l.inner_angle,
-            shadows_enabled: l.shadows_enabled,
+            shadow_maps_enabled: l.shadow_maps_enabled,
         }
     }
 }
@@ -637,7 +637,7 @@ impl From<BevySpotLight> for bevy::light::SpotLight {
             radius: b.radius,
             outer_angle: b.outer_angle,
             inner_angle: b.inner_angle,
-            shadows_enabled: b.shadows_enabled,
+            shadow_maps_enabled: b.shadow_maps_enabled,
             ..Default::default()
         }
     }
@@ -653,7 +653,7 @@ impl crate::emit_code::ToCodeLiteral for BevySpotLight {
         let radius = crate::emit_code::ToCodeLiteral::to_code_literal(&self.radius);
         let outer = crate::emit_code::ToCodeLiteral::to_code_literal(&self.outer_angle);
         let inner = crate::emit_code::ToCodeLiteral::to_code_literal(&self.inner_angle);
-        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadows_enabled);
+        let shad = crate::emit_code::ToCodeLiteral::to_code_literal(&self.shadow_maps_enabled);
         quote::quote! {
             bevy::light::SpotLight {
                 color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
@@ -664,7 +664,7 @@ impl crate::emit_code::ToCodeLiteral for BevySpotLight {
                 radius: #radius,
                 outer_angle: #outer,
                 inner_angle: #inner,
-                shadows_enabled: #shad,
+                shadow_maps_enabled: #shad,
                 ..bevy::light::SpotLight::default()
             }
         }
