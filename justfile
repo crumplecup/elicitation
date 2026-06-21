@@ -246,9 +246,10 @@ lint package='':
     rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets \
+        if ! cargo clippy --workspace --all-targets --all-features \
             --exclude elicitation_creusot \
             --exclude elicitation_kani \
+            --exclude elicit_proofs \
             -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
@@ -276,9 +277,10 @@ lint package='':
         fi
         rm -f "$LOG_FILE"
         echo "📖 Checking documentation"
-        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps \
+        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features \
             --exclude elicitation_creusot \
             --exclude elicitation_kani \
+            --exclude elicit_proofs \
             2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
@@ -287,14 +289,14 @@ lint package='':
         rm -f "$LOG_FILE"
     else
         echo "🔍 Linting {{package}}"
-        if ! cargo clippy -p {{package}} --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+        if ! cargo clippy -p {{package}} --all-targets --all-features -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
             exit 1
         fi
         rm -f "$LOG_FILE"
         echo "📖 Checking documentation for {{package}}"
-        if ! RUSTDOCFLAGS="-D warnings" cargo doc -p {{package}} --no-deps 2>&1 | tee "$LOG_FILE"; then
+        if ! RUSTDOCFLAGS="-D warnings" cargo doc -p {{package}} --no-deps --all-features 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
             exit 1
