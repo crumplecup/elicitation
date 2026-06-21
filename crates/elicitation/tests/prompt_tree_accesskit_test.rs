@@ -4,7 +4,7 @@
 #![cfg(feature = "prompt-tree-accesskit")]
 
 use accesskit::{NodeId, Role};
-use elicitation::{Elicit, ElicitPromptTree, Prompt, PromptTree, Select};
+use elicitation::{Elicit, ElicitPromptTree};
 
 // ============================================================================
 // Helper types

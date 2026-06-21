@@ -129,10 +129,10 @@ pub fn generate_creusot_file_with_style(
                 _ => TypeResolver::collect_type(&arg.ty, &mut needed),
             }
         }
-        if import_style == ImportStyle::InCrate {
-            if let Some(body) = &tfn.creusot_body {
-                TypeResolver::collect_type(body, &mut needed);
-            }
+        if import_style == ImportStyle::InCrate
+            && let Some(body) = &tfn.creusot_body
+        {
+            TypeResolver::collect_type(body, &mut needed);
         }
     }
     // Import the transition functions themselves, not just their arg types.
