@@ -204,6 +204,32 @@ impl DbKvStore for RedbBackend {
         })
     }
 
+    #[instrument(skip(self, value), fields(%table))]
+    fn kv_insert_in_txn(
+        &self,
+        handle: &TransactionHandle,
+        table: &str,
+        key: DbValue,
+        value: DbValue,
+    ) -> BoxFuture<'_, elicit_db::DbResult<Established<KvKeyInserted>>> {
+        let handle = handle.0.clone();
+        let table = table.to_owned();
+        Box::pin(async move {
+            tracing::debug!(handle = %handle, "kv_insert_in_txn");
+            let key_str = dbvalue_to_key(&key);
+            let val_str = encode_value(&value)?;
+            let txns = self.lock_txns()?;
+            let txn = txns
+                .get(&handle)
+                .ok_or_else(|| err_txn(format!("unknown txn: {handle}")))?;
+            let def = redb::TableDefinition::<&str, &str>::new(&table);
+            let mut t = txn.open_table(def).map_err(|e| err_query(e))?;
+            t.insert(key_str.as_str(), val_str.as_str())
+                .map_err(|e| err_query(e))?;
+            Ok(Established::assert())
+        })
+    }
+
     #[instrument(skip(self, key), fields(%table))]
     fn kv_remove(
         &self,

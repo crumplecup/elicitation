@@ -9,7 +9,7 @@
 use elicitation::Established;
 use futures::future::BoxFuture;
 
-use crate::{DbResult, DbValue, KvEntry, KvKeyDeleted, KvKeyInserted};
+use crate::{DbResult, DbValue, KvEntry, KvKeyDeleted, KvKeyInserted, TransactionHandle};
 
 /// Typed key-value operations on named tables within an embedded store.
 ///
@@ -54,4 +54,18 @@ pub trait DbKvStore: Send + Sync {
 
     /// Return the number of entries currently stored in `table`.
     fn kv_len(&self, table: &str) -> BoxFuture<'_, DbResult<u64>>;
+
+    /// Insert or replace `key` in `table` within an already-open transaction.
+    ///
+    /// Unlike [`kv_insert`], this method does **not** open a new write transaction.
+    /// It writes into the transaction identified by `handle`, which must have been
+    /// opened with [`DbTransactor::begin`].  The caller is responsible for
+    /// committing or rolling back the transaction.
+    fn kv_insert_in_txn(
+        &self,
+        handle: &TransactionHandle,
+        table: &str,
+        key: DbValue,
+        value: DbValue,
+    ) -> BoxFuture<'_, DbResult<Established<KvKeyInserted>>>;
 }

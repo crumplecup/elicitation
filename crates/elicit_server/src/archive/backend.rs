@@ -1131,6 +1131,16 @@ impl DbKvStore for ArchiveKvBackend {
     fn kv_len(&self, table: &str) -> futures::future::BoxFuture<'_, elicit_db::DbResult<u64>> {
         self.0.kv_len(table)
     }
+
+    fn kv_insert_in_txn(
+        &self,
+        handle: &elicit_db::TransactionHandle,
+        table: &str,
+        key: DbValue,
+        value: DbValue,
+    ) -> futures::future::BoxFuture<'_, elicit_db::DbResult<Established<KvKeyInserted>>> {
+        self.0.kv_insert_in_txn(handle, table, key, value)
+    }
 }
 
 impl DbEmbeddedStore for ArchiveKvBackend {
