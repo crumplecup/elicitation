@@ -50,3 +50,6 @@ time = ["elicitation_rand/time"]
 jiff = ["elicitation_rand/jiff"]
 uuid = ["elicitation_rand/uuid"]
 url = ["elicitation_rand/url"]
+# Enables #[derive(BevyComponent)] and #[derive(BevyResource)] — generates impls that
+# route through ::elicit_bevy::__bevy::ecs so consuming crates only need elicit_bevy.
+bevy = []

@@ -83,6 +83,8 @@
 extern crate proc_macro;
 
 mod contract_type;
+#[cfg(feature = "bevy")]
+mod derive_bevy_ecs;
 mod derive_elicit;
 mod derive_elicit_plugin;
 mod derive_kani_compose;
@@ -1001,6 +1003,55 @@ fn elicit_trait_tools_to_pascal_case(s: &str) -> String {
             }
         })
         .collect()
+}
+
+/// Shadow of `bevy::ecs::component::Component`.
+///
+/// Generates a `Component` impl routing through `::elicit_bevy::__bevy::ecs::component::…`,
+/// so the consuming crate only needs `elicit_bevy` as a dep — not `bevy` or `bevy_ecs`.
+///
+/// Drop-in replacement for `#[derive(bevy::Component)]`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::Component;
+///
+/// #[derive(Debug, Clone, Component)]
+/// pub struct Velocity {
+///     pub x: f32,
+///     pub y: f32,
+/// }
+/// ```
+#[cfg(feature = "bevy")]
+#[proc_macro_derive(Component)]
+pub fn derive_component(input: TokenStream) -> TokenStream {
+    derive_bevy_ecs::derive_component(input)
+}
+
+/// Shadow of `bevy::ecs::resource::Resource`.
+///
+/// Generates both a `Component` impl and a `Resource` impl routing through
+/// `::elicit_bevy::__bevy::ecs::…`, so the consuming crate only needs
+/// `elicit_bevy` as a dep — not `bevy` or `bevy_ecs`.
+///
+/// Drop-in replacement for `#[derive(bevy::Resource)]`. In bevy 0.19
+/// `Resource: Component`, so both impls are required.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::Resource;
+///
+/// #[derive(Debug, Clone, Resource)]
+/// pub struct GameSettings {
+///     pub difficulty: u8,
+/// }
+/// ```
+#[cfg(feature = "bevy")]
+#[proc_macro_derive(Resource)]
+pub fn derive_resource(input: TokenStream) -> TokenStream {
+    derive_bevy_ecs::derive_resource(input)
 }
 
 // ── cfg-allow gallery (for isolating unexpected_cfgs suppress patterns) ───────
