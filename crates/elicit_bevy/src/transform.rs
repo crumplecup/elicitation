@@ -229,6 +229,36 @@ impl Transform {
         let m = self.0.to_matrix();
         m.to_cols_array_2d()
     }
+
+    /// Returns a copy of this transform oriented to face `(tx, ty, tz)`, using Y-up.
+    ///
+    /// Equivalent to `self.looking_at(Vec3::new(tx, ty, tz), Vec3::Y)`.
+    #[tracing::instrument(skip(self))]
+    pub fn looking_at(&self, tx: f32, ty: f32, tz: f32) -> Transform {
+        Transform::from(
+            (*self.0).looking_at(bevy::math::Vec3::new(tx, ty, tz), bevy::math::Vec3::Y),
+        )
+    }
+}
+
+/// Construct a `Transform` positioned at `(x, y, z)` and oriented toward `(tx, ty, tz)`.
+///
+/// Uses `Vec3::Y` as up. Non-degenerate as long as the position is not directly
+/// above or below the target (i.e. avoid `(0, h, 0)` looking at `(0, 0, 0)`).
+/// `(0.0, 100.0, 100.0)` looking at origin is a safe default for a top-down GIS camera.
+#[tracing::instrument]
+pub fn transform_from_xyz_looking_at(
+    x: f32,
+    y: f32,
+    z: f32,
+    tx: f32,
+    ty: f32,
+    tz: f32,
+) -> Transform {
+    Transform::from(
+        bevy::transform::components::Transform::from_xyz(x, y, z)
+            .looking_at(bevy::math::Vec3::new(tx, ty, tz), bevy::math::Vec3::Y),
+    )
 }
 
 mod emit_impls_transform {

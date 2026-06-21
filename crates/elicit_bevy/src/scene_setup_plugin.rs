@@ -76,7 +76,13 @@ impl crate::Plugin for BevySceneSetupPlugin {
                     .clone()
                     .map(bevy::transform::components::Transform::from)
                     .unwrap_or_default();
-                commands.spawn((camera, camera_transform));
+                tracing::debug!(
+                    tx = camera_transform.translation.x,
+                    ty = camera_transform.translation.y,
+                    tz = camera_transform.translation.z,
+                    "Spawned camera"
+                );
+                commands.spawn((camera, camera_transform, bevy::ui::IsDefaultUiCamera));
 
                 let light = descriptor
                     .directional_light
