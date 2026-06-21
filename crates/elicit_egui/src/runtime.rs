@@ -357,7 +357,7 @@ async fn context_apply_style(
 // Rendering engine
 // ===========================================================================
 
-/// Render a [`UiNode`] tree into an egui [`Ui`]. Returns widget count.
+/// Render a [`UiNode`] tree into an egui [`Ui`](egui::Ui). Returns widget count.
 pub fn render_node(ui: &mut egui::Ui, node: &UiNode) -> usize {
     match node {
         UiNode::Widget { widget } => {

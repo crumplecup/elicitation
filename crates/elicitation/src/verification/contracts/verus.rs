@@ -272,7 +272,7 @@ impl Contract for VerusF64Finite {
 // Option<T> Contracts (Phase 5.1)
 // ============================================================================
 
-/// Verus-verified Option<T> must be Some contract.
+/// Verus-verified `Option<T>` must be Some contract.
 pub struct VerusOptionIsSome<T> {
     _phantom: std::marker::PhantomData<T>,
 }
@@ -353,7 +353,7 @@ where
 // Vec<T> Contracts (Phase 5.3)
 // ============================================================================
 
-/// Verus-verified Vec<T> non-empty contract.
+/// Verus-verified `Vec<T>` non-empty contract.
 pub struct VerusVecNonEmpty<T> {
     _phantom: std::marker::PhantomData<T>,
 }

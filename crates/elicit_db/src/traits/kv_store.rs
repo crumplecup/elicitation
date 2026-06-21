@@ -57,9 +57,9 @@ pub trait DbKvStore: Send + Sync {
 
     /// Insert or replace `key` in `table` within an already-open transaction.
     ///
-    /// Unlike [`kv_insert`], this method does **not** open a new write transaction.
+    /// Unlike [`Self::kv_insert`], this method does **not** open a new write transaction.
     /// It writes into the transaction identified by `handle`, which must have been
-    /// opened with [`DbTransactor::begin`].  The caller is responsible for
+    /// opened with [`crate::DbTransactor::begin`].  The caller is responsible for
     /// committing or rolling back the transaction.
     fn kv_insert_in_txn(
         &self,

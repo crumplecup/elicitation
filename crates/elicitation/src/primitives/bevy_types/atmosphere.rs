@@ -391,7 +391,7 @@ impl ElicitIntrospect for BevyPhaseFunction {
 /// Owned Survey for [`bevy::light::atmosphere::ScatteringTerm`].
 ///
 /// Represents one optical element (e.g. Rayleigh gas or Mie aerosol) that
-/// composes a [`bevy::pbr::ScatteringMedium`].
+/// composes a [`bevy::light::atmosphere::ScatteringMedium`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct BevyScatteringTerm {
     /// Optical absorption density per metre (RGB ≈ wavelength channels).

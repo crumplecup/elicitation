@@ -77,7 +77,7 @@ impl BoundingBox {
         Size::new(self.width as u32, self.height as u32)
     }
 
-    /// Convert to a geo-types [`Rect`] for spatial queries.
+    /// Convert to a geo-types [`Rect`](geo_types::Rect) for spatial queries.
     #[cfg(feature = "geo")]
     #[tracing::instrument(level = "trace")]
     pub fn to_geo_rect(&self) -> GeoRect {
@@ -142,7 +142,7 @@ impl LayoutContext {
 
 #[cfg(feature = "geo")]
 impl BoundingBox {
-    /// Convert to a geo-types [`Polygon`] for complex spatial queries.
+    /// Convert to a geo-types [`Polygon`](geo_types::Polygon) for complex spatial queries.
     pub fn to_geo_polygon(&self) -> geo_types::Polygon {
         use geo_types::{LineString, Polygon};
         let coords = vec![
