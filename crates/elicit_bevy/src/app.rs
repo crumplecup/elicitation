@@ -45,6 +45,30 @@ impl App {
         self
     }
 
+    /// Add a system to the `Startup` schedule.
+    ///
+    /// Hides `bevy::app::Startup` from callers; use this instead of
+    /// `add_systems(Startup, ...)` to avoid a direct bevy dep.
+    pub fn add_startup_system<M>(
+        mut self,
+        system: impl bevy::ecs::schedule::IntoScheduleConfigs<bevy::ecs::system::ScheduleSystem, M>,
+    ) -> Self {
+        self.0.add_systems(bevy::app::Startup, system);
+        self
+    }
+
+    /// Add a system to the `Update` schedule.
+    ///
+    /// Hides `bevy::app::Update` from callers; use this instead of
+    /// `add_systems(Update, ...)` to avoid a direct bevy dep.
+    pub fn add_update_system<M>(
+        mut self,
+        system: impl bevy::ecs::schedule::IntoScheduleConfigs<bevy::ecs::system::ScheduleSystem, M>,
+    ) -> Self {
+        self.0.add_systems(bevy::app::Update, system);
+        self
+    }
+
     /// Run the application to completion and return the exit status.
     pub fn run(mut self) -> bevy::app::AppExit {
         self.0.run()

@@ -47,6 +47,9 @@
 //! | `render_mesh_workflow_plugin` | `bevy_render_mesh_workflow__*` stateful mesh-authoring tools |
 //! | `render_workflow_plugin` | `bevy_render_workflow__*` stateful camera-authoring tools |
 //! | `ui_plugin` | `bevy_ui__*` layout and widget descriptor tools |
+//! | `scene_setup_plugin` | `BevySceneSetupPlugin` — spawns camera, light, ambient at startup |
+//! | `gis_vector_layer_plugin` | `BevyGisVectorLayerPlugin` — tessellates and spawns vector layer meshes |
+//! | `transform_plugin` | `BevyTransformPlugin` — static `from_xyz`, `from_scale`, `from_xyz_looking_at` constructors |
 //! | [`trait_factories`] | Component, Resource, Asset, Bundle, Event, States factories |
 
 #![forbid(unsafe_code)]
@@ -69,14 +72,17 @@ pub mod asset;
 pub mod audio;
 pub mod camera;
 pub mod color;
+mod commands_bridge;
 mod derive_plugin;
 pub mod ecs;
 mod ecs_plugin;
 mod gis_render_backend;
 pub mod gis_render_plugin;
+mod gis_vector_layer_plugin;
 pub mod gizmos;
 pub mod image;
 pub mod input;
+mod input_bridge;
 pub mod input_focus;
 pub mod light;
 pub mod math;
@@ -85,12 +91,14 @@ pub mod pbr;
 pub mod picking;
 pub mod plugin_group;
 pub mod post_process;
+mod query_bridge;
 mod query_plugin;
 pub mod render;
 mod render_atmosphere_workflow_plugin;
 mod render_mesh_workflow_plugin;
 mod render_plugin;
 mod render_workflow_plugin;
+mod resource_bridge;
 pub mod scene;
 mod scene_plugin;
 mod scene_setup_plugin;
@@ -100,6 +108,7 @@ pub mod text;
 pub mod time;
 pub mod trait_factories;
 pub mod transform;
+mod transform_plugin;
 pub mod ui;
 mod ui_plugin;
 pub mod window;
@@ -325,7 +334,11 @@ pub use input::{
 pub use input_focus::{AutoFocus, AutoNavigationConfig, InputFocusVisible, TabGroup, TabIndex};
 
 // ── transform re-exports ──────────────────────────────────────────────────────
-pub use transform::{GlobalTransform, Transform};
+pub use transform::{GlobalTransform, Transform, transform_from_xyz_looking_at};
+pub use transform_plugin::{
+    BevyTransformPlugin, TransformFromScaleParams, TransformFromXyzLookingAtParams,
+    TransformFromXyzParams,
+};
 
 // ── time re-exports ───────────────────────────────────────────────────────────
 pub use time::{Stopwatch, Timer, TimerMode};
@@ -359,8 +372,17 @@ pub use text::{
     TextColor, TextFont, TextLayout, TextSpan, Underline, UnderlineColor,
 };
 
+// ── runtime bridge re-exports ─────────────────────────────────────────────────
+pub use commands_bridge::{CommandRequest, CommandsHandle, CommandsPlugin};
+pub use input_bridge::{ButtonInputPlugin, ButtonInputState, MouseButtonInputPlugin};
+pub use query_bridge::{QueryPlugin, QuerySnapshot};
+pub use resource_bridge::{ResMutPlugin, ResPending, ResPlugin, ResSnapshot};
+
 // ── scene setup re-exports ────────────────────────────────────────────────────
 pub use scene_setup_plugin::{BevySceneSetupPlugin, SceneSetupDescriptor};
+
+// ── GIS vector layer plugin re-exports ────────────────────────────────────────
+pub use gis_vector_layer_plugin::BevyGisVectorLayerPlugin;
 
 // ── GIS render backend re-exports ─────────────────────────────────────────────
 pub use gis_render_backend::BevyGisBackend;
