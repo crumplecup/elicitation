@@ -17,8 +17,10 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 [dependencies]
 elicitation = { workspace = true, features = ["bevy-types", "uuid"] }
 elicit_gis.workspace = true
+geo = { workspace = true, features = ["spade"] }
 geo-types.workspace = true
 geojson.workspace = true
+peniko.workspace = true
 elicitation_derive.workspace = true
 bevy = { workspace = true, features = [
     "bevy_color",
@@ -38,6 +40,7 @@ bevy = { workspace = true, features = [
     "bevy_gizmos",
     "bevy_sprite",
     "bevy_text",
+    "default_font",
     "bevy_core_pipeline",
     "bevy_asset",
     "bevy_scene",
