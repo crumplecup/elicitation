@@ -2,8 +2,8 @@
 
 mod line;
 mod span;
-mod text;
+mod text_impl;
 
 pub use line::Line;
 pub use span::Span;
-pub use text::Text;
+pub use text_impl::Text;

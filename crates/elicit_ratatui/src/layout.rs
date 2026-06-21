@@ -27,7 +27,7 @@ impl<'de> serde::Deserialize<'de> for Layout {
             constraints,
         } = LayoutJson::deserialize(d)?;
         let ratatui_constraints: Vec<ratatui::layout::Constraint> =
-            constraints.into_iter().map(|c| (*c.0).clone()).collect();
+            constraints.into_iter().map(|c| *c.0).collect();
         let layout = match direction.as_deref() {
             Some("Horizontal") | Some("horizontal") => {
                 ratatui::layout::Layout::horizontal(ratatui_constraints)

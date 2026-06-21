@@ -17,6 +17,10 @@ use uuid::Uuid;
 
 // ── Context ───────────────────────────────────────────────────────────────────
 
+#[cfg(feature = "runtime")]
+type TerminalMap =
+    HashMap<Uuid, ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>>;
+
 /// Shared context holding all live ratatui objects keyed by UUID.
 pub struct RatatuiCtx {
     pub(crate) list_states: Mutex<HashMap<Uuid, ratatui::widgets::ListState>>,
@@ -70,13 +74,7 @@ impl RatatuiCtx {
     /// Lock the terminals map.
     pub fn lock_terminals(
         &self,
-    ) -> Result<
-        MutexGuard<
-            '_,
-            HashMap<Uuid, ratatui::Terminal<ratatui::backend::CrosstermBackend<std::io::Stdout>>>,
-        >,
-        ErrorData,
-    > {
+    ) -> Result<MutexGuard<'_, TerminalMap>, ErrorData> {
         self.terminals
             .lock()
             .map_err(|_| ErrorData::internal_error("ratatui terminals lock poisoned", None))

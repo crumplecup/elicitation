@@ -68,7 +68,7 @@ pub async fn scrollbar_state_set_position(
     let state = states.get_mut(&p.id).ok_or_else(|| {
         ErrorData::invalid_params(format!("no scrollbar_state for id {}", p.id), None)
     })?;
-    *state = state.clone().position(p.position);
+    *state = (*state).position(p.position);
     ok_text("ok")
 }
 

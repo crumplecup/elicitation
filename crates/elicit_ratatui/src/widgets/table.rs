@@ -73,7 +73,7 @@ impl<'de> serde::Deserialize<'de> for Table {
         let ratatui_rows: Vec<ratatui::widgets::Row<'static>> =
             rows.into_iter().map(|r| (*r.0).clone()).collect();
         let ratatui_widths: Vec<ratatui::layout::Constraint> =
-            widths.into_iter().map(|c| (*c.0).clone()).collect();
+            widths.into_iter().map(|c| *c.0).collect();
         Ok(Table(std::sync::Arc::new(ratatui::widgets::Table::new(
             ratatui_rows,
             ratatui_widths,
