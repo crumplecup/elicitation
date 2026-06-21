@@ -72,9 +72,7 @@ impl RatatuiCtx {
 
     #[cfg(feature = "runtime")]
     /// Lock the terminals map.
-    pub fn lock_terminals(
-        &self,
-    ) -> Result<MutexGuard<'_, TerminalMap>, ErrorData> {
+    pub fn lock_terminals(&self) -> Result<MutexGuard<'_, TerminalMap>, ErrorData> {
         self.terminals
             .lock()
             .map_err(|_| ErrorData::internal_error("ratatui terminals lock poisoned", None))

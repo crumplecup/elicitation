@@ -1,13 +1,12 @@
 //! Tests for `elicit_ratatui` serde types, From conversions, and TUI tree composition.
 
 use elicit_ratatui::{
-    AlignmentJson, AxisJson, BarChartParams, BarGroupJson, BarJson, BlockJson, BlockParams,
-    BorderTypeJson, BordersJson, CellJson, ChartParams, ColorJson, ConstraintJson, DatasetJson,
-    DirectionJson, EventJson, GaugeParams, GraphTypeJson, KeyEventJson, LegendPositionJson,
-    LineGaugeParams, LineJson, ListParams, ListStateJson, MarginJson, MarkerJson, ModifierJson,
-    MouseEventJson, PaddingJson, ParagraphParams, ParagraphText, RowJson, ScrollbarOrientationJson,
-    ScrollbarParams, ScrollbarStateJson, SpanJson, SparklineParams, StyleJson, TableParams,
-    TableStateJson, TabsParams, TextJson, TuiNode, WidgetJson,
+    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
+    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, Event, GraphTypeJson, KeyCode,
+    KeyEvent, KeyModifiers, LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson,
+    ModifierJson, MouseButton, MouseEvent, MouseEventKind, PaddingJson, ParagraphText, RowJson,
+    ScrollbarOrientationJson, ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson,
+    TuiNode, WidgetJson,
 };
 
 // ---------------------------------------------------------------------------
@@ -674,69 +673,72 @@ fn test_widget_scrollbar_serde() {
 
 #[test]
 fn test_key_event_serde() {
-    let e = KeyEventJson {
-        code: "Char(q)".to_string(),
-        modifiers: vec!["CONTROL".to_string()],
+    let e = KeyEvent {
+        code: KeyCode::Char { c: 'q' },
+        modifiers: KeyModifiers {
+            control: true,
+            ..Default::default()
+        },
     };
     let json = serde_json::to_string(&e).expect("serialize");
-    let back: KeyEventJson = serde_json::from_str(&json).expect("deserialize");
+    let back: KeyEvent = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(e, back);
 }
 
 #[test]
 fn test_mouse_event_serde() {
-    let e = MouseEventJson {
-        kind: "Down(Left)".to_string(),
+    let e = MouseEvent {
+        kind: MouseEventKind::Down {
+            button: MouseButton::Left,
+        },
         column: 10,
         row: 20,
-        modifiers: vec![],
+        modifiers: KeyModifiers::default(),
     };
     let json = serde_json::to_string(&e).expect("serialize");
-    let back: MouseEventJson = serde_json::from_str(&json).expect("deserialize");
+    let back: MouseEvent = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(e, back);
 }
 
 #[test]
 fn test_event_key_variant_serde() {
-    let e = EventJson::Key {
-        event: KeyEventJson {
-            code: "Enter".to_string(),
-            modifiers: vec![],
-        },
-    };
+    let e = Event::Key(KeyEvent {
+        code: KeyCode::Enter,
+        modifiers: KeyModifiers::default(),
+    });
     let json = serde_json::to_string(&e).expect("serialize");
-    assert!(json.contains(r#""type":"Key"#));
-    let back: EventJson = serde_json::from_str(&json).expect("deserialize");
+    assert!(json.contains(r#""type":"Key""#));
+    let back: Event = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(e, back);
 }
 
 #[test]
 fn test_event_resize_variant_serde() {
-    let e = EventJson::Resize {
-        width: 80,
-        height: 24,
+    let e = Event::Resize {
+        columns: 80,
+        rows: 24,
     };
     let json = serde_json::to_string(&e).expect("serialize");
-    let back: EventJson = serde_json::from_str(&json).expect("deserialize");
+    let back: Event = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(e, back);
 }
 
 #[test]
 fn test_event_focus_variants_serde() {
-    for e in [EventJson::FocusGained, EventJson::FocusLost] {
+    for e in [Event::FocusGained, Event::FocusLost] {
         let json = serde_json::to_string(&e).expect("serialize");
-        let back: EventJson = serde_json::from_str(&json).expect("deserialize");
+        let back: Event = serde_json::from_str(&json).expect("deserialize");
         assert_eq!(e, back);
     }
 }
 
 #[test]
 fn test_event_paste_serde() {
-    let e = EventJson::Paste {
+    let e = Event::Paste {
         text: "pasted text".into(),
     };
     let json = serde_json::to_string(&e).expect("serialize");
-    let back: EventJson = serde_json::from_str(&json).expect("deserialize");
+    let back: Event = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(e, back);
 }
 
@@ -1038,82 +1040,123 @@ fn test_color_rgb_from_raw_json() {
 }
 
 // ---------------------------------------------------------------------------
-// Widget param deserialization (simulating MCP input)
+// Widget JSON deserialization (simulating MCP input)
 // ---------------------------------------------------------------------------
 
 #[test]
-fn test_block_params_from_json() {
-    let json = r#"{"title": "Test", "borders": "All"}"#;
-    let params: BlockParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.title, Some("Test".to_string()));
-    assert_eq!(params.borders, Some(BordersJson::All));
+fn test_block_widget_from_json() {
+    let json = r#"{"type": "Block", "title": "Test", "borders": "All"}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Block { block } => {
+            assert_eq!(block.title, Some("Test".to_string()));
+            assert_eq!(block.borders, BordersJson::All);
+        }
+        other => panic!("Expected Block, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_block_params_minimal_json() {
-    let json = r#"{}"#;
-    let params: BlockParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.title, None);
-    assert_eq!(params.borders, None);
-    assert_eq!(params.style, None);
+fn test_block_widget_defaults_json() {
+    // BlockJson.borders defaults to All when absent.
+    let json = r#"{"type": "Block"}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Block { block } => {
+            assert_eq!(block.title, None);
+            assert_eq!(block.borders, BordersJson::All);
+            assert_eq!(block.style, None);
+        }
+        other => panic!("Expected Block, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_paragraph_params_from_json() {
-    let json = r#"{"text": "Hello", "wrap": true, "alignment": "Center"}"#;
-    let params: ParagraphParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.text.to_plain_string(), "Hello");
-    assert!(params.wrap);
-    assert_eq!(params.alignment, Some("Center".to_string()));
+fn test_paragraph_widget_from_json() {
+    let json = r#"{"type": "Paragraph", "text": "Hello", "wrap": true, "alignment": "Center"}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Paragraph {
+            text,
+            wrap,
+            alignment,
+            ..
+        } => {
+            assert_eq!(text.to_plain_string(), "Hello");
+            assert!(wrap);
+            assert_eq!(alignment, Some("Center".to_string()));
+        }
+        other => panic!("Expected Paragraph, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_list_params_from_json() {
-    let json = r#"{"items": ["a", "b", "c"], "highlight_symbol": ">> "}"#;
-    let params: ListParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.items.len(), 3);
-    assert_eq!(params.highlight_symbol, Some(">> ".to_string()));
+fn test_list_widget_from_json() {
+    let json = r#"{"type": "List", "items": ["a", "b", "c"], "highlight_symbol": ">> "}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::List {
+            items,
+            highlight_symbol,
+            ..
+        } => {
+            assert_eq!(items.len(), 3);
+            assert_eq!(highlight_symbol, Some(">> ".to_string()));
+        }
+        other => panic!("Expected List, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_table_params_from_json() {
+fn test_table_widget_from_json() {
     let json = r#"{
+        "type": "Table",
         "rows": [{"cells": [{"content": "a"}, {"content": "b"}]}],
         "widths": [{"type": "Length", "value": 10}, {"type": "Fill", "value": 1}]
     }"#;
-    let params: TableParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.rows.len(), 1);
-    assert_eq!(params.widths.len(), 2);
-    assert_eq!(params.rows[0].cells[0].content, "a");
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Table { rows, widths, .. } => {
+            assert_eq!(rows.len(), 1);
+            assert_eq!(widths.len(), 2);
+            assert_eq!(rows[0].cells[0].content, "a");
+        }
+        other => panic!("Expected Table, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_gauge_params_from_json() {
-    let json = r#"{"ratio": 0.42, "label": "42%"}"#;
-    let params: GaugeParams = serde_json::from_str(json).unwrap();
-    assert!((params.ratio - 0.42).abs() < f64::EPSILON);
-    assert_eq!(params.label, Some("42%".to_string()));
+fn test_sparkline_widget_from_json() {
+    let json = r#"{"type": "Sparkline", "data": [1, 2, 3, 4, 5], "max": 10}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Sparkline { data, max, .. } => {
+            assert_eq!(data, vec![1, 2, 3, 4, 5]);
+            assert_eq!(max, Some(10));
+        }
+        other => panic!("Expected Sparkline, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_sparkline_params_from_json() {
-    let json = r#"{"data": [1, 2, 3, 4, 5], "max": 10}"#;
-    let params: SparklineParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.data, vec![1, 2, 3, 4, 5]);
-    assert_eq!(params.max, Some(10));
+fn test_tabs_widget_from_json() {
+    let json = r#"{"type": "Tabs", "titles": ["Home", "Settings"], "selected": 0}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Tabs {
+            titles, selected, ..
+        } => {
+            assert_eq!(titles, vec!["Home".to_string(), "Settings".to_string()]);
+            assert_eq!(selected, Some(0));
+        }
+        other => panic!("Expected Tabs, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_tabs_params_from_json() {
-    let json = r#"{"titles": ["Home", "Settings"], "selected": 0}"#;
-    let params: TabsParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.titles, vec!["Home", "Settings"]);
-    assert_eq!(params.selected, Some(0));
-}
-
-#[test]
-fn test_chart_params_from_json() {
+fn test_chart_widget_from_json() {
     let json = r#"{
+        "type": "Chart",
         "datasets": [{
             "name": "data",
             "data": [[0.0, 1.0], [1.0, 2.0]],
@@ -1122,15 +1165,25 @@ fn test_chart_params_from_json() {
         }],
         "legend_position": "TopRight"
     }"#;
-    let params: ChartParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.datasets.len(), 1);
-    assert_eq!(params.datasets[0].name, Some("data".to_string()));
-    assert_eq!(params.legend_position, Some(LegendPositionJson::TopRight));
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Chart {
+            datasets,
+            legend_position,
+            ..
+        } => {
+            assert_eq!(datasets.len(), 1);
+            assert_eq!(datasets[0].name, Some("data".to_string()));
+            assert_eq!(legend_position, Some(LegendPositionJson::TopRight));
+        }
+        other => panic!("Expected Chart, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_bar_chart_params_from_json() {
+fn test_bar_chart_widget_from_json() {
     let json = r#"{
+        "type": "BarChart",
         "data": [{
             "label": "Group",
             "bars": [{"value": 10, "label": "A"}, {"value": 20}]
@@ -1138,67 +1191,109 @@ fn test_bar_chart_params_from_json() {
         "bar_width": 3,
         "direction": "Vertical"
     }"#;
-    let params: BarChartParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.data.len(), 1);
-    assert_eq!(params.data[0].bars.len(), 2);
-    assert_eq!(params.bar_width, Some(3));
-    assert_eq!(params.direction, Some(DirectionJson::Vertical));
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::BarChart {
+            data,
+            bar_width,
+            direction,
+            ..
+        } => {
+            assert_eq!(data.len(), 1);
+            assert_eq!(data[0].bars.len(), 2);
+            assert_eq!(bar_width, Some(3));
+            assert_eq!(direction, Some(DirectionJson::Vertical));
+        }
+        other => panic!("Expected BarChart, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_line_gauge_params_from_json() {
-    let json = r#"{"ratio": 0.8, "label": "80%"}"#;
-    let params: LineGaugeParams = serde_json::from_str(json).unwrap();
-    assert!((params.ratio - 0.8).abs() < f64::EPSILON);
-    assert_eq!(params.label, Some("80%".to_string()));
+fn test_line_gauge_widget_from_json() {
+    let json = r#"{"type": "LineGauge", "ratio": 0.8, "label": "80%"}"#;
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::LineGauge { ratio, label, .. } => {
+            assert!((ratio - 0.8).abs() < f64::EPSILON);
+            assert_eq!(label, Some("80%".to_string()));
+        }
+        other => panic!("Expected LineGauge, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_scrollbar_params_from_json() {
+fn test_scrollbar_widget_from_json() {
     let json = r#"{
+        "type": "Scrollbar",
         "orientation": "VerticalRight",
         "state": {"content_length": 200, "position": 50}
     }"#;
-    let params: ScrollbarParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.orientation, ScrollbarOrientationJson::VerticalRight);
-    let state = params.state.unwrap();
-    assert_eq!(state.content_length, 200);
-    assert_eq!(state.position, 50);
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Scrollbar {
+            orientation, state, ..
+        } => {
+            assert_eq!(orientation, ScrollbarOrientationJson::VerticalRight);
+            let s = state.unwrap();
+            assert_eq!(s.content_length, 200);
+            assert_eq!(s.position, 50);
+        }
+        other => panic!("Expected Scrollbar, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_table_params_with_header_from_json() {
+fn test_table_widget_with_header_from_json() {
     let json = r#"{
+        "type": "Table",
         "rows": [{"cells": [{"content": "val1"}, {"content": "val2"}]}],
         "widths": [{"type": "Percentage", "value": 50}, {"type": "Percentage", "value": 50}],
         "header": {"cells": [{"content": "Col A"}, {"content": "Col B"}]},
         "column_spacing": 2
     }"#;
-    let params: TableParams = serde_json::from_str(json).unwrap();
-    assert!(params.header.is_some());
-    let header = params.header.unwrap();
-    assert_eq!(header.cells[0].content, "Col A");
-    assert_eq!(params.column_spacing, Some(2));
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Table {
+            header,
+            column_spacing,
+            ..
+        } => {
+            let h = header.unwrap();
+            assert_eq!(h.cells[0].content, "Col A");
+            assert_eq!(column_spacing, Some(2));
+        }
+        other => panic!("Expected Table, got {other:?}"),
+    }
 }
 
 #[test]
-fn test_scrollbar_params_all_symbols() {
+fn test_scrollbar_widget_all_symbols() {
     let json = r#"{
+        "type": "Scrollbar",
         "orientation": "HorizontalBottom",
         "thumb_symbol": "█",
         "track_symbol": "─",
         "begin_symbol": "◄",
         "end_symbol": "►"
     }"#;
-    let params: ScrollbarParams = serde_json::from_str(json).unwrap();
-    assert_eq!(
-        params.orientation,
-        ScrollbarOrientationJson::HorizontalBottom
-    );
-    assert_eq!(params.thumb_symbol, Some("█".to_string()));
-    assert_eq!(params.track_symbol, Some("─".to_string()));
-    assert_eq!(params.begin_symbol, Some("◄".to_string()));
-    assert_eq!(params.end_symbol, Some("►".to_string()));
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Scrollbar {
+            orientation,
+            thumb_symbol,
+            track_symbol,
+            begin_symbol,
+            end_symbol,
+            ..
+        } => {
+            assert_eq!(orientation, ScrollbarOrientationJson::HorizontalBottom);
+            assert_eq!(thumb_symbol, Some("█".to_string()));
+            assert_eq!(track_symbol, Some("─".to_string()));
+            assert_eq!(begin_symbol, Some("◄".to_string()));
+            assert_eq!(end_symbol, Some("►".to_string()));
+        }
+        other => panic!("Expected Scrollbar, got {other:?}"),
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1296,9 +1391,10 @@ fn paragraph_text_to_plain_string() {
 }
 
 #[test]
-fn paragraph_params_accepts_rich_text_json() {
+fn paragraph_widget_accepts_rich_text_json() {
     // ColorJson is internally tagged: {"type": "Cyan"}, not "Cyan"
     let json = r#"{
+        "type": "Paragraph",
         "text": {
             "lines": [{
                 "spans": [
@@ -1309,9 +1405,14 @@ fn paragraph_params_accepts_rich_text_json() {
         },
         "wrap": true
     }"#;
-    let params: ParagraphParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.text.to_plain_string(), "cyan white");
-    assert!(params.wrap);
+    let w: WidgetJson = serde_json::from_str(json).unwrap();
+    match w {
+        WidgetJson::Paragraph { text, wrap, .. } => {
+            assert_eq!(text.to_plain_string(), "cyan white");
+            assert!(wrap);
+        }
+        other => panic!("Expected Paragraph, got {other:?}"),
+    }
 }
 
 #[test]

@@ -64,7 +64,13 @@ pub use style::Style;
 pub use terminal_tools::{render_node, render_widget};
 pub use text::{Line, Span, Text};
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
-pub use tui_node::{TuiNode, WidgetJson};
+pub use tui_node::{
+    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
+    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, GraphTypeJson,
+    LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson, ModifierJson, PaddingJson,
+    ParagraphText, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, SpanJson, StyleJson,
+    TableStateJson, TextJson, TuiNode, WidgetJson,
+};
 pub use widgets::{
     Axis, BarChart, Block, Cell, Chart, Dataset, Gauge, LineGauge, List, ListItem, Paragraph, Row,
     Scrollbar, Sparkline, Table, Tabs,
