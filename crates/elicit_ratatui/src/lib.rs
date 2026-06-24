@@ -36,6 +36,8 @@ mod style;
 mod terminal_tools;
 mod text;
 pub mod tui_accesskit_convert;
+#[cfg(feature = "runtime")]
+mod tui_communicator;
 pub mod tui_node;
 pub(crate) mod wcag_verify;
 mod widgets;
@@ -62,6 +64,8 @@ pub use state::{
 pub use style::Style;
 #[cfg(feature = "runtime")]
 pub use terminal_tools::{render_node, render_widget};
+#[cfg(feature = "runtime")]
+pub use tui_communicator::TuiCommunicator;
 pub use text::{Line, Span, Text};
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 pub use tui_node::{
