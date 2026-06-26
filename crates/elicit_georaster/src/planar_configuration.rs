@@ -1,5 +1,7 @@
 //! `PlanarConfiguration` — TIFF planar configuration wrapper.
 
+use elicitation::Elicit;
+
 /// Serializable shadow of [`tiff::tags::PlanarConfiguration`].
 #[derive(
     Debug,
@@ -11,7 +13,7 @@
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
 pub enum PlanarConfiguration {
     /// All samples for a pixel are stored together.

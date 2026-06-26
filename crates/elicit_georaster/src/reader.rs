@@ -1,6 +1,10 @@
 //! `GeoTiffReader` — owned wrapper around the upstream generic GeoTIFF reader.
 
 use crate::{Coordinate, ImageInfo, Pixels, RasterValue};
+use elicitation::{
+    Elicit, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, ElicitSpec, Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec,
+};
 use schemars::{JsonSchema, SchemaGenerator};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -22,11 +26,15 @@ pub type GeoRasterResult<T> = Result<T, tiff::TiffError>;
     Serialize,
     Deserialize,
     JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
+#[prompt("Describe a GeoTIFF reader snapshot:")]
 struct GeoTiffReaderSnapshot {
+    #[prompt("GeoTIFF file bytes:")]
     bytes: Vec<u8>,
+    #[prompt("Current image / IFD index:")]
     current_image_idx: usize,
+    #[prompt("Selected raster band (1-based):")]
     selected_band: u8,
 }
 
@@ -64,6 +72,77 @@ impl JsonSchema for GeoTiffReader {
 
     fn json_schema(generator: &mut SchemaGenerator) -> schemars::Schema {
         <GeoTiffReaderSnapshot as JsonSchema>::json_schema(generator)
+    }
+}
+
+impl Prompt for GeoTiffReader {
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a GeoTIFF reader snapshot:")
+    }
+}
+
+impl Elicitation for GeoTiffReader {
+    type Style = ();
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let snapshot = GeoTiffReaderSnapshot::elicit(communicator).await?;
+        Self::from_snapshot(snapshot).map_err(|error| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid GeoTIFF reader snapshot: {error}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::kani_trusted_opaque("elicit_georaster::GeoTiffReader")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::verus_trusted_opaque("elicit_georaster::GeoTiffReader")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::creusot_trusted_opaque(
+            "elicit_georaster::GeoTiffReader",
+        )
+    }
+}
+
+impl ElicitIntrospect for GeoTiffReader {
+    fn pattern() -> elicitation::ElicitationPattern {
+        GeoTiffReaderSnapshot::pattern()
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "GeoTiffReader",
+            description: Self::prompt(),
+            details: GeoTiffReaderSnapshot::metadata().details,
+        }
+    }
+}
+
+impl ElicitPromptTree for GeoTiffReader {
+    fn prompt_tree() -> PromptTree {
+        match GeoTiffReaderSnapshot::prompt_tree() {
+            PromptTree::Survey { fields, .. } => PromptTree::Survey {
+                prompt: Self::prompt().map(str::to_string),
+                type_name: "GeoTiffReader".to_string(),
+                fields,
+            },
+            tree => tree.with_prompt(Self::prompt().map(str::to_string)),
+        }
+    }
+}
+
+impl ElicitSpec for GeoTiffReader {
+    fn type_spec() -> TypeSpec {
+        let base = GeoTiffReaderSnapshot::type_spec();
+        TypeSpec::new(
+            "GeoTiffReader",
+            "Owned GeoTIFF reader wrapper reconstructed from stored bytes, current image selection, and selected raster band.",
+            base.categories().clone(),
+        )
     }
 }
 
@@ -260,3 +339,5 @@ impl elicitation::emit_code::ToCodeLiteral for GeoTiffReader {
         }}
     }
 }
+
+impl elicitation::ElicitComplete for GeoTiffReader {}

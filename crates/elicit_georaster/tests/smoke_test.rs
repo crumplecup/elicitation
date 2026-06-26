@@ -1,6 +1,10 @@
 //! Smoke tests for `elicit_georaster`.
 
-use elicit_georaster::{ColorType, Coordinate, GeoTiffReader, RasterValue};
+use elicit_georaster::{
+    ColorType, Coordinate, GeoTiffReader, ImageInfo, PhotometricInterpretation, Pixels,
+    PlanarConfiguration, RasterValue,
+};
+use elicitation::ElicitComplete;
 use std::io::Cursor;
 use tiff::encoder::{TiffEncoder, colortype};
 
@@ -76,4 +80,20 @@ fn reader_tracks_current_image() {
     assert_eq!(reader.image_info().dimensions, Some((3, 3)));
     reader.seek_to_image(0).expect("seek to first page");
     assert_eq!(reader.image_info().dimensions, Some((2, 2)));
+}
+
+#[test]
+fn public_shadow_types_are_elicit_complete() {
+    fn assert_complete<T: ElicitComplete>(label: &str) {
+        assert!(T::validate_proofs_non_empty(), "{label}: proofs are empty");
+    }
+
+    assert_complete::<ColorType>("ColorType");
+    assert_complete::<Coordinate>("Coordinate");
+    assert_complete::<GeoTiffReader>("GeoTiffReader");
+    assert_complete::<ImageInfo>("ImageInfo");
+    assert_complete::<PhotometricInterpretation>("PhotometricInterpretation");
+    assert_complete::<Pixels>("Pixels");
+    assert_complete::<PlanarConfiguration>("PlanarConfiguration");
+    assert_complete::<RasterValue>("RasterValue");
 }

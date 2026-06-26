@@ -1,6 +1,7 @@
 //! `ImageInfo` — georaster image metadata wrapper.
 
 use crate::{ColorType, PhotometricInterpretation, PlanarConfiguration};
+use elicitation::Elicit;
 
 /// Serializable shadow of [`georaster::geotiff::ImageInfo`].
 #[derive(
@@ -11,18 +12,24 @@ use crate::{ColorType, PhotometricInterpretation, PlanarConfiguration};
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
+#[prompt("Describe a GeoTIFF image info record:")]
 pub struct ImageInfo {
     /// Optional image dimensions.
+    #[prompt("Optional image width/height dimensions:")]
     pub dimensions: Option<(u32, u32)>,
     /// Optional TIFF color type.
+    #[prompt("Optional TIFF color type:")]
     pub colortype: Option<ColorType>,
     /// Optional TIFF photometric interpretation.
+    #[prompt("Optional TIFF photometric interpretation:")]
     pub photometric_interpretation: Option<PhotometricInterpretation>,
     /// Optional TIFF planar configuration.
+    #[prompt("Optional TIFF planar configuration:")]
     pub planar_config: Option<PlanarConfiguration>,
     /// Samples per pixel.
+    #[prompt("Samples per pixel:")]
     pub samples: u8,
 }
 

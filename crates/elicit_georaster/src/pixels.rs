@@ -1,11 +1,22 @@
 //! `Pixels` — owned pixel-window wrapper.
 
 use crate::RasterValue;
+use elicitation::Elicit;
 
 /// Owned wrapper for the collected output of `GeoTiffReader::pixels(...)`.
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Elicit,
+)]
+#[prompt("Describe a collected GeoTIFF pixel window:")]
 pub struct Pixels {
     /// Materialized `(x, y, value)` entries from the upstream iterator.
+    #[prompt("Collected (x, y, value) pixel entries:")]
     pub items: Vec<(u32, u32, RasterValue)>,
 }
 

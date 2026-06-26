@@ -1,5 +1,7 @@
 //! `RasterValue` — georaster pixel value wrapper.
 
+use elicitation::Elicit;
+
 /// Serializable shadow of [`georaster::geotiff::RasterValue`].
 #[derive(
     Debug,
@@ -8,8 +10,9 @@
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
+#[prompt("Choose a georaster pixel value:")]
 pub enum RasterValue {
     /// No data at the requested location.
     NoData,

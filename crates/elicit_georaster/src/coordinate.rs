@@ -1,5 +1,7 @@
 //! `Coordinate` — georaster coordinate wrapper.
 
+use elicitation::Elicit;
+
 /// Serializable shadow of [`georaster::Coordinate`].
 #[derive(
     Debug,
@@ -10,12 +12,15 @@
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
+#[prompt("Enter a georaster coordinate (x = longitude, y = latitude):")]
 pub struct Coordinate {
     /// Longitude / X coordinate.
+    #[prompt("Longitude / X coordinate:")]
     pub x: f64,
     /// Latitude / Y coordinate.
+    #[prompt("Latitude / Y coordinate:")]
     pub y: f64,
 }
 

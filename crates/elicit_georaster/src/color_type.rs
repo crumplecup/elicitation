@@ -1,5 +1,7 @@
 //! `ColorType` — TIFF color type wrapper.
 
+use elicitation::Elicit;
+
 /// Serializable shadow of [`tiff::ColorType`].
 #[derive(
     Debug,
@@ -11,7 +13,7 @@
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
-    elicitation_derive::ToCodeLiteral,
+    Elicit,
 )]
 pub enum ColorType {
     /// Grayscale pixels with a bit depth.
