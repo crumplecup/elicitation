@@ -20,27 +20,39 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-mod client;
+// mod body;
+// mod client;
+// mod client_builder;
 mod context;
-mod error;
+// mod error;
 mod plugin;
 pub mod plugins;
-mod request_builder;
-mod response;
-mod types;
+// mod proxy;
+// mod redirect;
+// mod request;
+// mod request_builder;
+// mod response;
+// mod tls;
+// mod types;
 
-pub use client::Client;
+// pub use body::Body;
+// pub use client::Client;
+// pub use client_builder::ClientBuilder;
 pub use context::HttpContext;
-pub use error::Error;
+// pub use error::Error;
 // Re-export Plugin at crate root for backward compatibility.
 pub use plugin::Plugin;
 pub use plugins::Plugin as HttpPlugin;
+// pub use proxy::{NoProxy, Proxy};
+// pub use redirect::{Action, Policy};
+// pub use request::Request;
 pub use plugins::{
     AuthFetchSucceeded, AuthType, Authorized, BuildRequestParams, BuildRequestParamsBuilder,
     ContentType, FetchResult, FetchSucceeded, HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin,
     RequestCompleted, RequestSpec, StatusCodePlugin, StatusSuccess, UrlPlugin, UrlValid,
     WorkflowPlugin, apply_auth, do_fetch, do_post, extract_link_next, timeout, urlencoding_simple,
 };
-pub use request_builder::RequestBuilder;
-pub use response::Response;
-pub use types::{HeaderMap, Method, StatusCode, Url, Version};
+// pub use request_builder::RequestBuilder;
+// pub use response::Response;
+// pub use tls::{Certificate, Identity, TlsInfo};
+// pub use types::{HeaderMap, Method, StatusCode, Url, Version};

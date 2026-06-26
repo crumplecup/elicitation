@@ -1,70 +1,152 @@
-//! Client wrapper for reqwest HTTP client.
+//! Client wrapper for reqwest HTTP clients.
 //!
-//! Provides an elicitation-enabled wrapper around reqwest::Client
-//! with MCP tool generation for all HTTP methods.
-//!
-//! All HTTP method wrappers are generic over `U: IntoUrl + Elicitation + JsonSchema`,
-//! demonstrating the `#[reflect_methods]` generic support added to the derive macro.
+//! The shadow stores reconstructable client configuration rather than a live
+//! connection pool handle. Request creation records semantic request state so
+//! downstream coverage reports can identify real support gaps instead of
+//! placeholder shims.
 
-use elicitation::elicit_newtype;
+use elicitation::{
+    Elicit, ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, ElicitSpec,
+    Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, emit_code::ToCodeLiteral,
+};
 use elicitation_derive::reflect_methods;
+use schemars::{JsonSchema, SchemaGenerator};
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
-use crate::RequestBuilder;
+use crate::{Method, RequestBuilder};
 
-elicit_newtype!(reqwest::Client, as Client);
+#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, Elicit)]
+enum ClientRecipe {
+    #[default]
+    Default,
+}
 
-/// Serialize as an empty object — the client holds a connection pool with no
-/// observable configuration that survives serialization.
-impl serde::Serialize for Client {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        use serde::ser::SerializeStruct;
-        let s = serializer.serialize_struct("Client", 0)?;
-        s.end()
+impl ClientRecipe {
+    fn build(&self) -> reqwest::Client {
+        match self {
+            Self::Default => reqwest::Client::new(),
+        }
     }
 }
 
-/// Deserialize from any object → reconstruct a default `Client`.
-impl<'de> serde::Deserialize<'de> for Client {
+/// Elicitation-aware reqwest client shadow.
+#[derive(Debug, Clone)]
+pub struct Client {
+    snapshot: ClientSnapshot,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+#[prompt("Describe an HTTP client configuration:")]
+struct ClientSnapshot {
+    #[serde(default)]
+    #[prompt("Client recipe:")]
+    recipe: ClientRecipe,
+}
+
+impl Serialize for Client {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.snapshot.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Client {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct ClientVisitor;
-        impl<'de> serde::de::Visitor<'de> for ClientVisitor {
-            type Value = Client;
-            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str("an object (HTTP client is reconstructed as default on deserialize)")
-            }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut map: A,
-            ) -> Result<Self::Value, A::Error> {
-                while map
-                    .next_entry::<serde::de::IgnoredAny, serde::de::IgnoredAny>()?
-                    .is_some()
-                {}
-                Ok(Client::new())
-            }
+        Ok(Self {
+            snapshot: ClientSnapshot::deserialize(deserializer)?,
+        })
+    }
+}
+
+impl JsonSchema for Client {
+    fn schema_name() -> Cow<'static, str> {
+        Cow::Borrowed("Client")
+    }
+
+    fn json_schema(generator: &mut SchemaGenerator) -> schemars::Schema {
+        <ClientSnapshot as JsonSchema>::json_schema(generator)
+    }
+}
+
+impl Prompt for Client {
+    fn prompt() -> Option<&'static str> {
+        Some("Describe an HTTP client configuration:")
+    }
+}
+
+impl Elicitation for Client {
+    type Style = ();
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let snapshot = ClientSnapshot::elicit(communicator).await?;
+        Ok(Self { snapshot })
+    }
+
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        ClientSnapshot::kani_proof()
+    }
+
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        ClientSnapshot::verus_proof()
+    }
+
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        ClientSnapshot::creusot_proof()
+    }
+}
+
+impl ElicitIntrospect for Client {
+    fn pattern() -> elicitation::ElicitationPattern {
+        ClientSnapshot::pattern()
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "Client",
+            description: Self::prompt(),
+            details: ClientSnapshot::metadata().details,
         }
-        deserializer.deserialize_map(ClientVisitor)
+    }
+}
+
+impl ElicitPromptTree for Client {
+    fn prompt_tree() -> PromptTree {
+        match ClientSnapshot::prompt_tree() {
+            PromptTree::Survey { fields, .. } => PromptTree::Survey {
+                prompt: Self::prompt().map(str::to_string),
+                type_name: "Client".to_string(),
+                fields,
+            },
+            tree => tree.with_prompt(Self::prompt().map(str::to_string)),
+        }
+    }
+}
+
+impl ElicitSpec for Client {
+    fn type_spec() -> TypeSpec {
+        let base = ClientSnapshot::type_spec();
+        TypeSpec::new(
+            "Client",
+            "Owned HTTP client configuration reconstructed from a serializable recipe.",
+            base.categories().clone(),
+        )
     }
 }
 
 impl elicitation::ElicitComplete for Client {}
 
-mod emit_impls {
-    use super::Client;
-    use elicitation::emit_code::ToCodeLiteral;
-    use elicitation::proc_macro2::TokenStream;
-
-    impl ToCodeLiteral for Client {
-        fn to_code_literal(&self) -> TokenStream {
-            quote::quote! { ::elicit_reqwest::Client::new() }
-        }
-    }
-}
-
 impl Client {
     /// Creates a new HTTP client with default settings.
     pub fn new() -> Self {
-        reqwest::Client::new().into()
+        Self {
+            snapshot: ClientSnapshot {
+                recipe: ClientRecipe::Default,
+            },
+        }
+    }
+
+    pub(crate) fn build_raw(&self) -> reqwest::Client {
+        self.snapshot.recipe.build()
     }
 }
 
@@ -74,14 +156,33 @@ impl Default for Client {
     }
 }
 
+impl ToCodeLiteral for Client {
+    fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+        quote::quote! { ::elicit_reqwest::Client::new() }
+    }
+}
+
 #[reflect_methods]
 impl Client {
+    /// Start building a request to `url` with the given HTTP method.
+    pub fn request<U>(&self, method: Method, url: U) -> RequestBuilder
+    where
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
+    {
+        RequestBuilder::from_input(self.clone(), method, url)
+    }
+
+    /// Start building a request to an already-parsed URL with the given HTTP method.
+    pub fn request_url(&self, method: Method, url: crate::Url) -> RequestBuilder {
+        RequestBuilder::from_url(self.clone(), method, url)
+    }
+
     /// Start building a GET request to `url`.
     pub fn get<U>(&self, url: U) -> RequestBuilder
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.get(url).into()
+        self.request(Method::from(reqwest::Method::GET), url)
     }
 
     /// Start building a POST request to `url`.
@@ -89,7 +190,7 @@ impl Client {
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.post(url).into()
+        self.request(Method::from(reqwest::Method::POST), url)
     }
 
     /// Start building a PUT request to `url`.
@@ -97,7 +198,7 @@ impl Client {
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.put(url).into()
+        self.request(Method::from(reqwest::Method::PUT), url)
     }
 
     /// Start building a DELETE request to `url`.
@@ -105,7 +206,7 @@ impl Client {
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.delete(url).into()
+        self.request(Method::from(reqwest::Method::DELETE), url)
     }
 
     /// Start building a PATCH request to `url`.
@@ -113,7 +214,7 @@ impl Client {
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.patch(url).into()
+        self.request(Method::from(reqwest::Method::PATCH), url)
     }
 
     /// Start building a HEAD request to `url`.
@@ -121,6 +222,6 @@ impl Client {
     where
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
-        self.0.head(url).into()
+        self.request(Method::from(reqwest::Method::HEAD), url)
     }
 }

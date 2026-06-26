@@ -1,5 +1,9 @@
 //! Newtypes for reqwest/http types that add `JsonSchema` + `Serialize` + `Deserialize`.
 
+use elicitation::{
+    Elicit, ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, ElicitSpec,
+    Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, proc_macro2::TokenStream,
+};
 use std::sync::Arc;
 
 use schemars::{JsonSchema, SchemaGenerator, json_schema};
@@ -197,12 +201,182 @@ impl From<Version> for reqwest::Version {
 
 // ── HeaderMap ─────────────────────────────────────────────────────────────────
 
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+#[prompt("Describe an HTTP header value:")]
+struct HeaderValueData {
+    #[prompt("Raw header-value bytes:")]
+    bytes: Vec<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[prompt("UTF-8 header text, when representable:")]
+    text: Option<String>,
+}
+
+impl From<&http::HeaderValue> for HeaderValueData {
+    fn from(value: &http::HeaderValue) -> Self {
+        Self {
+            bytes: value.as_bytes().to_vec(),
+            text: value.to_str().ok().map(str::to_string),
+        }
+    }
+}
+
+/// HTTP header value newtype with byte-faithful serde and schema support.
+#[derive(Debug, Clone)]
+pub struct HeaderValue(pub Arc<http::HeaderValue>);
+
+impl Serialize for HeaderValue {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        HeaderValueData::from(self.0.as_ref()).serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for HeaderValue {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let value = HeaderValueData::deserialize(d)?;
+        http::HeaderValue::from_bytes(&value.bytes)
+            .map(Self::from)
+            .map_err(serde::de::Error::custom)
+    }
+}
+
+impl JsonSchema for HeaderValue {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "HeaderValue".into()
+    }
+
+    fn json_schema(generator: &mut SchemaGenerator) -> schemars::Schema {
+        HeaderValueData::json_schema(generator)
+    }
+}
+
+impl Prompt for HeaderValue {
+    fn prompt() -> Option<&'static str> {
+        Some("Describe an HTTP header value:")
+    }
+}
+
+impl Elicitation for HeaderValue {
+    type Style = ();
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let data = HeaderValueData::elicit(communicator).await?;
+        let value = http::HeaderValue::from_bytes(&data.bytes).map_err(|error| {
+            elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                error.to_string(),
+            ))
+        })?;
+        Ok(Self::from(value))
+    }
+
+    fn kani_proof() -> TokenStream {
+        HeaderValueData::kani_proof()
+    }
+
+    fn verus_proof() -> TokenStream {
+        HeaderValueData::verus_proof()
+    }
+
+    fn creusot_proof() -> TokenStream {
+        HeaderValueData::creusot_proof()
+    }
+}
+
+impl ElicitIntrospect for HeaderValue {
+    fn pattern() -> elicitation::ElicitationPattern {
+        HeaderValueData::pattern()
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "HeaderValue",
+            description: Self::prompt(),
+            details: HeaderValueData::metadata().details,
+        }
+    }
+}
+
+impl ElicitPromptTree for HeaderValue {
+    fn prompt_tree() -> PromptTree {
+        match HeaderValueData::prompt_tree() {
+            PromptTree::Survey { fields, .. } => PromptTree::Survey {
+                prompt: Self::prompt().map(str::to_string),
+                type_name: "HeaderValue".to_string(),
+                fields,
+            },
+            tree => tree.with_prompt(Self::prompt().map(str::to_string)),
+        }
+    }
+}
+
+impl ElicitSpec for HeaderValue {
+    fn type_spec() -> TypeSpec {
+        let base = HeaderValueData::type_spec();
+        TypeSpec::new(
+            "HeaderValue",
+            "HTTP header value stored as raw bytes with optional UTF-8 text for display.",
+            base.categories().clone(),
+        )
+    }
+}
+
+impl std::ops::Deref for HeaderValue {
+    type Target = http::HeaderValue;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl HeaderValue {
+    /// Construct a header value from a static string.
+    pub fn from_static(src: &'static str) -> Self {
+        Self::from(http::HeaderValue::from_static(src))
+    }
+
+    /// Construct a header value from a validated string.
+    pub fn from_str(src: &str) -> Result<Self, http::header::InvalidHeaderValue> {
+        http::HeaderValue::from_str(src).map(Self::from)
+    }
+
+    /// Construct a header value from raw bytes.
+    pub fn from_bytes(src: &[u8]) -> Result<Self, http::header::InvalidHeaderValue> {
+        http::HeaderValue::from_bytes(src).map(Self::from)
+    }
+
+    /// Borrow the raw header bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_bytes()
+    }
+
+    /// Borrow the UTF-8 header text when representable.
+    pub fn to_str(&self) -> Result<&str, http::header::ToStrError> {
+        self.0.to_str()
+    }
+}
+
+impl From<http::HeaderValue> for HeaderValue {
+    fn from(value: http::HeaderValue) -> Self {
+        Self(Arc::new(value))
+    }
+}
+
+impl From<HeaderValue> for http::HeaderValue {
+    fn from(value: HeaderValue) -> Self {
+        Arc::try_unwrap(value.0).unwrap_or_else(|arc| (*arc).clone())
+    }
+}
+
 /// HTTP header map newtype with `JsonSchema` and serde support.
 ///
 /// Serializes as a JSON object mapping header names to their first string value.
 /// Multiple values for the same header are collapsed to the first.
 #[derive(Debug, Clone)]
 pub struct HeaderMap(pub Arc<http::HeaderMap>);
+
+impl Default for HeaderMap {
+    fn default() -> Self {
+        Self(Arc::new(http::HeaderMap::new()))
+    }
+}
 
 impl JsonSchema for HeaderMap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
@@ -264,11 +438,12 @@ impl From<HeaderMap> for http::HeaderMap {
     }
 }
 
-// ── Elicitation / ElicitComplete impls ────────────────────────────────────────
+// ── Elicitation impls ─────────────────────────────────────────────────────────
 //
 // Method, StatusCode, Version, and HeaderMap are hand-crafted newtypes that
 // predate `elicit_newtype!`.  We manually add the Elicitation family of traits
-// so each type can satisfy the `ElicitComplete` supertrait.
+// so each type participates in the elicitation family without relying on the
+// derive macros yet.
 
 macro_rules! impl_elicitation_for_reqwest_newtype {
     (
@@ -330,15 +505,9 @@ macro_rules! impl_elicitation_for_reqwest_newtype {
 
         impl elicitation::ElicitSpec for $Type {
             fn type_spec() -> elicitation::TypeSpec {
-                elicitation::TypeSpecBuilder::default()
-                    .type_name($tn.to_string())
-                    .summary($desc.to_string())
-                    .build()
-                    .expect("valid TypeSpec")
+                elicitation::TypeSpec::new($tn, $desc, Vec::new())
             }
         }
-
-        impl elicitation::ElicitComplete for $Type {}
 
         impl elicitation::ElicitPromptTree for $Type {
             fn prompt_tree() -> elicitation::PromptTree {
@@ -378,74 +547,3 @@ impl_elicitation_for_reqwest_newtype!(
     description = "HTTP headers as a string-to-string map",
     type_name_str = "HeaderMap",
 );
-
-// ── ToCodeLiteral impls ────────────────────────────────────────────────────────
-
-mod emit_impls {
-    use super::{HeaderMap, Method, StatusCode, Version};
-    use elicitation::emit_code::ToCodeLiteral;
-    use elicitation::proc_macro2::TokenStream;
-
-    impl ToCodeLiteral for Method {
-        fn to_code_literal(&self) -> TokenStream {
-            let s = self.0.as_str().to_string();
-            quote::quote! {
-                ::elicit_reqwest::Method::from(
-                    ::reqwest::Method::from_bytes(#s.as_bytes()).expect("valid HTTP method")
-                )
-            }
-        }
-    }
-
-    impl ToCodeLiteral for StatusCode {
-        fn to_code_literal(&self) -> TokenStream {
-            let n = self.0.as_u16();
-            quote::quote! {
-                ::elicit_reqwest::StatusCode::from_u16(#n).expect("valid status code")
-            }
-        }
-    }
-
-    impl ToCodeLiteral for Version {
-        fn to_code_literal(&self) -> TokenStream {
-            let s = format!("{:?}", *self.0);
-            let variant: TokenStream = match s.as_str() {
-                "HTTP/0.9" => quote::quote! { ::reqwest::Version::HTTP_09 },
-                "HTTP/1.0" => quote::quote! { ::reqwest::Version::HTTP_10 },
-                "HTTP/1.1" => quote::quote! { ::reqwest::Version::HTTP_11 },
-                "HTTP/2.0" => quote::quote! { ::reqwest::Version::HTTP_2 },
-                "HTTP/3.0" => quote::quote! { ::reqwest::Version::HTTP_3 },
-                _ => quote::quote! { ::reqwest::Version::HTTP_11 },
-            };
-            quote::quote! { ::elicit_reqwest::Version::from(#variant) }
-        }
-    }
-
-    impl ToCodeLiteral for HeaderMap {
-        fn to_code_literal(&self) -> TokenStream {
-            let entries: Vec<_> = self
-                .0
-                .iter()
-                .map(|(k, v)| {
-                    let key = k.as_str();
-                    let val = v.to_str().unwrap_or("");
-                    quote::quote! { (#key, #val) }
-                })
-                .collect();
-            quote::quote! {
-                {
-                    let mut __map = ::http::HeaderMap::new();
-                    #(
-                        __map.insert(
-                            ::http::header::HeaderName::from_bytes(#entries.0.as_bytes())
-                                .expect("valid header name"),
-                            ::http::HeaderValue::from_str(#entries.1)
-                                .expect("valid header value"),
-                        );
-                    )*
-                    ::elicit_reqwest::HeaderMap::from(__map)
-                }
-            }
-        }
-    }
-}
