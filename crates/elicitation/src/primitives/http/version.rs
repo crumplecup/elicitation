@@ -1,8 +1,9 @@
 //! `reqwest::Version` elicitation (Select pattern).
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree, Select,
+    TypeMetadata, VariantMetadata, mcp,
 };
 
 crate::default_style!(reqwest::Version => VersionStyle);
@@ -103,6 +104,33 @@ impl ElicitIntrospect for reqwest::Version {
                     })
                     .collect(),
             },
+        }
+    }
+}
+
+impl ElicitPromptTree for reqwest::Version {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let branch_count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Select HTTP version:").to_string(),
+            type_name: "reqwest::Version".to_string(),
+            options: labels,
+            branches: vec![None; branch_count],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for reqwest::Version {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match *self {
+            reqwest::Version::HTTP_10 => quote::quote! { reqwest::Version::HTTP_10 },
+            reqwest::Version::HTTP_11 => quote::quote! { reqwest::Version::HTTP_11 },
+            reqwest::Version::HTTP_2 => quote::quote! { reqwest::Version::HTTP_2 },
+            reqwest::Version::HTTP_3 => quote::quote! { reqwest::Version::HTTP_3 },
+            _ => quote::quote! {{
+                compile_error!("unsupported reqwest::Version variant in code recovery");
+            }},
         }
     }
 }

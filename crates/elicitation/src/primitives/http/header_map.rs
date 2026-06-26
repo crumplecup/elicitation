@@ -4,8 +4,9 @@
 //! then parses into a `http::HeaderMap`.
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, TypeMetadata, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree,
+    TypeMetadata, mcp,
 };
 use http::{HeaderMap, HeaderName, HeaderValue};
 
@@ -69,7 +70,42 @@ impl ElicitIntrospect for HeaderMap {
     }
 }
 
+impl ElicitPromptTree for HeaderMap {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("Enter HTTP headers as newline-separated `Name: Value` pairs:")
+                .to_string(),
+            type_name: "http::HeaderMap".to_string(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for HeaderMap {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let entries = self.iter().map(|(name, value)| {
+            let name = name.as_str();
+            let value = value.as_bytes().iter();
+            quote::quote! {
+                map.append(
+                    http::header::HeaderName::from_bytes(#name.as_bytes())
+                        .map_err(elicitation::ElicitError::from)?,
+                    http::header::HeaderValue::from_bytes(&[#(#value),*])
+                        .map_err(elicitation::ElicitError::from)?,
+                );
+            }
+        });
+
+        quote::quote! {{
+            let mut map = http::HeaderMap::new();
+            #(#entries)*
+            map
+        }}
+    }
+}
+
 /// Parse a newline-separated `Name: Value` string into a `HeaderMap`.
+#[tracing::instrument]
 fn parse_header_map(raw: &str) -> ElicitResult<HeaderMap> {
     let mut map = HeaderMap::new();
 
@@ -88,17 +124,9 @@ fn parse_header_map(raw: &str) -> ElicitResult<HeaderMap> {
         let name = name.trim();
         let value = value.trim();
 
-        let header_name = HeaderName::from_bytes(name.as_bytes()).map_err(|e| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!(
-                "Invalid header name '{name}': {e}"
-            )))
-        })?;
+        let header_name = HeaderName::from_bytes(name.as_bytes()).map_err(ElicitError::from)?;
 
-        let header_value = HeaderValue::from_str(value).map_err(|e| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!(
-                "Invalid header value '{value}': {e}"
-            )))
-        })?;
+        let header_value = HeaderValue::from_str(value).map_err(ElicitError::from)?;
 
         map.insert(header_name, header_value);
     }

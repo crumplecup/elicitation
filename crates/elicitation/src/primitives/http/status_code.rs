@@ -1,8 +1,9 @@
 //! `reqwest::StatusCode` elicitation (Primitive pattern via StatusCodeValid).
 
 use crate::{
-    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
-    PatternDetails, Prompt, TypeMetadata, mcp, verification::types::StatusCodeValid,
+    ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, Elicitation,
+    ElicitationPattern, PatternDetails, Prompt, PromptTree, TypeMetadata, mcp,
+    verification::types::StatusCodeValid,
 };
 
 crate::default_style!(reqwest::StatusCode => StatusCodeStyle);
@@ -47,6 +48,17 @@ impl ElicitIntrospect for reqwest::StatusCode {
             type_name: "reqwest::StatusCode",
             description: Self::prompt(),
             details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl ElicitPromptTree for reqwest::StatusCode {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("Enter HTTP status code (100–999, e.g. 200, 404, 500):")
+                .to_string(),
+            type_name: "reqwest::StatusCode".to_string(),
         }
     }
 }

@@ -1,13 +1,14 @@
 //! Error types for elicitation operations.
 
-use derive_more::{Display, From};
+use derive_more::{Display, Error, From};
 
 /// RMCP error wrapper.
-#[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[derive(Debug, Clone, Display, Error, derive_getters::Getters)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[display("RMCP error: {}", source)]
+#[display("RMCP error: {} at {}:{}", source, file, line)]
 pub struct RmcpError {
     /// The underlying rmcp error.
+    #[error(not(source))]
     source: String,
     /// Line number where the error occurred.
     line: u32,
@@ -15,8 +16,6 @@ pub struct RmcpError {
     #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
-
-impl std::error::Error for RmcpError {}
 
 impl RmcpError {
     /// Creates a new RMCP error with caller location.
@@ -39,11 +38,12 @@ impl From<rmcp::ErrorData> for RmcpError {
 }
 
 /// JSON parsing error wrapper.
-#[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[derive(Debug, Clone, Display, Error, derive_getters::Getters)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[display("JSON error: {}", source)]
+#[display("JSON error: {} at {}:{}", source, file, line)]
 pub struct JsonError {
     /// The underlying serde_json error.
+    #[error(not(source))]
     source: String,
     /// Line number where the error occurred.
     line: u32,
@@ -51,8 +51,6 @@ pub struct JsonError {
     #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
-
-impl std::error::Error for JsonError {}
 
 impl JsonError {
     /// Creates a new JSON error with caller location.
@@ -74,8 +72,50 @@ impl From<serde_json::Error> for JsonError {
     }
 }
 
+/// URL parsing error wrapper.
+#[cfg(feature = "url")]
+#[derive(Debug, Clone, Display, Error, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[display("URL error: {message} at {file}:{line}")]
+pub struct UrlError {
+    /// The underlying URL parsing error.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    source: Option<std::sync::Arc<url::ParseError>>,
+    /// The underlying URL parsing error message.
+    message: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    file: &'static str,
+}
+
+#[cfg(feature = "url")]
+impl UrlError {
+    /// Creates a new URL error with caller location.
+    #[track_caller]
+    #[tracing::instrument(skip(source), level = "debug")]
+    pub fn new(source: url::ParseError) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            message: source.to_string(),
+            source: Some(std::sync::Arc::new(source)),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+#[cfg(feature = "url")]
+impl From<url::ParseError> for UrlError {
+    #[track_caller]
+    fn from(source: url::ParseError) -> Self {
+        Self::new(source)
+    }
+}
+
 /// Specific error conditions during elicitation.
-#[derive(Debug, Clone, Display, From)]
+#[derive(Debug, Clone, Display, Error, From)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ElicitErrorKind {
     /// RMCP error.
@@ -93,12 +133,44 @@ pub enum ElicitErrorKind {
     #[from]
     Json(JsonError),
 
+    /// URL parsing error.
+    #[cfg(feature = "url")]
+    #[display("{}", _0)]
+    #[from]
+    Url(UrlError),
+
+    /// HTTP construction/parsing error.
+    #[cfg(feature = "reqwest")]
+    #[display("{}", _0)]
+    #[from]
+    Http(HttpError),
+
+    /// Invalid HTTP header value error.
+    #[cfg(feature = "reqwest")]
+    #[display("{}", _0)]
+    #[from]
+    InvalidHeaderValue(InvalidHeaderValueError),
+
+    /// Invalid HTTP header name error.
+    #[cfg(feature = "reqwest")]
+    #[display("{}", _0)]
+    #[from]
+    InvalidHeaderName(InvalidHeaderNameError),
+
+    /// Reqwest runtime error.
+    #[cfg(feature = "reqwest")]
+    #[display("{}", _0)]
+    #[from]
+    Reqwest(ReqwestError),
+
     /// Invalid format received from MCP tool.
     #[display("Invalid format: expected {expected}, received {received}")]
     InvalidFormat {
         /// Expected format description.
+        #[error(not(source))]
         expected: String,
         /// Received value description.
+        #[error(not(source))]
         received: String,
     },
 
@@ -106,8 +178,10 @@ pub enum ElicitErrorKind {
     #[display("Out of range: value must be between {min} and {max}")]
     OutOfRange {
         /// Minimum valid value.
+        #[error(not(source))]
         min: String,
         /// Maximum valid value.
+        #[error(not(source))]
         max: String,
     },
 
@@ -117,32 +191,34 @@ pub enum ElicitErrorKind {
 
     /// Missing required field in survey.
     #[display("Missing required field: {}", _0)]
-    MissingField(String),
+    MissingField(#[error(not(source))] String),
 
     /// Invalid selection option.
     #[display("Invalid option: '{value}' not in [{options}]")]
     InvalidOption {
         /// Value provided by user.
+        #[error(not(source))]
         value: String,
         /// Valid options as comma-separated string.
+        #[error(not(source))]
         options: String,
     },
 
     /// Invalid selection label.
     #[display("Invalid selection: {}", _0)]
-    InvalidSelection(String),
+    InvalidSelection(#[error(not(source))] String),
 
     /// Parse error for text input.
     #[display("Parse error: {}", _0)]
-    ParseError(String),
+    ParseError(#[error(not(source))] String),
 
     /// Contract validation error.
     #[display("Validation failed: {}", _0)]
-    Validation(String),
+    Validation(#[error(not(source))] String),
 
     /// Recursion depth exceeded during elicitation.
     #[display("Recursion depth exceeded: maximum depth is {}", _0)]
-    RecursionDepthExceeded(usize),
+    RecursionDepthExceeded(#[error(not(source))] usize),
 }
 
 /// Macro to generate bridge From implementations for external errors.
@@ -172,11 +248,12 @@ macro_rules! bridge_error {
 }
 
 /// RMCP ServiceError wrapper for error conversion.
-#[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[derive(Debug, Clone, Display, Error, derive_getters::Getters)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[display("Service error: {}", source)]
+#[display("Service error: {} at {}:{}", source, file, line)]
 pub struct ServiceError {
     /// The underlying service error message.
+    #[error(not(source))]
     source: String,
     /// Line number where the error occurred.
     line: u32,
@@ -184,8 +261,6 @@ pub struct ServiceError {
     #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
-
-impl std::error::Error for ServiceError {}
 
 impl ServiceError {
     /// Creates a new service error with caller location.
@@ -207,29 +282,196 @@ impl From<rmcp::service::ServiceError> for ServiceError {
     }
 }
 
+/// HTTP error wrapper with caller location.
+#[cfg(feature = "reqwest")]
+#[derive(Debug, Clone, Display, derive_more::Error, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[display("HTTP error: {message} at {file}:{line}")]
+pub struct HttpError {
+    /// The underlying HTTP error.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    source: Option<std::sync::Arc<http::Error>>,
+    /// The underlying HTTP error message.
+    message: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    file: &'static str,
+}
+
+#[cfg(feature = "reqwest")]
+impl HttpError {
+    /// Creates a new HTTP error with caller location.
+    #[track_caller]
+    #[tracing::instrument(skip(source), level = "debug")]
+    pub fn new(source: http::Error) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            message: source.to_string(),
+            source: Some(std::sync::Arc::new(source)),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl From<http::Error> for HttpError {
+    #[track_caller]
+    fn from(source: http::Error) -> Self {
+        Self::new(source)
+    }
+}
+
+/// Invalid HTTP header value error wrapper with caller location.
+#[cfg(feature = "reqwest")]
+#[derive(Debug, Clone, Display, derive_more::Error, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[display("Invalid HTTP header value: {message} at {file}:{line}")]
+pub struct InvalidHeaderValueError {
+    /// The underlying invalid header value error.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    source: Option<std::sync::Arc<http::header::InvalidHeaderValue>>,
+    /// The underlying invalid header value error message.
+    message: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    file: &'static str,
+}
+
+#[cfg(feature = "reqwest")]
+impl InvalidHeaderValueError {
+    /// Creates a new invalid header value error with caller location.
+    #[track_caller]
+    #[tracing::instrument(skip(source), level = "debug")]
+    pub fn new(source: http::header::InvalidHeaderValue) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            message: source.to_string(),
+            source: Some(std::sync::Arc::new(source)),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl From<http::header::InvalidHeaderValue> for InvalidHeaderValueError {
+    #[track_caller]
+    fn from(source: http::header::InvalidHeaderValue) -> Self {
+        Self::new(source)
+    }
+}
+
+/// Invalid HTTP header name error wrapper with caller location.
+#[cfg(feature = "reqwest")]
+#[derive(Debug, Clone, Display, derive_more::Error, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[display("Invalid HTTP header name: {message} at {file}:{line}")]
+pub struct InvalidHeaderNameError {
+    /// The underlying invalid header name error.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    source: Option<std::sync::Arc<http::header::InvalidHeaderName>>,
+    /// The underlying invalid header name error message.
+    message: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    file: &'static str,
+}
+
+#[cfg(feature = "reqwest")]
+impl InvalidHeaderNameError {
+    /// Creates a new invalid header name error with caller location.
+    #[track_caller]
+    #[tracing::instrument(skip(source), level = "debug")]
+    pub fn new(source: http::header::InvalidHeaderName) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            message: source.to_string(),
+            source: Some(std::sync::Arc::new(source)),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl From<http::header::InvalidHeaderName> for InvalidHeaderNameError {
+    #[track_caller]
+    fn from(source: http::header::InvalidHeaderName) -> Self {
+        Self::new(source)
+    }
+}
+
+/// Reqwest error wrapper with caller location.
+#[cfg(feature = "reqwest")]
+#[derive(Debug, Clone, Display, derive_more::Error, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[display("Reqwest error: {message} at {file}:{line}")]
+pub struct ReqwestError {
+    /// The underlying reqwest error.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    source: Option<std::sync::Arc<reqwest::Error>>,
+    /// The underlying reqwest error message.
+    message: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
+    file: &'static str,
+}
+
+#[cfg(feature = "reqwest")]
+impl ReqwestError {
+    /// Creates a new reqwest error with caller location.
+    #[track_caller]
+    #[tracing::instrument(skip(source), level = "debug")]
+    pub fn new(source: reqwest::Error) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            message: source.to_string(),
+            source: Some(std::sync::Arc::new(source)),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl From<reqwest::Error> for ReqwestError {
+    #[track_caller]
+    fn from(source: reqwest::Error) -> Self {
+        Self::new(source)
+    }
+}
+
 // Bridge From implementations to chain external errors through wrappers
 bridge_error!(rmcp::ErrorData => RmcpError);
 bridge_error!(rmcp::service::ServiceError => ServiceError);
 bridge_error!(serde_json::Error => JsonError);
+#[cfg(feature = "url")]
+bridge_error!(url::ParseError => UrlError);
+#[cfg(feature = "reqwest")]
+bridge_error!(http::Error => HttpError);
+#[cfg(feature = "reqwest")]
+bridge_error!(http::header::InvalidHeaderValue => InvalidHeaderValueError);
+#[cfg(feature = "reqwest")]
+bridge_error!(http::header::InvalidHeaderName => InvalidHeaderNameError);
+#[cfg(feature = "reqwest")]
+bridge_error!(reqwest::Error => ReqwestError);
 
 /// Elicitation error with location tracking.
 ///
 /// This type wraps all error conditions and provides automatic conversion
 /// from underlying error types through the `?` operator.
-#[derive(Debug, Clone, Display)]
+#[derive(Debug, Clone, Display, Error)]
 #[display("Elicit error: {}", _0)]
 pub struct ElicitError(Box<ElicitErrorKind>);
-
-impl std::error::Error for ElicitError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match &*self.0 {
-            ElicitErrorKind::Rmcp(e) => Some(e),
-            ElicitErrorKind::Service(e) => Some(e),
-            ElicitErrorKind::Json(e) => Some(e),
-            _ => None,
-        }
-    }
-}
 
 impl ElicitError {
     /// Returns a reference to the underlying error kind.
@@ -291,6 +533,16 @@ impl From<ElicitErrorKind> for ElicitError {
 error_from!(rmcp::ErrorData);
 error_from!(rmcp::service::ServiceError);
 error_from!(serde_json::Error);
+#[cfg(feature = "url")]
+error_from!(url::ParseError);
+#[cfg(feature = "reqwest")]
+error_from!(http::Error);
+#[cfg(feature = "reqwest")]
+error_from!(http::header::InvalidHeaderValue);
+#[cfg(feature = "reqwest")]
+error_from!(http::header::InvalidHeaderName);
+#[cfg(feature = "reqwest")]
+error_from!(reqwest::Error);
 
 // Add conversion for ValidationError
 impl From<crate::verification::types::ValidationError> for ElicitError {

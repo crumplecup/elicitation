@@ -165,6 +165,30 @@ fn inventory_key_type_name_and_build() {
     assert_eq!(spec.type_name(), "Direct");
 }
 
+#[cfg(feature = "reqwest")]
+#[test]
+fn http_header_name_spec_registered() {
+    let spec = lookup_type_spec("http::HeaderName").expect("http::HeaderName registered");
+    assert_eq!(spec.type_name(), "http::HeaderName");
+    assert!(
+        spec.summary().contains("HTTP header name"),
+        "summary should describe header names"
+    );
+    assert_eq!(spec.categories().len(), 2);
+}
+
+#[cfg(feature = "reqwest")]
+#[test]
+fn http_header_value_spec_registered() {
+    let spec = lookup_type_spec("http::HeaderValue").expect("http::HeaderValue registered");
+    assert_eq!(spec.type_name(), "http::HeaderValue");
+    assert!(
+        spec.summary().contains("HTTP header value"),
+        "summary should describe header values"
+    );
+    assert_eq!(spec.categories().len(), 2);
+}
+
 // ── Integer specs ────────────────────────────────────────────────────────────
 
 #[test]

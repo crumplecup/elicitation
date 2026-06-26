@@ -247,6 +247,12 @@ pub use collections::ChoiceSet;
 
 // Re-export rmcp for user convenience
 pub use rmcp;
+#[cfg(feature = "reqwest")]
+pub use crate::primitives::http::capture_reqwest_response;
+#[cfg(feature = "reqwest")]
+pub use crate::primitives::http::{
+    ReqwestCertificate, ReqwestIdentity, ReqwestNoProxy, ReqwestProxy, ReqwestTlsInfo,
+};
 
 // Re-export futures for derive macro (BoxFuture in ElicitPlugin blanket impls)
 #[doc(hidden)]
@@ -504,8 +510,10 @@ pub use verification::mechanisms::{
 // Reqwest HTTP types (feature-gated)
 #[cfg(feature = "reqwest")]
 pub use primitives::http::{
-    ClientStyle, HeaderMapStyle, MethodStyle, RequestBuilderStyle, ResponseStyle, StatusCodeStyle,
-    VersionStyle,
+    BodyStyle, BytesStyle, ClientStyle, ErrorStyle, HeaderMapStyle, HeaderNameStyle,
+    HttpErrorStyle,
+    HeaderValueStyle, MethodStyle, RequestBuilderStyle, RequestStyle, ResponseStyle,
+    StatusCodeStyle, TlsVersionStyle, VersionStyle,
 };
 
 #[cfg(feature = "reqwest")]

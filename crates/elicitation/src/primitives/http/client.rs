@@ -52,3 +52,18 @@ impl ElicitIntrospect for reqwest::Client {
         }
     }
 }
+
+impl crate::ElicitPromptTree for reqwest::Client {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: "HTTP client (auto-constructed with default settings)".to_string(),
+            type_name: "reqwest::Client".to_string(),
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for reqwest::Client {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        quote::quote! { reqwest::Client::new() }
+    }
+}

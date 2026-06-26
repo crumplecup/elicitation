@@ -1,8 +1,9 @@
 //! `reqwest::Method` elicitation (Select pattern).
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree, Select,
+    TypeMetadata, VariantMetadata, mcp,
 };
 
 crate::default_style!(reqwest::Method => MethodStyle);
@@ -118,6 +119,30 @@ impl ElicitIntrospect for reqwest::Method {
                     })
                     .collect(),
             },
+        }
+    }
+}
+
+impl ElicitPromptTree for reqwest::Method {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let branch_count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("Select HTTP method:").to_string(),
+            type_name: "reqwest::Method".to_string(),
+            options: labels,
+            branches: vec![None; branch_count],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for reqwest::Method {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let method = self.as_str();
+
+        quote::quote! {
+            reqwest::Method::from_bytes(#method.as_bytes())
+                .map_err(elicitation::ElicitError::from)?
         }
     }
 }
