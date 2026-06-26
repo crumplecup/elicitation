@@ -21,6 +21,18 @@ rustc := if path_exists(home_directory() / ".rustup/toolchains/stable-x86_64-unk
     "rustc"
 }
 
+nightly_cargo := if path_exists(home_directory() / ".rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/cargo") == "true" {
+    home_directory() / ".rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/cargo"
+} else {
+    "cargo"
+}
+
+nightly_rustc := if path_exists(home_directory() / ".rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/rustc") == "true" {
+    home_directory() / ".rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/rustc"
+} else {
+    "rustc"
+}
+
 export RUSTC := rustc
 export CARGO_TARGET_DIR := justfile_directory() / "target"
 
@@ -121,7 +133,7 @@ check package="":
         echo "🔍 Checking entire workspace (stable)..."
         {{cargo}} check --workspace --exclude elicitation_creusot --exclude elicitation_kani
         echo "🔍 Checking nightly-only crates..."
-        {{cargo}} +nightly check -p elicitation_creusot -p elicitation_kani
+        RUSTC={{nightly_rustc}} {{nightly_cargo}} check -p elicitation_creusot -p elicitation_kani
     else
         echo "🔍 Checking package: {{package}}"
         {{cargo}} check -p {{package}}
@@ -156,7 +168,7 @@ test package="" test_name="":
             --exclude elicitation_creusot \
             --exclude elicitation_kani
         echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
-        {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests
+        RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --lib --tests
     elif [ -z "{{test_name}}" ]; then
         # Package specified, no test - run all tests for package
         {{cargo}} test --package {{package}} --lib --tests
@@ -174,7 +186,7 @@ test-verbose:
         --exclude elicitation_kani \
         -- --nocapture
     echo "🧪 Testing nightly-only crates (elicitation_creusot, elicitation_kani)..."
-    {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests -- --nocapture
+    RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --lib --tests -- --nocapture
 
 # Run doctests
 test-doc:
@@ -184,7 +196,7 @@ test-doc:
         --exclude elicitation_creusot \
         --exclude elicitation_kani
     echo "📖 Running doctests (nightly-only crates)..."
-    {{cargo}} +nightly test -p elicitation_creusot -p elicitation_kani --doc
+    RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --doc
 
 # Run tests for a specific package
 test-package package test_name="":
@@ -257,7 +269,7 @@ lint package='':
         fi
         rm -f "$LOG_FILE"
         echo "🔍 Linting nightly-only crates (elicitation_creusot, elicitation_kani)"
-        if ! cargo +nightly clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+        if ! RUSTC={{nightly_rustc}} {{nightly_cargo}} clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
             echo ""
             echo "⚠️  Lint (nightly) failed. Full log saved to: $LOG_FILE"
             exit 1
@@ -398,7 +410,7 @@ check-all package='':
             EXIT_CODE=1
         fi
         echo "🔍 Linting nightly-only crates (elicitation_creusot, elicitation_kani)"
-        if ! cargo +nightly clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+        if ! RUSTC={{nightly_rustc}} {{nightly_cargo}} clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
@@ -409,7 +421,7 @@ check-all package='':
             2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
-        if ! cargo +nightly test -p elicitation_creusot -p elicitation_kani --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
+        if ! RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
