@@ -1441,7 +1441,7 @@ fn generate_elicit_impl_styled(
     quote! {
         // Generate style selection enum
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-        enum #style_enum_name {
+        pub enum #style_enum_name {
             #[default]
             #default_variant,
             #(#other_variants),*
@@ -1457,12 +1457,12 @@ fn generate_elicit_impl_styled(
         impl elicitation::style::ElicitationStyle for #style_enum_name {}
 
         impl elicitation::Select for #style_enum_name {
-            fn options() -> &'static [Self] {
-                &[#(Self::#style_variants),*]
+            fn options() -> Vec<Self> {
+                vec![#(Self::#style_variants),*]
             }
 
-            fn labels() -> &'static [&'static str] {
-                &[#(#style_labels),*]
+            fn labels() -> Vec<String> {
+                vec![#(#style_labels.to_string()),*]
             }
 
             fn from_label(label: &str) -> Option<Self> {
@@ -1499,11 +1499,11 @@ fn generate_elicit_impl_styled(
 
                 // Parse response - try as number first, then as label
                 let selected = response.trim();
-                let label = if let Ok(num) = selected.parse::<usize>() {
+                let label: String = if let Ok(num) = selected.parse::<usize>() {
                     // User gave a number (1-indexed)
                     let labels = <Self as elicitation::Select>::labels();
                     if num > 0 && num <= labels.len() {
-                        labels[num - 1]
+                        labels[num - 1].clone()
                     } else {
                         return Err(elicitation::ElicitError::new(
                             elicitation::ElicitErrorKind::InvalidOption {
@@ -1514,10 +1514,11 @@ fn generate_elicit_impl_styled(
                     }
                 } else {
                     // User gave a label directly
-                    selected
+                    selected.to_string()
                 };
 
-                <Self as elicitation::Select>::from_label(label).ok_or_else(|| {
+                let result = <Self as elicitation::Select>::from_label(&label);
+                result.ok_or_else(|| {
                     elicitation::ElicitError::new(elicitation::ElicitErrorKind::InvalidSelection(label))
                 })
             }

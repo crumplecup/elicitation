@@ -1,6 +1,6 @@
 //! Tests for struct derive macro.
 
-use elicitation::{Elicit, FieldInfo, Prompt, Survey};
+use elicitation::{Elicit, Elicitation, FieldInfo, Prompt, Select, Survey};
 
 #[derive(
     serde::Serialize,
@@ -289,4 +289,47 @@ fn test_unit_struct_survey_fields() {
 fn test_unit_struct_construction() {
     let _p = Parse;
     let _v = Validate;
+}
+
+// ── Styled prompt (Form B) ────────────────────────────────────────────────────
+// Verifies that `#[prompt("...", style = "Name")]` generates a `Select` impl
+// whose signatures match the `Select` trait (`Vec<Self>` / `Vec<String>`).
+
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
+struct StyledPromptStruct {
+    #[prompt("What is your name?", style = "Human")]
+    name: String,
+}
+
+// Access the generated style enum through the `Elicitation::Style` associated type
+// to avoid naming the private `StyledPromptStructElicitStyle` enum directly.
+type StyledPromptStyle = <StyledPromptStruct as Elicitation>::Style;
+
+fn assert_select<T: Select>() {}
+
+#[test]
+fn styled_prompt_style_implements_select_trait() {
+    // Compile-time check: generated Select impl must match the trait signatures
+    assert_select::<StyledPromptStyle>();
+}
+
+#[test]
+fn styled_prompt_select_options_is_vec() {
+    let opts: Vec<StyledPromptStyle> = StyledPromptStyle::options();
+    assert_eq!(opts.len(), 2);
+}
+
+#[test]
+fn styled_prompt_select_labels_is_vec_string() {
+    let labels: Vec<String> = StyledPromptStyle::labels();
+    assert_eq!(labels.len(), 2);
+    assert!(labels.contains(&"default".to_string()));
+    assert!(labels.contains(&"Human".to_string()));
+}
+
+#[test]
+fn styled_prompt_select_from_label_round_trip() {
+    assert!(StyledPromptStyle::from_label("Human").is_some());
+    assert!(StyledPromptStyle::from_label("default").is_some());
+    assert!(StyledPromptStyle::from_label("missing").is_none());
 }
