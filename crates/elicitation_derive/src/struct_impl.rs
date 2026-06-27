@@ -1023,13 +1023,26 @@ fn generate_elicit_impl_simple(
     let elicited_names: Vec<_> = elicited_fields.iter().map(|info| &info.ident).collect();
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
 
-    let elicit_statements: Vec<_> = elicited_names
+    let elicit_statements: Vec<_> = elicited_fields
         .iter()
-        .zip(elicited_types.iter())
-        .map(|(name, ty)| {
+        .map(|info| {
+            let name = &info.ident;
+            let ty = &info.ty;
             let name_str = name.to_string();
+
+            // Inject the field's #[prompt] text as a one-shot override so the
+            // type's elicit uses it instead of its own generic default prompt.
+            let prompt_inject = if let Some(prompt) = &info.default_prompt {
+                quote! {
+                    communicator.style_context().set_field_prompt(#prompt.to_string())?;
+                }
+            } else {
+                quote! {}
+            };
+
             quote! {
                 tracing::debug!(field = #name_str, "Eliciting field");
+                #prompt_inject
                 let #name = <#ty>::elicit(communicator).await?;
             }
         })
@@ -1482,7 +1495,9 @@ fn generate_elicit_impl_styled(
             async fn elicit<C: elicitation::ElicitCommunicator>(
                 communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
-                let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
+                // Field-level prompt from parent struct takes priority.
+                let prompt = communicator.style_context().take_field_prompt()?
+                    .unwrap_or_else(|| <Self as elicitation::Prompt>::prompt().unwrap_or("Select style:").to_string());
                 tracing::debug!("Eliciting style selection");
 
                 // Use send_prompt for server-side compatibility

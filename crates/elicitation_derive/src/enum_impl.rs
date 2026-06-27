@@ -599,7 +599,9 @@ fn generate_elicit_impl(
 
     // Phase 1: Variant selection
     let selection_code = quote! {
-        let base_prompt = <Self as elicitation::Prompt>::prompt().unwrap();
+        // Field-level prompt from parent struct takes priority over the type's own prompt.
+        let base_prompt = communicator.style_context().take_field_prompt()?
+            .unwrap_or_else(|| <Self as elicitation::Prompt>::prompt().unwrap_or("Select:").to_string());
         let labels = <Self as elicitation::Select>::labels();
 
         tracing::debug!(
