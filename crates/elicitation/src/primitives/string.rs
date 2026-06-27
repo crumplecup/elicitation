@@ -86,6 +86,12 @@ impl Elicitation for String {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        // Field-level prompt set by the parent struct's generated elicit takes priority.
+        if let Some(prompt) = communicator.style_context().take_field_prompt()? {
+            tracing::debug!(%prompt, "Eliciting String with field prompt override");
+            return communicator.send_prompt(&prompt).await;
+        }
+
         let style = communicator.style_or_elicit::<Self>().await?;
 
         tracing::debug!(?style, "Eliciting String with style");

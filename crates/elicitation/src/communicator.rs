@@ -224,6 +224,13 @@ impl<T: crate::style::ElicitationStyle + 'static> StyleEntry for T {
 #[derive(Clone, Default)]
 pub struct StyleContext {
     styles: Arc<RwLock<HashMap<TypeId, Box<dyn StyleEntry>>>>,
+    /// One-shot prompt override set by struct field elicitation before calling
+    /// the field type's `elicit`. Consumed by the first [`prompt_for_type`] call
+    /// or by [`take_field_prompt`], so nested elicitations see their own prompts.
+    ///
+    /// [`prompt_for_type`]: StyleContext::prompt_for_type
+    /// [`take_field_prompt`]: StyleContext::take_field_prompt
+    field_prompt: Arc<RwLock<Option<String>>>,
 }
 
 impl StyleContext {
@@ -274,12 +281,54 @@ impl StyleContext {
             .cloned())
     }
 
+    /// Set a one-shot field-level prompt override.
+    ///
+    /// Called by the generated struct `elicit` before delegating to a field
+    /// type's `elicit`. The override is consumed by the first
+    /// [`prompt_for_type`] or [`take_field_prompt`] call, so it does not
+    /// leak into nested elicitations.
+    ///
+    /// [`prompt_for_type`]: StyleContext::prompt_for_type
+    /// [`take_field_prompt`]: StyleContext::take_field_prompt
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the lock is poisoned.
+    pub fn set_field_prompt(&self, prompt: String) -> ElicitResult<()> {
+        let mut guard = self.field_prompt.write().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "StyleContext field_prompt lock poisoned: {}",
+                e
+            )))
+        })?;
+        *guard = Some(prompt);
+        Ok(())
+    }
+
+    /// Consume and return the current field-level prompt override, if any.
+    ///
+    /// Returns `None` when no override is set, allowing types to fall back
+    /// to their own [`Prompt::prompt`](crate::Prompt::prompt) default.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the lock is poisoned.
+    pub fn take_field_prompt(&self) -> ElicitResult<Option<String>> {
+        let mut guard = self.field_prompt.write().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "StyleContext field_prompt lock poisoned: {}",
+                e
+            )))
+        })?;
+        Ok(guard.take())
+    }
+
     /// Generate a prompt for a type using its stored custom style.
     ///
-    /// Returns `None` if no custom style was set for this type, allowing
-    /// callers to fall back to the default `Prompt::prompt()` string.
-    /// This enables primitive types (u64, i32, etc.) to respect styles
-    /// set via `with_style` without knowing the concrete style type.
+    /// Checks the one-shot field-level prompt override first (set by the
+    /// parent struct's generated `elicit`). Falls back to the style-derived
+    /// prompt, then returns `None` so callers can fall back to the type's own
+    /// [`Prompt::prompt`](crate::Prompt::prompt).
     ///
     /// # Errors
     ///
@@ -291,6 +340,10 @@ impl StyleContext {
         field_type: &str,
         context: &crate::style::PromptContext,
     ) -> ElicitResult<Option<String>> {
+        // Field-level override wins; consumed here so nested calls see their own prompts.
+        if let Some(prompt) = self.take_field_prompt()? {
+            return Ok(Some(prompt));
+        }
         let type_id = TypeId::of::<T>();
         let styles = self.styles.read().map_err(|e| {
             ElicitError::new(ElicitErrorKind::ParseError(format!(
