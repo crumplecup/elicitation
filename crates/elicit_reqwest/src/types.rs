@@ -1,16 +1,17 @@
 //! Newtypes for reqwest/http types that add `JsonSchema` + `Serialize` + `Deserialize`.
 
 use elicitation::{
-    Elicit, ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, ElicitSpec,
-    Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, proc_macro2::TokenStream,
+    Elicit, ElicitCommunicator, ElicitComplete, ElicitIntrospect, ElicitPromptTree, ElicitResult,
+    ElicitSpec, Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, emit_code::ToCodeLiteral,
+    proc_macro2::TokenStream,
 };
 use std::sync::Arc;
 
 use schemars::{JsonSchema, SchemaGenerator, json_schema};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-// url::Url has Elicitation support via elicitation feature = "url"
-pub use url::Url;
+// elicit_url::Url is the ecosystem shadow type for url::Url
+pub use elicit_url::Url;
 
 // ── Method ────────────────────────────────────────────────────────────────────
 
@@ -332,11 +333,6 @@ impl HeaderValue {
         Self::from(http::HeaderValue::from_static(src))
     }
 
-    /// Construct a header value from a validated string.
-    pub fn from_str(src: &str) -> Result<Self, http::header::InvalidHeaderValue> {
-        http::HeaderValue::from_str(src).map(Self::from)
-    }
-
     /// Construct a header value from raw bytes.
     pub fn from_bytes(src: &[u8]) -> Result<Self, http::header::InvalidHeaderValue> {
         http::HeaderValue::from_bytes(src).map(Self::from)
@@ -362,6 +358,14 @@ impl From<http::HeaderValue> for HeaderValue {
 impl From<HeaderValue> for http::HeaderValue {
     fn from(value: HeaderValue) -> Self {
         Arc::try_unwrap(value.0).unwrap_or_else(|arc| (*arc).clone())
+    }
+}
+
+impl std::str::FromStr for HeaderValue {
+    type Err = http::header::InvalidHeaderValue;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        http::HeaderValue::from_str(s).map(Self::from)
     }
 }
 
@@ -547,3 +551,102 @@ impl_elicitation_for_reqwest_newtype!(
     description = "HTTP headers as a string-to-string map",
     type_name_str = "HeaderMap",
 );
+
+// ── ElicitComplete ────────────────────────────────────────────────────────────
+
+impl ElicitComplete for Method {}
+impl ElicitComplete for StatusCode {}
+impl ElicitComplete for Version {}
+impl ElicitComplete for HeaderMap {}
+impl ElicitComplete for HeaderValue {}
+
+// ── ToCodeLiteral ─────────────────────────────────────────────────────────────
+
+impl ToCodeLiteral for Method {
+    fn to_code_literal(&self) -> TokenStream {
+        let s = self.0.as_str();
+        quote::quote! {
+            ::elicit_reqwest::Method::from(
+                match ::reqwest::Method::from_bytes(#s.as_bytes()) {
+                    ::std::result::Result::Ok(m) => m,
+                    ::std::result::Result::Err(error) => {
+                        return ::std::result::Result::Err(error.into());
+                    }
+                }
+            )
+        }
+    }
+}
+
+impl ToCodeLiteral for StatusCode {
+    fn to_code_literal(&self) -> TokenStream {
+        let code = self.0.as_u16();
+        quote::quote! {
+            match ::elicit_reqwest::StatusCode::from_u16(#code) {
+                ::std::result::Result::Ok(s) => s,
+                ::std::result::Result::Err(error) => {
+                    return ::std::result::Result::Err(error.into());
+                }
+            }
+        }
+    }
+}
+
+impl ToCodeLiteral for Version {
+    fn to_code_literal(&self) -> TokenStream {
+        let variant = match *self.0 {
+            reqwest::Version::HTTP_09 => quote::quote! { ::reqwest::Version::HTTP_09 },
+            reqwest::Version::HTTP_10 => quote::quote! { ::reqwest::Version::HTTP_10 },
+            reqwest::Version::HTTP_11 => quote::quote! { ::reqwest::Version::HTTP_11 },
+            reqwest::Version::HTTP_2 => quote::quote! { ::reqwest::Version::HTTP_2 },
+            reqwest::Version::HTTP_3 => quote::quote! { ::reqwest::Version::HTTP_3 },
+            _ => quote::quote! { ::reqwest::Version::HTTP_11 },
+        };
+        quote::quote! { ::elicit_reqwest::Version::from(#variant) }
+    }
+}
+
+impl ToCodeLiteral for HeaderValue {
+    fn to_code_literal(&self) -> TokenStream {
+        let bytes = self.0.as_bytes().to_vec();
+        quote::quote! {
+            match ::elicit_reqwest::HeaderValue::from_bytes(&[#(#bytes),*]) {
+                ::std::result::Result::Ok(v) => v,
+                ::std::result::Result::Err(error) => {
+                    return ::std::result::Result::Err(error.into());
+                }
+            }
+        }
+    }
+}
+
+impl ToCodeLiteral for HeaderMap {
+    fn to_code_literal(&self) -> TokenStream {
+        let entries: Vec<_> = self
+            .0
+            .iter()
+            .map(|(name, value)| {
+                let name_str = name.as_str();
+                let value_ts = HeaderValue::from(value.clone()).to_code_literal();
+                quote::quote! {
+                    map.insert(
+                        match ::http::header::HeaderName::from_bytes(#name_str.as_bytes()) {
+                            ::std::result::Result::Ok(n) => n,
+                            ::std::result::Result::Err(error) => {
+                                return ::std::result::Result::Err(error.into());
+                            }
+                        },
+                        #value_ts,
+                    )
+                }
+            })
+            .collect();
+        quote::quote! {
+            {
+                let mut map = ::elicit_reqwest::HeaderMap::default();
+                #(#entries;)*
+                map
+            }
+        }
+    }
+}

@@ -275,7 +275,7 @@ axum-core = "0.5"
 tower = { version = "0.5", features = ["full"] }
 tower-http = { version = "0.6", features = ["full"] }
 bytes = "1"
-reqwest = { version = "0.13", features = ["json", "cookies", "stream"] }
+reqwest = { version = "0.13", features = ["json", "cookies", "stream", "gzip", "brotli", "deflate", "zstd", "native-tls"] }
 leptos = { version = "0.8", features = ["ssr"] }
 leptos_axum = "0.8"
 wasm-bindgen = "0.2"
@@ -328,6 +328,8 @@ tempfile = "3"
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 criterion = { version = "0.8", features = ["html_reports"] }
+mockall = "0.13"
+rcgen = "0.13"
 
 [profile.release]
 lto = true

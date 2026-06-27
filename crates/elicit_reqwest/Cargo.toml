@@ -16,6 +16,7 @@ categories = ["web-programming::http-client", "development-tools", "asynchronous
 # Elicitation framework with reqwest + url support
 elicitation = { workspace = true, features = ["reqwest"] }
 elicitation_derive.workspace = true
+elicit_url.workspace = true
 
 # HTTP client
 reqwest.workspace = true
@@ -55,6 +56,10 @@ emit = ["elicitation/emit"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }
+mockall.workspace = true
+syn.workspace = true
+prettyplease.workspace = true
+rcgen.workspace = true
 
 [lints]
 workspace = true
