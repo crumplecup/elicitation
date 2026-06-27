@@ -597,6 +597,225 @@ impl ToCodeLiteral for ReqwestTlsInfo {
 
 impl ElicitComplete for ReqwestTlsInfo {}
 
+// ── ReqwestCertificateRevocationList ──────────────────────────────────────────
+
+/// How a [`ReqwestCertificateRevocationList`] was constructed.
+///
+/// `Pem` stores the raw bytes as given to `from_pem`. `Bundle` stores the full
+/// PEM bundle bytes and the index of this CRL within the bundle, so `build_raw`
+/// can re-parse the exact entry via `from_pem_bundle`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, crate::Elicit)]
+#[prompt("How was this CRL constructed?")]
+enum ReqwestCrlRecipe {
+    /// Constructed from a single PEM-encoded CRL.
+    Pem {
+        #[prompt("PEM bytes of the CRL:")]
+        pem: Vec<u8>,
+    },
+    /// Constructed from a PEM bundle; records which entry this CRL is.
+    Bundle {
+        #[prompt("Full PEM bundle bytes:")]
+        bundle: Vec<u8>,
+        #[prompt("Zero-based index of this CRL within the bundle:")]
+        index: usize,
+    },
+}
+
+/// Elicitation-aware trenchcoat for `reqwest::tls::CertificateRevocationList`.
+///
+/// `CertificateRevocationList` is not `Clone`, so the raw object cannot be
+/// cached. `build_raw` always reconstructs the CRL from the stored recipe bytes,
+/// which is cheap (no network I/O) and deterministic.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct ReqwestCertificateRevocationList {
+    recipe: ReqwestCrlRecipe,
+}
+
+impl Prompt for ReqwestCertificateRevocationList {
+    fn prompt() -> Option<&'static str> {
+        Some("Describe a certificate revocation list (CRL) snapshot:")
+    }
+}
+
+impl Elicitation for ReqwestCertificateRevocationList {
+    type Style = ();
+
+    #[tracing::instrument(skip(communicator), level = "debug")]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let recipe = ReqwestCrlRecipe::elicit(communicator).await?;
+        Ok(Self { recipe })
+    }
+
+    fn kani_proof() -> TokenStream {
+        ReqwestCrlRecipe::kani_proof()
+    }
+
+    fn verus_proof() -> TokenStream {
+        ReqwestCrlRecipe::verus_proof()
+    }
+
+    fn creusot_proof() -> TokenStream {
+        ReqwestCrlRecipe::creusot_proof()
+    }
+}
+
+impl ElicitIntrospect for ReqwestCertificateRevocationList {
+    fn pattern() -> crate::ElicitationPattern {
+        ReqwestCrlRecipe::pattern()
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "elicitation::ReqwestCertificateRevocationList",
+            description: Self::prompt(),
+            details: ReqwestCrlRecipe::metadata().details,
+        }
+    }
+}
+
+impl ElicitPromptTree for ReqwestCertificateRevocationList {
+    fn prompt_tree() -> PromptTree {
+        match ReqwestCrlRecipe::prompt_tree() {
+            PromptTree::Survey { fields, .. } => PromptTree::Survey {
+                prompt: Self::prompt().map(str::to_string),
+                type_name: "elicitation::ReqwestCertificateRevocationList".to_string(),
+                fields,
+            },
+            tree => tree.with_prompt(Self::prompt().map(str::to_string)),
+        }
+    }
+}
+
+impl ElicitSpec for ReqwestCertificateRevocationList {
+    fn type_spec() -> TypeSpec {
+        TypeSpec::new(
+            "elicitation::ReqwestCertificateRevocationList",
+            "Owned trenchcoat for `reqwest::tls::CertificateRevocationList`. \
+             Stores the PEM bytes so the CRL can be rebuilt after serialization.",
+            vec![
+                SpecCategory::new(
+                    "construction",
+                    vec![
+                        SpecEntry::new("from_pem", "Construct a CRL trenchcoat from a single PEM-encoded CRL.")
+                            .with_expression(Some(
+                                "::elicitation::ReqwestCertificateRevocationList::from_pem(pem)".to_string(),
+                            )),
+                        SpecEntry::new(
+                            "from_pem_bundle",
+                            "Parse a PEM bundle into multiple CRL trenchcoats (one per entry).",
+                        )
+                        .with_expression(Some(
+                            "::elicitation::ReqwestCertificateRevocationList::from_pem_bundle(pem_bundle)".to_string(),
+                        )),
+                    ],
+                ),
+                SpecCategory::new(
+                    "recovery",
+                    vec![SpecEntry::new(
+                        "build_raw",
+                        "Rebuild a raw `reqwest::tls::CertificateRevocationList` from stored PEM bytes.",
+                    )
+                    .with_expression(Some("crl.build_raw()".to_string()))],
+                ),
+            ],
+        )
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "elicitation::ReqwestCertificateRevocationList",
+    <ReqwestCertificateRevocationList as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<ReqwestCertificateRevocationList>
+));
+
+impl ToCodeLiteral for ReqwestCertificateRevocationList {
+    #[tracing::instrument(skip(self), level = "trace")]
+    fn to_code_literal(&self) -> TokenStream {
+        match &self.recipe {
+            ReqwestCrlRecipe::Pem { pem } => {
+                let bytes = pem.iter();
+                quote::quote! {
+                    ::elicitation::ReqwestCertificateRevocationList::from_pem(&[#(#bytes),*])?
+                }
+            }
+            ReqwestCrlRecipe::Bundle { bundle, index } => {
+                let bytes = bundle.iter();
+                quote::quote! {
+                    ::elicitation::ReqwestCertificateRevocationList::from_pem_bundle(
+                        &[#(#bytes),*]
+                    )?
+                    .into_iter()
+                    .nth(#index)
+                    .ok_or_else(|| ::elicitation::ElicitError::new(
+                        ::elicitation::ElicitErrorKind::ParseError(
+                            ::std::format!("CRL bundle index {} out of range", #index)
+                        )
+                    ))?
+                }
+            }
+        }
+    }
+}
+
+impl ElicitComplete for ReqwestCertificateRevocationList {}
+
+impl ReqwestCertificateRevocationList {
+    /// Construct a CRL trenchcoat from a single PEM-encoded CRL.
+    ///
+    /// Validates the PEM at construction time. `build_raw` reconstructs the CRL
+    /// from the stored bytes; `CertificateRevocationList` is not `Clone`, so no
+    /// raw object is cached.
+    #[tracing::instrument(skip(pem), level = "debug")]
+    pub fn from_pem(pem: &[u8]) -> ElicitResult<Self> {
+        reqwest::tls::CertificateRevocationList::from_pem(pem)?;
+        Ok(Self {
+            recipe: ReqwestCrlRecipe::Pem { pem: pem.to_vec() },
+        })
+    }
+
+    /// Parse a PEM bundle, returning one trenchcoat per CRL entry found.
+    ///
+    /// Each returned trenchcoat stores the full bundle bytes and its index so
+    /// `build_raw` can re-parse the exact entry.
+    #[tracing::instrument(skip(pem_bundle), level = "debug")]
+    pub fn from_pem_bundle(pem_bundle: &[u8]) -> ElicitResult<Vec<Self>> {
+        let count = reqwest::tls::CertificateRevocationList::from_pem_bundle(pem_bundle)?.len();
+        Ok((0..count)
+            .map(|index| Self {
+                recipe: ReqwestCrlRecipe::Bundle {
+                    bundle: pem_bundle.to_vec(),
+                    index,
+                },
+            })
+            .collect())
+    }
+
+    /// Rebuild a raw `reqwest::tls::CertificateRevocationList` from stored bytes.
+    #[tracing::instrument(skip(self), level = "debug")]
+    pub fn build_raw(&self) -> ElicitResult<reqwest::tls::CertificateRevocationList> {
+        match &self.recipe {
+            ReqwestCrlRecipe::Pem { pem } => reqwest::tls::CertificateRevocationList::from_pem(pem)
+                .map_err(crate::ElicitError::from),
+            ReqwestCrlRecipe::Bundle { bundle, index } => {
+                reqwest::tls::CertificateRevocationList::from_pem_bundle(bundle)
+                    .map_err(crate::ElicitError::from)
+                    .and_then(|mut crls| {
+                        if *index < crls.len() {
+                            Ok(crls.remove(*index))
+                        } else {
+                            Err(crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
+                                format!(
+                                    "CRL bundle index {index} out of range (bundle has {} entries)",
+                                    crls.len()
+                                ),
+                            )))
+                        }
+                    })
+            }
+        }
+    }
+}
+
 impl ReqwestTlsInfo {
     /// Wrap a live `reqwest::tls::TlsInfo`.
     #[tracing::instrument(skip(raw), level = "debug")]

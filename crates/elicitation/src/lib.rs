@@ -250,7 +250,10 @@ pub use collections::ChoiceSet;
 pub use crate::primitives::http::capture_reqwest_response;
 #[cfg(feature = "reqwest")]
 pub use crate::primitives::http::{
-    ReqwestCertificate, ReqwestIdentity, ReqwestNoProxy, ReqwestProxy, ReqwestTlsInfo,
+    ReqwestCertificate, ReqwestCertificateRevocationList, ReqwestCookie, ReqwestCookieAttributes,
+    ReqwestCookieEntry, ReqwestCookieFlags, ReqwestCookieJar, ReqwestIdentity, ReqwestNoProxy,
+    ReqwestProxy, ReqwestRedirectAction, ReqwestRedirectAttempt, ReqwestRedirectPolicy,
+    ReqwestRetryBuilder, ReqwestTlsInfo,
 };
 pub use rmcp;
 
