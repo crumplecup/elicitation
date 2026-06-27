@@ -200,6 +200,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
+        &input.attrs,
         &input.data,
         &impl_generics,
         &ty_generics,
@@ -1347,6 +1348,7 @@ pub fn expand_enum_e13(input: DeriveInput) -> TokenStream {
     );
     let to_code_literal = crate::derive_to_code_literal::generate_to_code_literal_impl(
         &name,
+        &input.attrs,
         &input.data,
         &impl_generics,
         &ty_generics,

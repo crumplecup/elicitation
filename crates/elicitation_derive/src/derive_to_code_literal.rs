@@ -291,21 +291,47 @@ pub fn expand(input: TokenStream) -> TokenStream {
 ///
 /// Called by `expand_named_struct`, `expand_tuple_struct`, `expand_unit_struct`,
 /// and `expand_enum` to emit the impl alongside the `Elicitation` impl.
+///
+/// Reads any `#[to_code_literal(...)]` attributes on the item so that path,
+/// tuple, and raw_tuple options declared on the type are honoured.
 pub fn generate_to_code_literal_impl(
     name: &syn::Ident,
+    attrs: &[syn::Attribute],
     data: &syn::Data,
     impl_generics: &syn::ImplGenerics,
     ty_generics: &syn::TypeGenerics,
     where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
+    let options = match parse_options(attrs) {
+        Ok(opts) => opts,
+        Err(error) => return error.to_compile_error(),
+    };
+    let literal_type = options
+        .type_path
+        .clone()
+        .unwrap_or_else(|| quote! { #name });
+
+    let update_expr = if options.default_update {
+        Some(quote! { ::std::default::Default::default() })
+    } else {
+        options.update_expr.clone()
+    };
+
     let body = match data {
         syn::Data::Struct(data) => {
-            match gen_struct_body(&quote! { #name }, &data.fields, false, false, None, None) {
+            match gen_struct_body(
+                &literal_type,
+                &data.fields,
+                options.tuple,
+                options.raw_tuple,
+                update_expr.as_ref(),
+                options.default_expr.as_ref(),
+            ) {
                 Ok(body) => body,
                 Err(error) => return error.to_compile_error(),
             }
         }
-        syn::Data::Enum(data) => gen_enum_body(name, &quote! { #name }, data),
+        syn::Data::Enum(data) => gen_enum_body(name, &literal_type, data),
         syn::Data::Union(_) => {
             return syn::Error::new_spanned(name, "ToCodeLiteral cannot be derived for unions")
                 .to_compile_error();
@@ -378,7 +404,9 @@ pub fn generate_to_code_literal_impl(
             }
 
             fn type_tokens() -> ::elicitation::proc_macro2::TokenStream {
-                ::elicitation::emit_code::CodeLiteralEmitter::type_tokens(stringify!(#name))
+                ::elicitation::emit_code::CodeLiteralEmitter::type_tokens(
+                    ::std::stringify!(#literal_type)
+                )
             }
         }
     }

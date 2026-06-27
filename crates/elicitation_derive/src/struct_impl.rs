@@ -184,6 +184,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
+        &input.attrs,
         &input.data,
         &impl_generics,
         &ty_generics,
@@ -540,6 +541,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
+        &input.attrs,
         &input.data,
         &impl_generics,
         &ty_generics,
@@ -765,6 +767,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
+        &input.attrs,
         &input.data,
         &impl_generics,
         &ty_generics,
