@@ -21,3 +21,6 @@ Cargo.lock
 check_out.txt
 check_output.txt
 rustc-ice-*.txt
+
+# Local redb databases
+*.redb
