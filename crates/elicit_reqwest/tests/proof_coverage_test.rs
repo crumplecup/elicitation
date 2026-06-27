@@ -12,26 +12,27 @@ fn assert_elicit_complete<T: elicitation::ElicitComplete>() {}
 
 #[test]
 fn all_reqwest_types_are_elicit_complete() {
-    // WIP: these types are implemented in their modules but not yet wired into
-    // lib.rs — un-comment as each module is enabled.
-    // assert_elicit_complete::<elicit_reqwest::Action>();
-    // assert_elicit_complete::<elicit_reqwest::Body>();
-    // assert_elicit_complete::<elicit_reqwest::Certificate>();
-    // assert_elicit_complete::<elicit_reqwest::Client>();
-    // assert_elicit_complete::<elicit_reqwest::ClientBuilder>();
-    // assert_elicit_complete::<elicit_reqwest::Error>();
-    // assert_elicit_complete::<elicit_reqwest::RequestBuilder>();
-    // assert_elicit_complete::<elicit_reqwest::Identity>();
-    // assert_elicit_complete::<elicit_reqwest::NoProxy>();
-    // assert_elicit_complete::<elicit_reqwest::Policy>();
-    // assert_elicit_complete::<elicit_reqwest::Proxy>();
-    // assert_elicit_complete::<elicit_reqwest::Request>();
-    // assert_elicit_complete::<elicit_reqwest::Response>();
-    // assert_elicit_complete::<elicit_reqwest::Method>();
-    // assert_elicit_complete::<elicit_reqwest::StatusCode>();
-    // assert_elicit_complete::<elicit_reqwest::TlsInfo>();
-    // assert_elicit_complete::<elicit_reqwest::Version>();
-    // assert_elicit_complete::<elicit_reqwest::HeaderMap>();
+    assert_elicit_complete::<elicit_reqwest::Action>();
+    assert_elicit_complete::<elicit_reqwest::Body>();
+    assert_elicit_complete::<elicit_reqwest::Certificate>();
+    assert_elicit_complete::<elicit_reqwest::CertificateRevocationList>();
+    assert_elicit_complete::<elicit_reqwest::Client>();
+    assert_elicit_complete::<elicit_reqwest::ClientBuilder>();
+    assert_elicit_complete::<elicit_reqwest::Error>();
+    assert_elicit_complete::<elicit_reqwest::HeaderMap>();
+    assert_elicit_complete::<elicit_reqwest::HeaderValue>();
+    assert_elicit_complete::<elicit_reqwest::Identity>();
+    assert_elicit_complete::<elicit_reqwest::Method>();
+    assert_elicit_complete::<elicit_reqwest::NoProxy>();
+    assert_elicit_complete::<elicit_reqwest::Policy>();
+    assert_elicit_complete::<elicit_reqwest::Proxy>();
+    assert_elicit_complete::<elicit_reqwest::Request>();
+    assert_elicit_complete::<elicit_reqwest::RequestBuilder>();
+    assert_elicit_complete::<elicit_reqwest::Response>();
+    assert_elicit_complete::<elicit_reqwest::StatusCode>();
+    assert_elicit_complete::<elicit_reqwest::TlsInfo>();
+    assert_elicit_complete::<elicit_reqwest::TlsVersion>();
+    assert_elicit_complete::<elicit_reqwest::Version>();
 }
 
 // ── Proof coverage ────────────────────────────────────────────────────────────
