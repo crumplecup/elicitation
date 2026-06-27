@@ -199,13 +199,20 @@ test-doc:
     RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --doc
 
 # Run tests for a specific package
-test-package package test_name="":
+test-package package test_name="" features="":
     #!/usr/bin/env bash
     echo "📦 Testing {{package}}"
-    if [ -n "{{test_name}}" ]; then
-        {{cargo}} test -p {{package}} --lib --tests {{test_name}} -- --nocapture
+    if [ "{{features}}" = "all" ]; then
+        FEATURES_FLAG="--all-features"
+    elif [ -n "{{features}}" ]; then
+        FEATURES_FLAG="--features {{features}}"
     else
-        {{cargo}} test -p {{package}} --lib --tests
+        FEATURES_FLAG=""
+    fi
+    if [ -n "{{test_name}}" ]; then
+        {{cargo}} test -p {{package}} $FEATURES_FLAG --lib --tests {{test_name}} -- --nocapture
+    else
+        {{cargo}} test -p {{package}} $FEATURES_FLAG --lib --tests
     fi
 
 # Run API tests (rate-limited, expensive)
