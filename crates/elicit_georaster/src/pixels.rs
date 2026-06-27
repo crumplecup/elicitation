@@ -5,13 +5,7 @@ use elicitation::Elicit;
 
 /// Owned wrapper for the collected output of `GeoTiffReader::pixels(...)`.
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-    Elicit,
+    Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Elicit,
 )]
 #[prompt("Describe a collected GeoTIFF pixel window:")]
 pub struct Pixels {

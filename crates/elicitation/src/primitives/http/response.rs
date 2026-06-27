@@ -5,9 +5,8 @@
 //! mock responses in tests without a live HTTP server.
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult,
-    Elicitation, ElicitationPattern, PatternDetails, Prompt, TypeMetadata,
-    emit_code::ToCodeLiteral,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, PatternDetails, Prompt, TypeMetadata, emit_code::ToCodeLiteral,
 };
 use bytes::Bytes;
 use reqwest::Response;
@@ -87,8 +86,7 @@ impl Elicitation for Response {
         let response = http::Response::builder()
             .status(status)
             .url(url)
-            .body(Bytes::from(body_text))
-            ?;
+            .body(Bytes::from(body_text))?;
 
         Ok(Response::from(response))
     }
@@ -148,9 +146,7 @@ impl crate::ElicitPromptTree for Response {
                     "status".to_string(),
                     Box::new(
                         <reqwest::StatusCode as crate::ElicitPromptTree>::prompt_tree()
-                            .with_prompt(Some(
-                                "HTTP status code (e.g. 200, 404, 500)".to_string(),
-                            )),
+                            .with_prompt(Some("HTTP status code (e.g. 200, 404, 500)".to_string())),
                     ),
                 ),
                 (
@@ -176,8 +172,7 @@ impl crate::ElicitPromptTree for Response {
 impl ToCodeLiteral for Response {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let Some(snapshot) = self.extensions().get::<CapturedResponseSnapshot>() else {
-            let message =
-                "reqwest::Response code recovery requires capture_reqwest_response(response).await before storing or emitting the value";
+            let message = "reqwest::Response code recovery requires capture_reqwest_response(response).await before storing or emitting the value";
             return quote::quote! {{
                 compile_error!(#message);
             }};
@@ -247,7 +242,10 @@ mod tests {
             "application/json"
         );
         assert_eq!(
-            response.bytes().await.expect("body should still be readable"),
+            response
+                .bytes()
+                .await
+                .expect("body should still be readable"),
             Bytes::from_static(br#"{"ok":true}"#),
         );
     }

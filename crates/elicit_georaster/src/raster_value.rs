@@ -4,13 +4,7 @@ use elicitation::Elicit;
 
 /// Serializable shadow of [`georaster::geotiff::RasterValue`].
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-    Elicit,
+    Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Elicit,
 )]
 #[prompt("Choose a georaster pixel value:")]
 pub enum RasterValue {

@@ -74,17 +74,11 @@ impl Elicitation for reqwest::tls::Version {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper(
-            "reqwest::tls::Version",
-            "TLS 1.2",
-        )
+        crate::verification::proof_helpers::kani_select_wrapper("reqwest::tls::Version", "TLS 1.2")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper(
-            "reqwest::tls::Version",
-            "TLS 1.2",
-        )
+        crate::verification::proof_helpers::verus_select_wrapper("reqwest::tls::Version", "TLS 1.2")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {

@@ -86,8 +86,7 @@ impl crate::ElicitPromptTree for reqwest::Body {
 impl ToCodeLiteral for reqwest::Body {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let Some(bytes) = body_bytes(self) else {
-            let message =
-                "reqwest::Body code recovery requires an in-memory body; streamed bodies cannot be reconstructed from &self";
+            let message = "reqwest::Body code recovery requires an in-memory body; streamed bodies cannot be reconstructed from &self";
             return quote::quote! {{
                 compile_error!(#message);
             }};

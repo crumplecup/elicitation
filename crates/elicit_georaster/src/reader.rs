@@ -18,16 +18,7 @@ use std::{
 /// Result type for fallible GeoTIFF reader operations.
 pub type GeoRasterResult<T> = Result<T, tiff::TiffError>;
 
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    JsonSchema,
-    Elicit,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
 #[prompt("Describe a GeoTIFF reader snapshot:")]
 struct GeoTiffReaderSnapshot {
     #[prompt("GeoTIFF file bytes:")]
@@ -94,11 +85,15 @@ impl Elicitation for GeoTiffReader {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        elicitation::verification::proof_helpers::kani_trusted_opaque("elicit_georaster::GeoTiffReader")
+        elicitation::verification::proof_helpers::kani_trusted_opaque(
+            "elicit_georaster::GeoTiffReader",
+        )
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        elicitation::verification::proof_helpers::verus_trusted_opaque("elicit_georaster::GeoTiffReader")
+        elicitation::verification::proof_helpers::verus_trusted_opaque(
+            "elicit_georaster::GeoTiffReader",
+        )
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {

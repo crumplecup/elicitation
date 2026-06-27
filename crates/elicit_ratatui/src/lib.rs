@@ -64,10 +64,10 @@ pub use state::{
 pub use style::Style;
 #[cfg(feature = "runtime")]
 pub use terminal_tools::{render_node, render_widget};
-#[cfg(feature = "runtime")]
-pub use tui_communicator::TuiCommunicator;
 pub use text::{Line, Span, Text};
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
+#[cfg(feature = "runtime")]
+pub use tui_communicator::TuiCommunicator;
 pub use tui_node::{
     AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
     CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, GraphTypeJson,

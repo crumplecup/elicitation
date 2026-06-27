@@ -5,8 +5,7 @@
 #[cfg(feature = "reqwest")]
 use crate::{
     ElicitSpec, SpecCategory, SpecCategoryBuilder, SpecEntry, SpecEntryBuilder, TypeSpec,
-    TypeSpecBuilder,
-    TypeSpecInventoryKey,
+    TypeSpecBuilder, TypeSpecInventoryKey,
 };
 
 // ── reqwest ───────────────────────────────────────────────────────────────────
@@ -14,8 +13,8 @@ use crate::{
 #[cfg(feature = "reqwest")]
 mod reqwest_specs {
     use super::*;
-    use bytes::Bytes;
     use crate::verification::types::StatusCodeValid;
+    use bytes::Bytes;
     use http::{HeaderMap, HeaderName, HeaderValue};
     use reqwest::tls::Version as TlsVersion;
     use reqwest::{Body, Method, Request, StatusCode, Version};
@@ -116,14 +115,16 @@ mod reqwest_specs {
                 .expect("valid SpecCategory");
             let related = SpecCategoryBuilder::default()
                 .name("related".to_string())
-                .entries(vec![SpecEntryBuilder::default()
-                    .label("role".to_string())
-                    .description(
-                        "HTTP client handle used to build and execute requests.".to_string(),
-                    )
-                    .expression(None)
-                    .build()
-                    .expect("valid SpecEntry")])
+                .entries(vec![
+                    SpecEntryBuilder::default()
+                        .label("role".to_string())
+                        .description(
+                            "HTTP client handle used to build and execute requests.".to_string(),
+                        )
+                        .expression(None)
+                        .build()
+                        .expect("valid SpecEntry"),
+                ])
                 .build()
                 .expect("valid SpecCategory");
             TypeSpecBuilder::default()
@@ -324,11 +325,17 @@ mod reqwest_specs {
                 vec![
                     SpecEntry::new("GET", "Fetch a representation of the target resource."),
                     SpecEntry::new("POST", "Submit data to the target resource."),
-                    SpecEntry::new("PUT", "Replace the target resource with the supplied payload."),
+                    SpecEntry::new(
+                        "PUT",
+                        "Replace the target resource with the supplied payload.",
+                    ),
                     SpecEntry::new("DELETE", "Remove the target resource."),
                     SpecEntry::new("PATCH", "Apply a partial update to the target resource."),
                     SpecEntry::new("HEAD", "Fetch response metadata without a response body."),
-                    SpecEntry::new("OPTIONS", "Query the communication options for the target resource."),
+                    SpecEntry::new(
+                        "OPTIONS",
+                        "Query the communication options for the target resource.",
+                    ),
                     SpecEntry::new("CONNECT", "Establish a tunnel to the target server."),
                     SpecEntry::new("TRACE", "Echo the received request for diagnostics."),
                 ],
@@ -400,11 +407,15 @@ mod reqwest_specs {
             );
             let construction = SpecCategory::new(
                 "construction",
-                vec![SpecEntry::new(
-                    "from_u16",
-                    "Code recovery rebuilds the status code from its exact numeric value.",
-                )
-                .with_expression(Some("reqwest::StatusCode::from_u16(value.as_u16())".to_string()))],
+                vec![
+                    SpecEntry::new(
+                        "from_u16",
+                        "Code recovery rebuilds the status code from its exact numeric value.",
+                    )
+                    .with_expression(Some(
+                        "reqwest::StatusCode::from_u16(value.as_u16())".to_string(),
+                    )),
+                ],
             );
 
             TypeSpec::new(
@@ -494,18 +505,12 @@ mod reqwest_specs {
                 vec![
                     SpecEntry::new("method", "HTTP method token controlling request semantics."),
                     SpecEntry::new("url", "Target request URL."),
-                    SpecEntry::new(
-                        "headers",
-                        "HTTP header multimap attached to the request.",
-                    ),
+                    SpecEntry::new("headers", "HTTP header multimap attached to the request."),
                     SpecEntry::new(
                         "body",
                         "Optional request body, represented in core support as optional raw bytes.",
                     ),
-                    SpecEntry::new(
-                        "version",
-                        "HTTP protocol version carried on the request.",
-                    ),
+                    SpecEntry::new("version", "HTTP protocol version carried on the request."),
                     SpecEntry::new("timeout", "Optional per-request timeout override."),
                 ],
             );
@@ -627,7 +632,10 @@ mod reqwest_specs {
                 .expect("valid SpecCategory");
             TypeSpecBuilder::default()
                 .type_name("reqwest::Response".to_string())
-                .summary("HTTP response carrying status, headers, metadata, and a body payload.".to_string())
+                .summary(
+                    "HTTP response carrying status, headers, metadata, and a body payload."
+                        .to_string(),
+                )
                 .categories(vec![fields, related])
                 .build()
                 .expect("valid TypeSpec")
@@ -656,7 +664,9 @@ mod reqwest_specs {
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("url".to_string())
-                        .description("URL associated with the failed request when known.".to_string())
+                        .description(
+                            "URL associated with the failed request when known.".to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),
@@ -680,13 +690,18 @@ mod reqwest_specs {
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("is_status".to_string())
-                        .description("True for errors produced by Response::error_for_status.".to_string())
+                        .description(
+                            "True for errors produced by Response::error_for_status.".to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("is_timeout".to_string())
-                        .description("True when the error or one of its sources indicates a timeout.".to_string())
+                        .description(
+                            "True when the error or one of its sources indicates a timeout."
+                                .to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),
@@ -704,7 +719,9 @@ mod reqwest_specs {
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("is_body".to_string())
-                        .description("True for request or response body transport failures.".to_string())
+                        .description(
+                            "True for request or response body transport failures.".to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),
@@ -728,13 +745,17 @@ mod reqwest_specs {
                 .entries(vec![
                     SpecEntryBuilder::default()
                         .label("url_mut".to_string())
-                        .description("Mutable access to the associated URL when one is present.".to_string())
+                        .description(
+                            "Mutable access to the associated URL when one is present.".to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("with_url".to_string())
-                        .description("Attach or replace the URL associated with the error.".to_string())
+                        .description(
+                            "Attach or replace the URL associated with the error.".to_string(),
+                        )
                         .expression(None)
                         .build()
                         .expect("valid SpecEntry"),

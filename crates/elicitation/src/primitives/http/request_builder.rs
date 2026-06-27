@@ -108,8 +108,7 @@ impl crate::ElicitPromptTree for RequestBuilder {
 impl ToCodeLiteral for RequestBuilder {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let Some(cloned) = self.try_clone() else {
-            let message =
-                "reqwest::RequestBuilder code recovery requires a cloneable builder with a non-stream body and no retained builder error";
+            let message = "reqwest::RequestBuilder code recovery requires a cloneable builder with a non-stream body and no retained builder error";
             return quote::quote! {{
                 compile_error!(#message);
             }};
@@ -119,8 +118,7 @@ impl ToCodeLiteral for RequestBuilder {
         let request = match request_result {
             Ok(request) => request,
             Err(_) => {
-                let message =
-                    "reqwest::RequestBuilder code recovery requires a builder that still holds a recoverable reqwest::Request";
+                let message = "reqwest::RequestBuilder code recovery requires a builder that still holds a recoverable reqwest::Request";
                 return quote::quote! {{
                     compile_error!(#message);
                 }};
@@ -140,8 +138,7 @@ impl ToCodeLiteral for RequestBuilder {
             Some(body) => match body.as_bytes() {
                 Some(bytes) => Some(bytes.iter()),
                 None => {
-                    let message =
-                        "reqwest::RequestBuilder code recovery requires an in-memory body; streamed bodies cannot be reconstructed from &self";
+                    let message = "reqwest::RequestBuilder code recovery requires an in-memory body; streamed bodies cannot be reconstructed from &self";
                     return quote::quote! {{
                         compile_error!(#message);
                     }};

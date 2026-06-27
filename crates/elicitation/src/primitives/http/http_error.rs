@@ -268,7 +268,10 @@ async fn elicit_error_variant<C: ElicitCommunicator>(communicator: &C) -> Elicit
         INVALID_HEADER_VALUE_LABEL,
         MAX_SIZE_REACHED_LABEL,
     ];
-    let options = labels.iter().map(|label| (*label).to_string()).collect::<Vec<_>>();
+    let options = labels
+        .iter()
+        .map(|label| (*label).to_string())
+        .collect::<Vec<_>>();
     let params = mcp::select_params(
         "Select the public http::Error variant family to reconstruct:",
         &options,

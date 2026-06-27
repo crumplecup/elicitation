@@ -108,8 +108,8 @@ impl ProxyHeaderMap {
     fn build_raw(&self) -> ElicitResult<HeaderMap> {
         let mut headers = HeaderMap::new();
         for entry in &self.entries {
-            let name =
-                http::HeaderName::from_bytes(entry.name.as_bytes()).map_err(crate::ElicitError::from)?;
+            let name = http::HeaderName::from_bytes(entry.name.as_bytes())
+                .map_err(crate::ElicitError::from)?;
             let value = entry.value.build_raw()?;
             headers.append(name, value);
         }
@@ -394,25 +394,32 @@ impl ReqwestProxy {
                 match header_value.build_raw() {
                     Ok(header_value) => Some(raw.clone().custom_http_auth(header_value)),
                     Err(error) => {
-                        tracing::warn!(?error, "Dropping live reqwest::Proxy after invalid header value snapshot");
+                        tracing::warn!(
+                            ?error,
+                            "Dropping live reqwest::Proxy after invalid header value snapshot"
+                        );
                         None
                     }
                 }
             }
-            (Some(raw), ReqwestProxyStep::Headers { headers }) => {
-                match headers.build_raw() {
-                    Ok(headers) => Some(raw.clone().headers(headers)),
-                    Err(error) => {
-                        tracing::warn!(?error, "Dropping live reqwest::Proxy after invalid header map snapshot");
-                        None
-                    }
+            (Some(raw), ReqwestProxyStep::Headers { headers }) => match headers.build_raw() {
+                Ok(headers) => Some(raw.clone().headers(headers)),
+                Err(error) => {
+                    tracing::warn!(
+                        ?error,
+                        "Dropping live reqwest::Proxy after invalid header map snapshot"
+                    );
+                    None
                 }
-            }
+            },
             (Some(raw), ReqwestProxyStep::NoProxy { no_proxy }) => match no_proxy {
                 Some(entry) => match entry.build_raw() {
                     Ok(no_proxy) => Some(raw.clone().no_proxy(Some(no_proxy))),
                     Err(error) => {
-                        tracing::warn!(?error, "Dropping live reqwest::Proxy after invalid no_proxy snapshot");
+                        tracing::warn!(
+                            ?error,
+                            "Dropping live reqwest::Proxy after invalid no_proxy snapshot"
+                        );
                         None
                     }
                 },
@@ -452,19 +459,13 @@ impl ReqwestProxy {
     /// a live wrapped proxy, which can be provided via [`ReqwestProxy::custom_raw`].
     #[tracing::instrument(skip(code), level = "debug")]
     pub fn custom(code: impl Into<String>) -> Self {
-        Self::from_ctor(
-            None,
-            ReqwestProxyCtor::Custom { code: code.into() },
-        )
+        Self::from_ctor(None, ReqwestProxyCtor::Custom { code: code.into() })
     }
 
     /// Wrap a live custom proxy together with the original constructor expression.
     #[tracing::instrument(skip(raw, code), level = "debug")]
     pub fn custom_raw(raw: reqwest::Proxy, code: impl Into<String>) -> Self {
-        Self::from_ctor(
-            Some(raw),
-            ReqwestProxyCtor::Custom { code: code.into() },
-        )
+        Self::from_ctor(Some(raw), ReqwestProxyCtor::Custom { code: code.into() })
     }
 
     /// Rebuild a raw `reqwest::Proxy`.
@@ -497,11 +498,7 @@ impl ReqwestProxy {
 
     /// Add proxy basic-auth credentials to the trenchcoat recipe.
     #[tracing::instrument(skip(self, username, password), level = "debug")]
-    pub fn basic_auth(
-        self,
-        username: impl Into<String>,
-        password: impl Into<String>,
-    ) -> Self {
+    pub fn basic_auth(self, username: impl Into<String>, password: impl Into<String>) -> Self {
         self.with_step(ReqwestProxyStep::BasicAuth {
             username: username.into(),
             password: password.into(),
@@ -539,9 +536,12 @@ fn apply_step(raw: reqwest::Proxy, step: &ReqwestProxyStep) -> ElicitResult<reqw
             raw.custom_http_auth(header_value.build_raw()?)
         }
         ReqwestProxyStep::Headers { headers } => raw.headers(headers.build_raw()?),
-        ReqwestProxyStep::NoProxy { no_proxy } => {
-            raw.no_proxy(no_proxy.as_ref().map(ReqwestNoProxy::build_raw).transpose()?)
-        }
+        ReqwestProxyStep::NoProxy { no_proxy } => raw.no_proxy(
+            no_proxy
+                .as_ref()
+                .map(ReqwestNoProxy::build_raw)
+                .transpose()?,
+        ),
     };
 
     Ok(updated)

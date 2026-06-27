@@ -5,14 +5,7 @@ use elicitation::Elicit;
 
 /// Serializable shadow of [`georaster::geotiff::ImageInfo`].
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-    Elicit,
+    Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Elicit,
 )]
 #[prompt("Describe a GeoTIFF image info record:")]
 pub struct ImageInfo {

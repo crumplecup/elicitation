@@ -3,11 +3,11 @@
 //! Direct elicitation models the public status-error subclass because reqwest
 //! does not expose constructors for arbitrary builder/request/decode errors.
 
-use bytes::Bytes;
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult,
-    Elicitation, ElicitationPattern, PatternDetails, Prompt, TypeMetadata,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, PatternDetails, Prompt, TypeMetadata,
 };
+use bytes::Bytes;
 use reqwest::ResponseBuilderExt;
 use url::Url;
 
@@ -17,8 +17,7 @@ fn build_status_error(status: reqwest::StatusCode, url: Url) -> ElicitResult<req
     let response = http::Response::builder()
         .status(status)
         .url(url)
-        .body(Bytes::new())
-        ?;
+        .body(Bytes::new())?;
 
     match reqwest::Response::from(response).error_for_status() {
         Ok(_) => Err(ElicitError::new(ElicitErrorKind::ParseError(format!(
@@ -30,9 +29,7 @@ fn build_status_error(status: reqwest::StatusCode, url: Url) -> ElicitResult<req
 
 impl Prompt for reqwest::Error {
     fn prompt() -> Option<&'static str> {
-        Some(
-            "Construct a reqwest status error — provide an HTTP error status (4xx/5xx) and URL.",
-        )
+        Some("Construct a reqwest status error — provide an HTTP error status (4xx/5xx) and URL.")
     }
 }
 
@@ -104,9 +101,7 @@ impl crate::ElicitPromptTree for reqwest::Error {
                     "status".to_string(),
                     Box::new(
                         <reqwest::StatusCode as crate::ElicitPromptTree>::prompt_tree()
-                            .with_prompt(Some(
-                                "HTTP error status code (4xx or 5xx)".to_string(),
-                            )),
+                            .with_prompt(Some("HTTP error status code (4xx or 5xx)".to_string())),
                     ),
                 ),
                 (
@@ -124,15 +119,13 @@ impl crate::ElicitPromptTree for reqwest::Error {
 impl crate::emit_code::ToCodeLiteral for reqwest::Error {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
         let Some(status) = self.status() else {
-            let message =
-                "reqwest::Error code recovery currently supports the public status-error subset only";
+            let message = "reqwest::Error code recovery currently supports the public status-error subset only";
             return quote::quote! {{
                 compile_error!(#message);
             }};
         };
         let Some(url) = self.url() else {
-            let message =
-                "reqwest::Error status-error code recovery requires an associated URL";
+            let message = "reqwest::Error status-error code recovery requires an associated URL";
             return quote::quote! {{
                 compile_error!(#message);
             }};
