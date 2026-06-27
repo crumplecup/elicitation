@@ -187,7 +187,7 @@ mod tests {
 
         let rendered = error.to_code_literal().to_string();
 
-        assert!(rendered.contains("status errors only"));
+        assert!(rendered.contains("status-error subset"));
         assert!(rendered.contains("compile_error"));
     }
 }
