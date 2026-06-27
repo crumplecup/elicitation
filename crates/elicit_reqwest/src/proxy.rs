@@ -3,8 +3,9 @@
 use std::{borrow::Cow, str::FromStr};
 
 use elicitation::{
-    Elicit, ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, ElicitSpec,
-    Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, proc_macro2::TokenStream,
+    Elicit, ElicitCommunicator, ElicitComplete, ElicitIntrospect, ElicitPromptTree, ElicitResult,
+    ElicitSpec, Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, emit_code::ToCodeLiteral,
+    proc_macro2::TokenStream,
 };
 use elicitation_derive::reflect_methods;
 use schemars::{JsonSchema, SchemaGenerator};
@@ -55,7 +56,9 @@ enum ProxyCtor {
     },
     Custom {
         #[serde(default, skip_serializing_if = "String::is_empty")]
-        #[prompt("Original Rust expression used to build the custom proxy constructor, when available:")]
+        #[prompt(
+            "Original Rust expression used to build the custom proxy constructor, when available:"
+        )]
         code: String,
     },
 }
@@ -283,8 +286,7 @@ impl Proxy {
             }
             ProxyCtor::Custom { code } => {
                 if code.trim().is_empty() {
-                    let message =
-                        "elicit_reqwest::Proxy::custom is missing constructor code provenance; call Proxy::with_ctor_code on the shadow wrapper";
+                    let message = "elicit_reqwest::Proxy::custom is missing constructor code provenance; call Proxy::with_ctor_code on the shadow wrapper";
                     quote::quote! {
                         {
                             return ::std::result::Result::Err(
@@ -321,19 +323,19 @@ impl Proxy {
 
     /// Proxy all HTTP traffic to `url`.
     pub fn http(url: Url) -> Result<Self, Error> {
-        let raw = reqwest::Proxy::http(url.clone()).map_err(Error::from)?;
+        let raw = reqwest::Proxy::http((*url).clone()).map_err(Error::from)?;
         Ok(Self::from_ctor(raw, ProxyCtor::Http { url }))
     }
 
     /// Proxy all HTTPS traffic to `url`.
     pub fn https(url: Url) -> Result<Self, Error> {
-        let raw = reqwest::Proxy::https(url.clone()).map_err(Error::from)?;
+        let raw = reqwest::Proxy::https((*url).clone()).map_err(Error::from)?;
         Ok(Self::from_ctor(raw, ProxyCtor::Https { url }))
     }
 
     /// Proxy all traffic to `url`.
     pub fn all(url: Url) -> Result<Self, Error> {
-        let raw = reqwest::Proxy::all(url.clone()).map_err(Error::from)?;
+        let raw = reqwest::Proxy::all((*url).clone()).map_err(Error::from)?;
         Ok(Self::from_ctor(raw, ProxyCtor::All { url }))
     }
 
@@ -367,9 +369,13 @@ impl Proxy {
         }
 
         let mut proxy = match &self.snapshot.ctor {
-            ProxyCtor::Http { url } => reqwest::Proxy::http(url.clone()).map_err(Error::from)?,
-            ProxyCtor::Https { url } => reqwest::Proxy::https(url.clone()).map_err(Error::from)?,
-            ProxyCtor::All { url } => reqwest::Proxy::all(url.clone()).map_err(Error::from)?,
+            ProxyCtor::Http { url } => {
+                reqwest::Proxy::http((**url).clone()).map_err(Error::from)?
+            }
+            ProxyCtor::Https { url } => {
+                reqwest::Proxy::https((**url).clone()).map_err(Error::from)?
+            }
+            ProxyCtor::All { url } => reqwest::Proxy::all((**url).clone()).map_err(Error::from)?,
             ProxyCtor::Custom { .. } => {
                 return Err(Error::builder(
                     "custom proxy closures require a live runtime handle and cannot be rebuilt from snapshot alone",
@@ -401,6 +407,45 @@ impl Proxy {
     }
 }
 
+impl ElicitComplete for Proxy {}
+
+impl ToCodeLiteral for Proxy {
+    fn to_code_literal(&self) -> TokenStream {
+        let ctor = self.ctor_tokens();
+        let steps: Vec<_> = self
+            .snapshot
+            .steps
+            .iter()
+            .map(|step| match step {
+                ProxyStep::BasicAuth { username, password } => quote::quote! {
+                    .basic_auth(#username.to_string(), #password.to_string())
+                },
+                ProxyStep::CustomHttpAuth { header_value } => quote::quote! {
+                    .custom_http_auth(#header_value.to_string())
+                },
+                ProxyStep::Headers { headers } => {
+                    let h = headers.to_code_literal();
+                    quote::quote! { .headers(#h) }
+                }
+                ProxyStep::NoProxy { no_proxy } => match no_proxy {
+                    Some(np) => {
+                        let raw = np.as_str();
+                        quote::quote! {
+                            .no_proxy(::std::option::Option::Some(
+                                ::elicit_reqwest::NoProxy::from_string(#raw.to_string())
+                            ))
+                        }
+                    }
+                    None => quote::quote! {
+                        .no_proxy(::std::option::Option::None)
+                    },
+                },
+            })
+            .collect();
+        quote::quote! { (#ctor) #(#steps)* }
+    }
+}
+
 #[reflect_methods]
 impl Proxy {
     /// Set the `Proxy-Authorization` header using Basic auth.
@@ -425,9 +470,13 @@ impl Proxy {
 
     /// Borrow the configured no-proxy list, if any.
     pub fn no_proxy_ref(&self) -> Option<&NoProxy> {
-        self.snapshot.steps.iter().rev().find_map(|step| match step {
-            ProxyStep::NoProxy { no_proxy } => no_proxy.as_ref(),
-            _ => None,
-        })
+        self.snapshot
+            .steps
+            .iter()
+            .rev()
+            .find_map(|step| match step {
+                ProxyStep::NoProxy { no_proxy } => no_proxy.as_ref(),
+                _ => None,
+            })
     }
 }

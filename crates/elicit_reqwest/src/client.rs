@@ -13,6 +13,7 @@ use elicitation_derive::reflect_methods;
 use schemars::{JsonSchema, SchemaGenerator};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use tracing::instrument;
 
 use crate::{Method, RequestBuilder};
 
@@ -33,6 +34,7 @@ impl ClientRecipe {
 /// Elicitation-aware reqwest client shadow.
 #[derive(Debug, Clone)]
 pub struct Client {
+    raw: Option<reqwest::Client>,
     snapshot: ClientSnapshot,
 }
 
@@ -53,6 +55,7 @@ impl Serialize for Client {
 impl<'de> Deserialize<'de> for Client {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Ok(Self {
+            raw: None,
             snapshot: ClientSnapshot::deserialize(deserializer)?,
         })
     }
@@ -79,7 +82,10 @@ impl Elicitation for Client {
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let snapshot = ClientSnapshot::elicit(communicator).await?;
-        Ok(Self { snapshot })
+        Ok(Self {
+            raw: None,
+            snapshot,
+        })
     }
 
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -137,15 +143,38 @@ impl elicitation::ElicitComplete for Client {}
 
 impl Client {
     /// Creates a new HTTP client with default settings.
+    #[instrument(level = "debug")]
     pub fn new() -> Self {
         Self {
+            raw: None,
             snapshot: ClientSnapshot {
                 recipe: ClientRecipe::Default,
             },
         }
     }
 
+    /// Wrap a live `reqwest::Client` constructed by `ClientBuilder::build`.
+    #[instrument(skip(raw), level = "debug")]
+    pub(crate) fn from_raw(raw: reqwest::Client) -> Self {
+        Self {
+            raw: Some(raw),
+            snapshot: ClientSnapshot {
+                recipe: ClientRecipe::Default,
+            },
+        }
+    }
+
+    /// Returns a new `ClientBuilder` for configuring a client.
+    #[instrument(level = "debug")]
+    pub fn builder() -> crate::ClientBuilder {
+        crate::ClientBuilder::new()
+    }
+
+    #[instrument(skip(self), level = "debug")]
     pub(crate) fn build_raw(&self) -> reqwest::Client {
+        if let Some(raw) = &self.raw {
+            return raw.clone();
+        }
         self.snapshot.recipe.build()
     }
 }
@@ -223,5 +252,11 @@ impl Client {
         U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.request(Method::from(reqwest::Method::HEAD), url)
+    }
+
+    /// Execute a pre-built `Request`.
+    pub async fn execute(&self, request: crate::Request) -> Result<crate::Response, crate::Error> {
+        let raw = self.build_raw().execute(request.build_raw()).await?;
+        crate::Response::from_reqwest(raw).await
     }
 }

@@ -156,9 +156,9 @@ impl ElicitSpec for ReqwestRetryBuilder {
                         .with_expression(Some(
                             "::elicitation::ReqwestRetryBuilder::for_host(host)".to_string(),
                         )),
-                        SpecEntry::new("never", "Disable retries entirely.").with_expression(
-                            Some("::elicitation::ReqwestRetryBuilder::never()".to_string()),
-                        ),
+                        SpecEntry::new("never", "Disable retries entirely.").with_expression(Some(
+                            "::elicitation::ReqwestRetryBuilder::never()".to_string(),
+                        )),
                     ],
                 ),
                 SpecCategory::new(
@@ -204,7 +204,11 @@ impl ToCodeLiteral for ReqwestRetryBuilder {
             ReqwestRetryBuilderRecipe::Never => quote::quote! {
                 ::elicitation::ReqwestRetryBuilder::never()
             },
-            ReqwestRetryBuilderRecipe::ForHost { host, budget, max_retries_per_request } => {
+            ReqwestRetryBuilderRecipe::ForHost {
+                host,
+                budget,
+                max_retries_per_request,
+            } => {
                 let mut tokens = quote::quote! {
                     ::elicitation::ReqwestRetryBuilder::for_host(#host)
                 };
@@ -245,7 +249,9 @@ impl ReqwestRetryBuilder {
     /// Disable retries entirely.
     #[tracing::instrument(level = "debug")]
     pub fn never() -> Self {
-        Self { recipe: ReqwestRetryBuilderRecipe::Never }
+        Self {
+            recipe: ReqwestRetryBuilderRecipe::Never,
+        }
     }
 
     /// Disable the retry budget. No-op on [`never`](Self::never) builders.
@@ -273,8 +279,10 @@ impl ReqwestRetryBuilder {
     /// No-op on [`never`](Self::never) builders.
     #[tracing::instrument(level = "debug")]
     pub fn with_max_retries(mut self, max: u32) -> Self {
-        if let ReqwestRetryBuilderRecipe::ForHost { max_retries_per_request, .. } =
-            &mut self.recipe
+        if let ReqwestRetryBuilderRecipe::ForHost {
+            max_retries_per_request,
+            ..
+        } = &mut self.recipe
         {
             *max_retries_per_request = max;
         }
@@ -290,7 +298,11 @@ impl ReqwestRetryBuilder {
     pub fn build_raw(&self) -> reqwest::retry::Builder {
         match &self.recipe {
             ReqwestRetryBuilderRecipe::Never => reqwest::retry::never(),
-            ReqwestRetryBuilderRecipe::ForHost { host, budget, max_retries_per_request } => {
+            ReqwestRetryBuilderRecipe::ForHost {
+                host,
+                budget,
+                max_retries_per_request,
+            } => {
                 let b = reqwest::retry::for_host(host.clone());
                 let b = match budget {
                     ReqwestRetryBudget::Default => b,

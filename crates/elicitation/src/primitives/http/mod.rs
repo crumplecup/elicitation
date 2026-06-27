@@ -67,9 +67,9 @@ mod method;
 mod proxy;
 mod redirect;
 mod request;
-mod retry;
 mod request_builder;
 mod response;
+mod retry;
 mod status_code;
 mod tls;
 mod tls_version;
@@ -90,10 +90,10 @@ pub use http_error::HttpErrorStyle;
 pub use method::MethodStyle;
 pub use proxy::{ReqwestNoProxy, ReqwestProxy};
 pub use redirect::{ReqwestRedirectAction, ReqwestRedirectAttempt, ReqwestRedirectPolicy};
-pub use retry::ReqwestRetryBuilder;
 pub use request::RequestStyle;
 pub use request_builder::RequestBuilderStyle;
 pub use response::{ResponseStyle, capture_reqwest_response};
+pub use retry::ReqwestRetryBuilder;
 pub use status_code::StatusCodeStyle;
 pub use tls::{
     ReqwestCertificate, ReqwestCertificateRevocationList, ReqwestIdentity, ReqwestTlsInfo,

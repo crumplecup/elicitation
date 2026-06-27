@@ -1,8 +1,8 @@
 //! Structured reqwest error shadow.
 
 use elicitation::{
-    Elicit, ElicitCommunicator, ElicitIntrospect, ElicitPromptTree, ElicitResult, ElicitSpec,
-    Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, emit_code::ToCodeLiteral,
+    Elicit, ElicitCommunicator, ElicitError, ElicitIntrospect, ElicitPromptTree, ElicitResult,
+    ElicitSpec, Elicitation, Prompt, PromptTree, TypeMetadata, TypeSpec, emit_code::ToCodeLiteral,
 };
 use schemars::{JsonSchema, SchemaGenerator};
 use serde::{Deserialize, Serialize};
@@ -10,9 +10,10 @@ use std::borrow::Cow;
 
 use crate::{StatusCode, Url};
 
+/// Classification flags for a reqwest error snapshot.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, Elicit)]
 #[prompt("Describe reqwest error classification flags:")]
-struct ErrorFlags {
+pub struct ErrorFlags {
     #[prompt("Whether this is a builder/setup error:")]
     is_builder: bool,
     #[prompt("Whether this is a redirect error:")]
@@ -146,72 +147,73 @@ impl ElicitSpec for Error {
 
 impl Error {
     /// Construct a structured reqwest error snapshot from explicit parts.
-    #[allow(clippy::too_many_arguments)]
     pub fn from_parts(
         message: String,
         url: Option<Url>,
         status: Option<StatusCode>,
-        is_builder: bool,
-        is_redirect: bool,
-        is_status: bool,
-        is_timeout: bool,
-        is_request: bool,
-        is_connect: bool,
-        is_body: bool,
-        is_decode: bool,
-        is_upgrade: bool,
+        flags: ErrorFlags,
     ) -> Self {
         Self {
             snapshot: ErrorSnapshot {
                 message,
                 url,
                 status,
-                flags: ErrorFlags {
-                    is_builder,
-                    is_redirect,
-                    is_status,
-                    is_timeout,
-                    is_request,
-                    is_connect,
-                    is_body,
-                    is_decode,
-                    is_upgrade,
-                },
+                flags,
             },
         }
     }
 
+    #[track_caller]
     pub(crate) fn builder(message: impl Into<String>) -> Self {
         Self::from_parts(
             message.into(),
             None,
             None,
-            true,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
+            ErrorFlags {
+                is_builder: true,
+                ..ErrorFlags::default()
+            },
         )
     }
 
+    #[track_caller]
+    pub(crate) fn status(status: crate::StatusCode, url: Option<Url>) -> Self {
+        Self::from_parts(
+            format!("HTTP status error: {}", status.as_u16()),
+            url,
+            Some(status),
+            ErrorFlags {
+                is_status: true,
+                ..ErrorFlags::default()
+            },
+        )
+    }
+
+    #[track_caller]
     pub(crate) fn decode(message: impl Into<String>, url: Option<Url>) -> Self {
         Self::from_parts(
             message.into(),
             url,
             None,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            true,
-            false,
+            ErrorFlags {
+                is_decode: true,
+                ..ErrorFlags::default()
+            },
+        )
+    }
+}
+
+impl From<ElicitError> for Error {
+    #[track_caller]
+    fn from(e: ElicitError) -> Self {
+        Self::from_parts(
+            e.to_string(),
+            None,
+            None,
+            ErrorFlags {
+                is_builder: true,
+                ..ErrorFlags::default()
+            },
         )
     }
 }
@@ -220,17 +222,19 @@ impl From<reqwest::Error> for Error {
     fn from(value: reqwest::Error) -> Self {
         Self::from_parts(
             value.to_string(),
-            value.url().cloned(),
+            value.url().cloned().map(Url::from),
             value.status().map(StatusCode::from),
-            value.is_builder(),
-            value.is_redirect(),
-            value.is_status(),
-            value.is_timeout(),
-            value.is_request(),
-            value.is_connect(),
-            value.is_body(),
-            value.is_decode(),
-            value.is_upgrade(),
+            ErrorFlags {
+                is_builder: value.is_builder(),
+                is_redirect: value.is_redirect(),
+                is_status: value.is_status(),
+                is_timeout: value.is_timeout(),
+                is_request: value.is_request(),
+                is_connect: value.is_connect(),
+                is_body: value.is_body(),
+                is_decode: value.is_decode(),
+                is_upgrade: value.is_upgrade(),
+            },
         )
     }
 }
@@ -250,30 +254,32 @@ impl ToCodeLiteral for Error {
         let message = &self.snapshot.message;
         let url = self.snapshot.url.to_code_literal();
         let status = self.snapshot.status.to_code_literal();
-        let flags = &self.snapshot.flags;
-        let is_builder = flags.is_builder;
-        let is_redirect = flags.is_redirect;
-        let is_status = flags.is_status;
-        let is_timeout = flags.is_timeout;
-        let is_request = flags.is_request;
-        let is_connect = flags.is_connect;
-        let is_body = flags.is_body;
-        let is_decode = flags.is_decode;
-        let is_upgrade = flags.is_upgrade;
+        let f = &self.snapshot.flags;
+        let is_builder = f.is_builder;
+        let is_redirect = f.is_redirect;
+        let is_status = f.is_status;
+        let is_timeout = f.is_timeout;
+        let is_request = f.is_request;
+        let is_connect = f.is_connect;
+        let is_body = f.is_body;
+        let is_decode = f.is_decode;
+        let is_upgrade = f.is_upgrade;
         quote::quote! {
             ::elicit_reqwest::Error::from_parts(
                 #message.to_string(),
                 #url,
                 #status,
-                #is_builder,
-                #is_redirect,
-                #is_status,
-                #is_timeout,
-                #is_request,
-                #is_connect,
-                #is_body,
-                #is_decode,
-                #is_upgrade,
+                ::elicit_reqwest::ErrorFlags {
+                    is_builder: #is_builder,
+                    is_redirect: #is_redirect,
+                    is_status: #is_status,
+                    is_timeout: #is_timeout,
+                    is_request: #is_request,
+                    is_connect: #is_connect,
+                    is_body: #is_body,
+                    is_decode: #is_decode,
+                    is_upgrade: #is_upgrade,
+                },
             )
         }
     }

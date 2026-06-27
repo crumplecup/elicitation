@@ -80,6 +80,18 @@ enum RequestStep {
         #[prompt("Header value:")]
         value: String,
     },
+    Headers {
+        #[prompt("Bulk header map to merge:")]
+        headers: crate::HeaderMap,
+    },
+    Version {
+        #[prompt("HTTP version to use for this request:")]
+        version: crate::Version,
+    },
+    Form {
+        #[prompt("URL-encoded form key-value pairs:")]
+        pairs: Vec<(String, String)>,
+    },
     Body {
         #[prompt("Body configuration:")]
         body: BodySpec,
@@ -208,7 +220,7 @@ impl RequestBuilder {
     {
         let url_code = url.to_code_literal().to_string();
         match url.into_url() {
-            Ok(parsed) => Self::from_url_with_code(client, method, parsed, url_code),
+            Ok(parsed) => Self::from_url_with_code(client, method, Url::from(parsed), url_code),
             Err(error) => Self {
                 snapshot: RequestBuilderSnapshot {
                     client,
@@ -259,7 +271,7 @@ impl RequestBuilder {
             .snapshot
             .client
             .build_raw()
-            .request((*self.snapshot.method).clone(), url);
+            .request((*self.snapshot.method).clone(), (*url).clone());
 
         for step in &self.snapshot.steps {
             builder = match step {
@@ -269,6 +281,23 @@ impl RequestBuilder {
                     builder.basic_auth(username, password.clone())
                 }
                 RequestStep::Header { key, value } => builder.header(key, value),
+                RequestStep::Headers { headers } => {
+                    builder.headers(http::HeaderMap::from(headers.clone()))
+                }
+                RequestStep::Version { version } => {
+                    builder.version(reqwest::Version::from(version.clone()))
+                }
+                RequestStep::Form { pairs } => {
+                    let encoded = url::form_urlencoded::Serializer::new(String::new())
+                        .extend_pairs(pairs.iter().map(|(k, v)| (k.as_str(), v.as_str())))
+                        .finish();
+                    builder
+                        .header(
+                            reqwest::header::CONTENT_TYPE,
+                            "application/x-www-form-urlencoded",
+                        )
+                        .body(encoded.into_bytes())
+                }
                 RequestStep::Body { body } => match body {
                     BodySpec::Json { bytes, .. } => builder
                         .header(reqwest::header::CONTENT_TYPE, "application/json")
@@ -292,9 +321,14 @@ impl RequestBuilder {
                 .to_string();
             quote::quote! {
                 match ::elicit_reqwest::Url::parse(#fallback) {
-                    ::std::result::Result::Ok(url) => url,
-                    ::std::result::Result::Err(error) => {
-                        return ::std::result::Result::Err(error.into());
+                    ::std::option::Option::Some(url) => url,
+                    ::std::option::Option::None => {
+                        return ::std::result::Result::Err(
+                            ::elicit_reqwest::Error::builder(
+                                ::std::format!("invalid URL in request builder snapshot: {}", #fallback)
+                            )
+                            .into(),
+                        );
                     }
                 }
             }
@@ -339,7 +373,9 @@ impl ToCodeLiteral for RequestBuilder {
                 }
                 RequestStep::BasicAuth { username, password } => {
                     let password_tokens = match password {
-                        Some(value) => quote::quote! { ::std::option::Option::Some(#value.to_string()) },
+                        Some(value) => {
+                            quote::quote! { ::std::option::Option::Some(#value.to_string()) }
+                        }
                         None => quote::quote! { ::std::option::Option::None },
                     };
                     quote::quote! {
@@ -348,6 +384,21 @@ impl ToCodeLiteral for RequestBuilder {
                 }
                 RequestStep::Header { key, value } => {
                     quote::quote! { (#tokens).header(#key.to_string(), #value.to_string()) }
+                }
+                RequestStep::Headers { headers } => {
+                    let h = headers.to_code_literal();
+                    quote::quote! { (#tokens).headers(::http::HeaderMap::from(#h)) }
+                }
+                RequestStep::Version { version } => {
+                    let v = version.to_code_literal();
+                    quote::quote! { (#tokens).version(::reqwest::Version::from(#v)) }
+                }
+                RequestStep::Form { pairs } => {
+                    let keys: Vec<_> = pairs.iter().map(|(k, _)| k.as_str()).collect();
+                    let vals: Vec<_> = pairs.iter().map(|(_, v)| v.as_str()).collect();
+                    quote::quote! {
+                        (#tokens).form(::std::vec![#((#keys.to_string(), #vals.to_string())),*])
+                    }
                 }
                 RequestStep::Body { body } => match body {
                     BodySpec::Json { bytes, code } => {
@@ -395,6 +446,38 @@ impl RequestBuilder {
         self.with_step(RequestStep::Header { key, value })
     }
 
+    /// Merge a `HeaderMap` of headers into the request.
+    pub fn headers(self, headers: crate::HeaderMap) -> Self {
+        self.with_step(RequestStep::Headers { headers })
+    }
+
+    /// Set the HTTP version for the request.
+    pub fn version(self, version: crate::Version) -> Self {
+        self.with_step(RequestStep::Version { version })
+    }
+
+    /// Append URL query parameters from a list of key-value pairs.
+    pub fn query(mut self, params: Vec<(String, String)>) -> Self {
+        if let Some(url) = self.snapshot.url.take() {
+            let mut inner = (*url).clone();
+            {
+                let mut p = inner.query_pairs_mut();
+                for (k, v) in &params {
+                    p.append_pair(k, v);
+                }
+            }
+            let new_url = crate::Url::from(inner);
+            self.snapshot.url_code = new_url.to_code_literal().to_string();
+            self.snapshot.url = Some(new_url);
+        }
+        self
+    }
+
+    /// Set a URL-encoded form body from a list of key-value pairs.
+    pub fn form(self, form: Vec<(String, String)>) -> Self {
+        self.with_step(RequestStep::Form { pairs: form })
+    }
+
     /// Set the JSON body (serializes `value` as JSON).
     pub fn json<T>(self, value: &T) -> Self
     where
@@ -417,6 +500,11 @@ impl RequestBuilder {
         }
     }
 
+    /// Set the request body from a shadow [`Body`](crate::Body).
+    pub fn body(self, body: crate::Body) -> Self {
+        self.body_bytes(body.as_bytes().to_vec())
+    }
+
     /// Set the request body directly from raw bytes.
     pub fn body_bytes(self, body: Vec<u8>) -> Self {
         self.with_step(RequestStep::Body {
@@ -432,6 +520,18 @@ impl RequestBuilder {
                 code: None,
             },
         })
+    }
+
+    /// Finalize the builder into a [`Request`] without sending it.
+    pub fn build(self) -> Result<crate::Request, Error> {
+        let raw = self.rebuild_raw()?.build()?;
+        crate::Request::try_from(raw)
+    }
+
+    /// Split the builder into the underlying client and the built request.
+    pub fn build_split(self) -> (crate::Client, Result<crate::Request, Error>) {
+        let client = self.snapshot.client.clone();
+        (client, self.build())
     }
 
     /// Send the request and await the response.

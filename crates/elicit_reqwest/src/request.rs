@@ -64,7 +64,7 @@ impl Request {
     pub fn build_raw(&self) -> reqwest::Request {
         let mut request = reqwest::Request::new(
             reqwest::Method::from(self.method.clone()),
-            self.url.clone(),
+            (*self.url).clone(),
         );
         *request.headers_mut() = http::HeaderMap::from(self.headers.clone());
         *request.version_mut() = reqwest::Version::from(self.version.clone());
@@ -82,7 +82,7 @@ impl TryFrom<reqwest::Request> for Request {
 
         Ok(Self::from_parts(
             Method::from(value.method().clone()),
-            value.url().clone(),
+            Url::from(value.url().clone()),
             HeaderMap::from(value.headers().clone()),
             body,
             Version::from(value.version()),
@@ -111,5 +111,15 @@ impl Request {
     /// Borrow the optional request body.
     pub fn body(&self) -> Option<&Body> {
         self.body.as_ref()
+    }
+
+    /// Borrow the HTTP protocol version.
+    pub fn version(&self) -> &Version {
+        &self.version
+    }
+
+    /// Borrow the per-request timeout, if set.
+    pub fn timeout(&self) -> Option<std::time::Duration> {
+        self.timeout
     }
 }

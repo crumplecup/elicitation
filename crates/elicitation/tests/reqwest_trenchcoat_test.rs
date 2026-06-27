@@ -457,7 +457,10 @@ fn retry_default_max_retries_not_emitted_in_code_literal() {
     use elicitation::emit_code::ToCodeLiteral;
     let builder = ReqwestRetryBuilder::for_host("api.example.com");
     let tokens = builder.to_code_literal().to_string();
-    assert!(!tokens.contains("with_max_retries"), "default retries should be omitted: {tokens}");
+    assert!(
+        !tokens.contains("with_max_retries"),
+        "default retries should be omitted: {tokens}"
+    );
 }
 
 #[test]

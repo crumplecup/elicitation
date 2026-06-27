@@ -16,6 +16,7 @@ pub enum Action {
     Stop,
     /// Fail the redirect with a structured error message.
     Error {
+        /// Reason for failing the redirect.
         #[prompt("Reason for failing the redirect:")]
         message: String,
     },
@@ -27,6 +28,7 @@ pub enum Action {
 pub enum Policy {
     /// Follow at most `max` redirects.
     Limited {
+        /// Maximum redirect hops to follow.
         #[prompt("Maximum redirect hops to follow:")]
         max: usize,
     },
@@ -34,6 +36,7 @@ pub enum Policy {
     None,
     /// Human-readable description of a custom redirect closure.
     Custom {
+        /// Description of the custom redirect policy.
         #[prompt("Description of the custom redirect policy:")]
         description: String,
     },

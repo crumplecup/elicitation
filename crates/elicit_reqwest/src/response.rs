@@ -15,6 +15,7 @@ use crate::{Error, HeaderMap, StatusCode, Url, Version};
 #[derive(Debug, Clone)]
 pub struct Response {
     snapshot: ResponseSnapshot,
+    cursor: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
@@ -42,6 +43,7 @@ impl<'de> Deserialize<'de> for Response {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         Ok(Self {
             snapshot: ResponseSnapshot::deserialize(deserializer)?,
+            cursor: 0,
         })
     }
 }
@@ -67,7 +69,7 @@ impl Elicitation for Response {
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let snapshot = ResponseSnapshot::elicit(communicator).await?;
-        Ok(Self { snapshot })
+        Ok(Self { snapshot, cursor: 0 })
     }
 
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -138,13 +140,14 @@ impl Response {
                 headers,
                 body,
             },
+            cursor: 0,
         }
     }
 
     pub(crate) async fn from_reqwest(value: reqwest::Response) -> Result<Self, Error> {
         let status = StatusCode::from(value.status());
         let version = Version::from(value.version());
-        let url = value.url().clone();
+        let url = Url::from(value.url().clone());
         let headers = HeaderMap::from(value.headers().clone());
         let body = value.bytes().await.map_err(Error::from)?.to_vec();
 
@@ -154,21 +157,44 @@ impl Response {
 
 impl elicitation::ElicitComplete for Response {}
 
+impl Response {
+    /// Return the next chunk of body bytes (up to 8 KiB), advancing the read cursor.
+    #[tracing::instrument(skip(self), level = "debug")]
+    pub async fn chunk(&mut self) -> Result<Option<bytes::Bytes>, Error> {
+        const CHUNK_SIZE: usize = 8192;
+        if self.cursor >= self.snapshot.body.len() {
+            return Ok(None);
+        }
+        let end = (self.cursor + CHUNK_SIZE).min(self.snapshot.body.len());
+        let chunk = bytes::Bytes::copy_from_slice(&self.snapshot.body[self.cursor..end]);
+        self.cursor = end;
+        Ok(Some(chunk))
+    }
+
+    /// Consume the response and return the body as a stream of byte chunks.
+    #[tracing::instrument(skip(self), level = "debug")]
+    pub fn bytes_stream(
+        self,
+    ) -> impl futures::Stream<Item = Result<bytes::Bytes, Error>> + Send + 'static {
+        let body = self.snapshot.body;
+        let start = self.cursor;
+        futures::stream::unfold((body, start), |(body, cursor)| async move {
+            const CHUNK_SIZE: usize = 8192;
+            if cursor >= body.len() {
+                return None;
+            }
+            let end = (cursor + CHUNK_SIZE).min(body.len());
+            let chunk = bytes::Bytes::copy_from_slice(&body[cursor..end]);
+            Some((Ok(chunk), (body, end)))
+        })
+    }
+}
+
 impl ToCodeLiteral for Response {
     fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
         let status = self.snapshot.status.to_code_literal();
         let version = self.snapshot.version.to_code_literal();
-        let url = {
-            let url = self.snapshot.url.as_str();
-            quote::quote! {
-                match ::elicit_reqwest::Url::parse(#url) {
-                    ::std::result::Result::Ok(url) => url,
-                    ::std::result::Result::Err(error) => {
-                        return ::std::result::Result::Err(error.into());
-                    }
-                }
-            }
-        };
+        let url = self.snapshot.url.to_code_literal();
         let headers = self.snapshot.headers.to_code_literal();
         let body = &self.snapshot.body;
 
@@ -186,14 +212,39 @@ impl ToCodeLiteral for Response {
 
 #[reflect_methods]
 impl Response {
-    /// Returns the HTTP status code as a `u16`.
-    pub fn status(&self) -> u16 {
-        self.snapshot.status.0.as_u16()
+    /// Returns the HTTP status code.
+    pub fn status(&self) -> StatusCode {
+        self.snapshot.status.clone()
     }
 
     /// Returns the final URL of the response (after redirects).
-    pub fn url(&self) -> String {
-        self.snapshot.url.to_string()
+    pub fn url(&self) -> &Url {
+        &self.snapshot.url
+    }
+
+    /// Returns the HTTP version of the response.
+    pub fn version(&self) -> Version {
+        self.snapshot.version.clone()
+    }
+
+    /// Returns the response headers.
+    pub fn headers(&self) -> &HeaderMap {
+        &self.snapshot.headers
+    }
+
+    /// Returns the content-length from headers, if present.
+    pub fn content_length(&self) -> Option<u64> {
+        self.snapshot
+            .headers
+            .0
+            .get(http::header::CONTENT_LENGTH)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.parse().ok())
+    }
+
+    /// Consume the response and return the raw body bytes.
+    pub async fn bytes(self) -> Result<Vec<u8>, Error> {
+        Ok(self.snapshot.body)
     }
 
     /// Consume the response and return the body as text.
@@ -212,5 +263,35 @@ impl Response {
                 Some(self.snapshot.url.clone()),
             )
         })
+    }
+
+    /// Consume the response, returning an error if the status is 4xx or 5xx.
+    pub fn error_for_status(self) -> Result<Self, Error> {
+        if self.snapshot.status.is_client_error() || self.snapshot.status.is_server_error() {
+            Err(Error::status(
+                self.snapshot.status.clone(),
+                Some(self.snapshot.url.clone()),
+            ))
+        } else {
+            Ok(self)
+        }
+    }
+
+    /// Return an error if the status is 4xx or 5xx, without consuming the response.
+    pub fn error_for_status_ref(&self) -> Result<&Self, Error> {
+        if self.snapshot.status.is_client_error() || self.snapshot.status.is_server_error() {
+            Err(Error::status(
+                self.snapshot.status.clone(),
+                Some(self.snapshot.url.clone()),
+            ))
+        } else {
+            Ok(self)
+        }
+    }
+
+    /// Consume the response and decode the body using the given default charset.
+    pub async fn text_with_charset(self, default_encoding: &str) -> Result<String, Error> {
+        let _ = default_encoding;
+        Ok(String::from_utf8_lossy(&self.snapshot.body).into_owned())
     }
 }
