@@ -27,23 +27,29 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use elicit_db::{DbQueryExecutor, DbSchemaManager, DbServerAdmin, DbTableManager};
 use elicit_server::archive::{
-    ArchiveDbBackend, NavTree, egui_frontend::run_egui, leptos_frontend::run_browser,
-    nav_tree::build_nav_tree, ratatui_frontend::run_tui,
+    ArchiveDbBackend, ArchiveKvBackend, NavTree, egui_frontend::run_egui,
+    leptos_frontend::run_browser, nav_tree::{build_nav_tree, build_nav_tree_kv},
+    ratatui_frontend::run_tui,
 };
 use tracing_subscriber::EnvFilter;
 
 // ── URL resolution ────────────────────────────────────────────────────────────
 
-/// Resolve a database URL from an explicit argument or `DATABASE_URL` env var.
+/// Return the database URL from an explicit argument or `DATABASE_URL` env var.
 ///
 /// Priority:
 /// 1. Explicit `url` argument (if `Some`)
 /// 2. `DATABASE_URL` environment variable (may come from `.env`)
+///
+/// Returns `None` when neither source is set; callers that require a SQL URL
+/// should use [`resolve_url`] instead.
+fn try_resolve_url(url: Option<String>) -> Option<String> {
+    url.or_else(|| std::env::var("DATABASE_URL").ok())
+}
+
+/// Resolve a database URL, returning an error when none is available.
 fn resolve_url(url: Option<String>) -> anyhow::Result<String> {
-    if let Some(u) = url {
-        return Ok(u);
-    }
-    std::env::var("DATABASE_URL").map_err(|_| {
+    try_resolve_url(url).ok_or_else(|| {
         anyhow::anyhow!(
             "No database URL provided and DATABASE_URL is not set.\n\
              Pass a URL as the first argument or add DATABASE_URL to your .env file."
@@ -175,13 +181,22 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Cmd::Serve { url, mode, port } => {
-            let url = resolve_url(url)?;
-            let backend = ArchiveDbBackend::connect(&url).await?;
-            let nav = build_nav_tree(&backend, &url).await?;
+            let (nav, display_url) = match try_resolve_url(url) {
+                Some(url) => {
+                    let backend = ArchiveDbBackend::connect(&url).await?;
+                    let nav = build_nav_tree(&backend, &url).await?;
+                    (nav, url)
+                }
+                None => {
+                    let (kv, path) = ArchiveKvBackend::open_from_env()?;
+                    let nav = build_nav_tree_kv(&kv, &path).await;
+                    (nav, path)
+                }
+            };
             match mode {
-                ServeMode::Ratatui => run_tui(nav, Some(url)).await?,
-                ServeMode::Egui => run_egui(nav, Some(url))?,
-                ServeMode::Browser => run_browser(nav, Some(url), port).await?,
+                ServeMode::Ratatui => run_tui(nav, Some(display_url)).await?,
+                ServeMode::Egui => run_egui(nav, Some(display_url))?,
+                ServeMode::Browser => run_browser(nav, Some(display_url), port).await?,
             }
         }
 

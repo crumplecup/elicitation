@@ -17,12 +17,13 @@ use sqlx::any::AnyRow;
 use tracing::instrument;
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, BackendKind, CompositeTypeAttribute, CompositeTypeDescriptor,
-    DomainDescriptor, EnumDescriptor, FunctionDescriptor, FunctionVolatility, SequenceDescriptor,
-    TableDescriptor, TableType, TriggerDescriptor, TriggerEvents,
+    ArchiveDbBackend, ArchiveKvBackend, ArchiveResult, BackendKind, CompositeTypeAttribute,
+    CompositeTypeDescriptor, DomainDescriptor, EnumDescriptor, FunctionDescriptor,
+    FunctionVolatility, SequenceDescriptor, TableDescriptor, TableType, TriggerDescriptor,
+    TriggerEvents,
     errors::{ArchiveError, ArchiveErrorKind},
 };
-use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
+use elicit_db::{DbEmbeddedStore, DbSchemaManager, DbServerAdmin, DbTableManager};
 
 // ── Data model ────────────────────────────────────────────────────────────────
 
@@ -631,4 +632,27 @@ pub async fn fetch_erd(
         nodes,
         edges,
     })
+}
+
+// ── KV nav tree ───────────────────────────────────────────────────────────────
+
+/// Build a [`NavTree`] for an embedded redb store.
+///
+/// redb is a key-value store with no SQL schema concept, so the tree
+/// identifies the file and backend kind without schema/table entries.
+/// KV operations are available through the KV plugin.
+#[instrument(skip(backend))]
+pub async fn build_nav_tree_kv(backend: &ArchiveKvBackend, path: &str) -> NavTree {
+    let version = backend
+        .storage_stats()
+        .await
+        .map(|stats| format!("redb ({} bytes stored)", stats.stored_bytes))
+        .unwrap_or_else(|_| "redb".to_string());
+
+    NavTree {
+        db_name: path.to_string(),
+        version: Some(version),
+        backend: BackendKind::Redb,
+        schemas: vec![],
+    }
 }

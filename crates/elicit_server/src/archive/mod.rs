@@ -46,7 +46,7 @@ pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use frontend_trait::ArchiveFrontend;
 pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_model::ConnectionSet;
-pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
+pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree, build_nav_tree_kv};
 pub use plugins::{
     AkNodeEntry, ArchiveAdminPlugin, ArchiveBrowsePlugin, ArchiveConstraintPlugin,
     ArchiveDisplayPlugin, ArchiveKvPlugin, ArchiveMonitorPlugin, ArchiveReplicationPlugin,

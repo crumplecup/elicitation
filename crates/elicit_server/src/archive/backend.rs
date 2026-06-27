@@ -1078,6 +1078,32 @@ impl ArchiveKvBackend {
             .map_err(|e| ArchiveError::new(ArchiveErrorKind::Backend(e.to_string())))
     }
 
+    /// Open from the `REDB_PATH` environment variable, defaulting to `./archive.redb`.
+    ///
+    /// Creates parent directories if needed. Returns the backend and the
+    /// resolved path so callers can display or log it.
+    #[instrument]
+    pub fn open_from_env() -> ArchiveResult<(Self, String)> {
+        let path = std::env::var("REDB_PATH").unwrap_or_else(|_| "./archive.redb".to_string());
+
+        let path_buf = std::path::Path::new(&path);
+        if let Some(parent) = path_buf.parent() {
+            if !parent.as_os_str().is_empty() {
+                std::fs::create_dir_all(parent).map_err(|e| {
+                    ArchiveError::new(ArchiveErrorKind::Backend(format!(
+                        "could not create redb directory {}: {}",
+                        parent.display(),
+                        e
+                    )))
+                })?;
+            }
+        }
+
+        tracing::info!(%path, "Opening redb at default path");
+        let backend = Self::open(&path)?;
+        Ok((backend, path))
+    }
+
     /// Access the underlying [`RedbBackend`] for direct KV operations.
     pub fn backend(&self) -> &RedbBackend {
         &self.0
