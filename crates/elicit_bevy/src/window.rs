@@ -1158,6 +1158,11 @@ impl From<bevy::window::CursorIcon> for CursorIcon {
     fn from(v: bevy::window::CursorIcon) -> Self {
         match v {
             bevy::window::CursorIcon::System(s) => CursorIcon::System(s.into()),
+            // CustomCursor holds image/URL data that has no serializable shadow form.
+            bevy::window::CursorIcon::Custom(_) => {
+                tracing::warn!("CursorIcon::Custom is not representable as a shadow; falling back to Default");
+                CursorIcon::Default
+            }
         }
     }
 }
