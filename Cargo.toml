@@ -226,6 +226,7 @@ surrealdb = { version = "3.1.2", features = [
   "scripting",
 ] }
 rust_decimal = "1"
+# the nightly that Kani pins to is too old to handle 0.9.0, and breaks FV
 sqlx-core = "0.8"
 sqlx = { version = "0.8", features = [
   "runtime-tokio",
@@ -307,6 +308,7 @@ wgpu = { version = "29", default-features = false, features = [
   "serde",
 ] }
 bevy = { version = "0.19", default-features = false }
+# pinned to the version used by georaster 0.2
 tiff = "0.9.1"
 
 # ── Well-Known Text ───────────────────────────────────────────────────────────
@@ -319,6 +321,7 @@ palette = "0.7"
 taffy = "0.11"
 
 # ── Verification ──────────────────────────────────────────────────────────────
+# the nightly that 0.12 pins to breaks polars 0.53, preventing compilation of the workspace
 creusot-std = { version = "0.11", features = ["nightly"] }
 kani-verifier = { version = "0.67" }
 # prusti-contracts lives on prusti-verification branch
