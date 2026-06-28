@@ -273,7 +273,7 @@ http-body = "1"
 axum = { version = "0.8", features = ["macros", "ws", "multipart", "form"] }
 axum-core = "0.5"
 tower = { version = "0.5", features = ["full"] }
-tower-http = { version = "0.6", features = ["full"] }
+tower-http = { version = "0.7", features = ["full"] }
 bytes = "1"
 reqwest = { version = "0.13", features = [
   "json",
@@ -316,7 +316,7 @@ wkb = "0.9"
 # ── CSS / Color / Layout ──────────────────────────────────────────────────────
 cssparser = "0.37"
 palette = "0.7"
-taffy = "0.10"
+taffy = "0.11"
 
 # ── Verification ──────────────────────────────────────────────────────────────
 creusot-std = { version = "0.11", features = ["nightly"] }
@@ -337,8 +337,8 @@ tempfile = "3"
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 criterion = { version = "0.8", features = ["html_reports"] }
-mockall = "0.13"
-rcgen = "0.13"
+mockall = "0.14"
+rcgen = "0.14"
 
 [profile.release]
 lto = true

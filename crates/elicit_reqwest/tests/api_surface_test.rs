@@ -20,9 +20,11 @@ fn test_cert() -> Certificate {
 }
 
 fn test_crl() -> CertificateRevocationList {
-    let certified = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])
-        .expect("rcgen cert");
-    let params = rcgen::CertificateRevocationListParams {
+    let key_pair = rcgen::KeyPair::generate().expect("key pair");
+    let cert_params =
+        rcgen::CertificateParams::new(vec!["localhost".to_string()]).expect("cert params");
+    let issuer = rcgen::CertifiedIssuer::self_signed(cert_params, key_pair).expect("issuer");
+    let crl_params = rcgen::CertificateRevocationListParams {
         this_update: rcgen::date_time_ymd(2024, 1, 1),
         next_update: rcgen::date_time_ymd(2030, 1, 1),
         crl_number: rcgen::SerialNumber::from_slice(&[1]),
@@ -30,9 +32,8 @@ fn test_crl() -> CertificateRevocationList {
         revoked_certs: vec![],
         key_identifier_method: rcgen::KeyIdMethod::Sha256,
     };
-    let crl = params
-        .signed_by(&certified.cert, &certified.key_pair)
-        .expect("crl");
+    // CertifiedIssuer derefs to Issuer, which is what signed_by expects
+    let crl = crl_params.signed_by(&issuer).expect("crl");
     CertificateRevocationList::from_pem(crl.pem().expect("crl pem").as_bytes())
         .expect("parse crl pem")
 }
