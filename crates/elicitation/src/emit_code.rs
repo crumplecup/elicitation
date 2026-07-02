@@ -1219,28 +1219,7 @@ impl ToCodeLiteral for chrono::DateTime<chrono::FixedOffset> {
     }
 }
 
-#[cfg(feature = "chrono")]
-impl ToCodeLiteral for chrono::TimeDelta {
-    fn to_code_literal(&self) -> TokenStream {
-        let secs = self.num_seconds();
-        let sub_nanos = self.subsec_nanos();
-        if sub_nanos == 0 {
-            quote::quote! {
-                chrono::TimeDelta::try_seconds(#secs).expect("valid seconds")
-            }
-        } else {
-            // Build as whole-second base + nanosecond remainder
-            quote::quote! {
-                chrono::TimeDelta::try_seconds(#secs).expect("valid seconds")
-                    + chrono::TimeDelta::nanoseconds(#sub_nanos as i64)
-            }
-        }
-    }
-
-    fn type_tokens() -> TokenStream {
-        quote::quote! { chrono::TimeDelta }
-    }
-}
+// TimeDelta: ToCodeLiteral impl is in datetime_chrono.rs (handles sub-nanosecond remainder too)
 
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::OffsetDateTime {

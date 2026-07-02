@@ -119,13 +119,16 @@ macro_rules! _select_trenchcoat_common {
                     .into_iter()
                     .map(::serde_json::Value::String)
                     .collect();
-                ::serde_json::from_value(::serde_json::json!({
+                let v = ::serde_json::json!({
                     "type": "string",
                     "enum": enum_values,
                     "description": <$inner_path as $crate::Prompt>::prompt()
                         .unwrap_or(concat!("Select a ", stringify!($inner_path), " variant"))
-                }))
-                .expect("valid JSON Schema")
+                });
+                match v {
+                    ::serde_json::Value::Object(map) => ::schemars::Schema::from(map),
+                    _ => ::schemars::Schema::from(::serde_json::Map::new()),
+                }
             }
         }
 

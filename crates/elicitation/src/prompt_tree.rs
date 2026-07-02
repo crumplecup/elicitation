@@ -1268,11 +1268,11 @@ mod verification_impls {
     #[cfg(feature = "chrono")]
     mod chrono_primitive_impls {
         use super::*;
-        use chrono::{DateTime, Duration, FixedOffset, NaiveDateTime, Utc};
+        use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
         leaf_impl!(DateTime<Utc>, "DateTime<Utc>");
         leaf_impl!(DateTime<FixedOffset>, "DateTime<FixedOffset>");
         leaf_impl!(NaiveDateTime, "NaiveDateTime");
-        leaf_impl!(Duration, "chrono::TimeDelta");
+        // TimeDelta: impl in datetime_chrono.rs (custom PromptTree, not a leaf)
     }
 
     // Contract types use PhantomData stubs under kani — gate them out.

@@ -268,6 +268,352 @@ mod chrono_specs {
 
     #[cfg(not(kani))]
     impl crate::ElicitComplete for crate::MonthSelect {}
+
+    // ── Batch 1: pure Select enums ────────────────────────────────────────────
+
+    macro_rules! chrono_select_spec {
+        ($raw:ty, $raw_name:literal, $wrapper:ty, $wrapper_name:literal, $summary:literal) => {
+            impl crate::ElicitSpec for $raw {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpecBuilder::default()
+                        .type_name($raw_name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            inventory::submit!(crate::TypeSpecInventoryKey::new(
+                $raw_name,
+                <$raw as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$raw>
+            ));
+
+            impl crate::ElicitSpec for $wrapper {
+                fn type_spec() -> crate::TypeSpec {
+                    <$raw as crate::ElicitSpec>::type_spec()
+                }
+            }
+            inventory::submit!(crate::TypeSpecInventoryKey::new(
+                $wrapper_name,
+                <$wrapper as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrapper>
+            ));
+
+            #[cfg(not(kani))]
+            impl crate::ElicitComplete for $wrapper {}
+        };
+    }
+
+    chrono_select_spec!(
+        chrono::RoundingError,
+        "chrono::RoundingError",
+        crate::RoundingErrorSelect,
+        "RoundingErrorSelect",
+        "A chrono rounding error indicating why a duration-rounding operation failed."
+    );
+
+    chrono_select_spec!(
+        chrono::format::Colons,
+        "chrono::format::Colons",
+        crate::ColonsSelect,
+        "ColonsSelect",
+        "Separator style between hours and minutes in a UTC offset string."
+    );
+
+    chrono_select_spec!(
+        chrono::format::Pad,
+        "chrono::format::Pad",
+        crate::PadSelect,
+        "PadSelect",
+        "Padding style applied to numeric formatting items (None, Zero, Space)."
+    );
+
+    chrono_select_spec!(
+        chrono::format::OffsetPrecision,
+        "chrono::format::OffsetPrecision",
+        crate::OffsetPrecisionSelect,
+        "OffsetPrecisionSelect",
+        "Precision of a UTC offset field (hours only, hours+minutes, or full h:m:s)."
+    );
+
+    chrono_select_spec!(
+        chrono::format::ParseErrorKind,
+        "chrono::format::ParseErrorKind",
+        crate::ParseErrorKindSelect,
+        "ParseErrorKindSelect",
+        "The category of a chrono datetime parse failure."
+    );
+
+    chrono_select_spec!(
+        chrono::SecondsFormat,
+        "chrono::SecondsFormat",
+        crate::SecondsFormatSelect,
+        "SecondsFormatSelect",
+        "Sub-second precision used when formatting a datetime as RFC 3339."
+    );
+
+    chrono_select_spec!(
+        chrono::format::Numeric,
+        "chrono::format::Numeric",
+        crate::NumericSelect,
+        "NumericSelect",
+        "A numeric strftime-style formatting item (year, month, day, hour, etc.)."
+    );
+
+    chrono_select_spec!(
+        chrono::format::Fixed,
+        "chrono::format::Fixed",
+        crate::FixedSelect,
+        "FixedSelect",
+        "A fixed-format strftime-style formatting item (month name, timezone offset, RFC 3339, etc.)."
+    );
+
+    // ── Batch 3: primitive wrappers ───────────────────────────────────────────
+
+    macro_rules! chrono_wrap_spec {
+        ($raw:ty, $raw_name:literal, $wrapper:ty, $wrapper_name:literal, $summary:literal) => {
+            impl crate::ElicitSpec for $raw {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpecBuilder::default()
+                        .type_name($raw_name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            inventory::submit!(crate::TypeSpecInventoryKey::new(
+                $raw_name,
+                <$raw as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$raw>
+            ));
+
+            impl crate::ElicitSpec for $wrapper {
+                fn type_spec() -> crate::TypeSpec {
+                    <$raw as crate::ElicitSpec>::type_spec()
+                }
+            }
+            inventory::submit!(crate::TypeSpecInventoryKey::new(
+                $wrapper_name,
+                <$wrapper as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrapper>
+            ));
+
+            #[cfg(not(kani))]
+            impl crate::ElicitComplete for $wrapper {}
+        };
+    }
+
+    chrono_wrap_spec!(
+        chrono::Days,
+        "chrono::Days",
+        crate::DaysWrap,
+        "DaysWrap",
+        "A count of whole days used in calendar arithmetic."
+    );
+    chrono_wrap_spec!(
+        chrono::Months,
+        "chrono::Months",
+        crate::MonthsWrap,
+        "MonthsWrap",
+        "A count of whole months used in calendar arithmetic."
+    );
+    chrono_wrap_spec!(
+        chrono::Utc,
+        "chrono::Utc",
+        crate::UtcWrap,
+        "UtcWrap",
+        "The UTC timezone marker — a unit struct with a single possible value."
+    );
+    chrono_wrap_spec!(
+        chrono::Local,
+        "chrono::Local",
+        crate::LocalWrap,
+        "LocalWrap",
+        "The local timezone marker — resolves to the system timezone at runtime."
+    );
+
+    // ── Batch 4: struct types ─────────────────────────────────────────────────
+
+    chrono_wrap_spec!(
+        chrono::FixedOffset,
+        "chrono::FixedOffset",
+        crate::FixedOffsetWrap,
+        "FixedOffsetWrap",
+        "A fixed UTC offset (seconds east, range -86399..=86399)."
+    );
+    chrono_wrap_spec!(
+        chrono::IsoWeek,
+        "chrono::IsoWeek",
+        crate::IsoWeekWrap,
+        "IsoWeekWrap",
+        "An ISO 8601 week (year + week number, formatted YYYY-Www)."
+    );
+    chrono_wrap_spec!(
+        chrono::NaiveWeek,
+        "chrono::NaiveWeek",
+        crate::NaiveWeekWrap,
+        "NaiveWeekWrap",
+        "A naive week defined by a reference date and its starting weekday."
+    );
+    chrono_wrap_spec!(
+        chrono::WeekdaySet,
+        "chrono::WeekdaySet",
+        crate::WeekdaySetWrap,
+        "WeekdaySetWrap",
+        "A compact bitmask representing a subset of the seven weekdays."
+    );
+    chrono_wrap_spec!(
+        chrono::format::OffsetFormat,
+        "chrono::format::OffsetFormat",
+        crate::OffsetFormatWrap,
+        "OffsetFormatWrap",
+        "UTC offset formatting specification (precision, separator, padding)."
+    );
+
+    // ── Batch 5: error types ──────────────────────────────────────────────────
+
+    chrono_wrap_spec!(
+        chrono::OutOfRange,
+        "chrono::OutOfRange",
+        crate::OutOfRangeWrap,
+        "OutOfRangeWrap",
+        "An out-of-range error from chrono (single-value type)."
+    );
+    chrono_wrap_spec!(
+        chrono::OutOfRangeError,
+        "chrono::OutOfRangeError",
+        crate::OutOfRangeErrorWrap,
+        "OutOfRangeErrorWrap",
+        "A TimeDelta-to-std::time::Duration conversion error (single-value type)."
+    );
+    chrono_wrap_spec!(
+        chrono::ParseError,
+        "chrono::ParseError",
+        crate::ParseErrorWrap,
+        "ParseErrorWrap",
+        "A chrono parse error carrying the error kind (OutOfRange, Invalid, TooShort, etc.)."
+    );
+    chrono_wrap_spec!(
+        chrono::ParseMonthError,
+        "chrono::ParseMonthError",
+        crate::ParseMonthErrorWrap,
+        "ParseMonthErrorWrap",
+        "A month parse error from an invalid month string (single-value type)."
+    );
+    chrono_wrap_spec!(
+        chrono::ParseWeekdayError,
+        "chrono::ParseWeekdayError",
+        crate::ParseWeekdayErrorWrap,
+        "ParseWeekdayErrorWrap",
+        "A weekday parse error from an invalid weekday string (single-value type)."
+    );
+    chrono_wrap_spec!(
+        chrono::format::InternalNumeric,
+        "chrono::format::InternalNumeric",
+        crate::InternalNumericWrap,
+        "InternalNumericWrap",
+        "An uninhabited internal-only type; no value can be constructed or elicited."
+    );
+    chrono_wrap_spec!(
+        chrono::format::InternalFixed,
+        "chrono::format::InternalFixed",
+        crate::InternalFixedWrap,
+        "InternalFixedWrap",
+        "One of 4 internal fixed-format variants (TimezoneOffsetPermissive, Nanosecond*NoDot)."
+    );
+    chrono_wrap_spec!(
+        chrono::format::Parsed,
+        "chrono::format::Parsed",
+        crate::ParsedWrap,
+        "ParsedWrap",
+        "A 21-field optional survey of parsed date/time components."
+    );
+    chrono_wrap_spec!(
+        chrono::naive::NaiveDateDaysIterator,
+        "chrono::NaiveDateDaysIterator",
+        crate::NaiveDateDaysIteratorWrap,
+        "NaiveDateDaysIteratorWrap",
+        "Iterator over consecutive NaiveDates with a step of one day."
+    );
+    chrono_wrap_spec!(
+        chrono::naive::NaiveDateWeeksIterator,
+        "chrono::NaiveDateWeeksIterator",
+        crate::NaiveDateWeeksIteratorWrap,
+        "NaiveDateWeeksIteratorWrap",
+        "Iterator over consecutive NaiveDates with a step of seven days."
+    );
+
+    // LocalResult<T> is generic, so TypeId requires a concrete T — cannot use
+    // inventory::submit! here. Callers that need a concrete TypeSpec look up the
+    // inner type and wrap it. No ElicitComplete impl either (foreign generic).
+    impl<T: crate::ElicitSpec> crate::ElicitSpec for chrono::LocalResult<T> {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "chrono::LocalResult",
+                "Result of a local-to-UTC conversion: None (no matching instant), \
+                 Single (exactly one), or Ambiguous (two candidates near a DST gap/fold).",
+                vec![crate::SpecCategory::new(
+                    "variants",
+                    vec![
+                        crate::SpecEntry::new(
+                            "None",
+                            "No instant in UTC corresponds to the local time (e.g. within a DST gap).",
+                        ),
+                        crate::SpecEntry::new(
+                            "Single",
+                            "Exactly one UTC instant corresponds to the local time (the common case).",
+                        ),
+                        crate::SpecEntry::new(
+                            "Ambiguous",
+                            "Two UTC instants correspond to the local time (clock was set back — a DST fold).",
+                        ),
+                    ],
+                )],
+            )
+        }
+    }
+
+    // OwnedItem and OwnedStrftimeItems are self-contained trenchcoats — there is
+    // no separate "raw" type to register alongside them, so we register only once.
+    impl crate::ElicitSpec for crate::OwnedItem {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("OwnedItem".to_string())
+                .summary(
+                    "An owned format item for chrono::format::Item<'_> with no lifetime parameter."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "OwnedItem",
+        <crate::OwnedItem as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<crate::OwnedItem>
+    ));
+
+    impl crate::ElicitSpec for crate::OwnedStrftimeItems {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpecBuilder::default()
+                .type_name("OwnedStrftimeItems".to_string())
+                .summary(
+                    "Owned sequence of format items collected from a StrftimeItems iterator."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+    inventory::submit!(crate::TypeSpecInventoryKey::new(
+        "OwnedStrftimeItems",
+        <crate::OwnedStrftimeItems as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<crate::OwnedStrftimeItems>
+    ));
 }
 
 // ── jiff ──────────────────────────────────────────────────────────────────────
