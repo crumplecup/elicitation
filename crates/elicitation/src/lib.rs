@@ -465,8 +465,20 @@ pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};
 // DateTime generators (feature-gated)
 #[cfg(feature = "chrono")]
 pub use datetime_chrono::{
-    DateTimeUtcGenerationMode, DateTimeUtcGenerator, MonthSelect, MonthStyle, NaiveDateStyle,
-    NaiveDateTimeGenerationMode, NaiveDateTimeGenerator, NaiveTimeStyle, TimeDeltaStyle,
+    ColonsSelect, ColonsStyle, DateTimeUtcGenerationMode, DateTimeUtcGenerator, DaysStyle,
+    DaysWrap, FixedOffsetStyle, FixedOffsetWrap, FixedSelect, FixedStyle, InternalFixedStyle,
+    InternalFixedWrap, InternalNumericStyle, InternalNumericWrap, IsoWeekStyle, IsoWeekWrap,
+    LocalResultStyle, LocalStyle, LocalWrap, MonthSelect, MonthStyle, MonthsStyle, MonthsWrap,
+    NaiveDateDaysIteratorStyle, NaiveDateDaysIteratorWrap, NaiveDateStyle,
+    NaiveDateTimeGenerationMode, NaiveDateTimeGenerator, NaiveDateWeeksIteratorStyle,
+    NaiveDateWeeksIteratorWrap, NaiveTimeStyle, NaiveWeekStyle, NaiveWeekWrap, NumericSelect,
+    NumericStyle, OffsetFormatStyle, OffsetFormatWrap, OffsetPrecisionSelect, OffsetPrecisionStyle,
+    OutOfRangeErrorStyle, OutOfRangeErrorWrap, OutOfRangeStyle, OutOfRangeWrap, OwnedItem,
+    OwnedItemStyle, OwnedStrftimeItems, OwnedStrftimeItemsStyle, PadSelect, PadStyle,
+    ParseErrorKindSelect, ParseErrorKindStyle, ParseErrorStyle, ParseErrorWrap,
+    ParseMonthErrorStyle, ParseMonthErrorWrap, ParseWeekdayErrorStyle, ParseWeekdayErrorWrap,
+    ParsedStyle, ParsedWrap, RoundingErrorSelect, RoundingErrorStyle, SecondsFormatSelect,
+    SecondsFormatStyle, TimeDeltaStyle, UtcStyle, UtcWrap, WeekdaySetStyle, WeekdaySetWrap,
     WeekdayStyle,
 };
 
@@ -794,14 +806,21 @@ pub use primitives::bevy_types::{
         BevyTriangle2d,
     },
     sprite::{BevyAnchor, BevySpriteConfig, BevySpriteScalingMode},
-    text::{BevyFontSmoothing, BevyJustify, BevyLineBreak, BevyTextFont, BevyTextLayout},
+    text::{
+        BevyFontSize, BevyFontSmoothing, BevyFontStyle, BevyFontWeight, BevyFontWidth, BevyJustify,
+        BevyLineBreak, BevyTextFont, BevyTextLayout, BevyUiText,
+    },
     time::BevyTimer,
     transform::{BevyGlobalTransform, BevyTransform},
     ui::{
-        BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyBorderRadius, BevyBoxSizing,
-        BevyDisplay, BevyFlexDirection, BevyFlexWrap, BevyJustifyContent, BevyJustifyItems,
-        BevyJustifySelf, BevyOverflowAxis, BevyOverflowClipMargin, BevyPositionType, BevyUiRect,
-        BevyVal, BevyVisualBox,
+        BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyBackgroundColor, BevyBorderColor,
+        BevyBorderRadius, BevyBoxShadow, BevyBoxSizing, BevyDisplay, BevyFlexDirection,
+        BevyFlexWrap, BevyGlobalZIndex, BevyGridAutoFlow, BevyGridPlacement, BevyGridTrack,
+        BevyGridTrackRepetition, BevyInlineDirection, BevyJustifyContent, BevyJustifyItems,
+        BevyJustifySelf, BevyMaxTrackSizingFunction, BevyMinTrackSizingFunction, BevyNode,
+        BevyOutline, BevyOverflow, BevyOverflowAxis, BevyOverflowClipMargin, BevyPositionType,
+        BevyRepeatedGridTrack, BevyScrollPosition, BevyShadowStyle, BevyUiRect, BevyVal,
+        BevyVisualBox, BevyZIndex,
     },
     vec::BevyVec3A,
     window::{
