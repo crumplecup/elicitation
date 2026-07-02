@@ -70,6 +70,9 @@ pub mod app;
 mod app_plugin;
 pub mod asset;
 pub mod audio;
+pub mod bevy_accesskit_convert;
+mod bevy_ui_bridge;
+pub mod bevy_ui_node;
 pub mod camera;
 pub mod color;
 mod commands_bridge;
@@ -95,6 +98,7 @@ mod query_bridge;
 mod query_plugin;
 pub mod render;
 mod render_atmosphere_workflow_plugin;
+mod render_context;
 mod render_mesh_workflow_plugin;
 mod render_plugin;
 mod render_workflow_plugin;
@@ -388,6 +392,12 @@ pub use gis_vector_layer_plugin::BevyGisVectorLayerPlugin;
 pub use gis_render_backend::BevyGisBackend;
 pub use gis_render_plugin::{BevyGisPlugin, BevyGisRenderCtx};
 
+// ── bevy_ui bridge re-exports ─────────────────────────────────────────────────
+pub use bevy_accesskit_convert::{bevy_ui_node_to_tree_update, tree_update_to_bevy_ui_node};
+pub use bevy_ui_bridge::BevyUiBackend;
+pub use bevy_ui_node::BevyUiNode;
+pub use render_context::{BevyRenderArea, BevyRenderContext};
+
 // ── ui re-exports ─────────────────────────────────────────────────────────────
 pub use ui::{
     AlignContent, AlignItems, AlignSelf, AngularColorStop, AutoDirectionalNavigation,
@@ -398,6 +408,6 @@ pub use ui::{
     IsDefaultUiCamera, JustifyContent, JustifyItems, JustifySelf, Label, LinearGradient,
     MaxTrackSizingFunction, MinTrackSizingFunction, NodeImageMode, Outline, Overflow, OverflowAxis,
     OverflowClipMargin, OverrideClip, PositionType, Pressed, RadialGradient, RadialGradientShape,
-    RepeatedGridTrack, ScrollPosition, ShadowStyle, TextShadow, UiPosition, UiRect, UiScale,
-    UiText, Val, VisualBox, ZIndex,
+    RepeatedGridTrack, ScrollPosition, ShadowStyle, Text, TextShadow, UiPosition, UiRect, UiScale,
+    Val, VisualBox, ZIndex,
 };

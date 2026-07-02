@@ -16,6 +16,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 
 [dependencies]
 elicitation = { workspace = true, features = ["bevy-types", "uuid"] }
+accesskit.workspace = true
+elicit_accesskit.workspace = true
+elicit_ui.workspace = true
 elicit_gis.workspace = true
 geo = { workspace = true, features = ["spade"] }
 geo-types.workspace = true

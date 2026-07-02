@@ -3490,19 +3490,19 @@ unit_elicitation!(Label, bevy::ui::widget::Label);
 /// Top-level UI text component. Holds the string for the first text span.
 /// Children use `TextSpan` for additional styled sections.
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-pub struct UiText(pub String);
+pub struct Text(pub String);
 
-impl From<UiText> for bevy::ui::widget::Text {
-    fn from(v: UiText) -> Self {
+impl From<Text> for bevy::ui::widget::Text {
+    fn from(v: Text) -> Self {
         bevy::ui::widget::Text(v.0)
     }
 }
 
 mod emit_impls_ui_text {
-    use super::UiText;
+    use super::Text;
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
-    impl ToCodeLiteral for UiText {
+    impl ToCodeLiteral for Text {
         fn to_code_literal(&self) -> TokenStream {
             let s = &self.0;
             quote::quote! { ::bevy::ui::widget::Text::new(#s) }
@@ -3510,7 +3510,7 @@ mod emit_impls_ui_text {
     }
 }
 
-shadow_elicitation!(UiText);
+shadow_elicitation!(Text);
 
 // ── TextShadow ────────────────────────────────────────────────────────────────
 
