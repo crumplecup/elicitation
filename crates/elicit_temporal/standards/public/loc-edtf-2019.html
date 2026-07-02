@@ -1,0 +1,397 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>Extended Date Time Format (EDTF) Specification (Library of Congress)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link type="text/css" media="print" href="datetime-print.css" rel="stylesheet">
+<style type="text/css" media="screen">
+@import "datetime-base.css";
+</style>
+<meta http-equiv="Content-Language" content="en-us">
+<link rel="shortcut icon" type="image/x-icon" href="/images/fav.ico">
+<meta name="keywords" content="extended date time format schema maintenance activity official 
+schema library congress network development marc standards office">
+<meta name="description" content="Extended Date Time Format. A supporting xml schema allowing for implementation of element set and is maintained in Network Development and MARC Standards Office, Library of Congress."><script src="//assets.adobedtm.com/dac62e20b491e735c6b56e64c39134d8ee93f9cf/satelliteLib-6b47f831c184878d7338d4683ecf773a17973bb9.js"></script>
+</head>
+
+<body><a href="https://www.loc.gov/cdn-cgi/content?id=uxgRFU2tE0tSqIN7i4nnzN9cYo__kA5fyT2Yzngn1kQ-1782693552.4148657-1.2.1.1-M1w8ET91LIgODC8TrwVaemnJcdWoGDxncjZRt68fQT8" aria-hidden="true" rel="nofollow noopener" style="display: none !important; visibility: hidden !important"></a>
+<form style="margin-bottom:0;" action="https://www.loc.gov/search/" accept-charset="utf-8" name="seek1" method="get">
+	<table align="center" class="header" cellpadding="0" cellspacing="0" border="0"><tr><td width="475"><a id="skip" href="#skip_menu">&nbsp;</a>
+
+<div class="sitenav">
+
+<a href="https://www.loc.gov/">The Library of Congress</a>&nbsp;&raquo;&nbsp;
+<a href="/standards/">Standards</a>&nbsp;&raquo;&nbsp;
+<a href="/standards/datetime/">Extended Date Time Home</a> &nbsp;&raquo;&nbsp;
+
+<span class="selected">EDTF Spec</span></div></td>
+<td width="116"><select name="fa" tabindex="1">
+<option value="partof:standards (datetime)" selected>Extended Date Time Pages</option>
+<option value="partof:standards at the library of congress">Standards Pages</option>
+<option value="">All Library Pages</option>
+</select></td><td width="117" align="right"><input type="text" name="q" id="keyword" size="18" value="" tabindex="2" /></td>
+<td width="54" align="right"><input name="search_button" type="image" id="search_button" value="SEARCH" src="images/search.gif" tabindex="3" alt="search"></td>
+</tr></table></form>
+<table align="center" class="layout" cellpadding="0" cellspacing="0"><tr>
+  <td>&nbsp;</td>
+  <td>
+<div id="graphic"><img src="images/datetime.gif" alt="Extended Date Time Format" width="600" height="50"></div>
+<div id="gold-top"></div>
+<div id="official"><a name="skip_menu"></a>Official Web Site&nbsp;&nbsp;</div>
+
+  <!-- <div class="box">
+  <h2 class="inbox">News</h2>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+</ul>
+</div> -->
+<h1>Extended Date/Time Format (EDTF) Specification</h1>
+<p><strong>February 4, 2019</strong></p>
+<h2>Introduction</h2>
+<p>The Extended Date/Time Format (EDTF) was created by  the Library of Congress with the participation and support of the bibliographic  community as well as communities with related interests. It defines features to be supported in a date/time string, features considered useful for a wide variety of applications.</p>
+<p>See <a href="background.html">Background</a>. Note, in particular, a draft specification was issued in 2012. 
+  The full functionality of the draft specification is retained in this specification, however several syntactic changes were necessary, to satisfy international requirements.</p>
+<hr/>
+
+      <h2>Differences </h2>
+      <p>This specification differs from the earlier draft
+      as follows: </p>
+<ul>
+  <li>the  unspecified date character (formerly lower case &lsquo;u&rsquo;) is superseded by the  character (upper case) 'X';</li>
+  <li>Masked precision  is eliminated; </li>
+  <li>the  uncertain and approximate qualifiers, '?' and '~', &nbsp;when applied together, are combined into a  single qualifier character '%';</li>
+  <li>&ldquo;qualification  from the left&rdquo; is introduced and replaces the grouping mechanism using  parentheses;</li>
+  <li>the  extended interval syntax &nbsp;keywords 'unknown' and 'open' have been replaced with null and the double-dot notation ['..'] respectively; </li>
+  <li>the  year prefix 'y' and the exponential indicator 'e', both previously lowercase, are now 'Y' and 'E' (uppercase); and</li>
+  <li>the significant  digit indicator 'p' is now 'S' (uppercase).</li>
+</ul>
+<hr/>
+<h2>Compliance </h2>
+<p>Three conformance levels are defined: level 0,  level 1, and level 2. Level  0 specifies features of ISO 8601-1; Levels  1 and 2 specify features described ISO 8601-2.<br>
+  <br>
+  An implementation must  support all of the features listed for Level 0. The vendor must state one of  the following levels of support:</p>
+<ul>
+  <li> Level  0 is supported.</li>
+  <li> Level  0 is supported, and in addition the following features of levels 1 and 2 are  supported (list features).</li>
+  <li> Level  1 is supported. </li>
+  <li> Level  1 is supported, and in addition the following features of level 2 are supported  (list features).</li>
+  <li> Level  2 is supported.</li>
+  </ul>
+<p>  Two communication parties that agree to operate  according to this specification must suppress, during their communication, any  features of ISO 8601-1 that are not included in level 0.</p><hr/>
+<h2>Extended  format </h2>
+<p>EDTF requires &ldquo;extended format&rdquo; as defined in 8601: hyphen between calendar components   and colon between clock components (e.g. 2005-09-24T10:00:00<em>). </em>&ldquo;Basic  format&quot; as defined in ISO 8601, which omits separators (e.g. 20050924T100000), is not permitted. </p>
+<hr/>
+<h2>&nbsp;</h2>
+<h1>Level 0</h1>
+<p>Level 0  requires support for the  following features.</p>
+<h2>Date</h2>
+<ul>
+  <li>complete  representation:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [year][&ldquo;-&rdquo;][month][&ldquo;-&rdquo;][day]<br>
+    Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12&rsquo;  refers to the calendar date 1985 April 12th with day precision.</li>
+  <li> reduced precision for year and month: &nbsp;&nbsp;[year][&ldquo;-&rdquo;][month]<br>
+      Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04&rsquo;  refers to the calendar month 1985 April with month precision.  </li>
+  <li>reduced precision for year:&nbsp; [year]<br>
+      Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985&rsquo;  refers to the calendar year 1985 with year precision.  </li>
+</ul>
+<h2><br>
+  Date and Time</h2>
+<ul>
+  <li>[date][&ldquo;T&rdquo;][time]<br>
+Complete  representations for calendar date and (local) time of day <br>
+    Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12T23:20:30&rsquo; refers to the date 1985  April 12th at 23:20:30 local time.</li>
+  <li><span dir="LTR"> </span>&nbsp;[dateI][&ldquo;T&rdquo;][time][&ldquo;Z&rdquo;]<br> 
+    Complete  representations for calendar date and UTC time of day <br>
+    Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12T23:20:30Z&rsquo;  refers to the date 1985 April 12th at 23:20:30 UTC time.</li>
+  <li>[dateI][&ldquo;T&rdquo;][time][shiftHour]<br>
+    Date and time with timeshift in hours (only)<br>
+    Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12T23:20:30-04&rsquo;  refers to the date 1985 April 12th time of day 23:20:30 with time shift of 4 hours behind UTC.<br>
+  </li>
+  <li>[dateI][&ldquo;T&rdquo;][time][shiftHourMinute]<br>
+    Date and time with timeshift in hours and minutes   <br>
+    Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12T23:20:30+04:30&rsquo;  refers to the date 1985 April 12th, &nbsp;time of day &nbsp;23:20:30 with time shift of 4 hours and 30  minutes ahead of UTC. <br>
+    </li>
+</ul>
+<h2>Time Interval</h2>
+<p>EDTF Level 0 adopts representations of a time  interval where both the start and end are dates: start and end date only; that is, both start and duration, and duration and end, are excluded. Time of day is excluded.</p><ul>
+  <li>  Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1964/2008&rsquo;  is a time interval with calendar year precision, beginning sometime in 1964 and  ending sometime in 2008.</li>
+  <li>    Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2004-06/2006-08&rsquo;  is a time interval with calendar month  precision, beginning sometime in June 2004 and ending sometime in August of  2006.</li>
+  <li>    Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2004-02-01/2005-02-08&rsquo;  is a time interval with calendar day  precision, beginning sometime on February 1, 2004 and ending sometime on  February 8, 2005.</li>
+  <li>    Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2004-02-01/2005-02&rsquo;  is a time interval beginning sometime on February 1, 2004 and ending sometime  in February 2005. Since the start endpoint precision (day) is different than  that of the end endpoint (month) the precision of the time interval at  large is undefined.</li>
+  <li>    Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2004-02-01/2005&rsquo;  is a time interval beginning sometime on February 1, 2004 and ending sometime  in 2005. The start endpoint has calendar day  precision and the end endpoint has calendar year precision. Similar to the  previous example, the precision of the time interval at large is undefined.</li>
+  <li>    Example 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2005/2006-02&rsquo;  is a time interval beginning sometime in 2005 and ending sometime in February  2006.</li>
+</ul> <hr/>
+<h1>Level 1</h1>
+<p>Level 1 of this specification requires support for  Level 0 as well as the following features:</p>
+<a id="letter"></a><h2>Letter-prefixed calendar year</h2>
+<p>'Y' may be used at the beginning of the date string to signify that   the date is a year, when (and only when) the year exceeds four digits,   i.e. for  years later than 9999 or earlier than -9999. </p>
+<ul>
+  <li>Example 1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Y170000002' is <em>the year 170000002</em></li>
+  <li>Example 2 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Y-170000002' is <em>the year -170000002</em></li>
+  </ul>
+<h4><em>Note: an error in example 2 was corrected 2/4/2018. Changed from &nbsp;'-Y170000002' to &nbsp;'Y-170000002'</em></h4>
+<p>&nbsp;</p>
+<h2>Seasons</h2>
+<p>The values 21, 22, 23, 24 may be used used to signify ' Spring',   'Summer', 'Autumn', 'Winter', respectively, in place of a month value   (01 through 12) for  a year-and-month format string.</p>
+<ul>
+  <li>Example &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2001-21&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Spring, 2001</em></li>
+  </ul>
+<p>&nbsp;</p>
+<h2>Qualification  of a date (complete)</h2>
+<p>The characters '?', '~' and '%' are used to mean "uncertain", "approximate", and "uncertain" as well as  "approximate", respectively. These characters may occur only   at the end of the date string and apply to the entire date.</p>
+<ul>
+  <li>Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1984?'   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;year uncertain (possibly the year        1984, but not definitely</em>)</li>
+  <li>Example<em> 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'2004-06~'</em>'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;year-month approximate</li>
+  <li><em>Example</em> 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'<em>2004-06-11%</em>'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entire date (year-month-day) uncertain and approximate  </li>
+  </ul>
+<h2>&nbsp;</h2>
+<h2>Unspecified digit(s) from the right </h2>
+<p>The character 'X' may be used in place of one or more rightmost digits to indicate that   the value of that digit is unspecified, for     the following cases:</p>
+<ol>
+  <li>A year with one or two (rightmost) unspecified digits  in a year-only expression (year precision)<br>
+    Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;201X&rsquo;<br>
+    Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;20XX&rsquo;<br>
+  </li>
+  <li>Year specified,  month unspecified in a year-month expression (month precision) <br>
+    Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2004-XX&rsquo;<br>
+  </li>
+  <li>Year and month specified, day unspecified in a year-month-day expression (day precision)<br>
+    Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-XX&rsquo;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+  </li>
+  <li>Year specified, day and month unspecified in a year-month-day expression&nbsp;&nbsp;(day precision)<br>
+    Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-XX-XX&rsquo; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+  </li>
+</ol>
+<p><strong>Extended Interval </strong>(<strong>L1</strong>)</p>
+<ol>
+  <li>A null string  may be used for the start or end date when it is unknown. </li>
+  <li>Double-dot (&ldquo;..&rdquo;) may be used when either the start or end  date is not specified, either because there is none or for any other reason.</li>
+  <li>A modifier may appear at the end    of the date to indicate "uncertain" and/or "approximate"  </li>
+</ol>
+<p><strong>Open end  time interval</strong><br>
+</p>
+<ul>
+  <li>Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12/..&rsquo;  <br>
+    interval  starting at 1985 April 12th with day precision; end open</li>
+  <li>    Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04/..&rsquo;  <br>
+    interval starting  at 1985 April with month precision; end open </li>
+  <li>    Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985/..&rsquo;<br>
+    interval starting  at year 1985 with year precision; end open</li>
+  </ul>
+<p><strong> Open start time interval </strong></p>
+<ul>
+  <li>Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;../1985-04-12&rsquo;<br>
+    interval with  open start; ending  1985 April 12th with day precision</li>
+  <li>    Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;../1985-04&rsquo;<br>
+    interval with   open start; ending  1985 April with month precision</li>
+  <li>    Example 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;../1985&rsquo;<br>
+    interval with open start; ending at year 1985 with year precision<span dir="LTR"> </span></li>
+</ul>
+<p><strong>Time interval with unknown end </strong></p>
+<ul>
+  <li>Example 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04-12/&rsquo;<br>
+    interval  starting 1985 April 12th with day precision; end unknown</li>
+  <li>    Example 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985-04/&rsquo;<br>
+    interval starting  1985 April with month precision; end unknown</li>
+  <li>    Example 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1985/&rsquo;<br>
+    interval starting   year 1985 with year precision; end unknown</li>
+</ul>
+<p><strong>Time interval with unknown start </strong></p>
+<ul>
+  <li>Example 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;/1985-04-12&rsquo;  <br>
+    interval with unknown start; ending  1985 April 12th with day precision</li>
+  <li>    Example 11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;/1985-04&rsquo;  <br>
+    interval with   unknown start;  ending  1985 April with month precision<br>
+    Example 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;/1985&rsquo;<br>
+    interval with   unknown start; ending  year 1985 with year precision</li>
+</ul>
+<h3>&nbsp;</h3>
+<h2> Negative calendar year</h2>
+<ul>
+  <li>
+    Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;-1985&rsquo;  <br>
+  </li>
+  </ul>
+<p>Note: ISO 8601 Part 1 does not support negative year. </p><p>&nbsp;</p>
+<hr/>
+<h1>Level 2</h1>
+<p>Level 2 requires support for  Level 1 as well as the following features:</p>
+<h2>Exponential year</h2>
+<p>'Y' at the beginning of the string (which indicates "year", as in level 1) may be followed by an integer, followed by 'E' followed by a positive integer. This signifies "times 10 to the power of". Thus 17E8 means        "17 times 10 to the eighth power". </p>
+<ul>
+  <li>Example &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;Y-17E7&rsquo;<br>  
+    the calendar year -17*10 to the seventh power= -170000000</li>
+  </ul>
+<h2>&nbsp;</h2>
+<h2>Significant digits </h2>
+<p>A year (expressed in any of the three allowable forms: four-digit, 'Y' prefix, or exponential) may be followed by 'S', followed by a positive integer indicating the number of significant digits.</p>
+<ul>
+  <li>    Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1950S2&rsquo; <br>
+    some year between 1900 and 1999, estimated to be 1950</li>
+  <li>    Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;Y171010000S3&rsquo;<br> 
+    some year between  171000000 and 171999999 estimated to be 171010000 </li>
+  <li>    Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;Y3388E2S3&rsquo; <br>
+    some year between 338000 and 338999, estimated to  be 338800. </li>
+</ul>
+<h2>&nbsp;</h2>
+<h2>Sub-year groupings </h2>
+<p>Level 2 extends the season feature of Level 1 to include the following sub-year groupings.</p>
+<p>21&nbsp;&nbsp;&nbsp;&nbsp; Spring (independent of location)<br>
+  22&nbsp;&nbsp;&nbsp;&nbsp; Summer (independent of location)<br>
+  23&nbsp;&nbsp;&nbsp;&nbsp; Autumn (independent of location)<br>
+  24&nbsp;&nbsp;&nbsp;&nbsp; Winter (independent of location)<br>
+  25&nbsp;&nbsp;&nbsp;&nbsp; Spring - Northern Hemisphere <br>
+  26&nbsp;&nbsp;&nbsp;&nbsp; Summer - Northern Hemisphere<br>
+  27&nbsp;&nbsp;&nbsp;&nbsp; Autumn - Northern Hemisphere<br>
+  28&nbsp;&nbsp;&nbsp;&nbsp; Winter - Northern Hemisphere <br>
+  29&nbsp;&nbsp;&nbsp;&nbsp; Spring - Southern Hemisphere<br>
+  30&nbsp;&nbsp;&nbsp;&nbsp; Summer - Southern Hemisphere<br>
+  31&nbsp;&nbsp;&nbsp;&nbsp; Autumn - Southern Hemisphere<br>
+  32  &nbsp;&nbsp;&nbsp; Winter - Southern Hemisphere <br>
+  33&nbsp;&nbsp;&nbsp;&nbsp; Quarter 1 (3 months in duration)<br>
+  34&nbsp;&nbsp;&nbsp;&nbsp; Quarter 2 (3 months in duration)<br>
+  35&nbsp;&nbsp;&nbsp;&nbsp; Quarter 3 (3 months in duration)<br>
+  36&nbsp;&nbsp;&nbsp;&nbsp; Quarter 4 (3 months in duration)<br>
+  37&nbsp;&nbsp;&nbsp;&nbsp; Quadrimester 1 (4 months in duration)<br>
+  38&nbsp;&nbsp;&nbsp;&nbsp; Quadrimester 2 (4 months in duration)<br>
+  39&nbsp;&nbsp;&nbsp;&nbsp; Quadrimester 3 (4 months in duration)<br>
+  40&nbsp;&nbsp;&nbsp;&nbsp; Semestral 1 (6 months in duration)<br>
+  41&nbsp;&nbsp;&nbsp;&nbsp; Semestral 2 (6 months in duration)</p>
+<ul>
+  <li>Example &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;2001-34&rsquo;&nbsp;&nbsp;&nbsp; <br>
+    second quarter of 2001</li>
+  </ul>
+<h2>&nbsp;</h2>
+<h2>Set representation</h2>
+<ol>
+  <li>Square brackets wrap a single-choice list (select one member). </li>
+  <li>Curly brackets wrap an inclusive list (all members included).</li>
+  <li>Members of the set are separated by commas.</li>
+  <li>No spaces are allowed, anywhere within the expression.</li>
+  <li>Double-dots indicates all the values between the two values it   separates,    inclusive. </li>
+  <li>Double-dot at the beginning or end of the list means "on or   before"     or "on or after" respectively.</li>
+  <li>Elements immediately preceeding and/or following as well as the elements represented by a double-dot, all have the same precision.  Otherwise, different elements may have different   precisions</li></ol>
+<p><strong>One of a set</strong></p>
+<ul>
+  <li>Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1667,1668,1670..1672] <br>
+    <em>One of the years 1667, 1668, 1670, 1671, 1672 </em></li>
+  <li>Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[..1760-12-03] <br>
+    <em> December 3, 1760; or some earlier date </em></li>
+  <li>Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1760-12..] <br>
+    <em> December 1760, or some later month </em></li>
+  <li>Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1760-01,1760-02,1760-12..] <br>
+    <em>January or February of 1760 or December 1760</em> or some later month</li>
+  <li>Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1667,1760-12]<br>
+    <em>Either the year 1667 or the month December of 1760. </em></li>
+  <li>Example 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[..1984]<br>
+    The year 1984 or an earlier year<br>
+  </li>
+</ul>
+<p><strong>All Members</strong></p>
+<ul>
+  <li>Example 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{1667,1668,1670..1672} <br>
+    <em>All  of the years 1667, 1668, 1670, 1671, 1672 </em></li>
+  <li>Example 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{1960,1961-12}<br>
+    <em>The year 1960 and the month December of 1961. </em></li>
+  <li>
+    <a id="allmembers"></a>Example 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{..1984}<br>
+      The year 1984 and all earlier years
+    <br>
+    <h4>  Note: error in example 9 fixed August 6, 2019.  Square changed to curly brackets. </h4>
+      <br>
+    
+  </li>
+</ul>
+<h2>&nbsp;</h2>
+<h2>Qualification</h2>
+<p><strong>Group Qualification</strong></p>
+<p>A qualification character to the immediate right of a component applies to that component as well as to all components to the left.</p>
+<ul>
+  <li>Example 1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004-06-11%&rsquo;<br>
+    <em>year, month, and day uncertain and approximate</em></li>
+  <li>  Example 2  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004-06~-11&rsquo;
+    <br>
+    year and month approximate </li>
+  <li> Example   &nbsp;3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004?-06-11&rsquo; <br>
+    <em>year uncertain</em></li></ul>
+<p><strong>Qualification of Individual Component</strong></p>
+<p>A qualification character to the immediate left of a component applies to that component only.</p>
+<ul>
+  <li>Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;?2004-06-~11&rsquo; <br>
+    <em> year uncertain; month known; day  approximate</em></li>
+  <li> Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004-%06-11&rsquo;<br>
+    <em>    month uncertain and  approximate; year and day
+    </em>known</li>
+  </ul>
+<h2>&nbsp;</h2>
+<h2>Unspecified Digit</h2>
+<p>For level 2 the unspecified digit, 'X', may occur anywhere within a component.</p>
+<ul>
+  <li>Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;156X-12-25&rsquo; <br>
+    <em>    December 25 sometime  during the 1560s  </em><br>
+  </li>
+  <li>Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;15XX-12-25&rsquo; <br>
+    <em> December 25 sometime  during the 1500s </em><br>
+  </li>
+  
+  <li>Example 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;XXXX-12-XX&rsquo; <br>
+    <em>Some day in December in some year</em></li>
+  
+  <li>Example 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'1XXX-XX&rsquo; <br>
+    <em>    Some month during the  1000s  </em></li>
+  
+  <li>Example 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1XXX-12&rsquo;<br>
+    <em>    Some December during the 1000s<br>
+    </em></li>
+  <li><em>Example 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lsquo;1984-1X&rsquo;<br>
+      <em> October, November, or December 1984</em><br>
+    <br>
+  </em></li>
+</ul>
+<h2>Interval</h2>
+<p>For Level 2 portions of a date within an interval may be designated as approximate, uncertain, or   unspecified. </p>
+<ul>
+  <li>Example 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004-06-~01/2004-06-~20&rsquo; <br>
+    <em>An interval in June 2004 beginning approximately the first and ending approximately the 20th</em><br>
+  </li>
+  <li>Example 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lsquo;2004-06-XX/2004-07-03&rsquo; <br>
+    <em>An interval  beginning on an unspecified  day in June 2004 and ending July 3.</em></li>
+  </ul>
+	  <br>
+<p>&nbsp;</p> <hr/>
+<h1> Acknowledgements</h1>
+<p>Acknowledgements have been moved to the 2012 draft. </p>
+<p>&nbsp;</p>
+<p class="homeblurb">This site is maintained in the Network
+  Development and MARC Standards Office of the Library of Congress.</p>
+<div id="white-bottom"></div>
+<div id="gold-bottom"></div></td>
+</tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<table align="center" class="footer" cellpadding="0" cellspacing="0" border="0"><tr valign="top"><td>
+
+<div class="sitenav">
+
+<a href="https://www.loc.gov/">The Library of Congress</a>&nbsp;&raquo;&nbsp;
+<a href="/standards/">Standards</a>&nbsp;&raquo;&nbsp;
+<a href="/standards/datetime/">Extended Date Time Home</a> &nbsp;&raquo;&nbsp;
+
+<span class="selected">EDTF Spec</span></div>
+  <br>
+  <span class="sitenav">
+  <!-- #BeginDate format:Am1 -->February 2, 2022<!-- #EndDate -->
+  </span></td>
+<td align="right"><div class="contactus"><a href="/cdn-cgi/l/email-protection#5a343e3729351a363539743d352c">Contact Us</a></div></td>
+</tr></table>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>if(window['_satellite']){_satellite.pageBottom();}</script>
+</body>
+</html>

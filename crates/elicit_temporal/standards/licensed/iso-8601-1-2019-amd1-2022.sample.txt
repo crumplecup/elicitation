@@ -1,0 +1,494 @@
+INTERNATIONAL
+STANDARD
+
+ISO
+8601-1
+First edition
+2019-02
+
+AMENDMENT 1
+2022-10
+
+Date and time — Representations for
+information interchange —
+Part 1:
+Basic rules
+
+AMENDMENT 1: Technical corrections
+
+iTeh STANDARD
+PREVIEW
+Date et heure — Représentations pour l'échange d'information —
+Partie 1: Règles de base
+(standards.iteh.ai)
+AMENDEMENT 1: Corrections techniques
+
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso8601-1-2019-amd-1-2022
+
+Reference number
+ISO 8601-1:2019/Amd.1:2022(E)
+© ISO 2022
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso8601-1-2019-amd-1-2022
+
+COPYRIGHT PROTECTED DOCUMENT
+© ISO 2022
+All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may
+be reproduced or utilized otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting on
+the internet or an intranet, without prior written permission. Permission can be requested from either ISO at the address below
+or ISO’s member body in the country of the requester.
+ISO copyright office
+CP 401 • Ch. de Blandonnet 8
+CH-1214 Vernier, Geneva
+Phone: +41 22 749 01 11
+Email: copyright@iso.org
+Website: www.iso.org
+Published in Switzerland
+
+ii
+
+
+
+﻿
+
+© ISO 2022 – All rights reserved
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+Foreword
+ISO (the International Organization for Standardization) is a worldwide federation of national standards
+bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+through ISO technical committees. Each member body interested in a subject for which a technical
+committee has been established has the right to be represented on that committee. International
+organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of
+electrotechnical standardization.
+The procedures used to develop this document and those intended for its further maintenance are
+described in the ISO/IEC Directives, Part 1. In particular, the different approval criteria needed for the
+different types of ISO documents should be noted. This document was drafted in accordance with the
+editorial rules of the ISO/IEC Directives, Part 2 (see www.iso.org/directives).
+Attention is drawn to the possibility that some of the elements of this document may be the subject of
+patent rights. ISO shall not be held responsible for identifying any or all such patent rights. Details of
+any patent rights identified during the development of the document will be in the Introduction and/or
+on the ISO list of patent declarations received (see www.iso.org/patents).
+Any trade name used in this document is information given for the convenience of users and does not
+constitute an endorsement.
+
+For an explanation of the voluntary nature of standards, the meaning of ISO specific terms and
+expressions related to conformity assessment, as well as information about ISO's adherence to
+the World Trade Organization (WTO) principles in the Technical Barriers to Trade (TBT), see
+www.iso.org/iso/foreword.html.
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+This document was prepared by Technical Committee ISO/TC 154, Processes, data elements and
+documents in commerce, industry and administration.
+
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/isoA list of all parts in the ISO 8601 series can be found on the ISO website.
+8601-1-2019-amd-1-2022
+
+Any feedback or questions on this document should be directed to the user’s national standards body. A
+complete listing of these bodies can be found at www.iso.org/members.html.
+
+© ISO 2022 – All rights reserved
+
+﻿
+
+iii
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso8601-1-2019-amd-1-2022
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+Date and time — Representations for information
+interchange —
+Part 1:
+Basic rules
+
+AMENDMENT 1: Technical corrections
+3.1.1.24
+
+Replace “Note 2 to entry” with the following:
+
+Note 2 to entry: An inserted second is called a positive leap second and an omitted second is called
+a negative leap second. A positive leap second is inserted after [23:59:59Z] as the last second of that
+minute, which is represented as [23:59:60Z]. A negative leap second is achieved by the omission
+of [23:59:59Z], where the last second of that minute is represented as [23:59:58Z]. Insertion or
+omission takes place as determined by the International Earth Rotation and Reference Systems
+Service (IERS), normally on 30 June or 31 December, but if necessary on 31 March or 30 September.
+
+3.1.2.15
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+ISO
+8601-1:2019/Amd 1:2022
+Replace “Note 1 to entry” with the
+following:
+
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/isoNote 1 to entry: The term “week”
+applies also to the duration of any time interval (3.1.1.6) which
+8601-1-2019-amd-1-2022
+
+starts at a certain time of day (3.1.1.16) at a certain calendar day of week (3.1.2.12) and ends at the
+same time of day at the same calendar day of week in the next calendar week.
+
+4.2.2
+Replace “NOTE” with the following:
+
+NOTE
+The calendar year used in the week calendar and the Gregorian calendar are
+independent units and do not necessarily align. An identical day as referenced in the week calendar
+and the Gregorian calendar can belong to different calendar years in their respective calendars. For
+instance, the first day of 2019 Week 1 (a Monday) in the week calendar is actually 2018-12-31 in the
+Gregorian calendar.
+
+4.2.2
+Move the NOTE to before Table 2.
+4.2.3, first paragraph
+Replace the paragraph with the following:
+© ISO 2022 – All rights reserved
+
+﻿
+
+1
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+This document uses the 24-hour clock for identification of times within a calendar day, where the
+duration of a calendar day is defined as 24 clock hours, the duration of a clock hour as 60 clock
+minutes, and the duration of a clock minute generally as 60 clock seconds (except when insertion of
+a positive leap second or omission of a negative leap second occurs).
+4.3.2
+Add the following paragraph after the first paragraph:
+
+The year number may be preceded by a minus sign to indicate a year preceding year zero.
+
+4.3.2, third paragraph
+Replace the paragraph with the following:
+
+The number of digits may exceed 4 in the case of expanded representation.
+
+4.3.11
+Add the following paragraph as the first paragraph:
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+Each Gregorian calendar decade is identified by a 3-digit ordinal number beginning with ‘000’, for
+decade zero, through ‘999’.
+
+4.3.12
+
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/isoAdd the following paragraph as the first paragraph:
+8601-1-2019-amd-1-2022
+
+Each Gregorian calendar century is identified by a 2-digit ordinal number beginning with ‘00’, for
+century zero, through ‘99’.
+
+5.3.1.4, first paragraph
+Replace the paragraph with the following:
+
+A decimal fraction of hour, minute or second may be included in a representation. If included, lower
+order time scale components (if any) shall be omitted and the decimal fraction shall be divided
+from the integer part by the decimal sign. If the magnitude of the number is less than one, the
+decimal sign shall be preceded by two zeros in accordance with 4.5.
+
+5.3.2
+Replace the subclause title of “Beginning of day” with “Beginning of the day, ending of the day”.
+
+2
+
+﻿
+© ISO 2022 – All rights reserved
+﻿
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+5.3.2
+Replace the text with the following:
+
+The beginning of the day is defined as the first instant of the day, and the ending of the day is
+defined as the last instant of the day, where the last instant of the day is identical to the first instant
+of the next day.
+NOTE 1
+
+An instant does not have any duration.
+
+For disambiguation and semantic needs, despite that the last instant of the day is technically also
+the first instant of the next day, separate expressions are used to differentiate these two cases.
+As time of day relates to the duration elapsed since the first instant of the day:
+
+— the “beginning of the day” expressions represent that no time has elapsed since the first instant
+of the day;
+— the “ending of the day” expressions represent that 24 hours have elapsed since the first instant
+of the day.
+NOTE 2   This document does not explicitly distinguish the representation of instants from time intervals.
+
+Expressions of the beginning of the day and the ending of the day conform with representations of
+time of day.
+
+iTeh STANDARD PREVIEW
+The expressions, as complete representations in basic and extended format for the beginning of the
+(standards.iteh.ai)
+day and the ending of the day, in accordance
+with 5.3.1, are as follows:
+
+a)
+
+Beginning of the day
+
+ISO 8601-1:2019/Amd 1:2022
+
+Basic format: T000000 (in the format
+of 5.3.1.2 a))
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso-
+
+8601-1-2019-amd-1-2022
+
+Extended format: 00:00:00 (or T00:​00:​00) (in the format of 5.3.1.2 b))
+
+b) Ending of the day
+
+Basic format: T240000 (in the format of 5.3.1.2 a))
+
+Extended format: 24:00:00 (or T24:​00:​00) (in the format of 5.3.1.2 b))
+
+NOTE 3   ‘T’ is always present in basic format. For extended format, ‘T’ can be omitted for a time-only expression but is included for a date-and-time expression.
+
+Expressions for the beginning of the day, which represent the first instant of day (which has no
+duration), are identical to expressions that represent the first second of day (which has a duration
+of 1s).
+
+Expressions for the ending of the day are solely to be used as references to the last instant of the
+day (which has no duration), which exists within the last second of the day. The ending of the day
+expressions explicitly represent only instants, not time intervals, therefore they do not represent
+the last second of the day nor the first second of the next day. Only in the context of the ending of
+the day, an instant is expressed with 24 in the hour time scale component.
+Time intervals starting at the end of day are expressed using the beginning of the next calendar day.
+The beginning of the day instant can be expressed using a valid representation from this document
+comprising of only zeros.
+
+NOTE 4
+At the beginning of the day, no time has elapsed since the first instant of the day, therefore the
+expression comprises of zeros regardless of the level of precision.
+© ISO 2022 – All rights reserved
+﻿
+
+﻿
+
+3
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+NOTE 5
+Date and time expressions according to this document typically refer to the first instant of the
+referenced time scale unit. However, the final instant of the day technically does not belong to the beginning
+of any time scale unit considered in this document. Thus the value ‘24:00:00’ is chosen to represent the final
+instant of the day in order to distinguish the expression of this instant from an expression of a time scale
+unit.
+
+The expressions may have reduced precision in accordance with 5.3.1.3 or may omit the time
+designator in accordance with 5.3.5.
+EXAMPLE 1
+
+The following are valid reduced precision expressions of the beginning of the day:
+
+—   ‘T00’ (time of day expression with omission of minutes and seconds);
+
+—   ‘00’ (time of day expression with omission of minutes, seconds and time designator);
+—   ‘T00:00’ (time of day expression with omission of seconds);
+
+—   ‘00:00’ (time of day expression with omission of seconds and time designator).
+EXAMPLE 2
+
+The following are valid reduced precision expressions of the ending of the day:
+
+—   ‘T24’ (time of day expression with omission of minutes and seconds);
+
+—   ‘24’ (time of day expression with omission of minutes, seconds and time designator);
+—   ‘T24:00’ (time of day expression with omission of seconds);
+
+—   ‘24:00’ (time of day expression with omission of seconds and time designator).
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+The expressions may utilize representations expanded with a decimal fraction in accordance with
+5.3.1.4:
+
+— to represent the beginning of the day; representations may be expanded with a decimal fraction
+containing only zeros;
+
+ISO 8601-1:2019/Amd 1:2022
+
+EXAMPLE 3
+T000000.000
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso-
+
+8601-1-2019-amd-1-2022
+
+— to represent the ending of the day; representations may be expanded with a decimal fraction
+containing only zeros.
+EXAMPLE 4
+
+T240000.000
+
+For legal purposes, that is, when a legal document refers to the instant “end of the day”, it is to be
+understood as the last instant of this day as stated in this clause.
+In the usage of the beginning of the day expression (e.g. ‘00:00:00’) or the ending of the day
+expression (e.g. ‘24:00:00’), a system shall disambiguate whether the usage of the expression refers
+to a time in a clock system, or to the beginning of the day or ending of the day instant, respectively.
+
+An ending of the day expression (e.g. ‘24:00:00’) is not intended to represent time scale units. For
+the benefit of clarity, it is explicitly stated that the ‘24’ in the ending of the day expression does not
+represent the hour in time of day representations (5.3); the valid values for hours are described in
+4.3.8.
+
+The ending of the day expressions, which represent the last instant of the day, exists within and
+marks the instantaneous end boundary of the last second of the day, its final instant.
+NOTE 6
+The last instant of the day exists within the last second of the day, which can be one of the
+following:
+      with no leap second		
+
+23:59:59
+
+      with a positive leap second
+
+23:59:60
+
+      with a negative leap second
+
+4
+
+23:59:58
+
+﻿
+© ISO 2022 – All rights reserved
+﻿
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+EXAMPLE 5
+
+‘T235960’ represents the final second of a calendar day with a positive leap second in UTC.
+
+EXAMPLE 6
+‘T2359’ represents the final minute of a calendar day in UTC, regardless of whether there is a
+positive, negative or no leap second.
+EXAMPLE 7
+‘T23’ represents the final hour of a calendar day in UTC, regardless of whether there is a
+positive, negative or no leap second.
+
+Ending of the day expressions may be used in reasoning with instants and time scale units.
+
+EXAMPLE 8
+
+An ending of the day expression can be used to represent a deadline.
+
+EXAMPLE 9
+
+When the ending of the day expression is used as an excluded maximum value:
+
+When an ending of the day expression is used as an excluded maximum value, all instants before
+the final instant of the day are included, but the final instant of the day is excluded;
+—   ‘23:59:58’, ‘23:59:59’, ‘23:59:60’ are times before the ending of the day;
+—   ‘24:00:00’ and ‘00:00:00’ of the next day are excluded instants.
+
+When an ending of the day expression is used as an included maximum value, all instants before
+the final instant of the day, and the final instant of the day itself, are included. As the final instant of
+the day is also the first instant of the next day, the first instant of the next day is also considered to
+be included.
+EXAMPLE 10
+
+When the ending of the day expression is used as an included maximum value:
+
+iTeh STANDARD PREVIEW
+—   beginning of the day (standards.iteh.ai)
+expressions of the next day, such as ‘00:00:00’ and ‘00:00:00.00’, are considered
+included instants, but the corresponding time scale unit representations are excluded;
+—   ‘23:59:58’, ‘23:59:59’, ‘23:59:60’, ‘24:00:00’ are times before or at the ending of the day;
+
+—   while ‘00:00:00.01’ belongs to the first second of the day represented as ‘00:00:00’, it is not a beginning
+ISO 8601-1:2019/Amd 1:2022
+of the day expression and therefore represents a time of day after the first instant of the day, and is therefore
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/isoexcluded.
+
+8601-1-2019-amd-1-2022
+
+If an ending of the day expression is received for processing, for example, to calculate duration,
+denote time intervals, or perform date and time arithmetic (as defined in ISO 8601-2:2019), it
+should be interpreted as the beginning instant of the next calendar day.
+EXAMPLE 11 When a system receives a time interval expression of ‘2022-04-19T00:00:00/2022-0419T24:00:00’, this time interval is interpreted as ‘2022-04-19T00:00:00/2022-04-20T00:00:00’.
+
+EXAMPLE 12 In the specification of a representation of a whole day in accordance with this document, the
+following time interval expressions are logically equivalent:
+—   ‘2022-04-19T00:00:00/P1D’;
+
+—   ‘2022-04-19T00:00:00/2022-04-19T24:00:00’;
+
+—   ‘2022-04-19T00:00:00/2022-04-20T00:00:00’;
+—   ‘2022-04-18T24:00:00/2022-04-19T24:00:00’;
+
+—   ‘2022-04-18T24:00:00/2022-04-20T00:00:00’.
+
+5.5.1, fourth paragraph
+Replace the paragraph with the following:
+
+Representations of the time shift between the local time scale and UTC included with the component
+preceding the separator shall be assumed to apply to the component following the separator, unless
+a corresponding alternative is included.
+
+© ISO 2022 – All rights reserved
+﻿
+
+﻿
+
+5
+
+ISO 8601-1:2019/Amd.1:2022(E)
+
+5.5.1, EXAMPLE 2
+Replace the example with the following:
+
+EXAMPLE 2
+‘2018-01-15T12:00:00+05:00/2018-02-20T12:00:00’
+is
+equivalent
+to
+‘2018-01-15T12:00:00+05:00/2018-02-20T12:00:00+05:00’ as the ‘+05:00’ time shift also applies to the
+expression after the separator.
+
+5.5.2.2
+Replace the text with the following:
+
+The complete representation of the expression for duration shall be one of:
+a) [“P”][i][“Y”][i][“M”][i][“D”][“T”][i][“H”][i][“M”][i][“S”]
+b) [“P”][i][“W”]
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019/Amd 1:2022
+https://standards.iteh.ai/catalog/standards/sist/49401c15-8dfc-4465-8441-46a5ad1aafdc/iso8601-1-2019-amd-1-2022
+
+6
+
+﻿
+© ISO 2022 – All rights reserved
+﻿
+
+

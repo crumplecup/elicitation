@@ -23,6 +23,7 @@ members = [
   "crates/elicit_sqlx",
   "crates/elicit_std",
   "crates/elicit_time",
+  "crates/elicit_temporal",
   "crates/elicit_tokio",
   "crates/elicit_tower",
   "crates/elicit_axum",
@@ -102,6 +103,7 @@ elicit_serde_json = { path = "crates/elicit_serde_json", version = "0.11.1" }
 elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.11.1" }
 elicit_std = { path = "crates/elicit_std", version = "0.11.1" }
 elicit_time = { path = "crates/elicit_time", version = "0.11.1" }
+elicit_temporal = { path = "crates/elicit_temporal", version = "0.11.1" }
 elicit_tokio = { path = "crates/elicit_tokio", version = "0.11.1" }
 elicit_tower = { path = "crates/elicit_tower", version = "0.11.1" }
 elicit_axum = { path = "crates/elicit_axum", version = "0.11.1" }

@@ -1,0 +1,23 @@
+[package]
+name = "elicit_temporal"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Temporal contract interface crate for standards-anchored date, time, offset, and timestamp propositions"
+keywords = ["time", "temporal", "datetime", "elicitation", "contracts"]
+categories = ["date-and-time", "development-tools"]
+
+[dependencies]
+elicitation.workspace = true
+derive_builder.workspace = true
+derive_more.workspace = true
+schemars.workspace = true
+serde.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

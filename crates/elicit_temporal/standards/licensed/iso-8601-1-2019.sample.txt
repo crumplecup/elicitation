@@ -1,0 +1,694 @@
+INTERNATIONAL
+STANDARD
+
+ISO
+8601-1
+First edition
+2019-02
+
+Date and time — Representations for
+information interchange —
+Part 1:
+Basic rules
+
+Date et heure — Représentations pour l'échange d'information —
+Partie 1: Règles de base
+iTeh STANDARD
+PREVIEW
+(standards.iteh.ai)
+
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+Reference number
+ISO 8601-1:2019(E)
+© ISO 2019
+
+ISO 8601-1:2019(E)
+﻿
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+COPYRIGHT PROTECTED DOCUMENT
+© ISO 2019
+All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may
+be reproduced or utilized otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting
+on the internet or an intranet, without prior written permission. Permission can be requested from either ISO at the address
+below or ISO’s member body in the country of the requester.
+ISO copyright office
+CP 401 • Ch. de Blandonnet 8
+CH-1214 Vernier, Geneva
+Phone: +41 22 749 01 11
+Fax: +41 22 749 09 47
+Email: copyright@iso.org
+Website: www.iso.org
+Published in Switzerland
+
+ii
+
+﻿
+
+© ISO 2019 – All rights reserved
+
+ISO 8601-1:2019(E)
+﻿
+
+Contents
+
+Page
+
+Foreword...........................................................................................................................................................................................................................................v
+Introduction............................................................................................................................................................................................................................... vii
+1
+2
+3
+
+4
+
+Scope.................................................................................................................................................................................................................................. 1
+
+Normative references....................................................................................................................................................................................... 1
+
+Terms, definitions and symbols. ........................................................................................................................................................... 1
+3.1
+Terms and definitions........................................................................................................................................................................ 1
+3.1.1
+Basic concepts. ................................................................................................................................................................... 1
+3.1.2
+Time and date units. ...................................................................................................................................................... 5
+3.1.3
+Representations and formats. ............................................................................................................................... 8
+3.2
+Symbols....................................................................................................................................................................................................... 10
+3.2.1
+General................................................................................................................................................................................... 10
+3.2.2
+Time scale component symbols. ...................................................................................................................... 10
+3.2.3
+Composite component symbols. ...................................................................................................................... 11
+3.2.4
+Symbols used in place of digits or signs.................................................................................................... 11
+3.2.5
+Designator symbols. ................................................................................................................................................... 12
+3.2.6
+Separator symbols. ...................................................................................................................................................... 13
+
+Fundamental principles. ............................................................................................................................................................................13
+4.1
+Basic rules................................................................................................................................................................................................. 13
+4.2
+Time scales............................................................................................................................................................................................... 13
+4.2.1
+The Gregorian calendar........................................................................................................................................... 13
+4.2.2
+The week calendar....................................................................................................................................................... 14
+4.2.3
+The 24-hour clock. ....................................................................................................................................................... 15
+4.3
+Time scale components and units. ...................................................................................................................................... 15
+4.3.1
+General
+................................................................................................................................................................................... 15
+ISO 8601-1:2019
+4.3.2
+Calendar year and years
+duration. ................................................................................................................. 15
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a4.3.3
+Calendar month and months
+duration....................................................................................................... 16
+27e15c0de2dc/iso-8601-1-2019
+4.3.4
+Calendar week number and weeks duration......................................................................................... 16
+4.3.5
+Calendar day of month and days duration.............................................................................................. 16
+4.3.6
+Calendar day of week. ............................................................................................................................................... 16
+4.3.7
+Calendar day of year................................................................................................................................................... 17
+4.3.8
+Clock hour and hours duration......................................................................................................................... 17
+4.3.9
+Clock minute and minutes duration. ............................................................................................................ 17
+4.3.10 Clock second and seconds duration.............................................................................................................. 17
+4.3.11 Decade. ................................................................................................................................................................................... 18
+4.3.12 Century. ................................................................................................................................................................................. 18
+4.3.13 Time shift............................................................................................................................................................................. 18
+4.4
+Expansion.................................................................................................................................................................................................. 18
+4.5
+Leading zeros......................................................................................................................................................................................... 19
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+5
+
+Date and time representations. ..........................................................................................................................................................19
+5.1
+General. ....................................................................................................................................................................................................... 19
+5.2
+Date. ............................................................................................................................................................................................................... 19
+5.2.1
+General................................................................................................................................................................................... 19
+5.2.2
+Calendar date. .................................................................................................................................................................. 19
+5.2.3
+Ordinal date. ...................................................................................................................................................................... 21
+5.2.4
+Week date. ........................................................................................................................................................................... 21
+5.3
+Time of day. ............................................................................................................................................................................................. 22
+5.3.1
+Local time of day............................................................................................................................................................ 22
+5.3.2
+Beginning of the day................................................................................................................................................... 24
+5.3.3
+UTC of day. .......................................................................................................................................................................... 24
+5.3.4
+Local time scale and UTC........................................................................................................................................ 24
+5.3.5
+Omissions of time designator............................................................................................................................. 25
+5.4
+Date and time of day. ....................................................................................................................................................................... 25
+
+© ISO 2019 – All rights reserved
+
+﻿
+
+iii
+
+ISO 8601-1:2019(E)
+﻿
+
+5.5
+5.6
+
+5.4.1
+General................................................................................................................................................................................... 25
+5.4.2
+Complete representations..................................................................................................................................... 26
+5.4.3
+Representations other than complete. ....................................................................................................... 27
+Time interval. ......................................................................................................................................................................................... 27
+5.5.1
+Means of specifying time intervals................................................................................................................. 27
+5.5.2
+Duration................................................................................................................................................................................ 28
+5.5.3
+Complete representations..................................................................................................................................... 29
+5.5.4
+Representations other than complete. ....................................................................................................... 30
+Recurring time interval................................................................................................................................................................. 30
+5.6.1
+Means of specifying recurring time intervals....................................................................................... 30
+5.6.2
+Separators and designators. ................................................................................................................................ 30
+5.6.3
+Complete representations..................................................................................................................................... 30
+5.6.4
+Representations other than complete. ....................................................................................................... 31
+
+Annex A (informative) Example date and time expressions and representations.............................................32
+Bibliography.............................................................................................................................................................................................................................. 38
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+iv
+
+﻿
+
+© ISO 2019 – All rights reserved
+
+ISO 8601-1:2019(E)
+﻿
+
+Foreword
+ISO (the International Organization for Standardization) is a worldwide federation of national standards
+bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+through ISO technical committees. Each member body interested in a subject for which a technical
+committee has been established has the right to be represented on that committee. International
+organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of
+electrotechnical standardization.
+The procedures used to develop this document and those intended for its further maintenance are
+described in the ISO/IEC Directives, Part 1. In particular, the different approval criteria needed for the
+different types of ISO documents should be noted. This document was drafted in accordance with the
+editorial rules of the ISO/IEC Directives, Part 2 (see www​.iso​.org/directives).
+Attention is drawn to the possibility that some of the elements of this document may be the subject of
+patent rights. ISO shall not be held responsible for identifying any or all such patent rights. Details of
+any patent rights identified during the development of the document will be in the Introduction and/or
+on the ISO list of patent declarations received (see www​.iso​.org/patents).
+Any trade name used in this document is information given for the convenience of users and does not
+constitute an endorsement.
+
+For an explanation of the voluntary nature of standards, the meaning of ISO specific terms and
+expressions related to conformity assessment, as well as information about ISO's adherence to the
+World Trade Organization (WTO) principles in the Technical Barriers to Trade (TBT), see www​.iso​
+.org/iso/foreword​.html.
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+This document was prepared by Technical Committee ISO/TC 154, Processes, data elements and
+ISO 8601-1:2019
+documents in commerce, industry and administration.
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+This first edition of ISO 8601-1, together
+with ISO 8601-2, cancels and replaces ISO 8601:2004, which
+has been technically revised.
+The main changes compared to ISO 8601:2004 are as follows:
+
+— conversion of the content as Part 1 with the Part title “Basic rules” due to the addition of another
+Part 2 “Extensions” of ISO 8601;
+— replacement of the term “midnight” with “beginning of day”, disallowing the value “24” for hour;
+— update of terms and definitions:
+— “time point” is now “time”;
+
+— “local time” is now “local time of day”;
+
+— added definition for “time of day” and “local time scale”;
+
+— updated definitions for “standard time of day”, “local time of day” and “UTC of day” to rely on
+“time of day”;
+— combined two “day” terms in different domains for consistency;
+— change of the representation of “leap seconds”;
+
+— clarification of “calendar day” expressions intended to mean “calendar day of week” (etc.);
+
+— amendment of the recurring time interval (3.1.1.11) to provide a link to ISO 8601-2:2019 which
+contains in Clause 5 the “repeat rules for recurring time intervals”.
+A list of all parts in the ISO 8601 series can be found on the ISO website.
+© ISO 2019 – All rights reserved
+
+﻿
+
+v
+
+ISO 8601-1:2019(E)
+﻿
+Any feedback or questions on this document should be directed to the user’s national standards body. A
+complete listing of these bodies can be found at www​.iso​.org/members​.html.
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+vi
+
+﻿
+
+© ISO 2019 – All rights reserved
+
+ISO 8601-1:2019(E)
+﻿
+
+Introduction
+The purpose of this document is to provide a standard set of date and time format representations
+for information interchange, in order to minimize the risk of misinterpretation, confusion and their
+consequences.
+
+This document specifies a set of date and time format representations utilizing numbers, alphabets and
+symbols defined in ISO/IEC 646. These representations are meant to be both human recognizable and
+machine readable.
+This document retains the most commonly used expressions for date and time of day and their
+representations from earlier International Standards in the field, including earlier editions of ISO 8601
+and its predecessors.
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+© ISO 2019 – All rights reserved
+
+﻿
+
+vii
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+
+INTERNATIONAL STANDARD
+
+ISO 8601-1:2019(E)
+
+Date and time — Representations for information
+interchange —
+Part 1:
+Basic rules
+1 Scope
+
+This document specifies representations of dates of the Gregorian calendar and times based on the
+24-hour clock, as well as composite elements of them, as character strings for use in information
+interchange. It is also applicable for representing times and time shifts based on Coordinated Universal
+Time (UTC).
+
+This document excludes the representation of date elements from non-Gregorian calendars or times
+not from the 24-hour clock. This document does not address character encoding of representations
+specified in this document.
+
+2 Normative references
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+There are no normative references in this document.
+
+3 Terms, definitions and symbols
+ISO 8601-1:2019
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a3.1 Terms and definitions 27e15c0de2dc/iso-8601-1-2019
+For the purposes of this document, the following terms and definitions apply.
+
+ISO and IEC maintain terminological databases for use in standardization at the following addresses:
+— ISO Online browsing platform: available at https:​//www​.iso​.org/obp
+— IEC Electropedia: available at http:​//www​.electropedia​.org/
+3.1.1
+
+Basic concepts
+
+3.1.1.1
+date
+time (3.1.1.2) on the calendar (3.1.1.18) time scale (3.1.1.5)
+
+Note 1 to entry: Common forms of date include calendar date (3.1.2.7), ordinal date (3.1.2.8) or week date (3.1.2.9).
+
+3.1.1.2
+time
+mark attributed to an instant (3.1.1.3) or a time interval (3.1.1.6) on a specified time scale (3.1.1.5)
+
+Note 1 to entry: The term “time” is often used in common language. However, it should only be used if the meaning
+is clearly visible from the context.
+
+Note 2 to entry: On a time scale consisting of successive time intervals, such as a clock (3.1.1.9) or calendar
+(3.1.1.18), distinct instants may be expressed by the same time.
+
+Note 3 to entry: This definition corresponds with the definition of the term “date” in IEC 60050-113:2011,
+113-01-12.
+© ISO 2019 – All rights reserved
+
+﻿
+
+1
+
+ISO 8601-1:2019(E)
+﻿
+3.1.1.3
+instant
+point on the time axis (3.1.1.4)
+
+Note 1 to entry: An instantaneous event occurs at a specific instant.
+
+[SOURCE: IEC 60050-113:2011, 113-01-08]
+
+3.1.1.4
+time axis
+mathematical representation of the succession in time according to the space-time model of
+instantaneous events along a unique axis
+Note 1 to entry: According to the theory of special relativity, the time axis depends on the choice of a spatial
+reference frame.
+
+Note 2 to entry: In IEC 60050-113:2011, 113-01-03, time according to the space-time model is defined to be the
+one-dimensional subspace of space-time, locally orthogonal to space.
+
+[SOURCE: IEC 60050-113:2011, 113-01-07, modified — The words “according to the space-time” have
+been added; the phrase “special theory of relativity” has been changed to “theory of special relativity”
+for clarity; Note 2 to entry has been added.]
+3.1.1.5
+time scale
+system of ordered marks which can be attributed to instants (3.1.1.3) on the time axis (3.1.1.4), one
+instant being chosen as the origin
+
+iTeh STANDARD PREVIEW
+Note 1 to entry: A time scale may amongst others
+be chosen as:
+(standards.iteh.ai)
+—
+
+continuous, e.g. international atomic time (TAI) (see IEC 60050-713:1998, 713-05-18);
+
+ISO 8601-1:2019
+
+—
+
+continuous with discontinuities, e.g. UTC (3.1.1.12) due
+to leap seconds (3.1.1.24), standard time (3.1.1.14) due
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79ato summer time and winter time;
+27e15c0de2dc/iso-8601-1-2019
+
+—
+
+discrete, e.g. in digital techniques.
+
+—
+
+successive steps, e.g. calendars (3.1.1.18), where the time axis (3.1.1.4) is split up into a succession of
+consecutive time intervals (3.1.1.6) and the same mark is attributed to all instants of each time interval;
+
+[SOURCE: IEC 60050-113:2011, 113-01-11, modified — The words “amongst others” in Note 1 to entry
+have been added; NOTEs 2 and 3 have been deleted.]
+3.1.1.6
+time interval
+part of the time axis (3.1.1.4) limited by two instants (3.1.1.3) and, unless otherwise stated, the limiting
+instants themselves
+[SOURCE: IEC 60050-113:2011, 113-01-10, modified — The words “and, unless otherwise stated, the
+limiting instants themselves” have been added; the NOTEs have been deleted.]
+3.1.1.7
+time scale unit
+unit of measurement of a duration (3.1.1.8)
+EXAMPLE 1
+EXAMPLE 2
+
+2
+
+Calendar year, calendar month and calendar day are time scale units of the Gregorian calendar.
+Clock hour, clock minutes and clock seconds are time scale units of the 24-hour clock.
+
+﻿
+
+© ISO 2019 – All rights reserved
+
+ISO 8601-1:2019(E)
+﻿
+3.1.1.8
+duration
+non-negative quantity of time equal to the difference between the final and initial instants (3.1.1.3) of a
+time interval (3.1.1.6)
+
+Note 1 to entry: The duration is one of the base quantities in the International System of Quantities (ISQ) on
+which the International System of Units (SI) is based. The term “time” instead of “duration” is often used in this
+context and also for an infinitesimal duration.
+
+Note 2 to entry: For the term “duration”, expressions such as “time” or “time interval” are often used, but the
+term “time” is not recommended in this sense and the term “time interval” is deprecated in this sense to avoid
+confusion with the concept of “time interval”.
+Note 3 to entry: The exact duration of a time scale unit (3.1.1.7) depends on the time scale (3.1.1.5) used. For
+example, the durations of a year, month, week, day, hour or minute, may depend on when they occur [in a
+Gregorian calendar (3.1.1.19), a calendar month (3.1.2.19) can have a duration of 28, 29, 30, or 31 days; in a 24-hour
+clock (3.1.1.10), a clock minute (3.1.2.4) can have a duration of 59, 60, or 61 seconds, etc.]. Therefore, the exact
+duration can only be evaluated if the exact duration of each is known.
+Note 4 to entry: This definition is closely related to NOTE 1 of the terminological entry “duration” in IEC 60050113:2011, 113-01-13.
+
+3.1.1.9
+clock
+time scale (3.1.1.5) suited for intra-day time measurements
+EXAMPLE
+
+The 24-hour clock (3.1.1.10) is a type of clock.
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+Note 1 to entry: clock second (3.1.2.2), clock minute (3.1.2.4) and clock hour (3.1.2.6) are often time scale units
+(3.1.1.7) included in a clock.
+
+3.1.1.10
+ISO 8601-1:2019
+24-hour clock
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79aclock (3.1.1.9) that subdivides a calendar day
+(3.1.2.11) into 24 clock hours (3.1.2.6)
+27e15c0de2dc/iso-8601-1-2019
+
+Note 1 to entry: UTC (3.1.1.12) forms the basis of today’s 24-hour clocks and is used in this document as a type of
+24-hour clock, as described in 4.2.3.
+
+3.1.1.11
+recurring time interval
+series of consecutive time intervals (3.1.1.6) of identical duration (3.1.1.8)
+
+Note 1 to entry: If the duration of the time intervals is measured in calendar (3.1.1.18) entities, the duration of
+each time interval depends on the calendar dates (3.1.2.7) of its start and end.
+Note 2 to entry: If the starting instants (3.1.1.3) of time intervals are repeated according to a set of rules, the
+“repeat rules for recurring time intervals” in ISO 8601-2:2019, Clause 5 apply.
+
+3.1.1.12
+UTC
+Coordinated Universal Time
+time scale (3.1.1.5) with the same rate as International Atomic Time (TAI), but differing from TAI only
+by an integral number of seconds (3.1.2.1)
+Note 1 to entry: UTC is the time standard commonly used across the world from which local time is derived.
+
+Note 2 to entry: UTC is produced by the Bureau International des Poids et Mesures (BIPM), i.e. the International
+Bureau of Weights and Measures.
+
+Note 3 to entry: TAI is a continuous time scale produced by the BIPM based on the best realizations of the
+SI second. TAI is a realization of Terrestrial Time (TT) with the same rate as that of TT, as defined by the
+International Astronomical Union Resolution B1.9 (2000).
+© ISO 2019 – All rights reserved
+
+﻿
+
+3
+
+ISO 8601-1:2019(E)
+﻿
+[SOURCE: BIPM Recommendation CCTF 3 (2017), modified — The definition of TAI has been included as
+Note 3 to entry.]
+3.1.1.13
+UTC of day
+time of day (3.1.1.16) in UTC (3.1.1.12)
+
+3.1.1.14
+standard time
+time scale (3.1.1.5) derived from UTC (3.1.1.12), by a time shift (3.1.1.25) established in a given location
+by the competent authority
+
+EXAMPLE 1
+Some standard times do not vary within a year, such as US Eastern Standard Time (EST), US
+Eastern Daylight Time (EDT), Australia Western Standard Time (AWST), China Standard Time (CST), Hong Kong
+Standard Time (HKT), Korea Standard Time (KST) and Japanese Standard Time (JST).
+
+EXAMPLE 2
+Some standard times vary within a year, such as US Eastern Time (ET) and Australian Central
+Standard Time (ACST).
+Note 1 to entry: The time shift of a standard time may vary in the course of a year, such as due to daylight savings.
+
+[SOURCE: IEC 60050-113:2011, 113-01-17, modified — The original NOTE has been deleted; EXAMPLE 1
+and 2 and Note 1 to entry has been added.]
+3.1.1.15
+local time scale
+locally-applicable time scale (3.1.1.5) such as standard time (3.1.1.14) or a non-UTC (3.1.1.12) based
+time scale
+
+iTeh STANDARD PREVIEW
+(standards.iteh.ai)
+
+3.1.1.16
+time of day
+ISO 8601-1:2019
+time (3.1.1.2) occurring within a calendar day (3.1.2.11)
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a27e15c0de2dc/iso-8601-1-2019
+Note 1 to entry: Generally, time of day relates
+to the duration (3.1.1.8) elapsed after the beginning of the day.
+However, this correlation breaks when changes occur in the time scale (3.1.1.5) that applies to the time of day,
+such as time shifts (3.1.1.25) and leap seconds (3.1.1.24).
+
+Note 2 to entry: This definition corresponds closely with the definition of “clock time” given in IEC 60050113:2011, 113-01-18, except that the concepts of duration and time scale are not used in this definition.
+
+3.1.1.17
+local time of day
+time of day (3.1.1.16) in a local time scale (3.1.1.15)
+
+3.1.1.18
+calendar
+time scale (3.1.1.5) that uses the time scale unit (3.1.1.7) of calendar day (3.1.2.11) as its basic unit
+EXAMPLE
+
+The Gregorian calendar (3.1.1.19) is a type of calendar.
+
+Note 1 to entry: calendar month (3.1.2.19) and calendar year (3.1.2.21) are time scale units often included in a
+calendar.
+
+3.1.1.19
+Gregorian calendar
+calendar (3.1.1.18) in general use that defines a calendar year (3.1.2.21) that closely approximates the
+tropical year
+Note 1 to entry: In this document the term “Gregorian calendar” is used to refer to the time scale (3.1.1.5)
+described in 4.2.1.
+
+4
+
+﻿
+
+© ISO 2019 – All rights reserved
+
+ISO 8601-1:2019(E)
+﻿
+3.1.1.20
+common year
+calendar year (3.1.2.21) in the Gregorian calendar (3.1.1.19) that has 365 calendar days (3.1.2.11)
+
+3.1.1.21
+leap year
+calendar year (3.1.2.21) in the Gregorian calendar (3.1.1.19) that has 366 calendar days (3.1.2.11)
+
+Note 1 to entry: A leap year is a calendar year whose year number is divisible by four and is not a centennial year
+(3.1.1.22), or a centennial year whose year number is divisible by four hundred.
+
+3.1.1.22
+centennial year
+calendar year (3.1.2.21) in the Gregorian calendar (3.1.1.19) whose year number is divisible without
+remainder by one hundred
+
+3.1.1.23
+week calendar
+calendar (3.1.1.18) based on an unbounded series of contiguous calendar weeks (3.1.2.16) that uses
+the time scale unit (3.1.1.7) of calendar week as its basic unit to represent a calendar year (3.1.2.21),
+according to the rule that the first calendar week of a calendar year is the week including the first
+Thursday of that year, and that the last one is the week immediately preceding the first calendar week
+of the next calendar year
+Note 1 to entry: This rule is based on the principle that a week belongs to the calendar year to which the majority
+of its calendar days (3.1.2.11) belong.
+
+iTeh STANDARD PREVIEW
+Note 2 to entry: In the week calendar, calendar days of the first and last calendar week of a calendar year may
+(standards.iteh.ai)
+belong to the previous and the next calendar year
+respectively in the Gregorian calendar (3.1.1.19).
+Note 3 to entry: The week calendar is described
+ISOin 4.2.2.
+8601-1:2019
+
+https://standards.iteh.ai/catalog/standards/sist/b42c90ed-008a-40be-b79a3.1.1.24
+27e15c0de2dc/iso-8601-1-2019
+leap second
+intentional time step of one second (3.1.2.1) to adjust UTC (3.1.1.12) to ensure appropriate agreement
+with UT1, a time scale (3.1.1.5) based on the rotation of the Earth
+Note 1 to entry: See also ITU-R TF.460-6.
+
+Note 2 to entry: An inserted second is called a positive leap second and an omitted second is called a negative leap
+second. A positive leap second is inserted after [23:59:59Z] and can be represented as [23:59:60Z]. A negative
+leap second is achieved by the omission of [23:59:59Z]. Insertion or omission takes place as determined by the
+International Earth Rotation and Reference Systems Service (IERS), normally on 30 June or 31 December, but if
+necessary on 31 March or 30 September.
+
+3.1.1.25
+time shift
+constant duration (3.1.1.8) difference between times (3.1.1.2) of two time scales (3.1.1.5)
+3.1.2
+
+Time and date units
+
+3.1.2.1
+second
+base unit of duration (3.1.1.8) measurement in the International System of Units (SI)
+
+Note 1 to entry: Second is as defined by the CGPM (Conférence générale des poids et mesures, General Conference
+on Weights and Measures) on the proposal of the CIPM (Comité international des poids et mesures, International
+Committee of Weights and Measures).
+Note 2 to entry: See also ISO 80000-3.
+© ISO 2019 – All rights reserved
+
+﻿
+
+5
+
+

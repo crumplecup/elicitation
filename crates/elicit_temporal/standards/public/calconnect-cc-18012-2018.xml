@@ -1,0 +1,1446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metanorma xmlns="https://www.metanorma.org/ns/standoc" type="semantic" version="2.8.5" schema-version="v2.1.5" flavor="cc">
+<bibdata type="standard">
+<title language="en" type="main">Date and time — General recurrence representation</title>
+<docidentifier primary="true" type="CalConnect">CC 18012:2018</docidentifier><docnumber>18012</docnumber><date type="published"><on>2018-09-10T00:00:00Z</on></date><contributor><role type="author"/><organization>
+<name>CalConnect</name>
+</organization></contributor><contributor><role type="author"><description>committee</description></role><organization>
+<name>CalConnect</name>
+<subdivision type="Technical committee">
+<name>VCARD, CALENDAR</name>
+</subdivision></organization></contributor><contributor><role type="publisher"/><organization>
+<name>CalConnect</name>
+</organization></contributor><edition>1</edition><version><revision-date>2018-09-10T00:00:00Z</revision-date></version><language>en</language><script>Latn</script><status><stage>published</stage></status><copyright><from>2018</from><owner><organization>
+<name>CalConnect</name>
+</organization></owner></copyright><ext><doctype>standard</doctype><flavor>cc</flavor></ext></bibdata>
+<termdocsource bibitemid="CC18011"/><metanorma-extension><semantic-metadata><stage-published>true</stage-published></semantic-metadata>
+<presentation-metadata><toc-heading-levels>2</toc-heading-levels><html-toc-heading-levels>2</html-toc-heading-levels><doc-toc-heading-levels>2</doc-toc-heading-levels><pdf-toc-heading-levels>2</pdf-toc-heading-levels></presentation-metadata></metanorma-extension><boilerplate><copyright-statement>
+
+<clause id="_7f96b962-6942-8afe-bc72-d12bab856fd0" obligation="normative"><p id="_0b69cd5b-1292-b1e0-ed36-9f2e0a8da28a">© 2018 The Calendaring and Scheduling Consortium, Inc.</p>
+</clause>
+</copyright-statement>
+
+<legal-statement>
+
+<clause id="_30bb02f9-a03f-937c-b3bb-0058ec7c185d" obligation="normative"><p id="_4997ac1f-fe23-c399-660a-4ca594a6abda">All rights reserved. Unless otherwise specified, no part of this         publication may be reproduced or utilized otherwise in any form or by any         means, electronic or mechanical, including photocopying, or posting on the         internet or an intranet, without prior written permission. Permission can         be requested from the address below.</p>
+</clause>
+</legal-statement>
+
+<feedback-statement>
+
+<clause id="_525641bf-9235-cdcb-5b80-9232a01ea9cc" obligation="normative"><p id="_9c7e0878-01cd-c6a2-8060-5caf3135b547" anchor="boilerplate-name">The Calendaring and Scheduling Consortium, Inc.</p>
+
+<p id="_851786db-d5f1-a086-bdb1-3bd48dc4f17c" anchor="boilerplate-address">4390 Chaffin Lane<br/> McKinleyville<br/> California 95519<br/> United States of America<br/> <br/> <link target="mailto:copyright@calconnect.org"/><br/> <link target="https://www.calconnect.org">www.calconnect.org</link></p>
+</clause>
+</feedback-statement>
+</boilerplate><preface><foreword id="_adf9e166-7e38-177f-78c2-2ae2c887dfad" obligation="informative">
+<title id="_41c9fad3-d4c1-eecc-4fad-f91704acc026">Foreword</title>
+<p id="_5584cc9e-f871-ba8b-4e27-82c06cc217fb">The Calendaring and Scheduling Consortium (“<tt>CalConnect</tt>”) is global non-profit organization with the aim to facilitate interoperability of technologies across user-centric systems and applications.</p>
+
+<p id="_69d40857-4c40-88c8-469b-e0c9a8d8d874">CalConnect works closely with liaison partners including international organizations such as ISO, OASIS and M3AAWG.</p>
+
+<p id="_e821e1fe-2cf4-934e-4567-582480580b1d">The procedures used to develop this document and those intended for its further maintenance are described in the CalConnect Directives.</p>
+
+<p id="_a315c6da-6756-cb39-fc17-d5455e1864c0">In particular the different approval criteria needed for the different types of CalConnect documents should be noted. This document was drafted in accordance with the editorial rules of the CalConnect Directives.</p>
+
+<p id="_080f073a-4f79-f108-5f75-ca6659f38fd4">Attention is drawn to the possibility that some of the elements of this document may be the subject of patent rights. CalConnect shall not be held responsible for identifying any or all such patent rights. Details of any patent rights identified during the development of the document will be in the Introduction and/or on the CalConnect list of patent declarations received (see www.calconnect.com/patents).</p>
+
+<p id="_882b2a20-4eba-ae6e-3dc1-2ffc96683fc9">Any trade name used in this document is information given for the convenience of users and does not constitute an endorsement.</p>
+
+<p id="_1fb3f84a-6128-207a-d820-48e605342ace">This document was prepared by Technical Committee <em>VCARD, CALENDAR</em>.</p>
+
+<p id="_f4e9c3b1-c57d-bca6-70ea-f48ab89f0805"><bookmark id="_ff85e6aa-51e3-c4b3-31f9-9f8cfbd9c1b6" anchor="introduction"/>== Introduction</p>
+
+<p id="_959cda5a-0e37-f93d-0002-7b1a90d518ea">The iCalendar standard (<eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>) has defined the de-facto standard for specifying recurring time intervals.</p>
+
+<p id="_98888c6e-d61d-9804-ddd4-700a51c29aff">However, its syntax is tightly bound to the syntax and assumptions of  <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>, requiring a data model representation that assumes a hierarchy of properties, parameters and data types that are not necessarily provided in other date and time representations, such as the International Standard for date and time representation, <eref type="inline" bibitemid="ISO8601" citeas="ISO 8601:2004"/>.</p>
+
+<p id="_b0b06e91-c108-615d-7127-c4ef673536d3"><eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> also relies on a number of indirect data inheritance rules that are not clearly specified and therefore not easily reproduced in other representations outside of iCalendar.</p>
+
+<p id="_9ceba5b8-95de-c849-f0b9-2464ce27c89a">This document describes a method to specify recurring time intervals with repeat rules in representation in line with those of the time scale components and date and time representations described in <eref type="inline" bibitemid="ISO8601" citeas="ISO 8601:2004"/>.</p>
+</foreword></preface><sections>
+<clause id="_87a9d28b-76af-1158-543e-f5b0d8dfc15b" anchor="scope" type="scope" obligation="normative">
+<title id="_f70b6ff6-6131-0e24-81e1-850dbe94b63d">Scope</title>
+<p id="_a8410cda-0374-5032-5ac6-c0632a06afe5">The purpose of this document is to provide a generalized representation of selection rules and recurring time intervals with repeat rules in line with those of the time scale components and date and time representations described in  <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"/>.</p>
+
+<p id="_c3b26909-3f86-1224-b1f6-5509e38b7dc9">Representations in this document describe a superset of recurrence rules to “RECUR” rules in  <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>, but aims to maintain compatibility with it inasmuch possible.</p>
+
+<p id="_df28e0e9-0873-70d2-f86f-12da363ee918">This document only supports date elements from the Gregorian calendar and times from the 24-hour clock.</p>
+
+<p id="_28001557-be1a-f27d-d3f7-98d651b3d64d">Date and time format representations described in this document utilizes numbers, alphabets and symbols defined in  <eref type="inline" bibitemid="ISOIEC646" citeas="ISO/IEC 646:1991"/>. These representations are meant to be both human recognizable and machine readable. Character encoding of the representations is not covered in this document.</p>
+</clause>
+
+
+
+<clause id="_404483dc-6ebc-da81-d3cc-146647c566f9" anchor="tda" obligation="normative" type="terms">
+<title id="_c93d88cb-f05e-e2fc-a36b-3060370e1636">Terms, definitions, symbols and abbreviated terms</title><p id="_166154fa-39c7-5422-87f1-87a42cd22c6e">For the purposes of this document, the terms and definitions given in <eref bibitemid="CC18011" citeas="CalConnect CC 18011:2018"/> and the following apply.</p>
+<terms id="_bbe934ef-797c-31d3-ca42-07f104737dfe" obligation="normative">
+<title id="_e0d415dd-ab5d-77a3-3b7b-4734a8205eb4">Terms and definitions</title>
+<term id="_d5839999-cb59-ebed-1d20-51f7a1541123" anchor="term-repeat-rule"><preferred><expression>
+<name>repeat rule</name>
+</expression>
+</preferred>
+<definition id="_60a5db13-b67f-9586-5a04-c1e8bd747183"><verbal-definition id="_d860186d-557a-50e0-c4f8-b6329aeadfab"><p id="_3aed7027-1850-5f13-76f7-19b8640fd668">consists of a set of eligible time intervals (<xref target="term-eti" style="short"/>) and selection rules (<xref target="term-sel-rule" style="short"/>) that allows computation of a set of matching instants (<xref target="term-matching-instants" style="short"/>)</p></verbal-definition></definition>
+ </term>
+
+<term id="_a66dc7ff-d898-7717-6aa0-a862513b9638" anchor="term-sel-rule"><preferred><expression>
+<name>selection rule</name>
+</expression>
+</preferred>
+<definition id="_c45e431d-3a76-2d2c-c5e3-b65f842cbbfe"><verbal-definition id="_377f0763-389c-cda4-f420-41ad6a8fec6b"><p id="_01a93f2b-6fdb-fdb3-ce27-5b7611e3b97f">rule specifying restrictions on the value of a <em>time scale component</em> (<eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>3.1.3.9</referenceFrom></locality></localityStack></eref>)</p></verbal-definition></definition>
+ </term>
+
+<term id="_2174d9fe-e10e-658b-7263-63d1143e3f6d" anchor="term-repeat-cycle"><preferred><expression>
+<name>repeat cycle</name>
+</expression>
+</preferred>
+<definition id="_add3af37-8402-c99c-ddda-dd3c7723c718"><verbal-definition id="_c6419db4-5944-610f-5997-65cc852c3f0c"><p id="_1e174c4b-835b-4919-0cc9-569e87ecad45">set of repeating <em>instants</em> (<eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>3.1.1.2</referenceFrom></locality></localityStack></eref>), calculated by a specified start instant and specified  <em>duration</em> (<eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>3.1.1.6</referenceFrom></locality></localityStack></eref>) gap between the repeating instants</p></verbal-definition></definition>
+ </term>
+
+<term id="_8720b46d-be21-35e4-68b7-fae17e4d4e88" anchor="term-eti"><preferred><expression>
+<name>eligible time interval</name>
+</expression>
+</preferred>
+<definition id="_5cdc298b-5117-a7bf-d106-f2210d3c1dd8"><verbal-definition id="_7d9172f3-a2d6-3240-e7ec-6c5beae54370"><p id="_68ce63b5-7617-67ef-91ef-7573ff213872"><em>time interval</em> (<eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>3.1.1.3</referenceFrom></locality></localityStack></eref>) eligible for matching using  <em>selection rules</em> (<xref target="term-sel-rule" style="short"/>)</p></verbal-definition></definition>
+ </term>
+
+<term id="_bf18ff3b-a2ea-30f8-7160-0e76d9de594b" anchor="term-matching-instants"><preferred><expression>
+<name>matching instants</name>
+</expression>
+</preferred>
+<definition id="_bbcd97eb-6da0-01a7-0a84-ea474ba9902e"><verbal-definition id="_3ed36a24-5b1e-7274-c600-85fceca6a6a6"><p id="_56e9436b-74cc-3f95-a5af-0f5ce158c337">set of <em>instants</em> (<eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"/>), computed by a <em>repeating rule</em> (<xref target="term-repeat-rule" style="short"/>), that belongs within <em>eligible time intervals</em> (<xref target="term-eti" style="short"/>) and fulfills criteria set by specified <em>selection rules</em> (<xref target="term-sel-rule" style="short"/>)</p></verbal-definition></definition>
+ </term>
+
+<term id="_e80fd777-a414-473b-6d0d-0c6353f01440" anchor="term-movable-day"><preferred><expression>
+<name>movable day</name>
+</expression>
+</preferred>
+<definition id="_521fc423-e774-e7d3-ef36-cb5efec47e96"><verbal-definition id="_1aa76045-36bd-78e0-223f-00a7fc2e8a89"><p id="_6bf94f76-3a24-41ab-797a-f07d0c4e38b5">repeatedly occurring day in a calendar that is represented by criteria set by one or more <em>selection rules</em> (<xref target="term-sel-rule" style="short"/>), but does not always resolve to a fixed calendar day in every <em>repeating cycle</em> (<xref target="term-repeat-cycle" style="short"/>)</p></verbal-definition></definition>
+
+
+
+
+
+
+
+
+ <termnote id="_a691fba4-a246-a191-8d45-495b7c76f860"><p id="_3eff4685-b11e-a87a-aa9a-d2567f5d2a76">The selection of this term pays homage to the phrase “<tt>movable feast</tt>” used in some calendars to indicate the rule-based determination of annual events.</p>
+</termnote><termexample id="_68ce1dce-5a78-95b6-6e21-cceb700d9128"><p id="_85c720f3-a58c-926e-5c73-fbe9f763f886">Thanksgiving Day in the U.S. and Canada, are considered movable days, set to the fourth Thursday in November and the second Monday in October, respectively.</p>
+</termexample><termexample id="_90302d76-03c7-1ade-7a5e-14f852f25e74"><p id="_1dd5ba5f-80de-7d64-9108-21ddf27e1b58">First Day of Summer (sumardagurinn fyrsti) in Iceland is considered a movable day, set to the first Thursday after April 18th.</p>
+</termexample><termexample id="_0e9ab046-7ba8-5924-e93f-2458cba57bcb"><p id="_c6d4b95a-8c80-cdc8-50bb-fcfce99e65c6">Father’s Day is celebrated on the third Sunday in June in North America and is considered a movable day.</p>
+</termexample></term>
+</terms>
+
+<definitions id="_610e73fc-64d0-f495-269b-aa6989d10777" anchor="symbols" type="symbols" obligation="normative">
+<title id="_df71ff91-34fb-ca20-4838-d7bd6db1f694">Symbols</title>
+<definitions id="_475f3e19-cb60-9887-abf7-ec258b694014" anchor="symbols-general" obligation="normative">
+<title id="_a718c76b-f22d-5334-76db-9d5c3f7ad005">General</title>
+<p id="_319b478c-3f17-e5d8-d9c1-0f62630b9a72">Representations specified in this document make use of symbols given in <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"/> and the following.</p>
+</definitions>
+<definitions id="_78e958e3-c466-5ee7-a1f2-af8454146948" anchor="symbols-composite" obligation="normative">
+<title id="_b0da2d03-0842-7ff9-1bf2-efeb34523ec5">Composite component symbols</title>
+<dl id="_e540ab0e-6d62-4671-6504-a890097f4d83"><dt anchor="symbol-selection" id="_efbdce9c-881f-4aa0-0586-66ca5f5afe7a">selection</dt><dd id="_5e84522f-1d1d-020a-f230-c0958c635043"><p id="_c4f5f633-c2c0-48af-8d70-73fdc7735807">representation for a set of selection rules as determined in <xref target="selection-general" style="short"/></p>
+</dd></dl>
+</definitions>
+<definitions id="_d7494781-12b0-1d35-5bb3-d4bea1b89ca5" anchor="symbols-inplace" obligation="normative">
+<title id="_864381d3-7410-f4b0-c8a6-3c84c9e92ad5">Symbols used in place of digits or signs</title>
+<p id="_df79c4c8-514d-ca52-b703-f501a19e1297">These symbols are used to represent characters in the date and time representations. They are used in representations only, and are replaced by one or more characters, as described, in expressions:</p>
+
+<dl id="_c0e8cbb8-1d18-92ed-80b1-f12684f38c6e"><dt anchor="symbol-_" id="_6f65f84a-42d6-ff42-aa41-9e452636618c">!</dt><dd id="_b25bd0eb-a259-6c3b-7742-d9646cd5ddb5"><p id="_5b36066c-83b6-a55b-60f5-a49fb4adca25">indicates that the token following this symbol is optional (may be omitted)</p>
+</dd>
+<dt anchor="symbol-i" id="_482316b6-9e61-a8d7-87cf-ae9c504eabc4">i</dt><dd id="_23b9d23c-67fc-8b9b-2370-7954d6901f03"><p id="_10112d64-f412-edd0-b12c-83f152e32a69">a positive integer</p>
+</dd>
+<dt anchor="symbol-n" id="_73de541e-7fdf-fb19-db0f-0f54a9d931d4">n</dt><dd id="_c9cb4863-bc52-fbc3-83b7-a101398c528b"><p id="_2aa9a82c-28c8-41aa-9477-93c620e648dd">a positive integer or value, may be left absent to signify an unbounded value</p>
+</dd></dl>
+</definitions>
+<definitions id="_60e721b9-deb0-8484-b451-c66f756fc3c7" anchor="symbols-designator" obligation="normative">
+<title id="_82242d9d-b414-4f2f-6023-0381ad44f688">Designator symbols</title>
+<p id="_329b4fd3-accc-9c27-619e-602189990d92">These symbols are used to represent designators in the date and time expressions:</p>
+
+<dl id="_139060bb-053c-954b-d6f5-c02f7687cb03"><dt anchor="symbol-_F_" id="_45fd56b0-880e-b7fa-04ba-a4beef708113">“<tt>F</tt>”</dt><dd id="_dc924999-f3a0-b865-5fd9-8c7d2e76889b"><p id="_03d79086-b010-1db7-c3fc-0c6b2238c207">the frequency designator, represented by the character “F”, preceding the component which represents the frequency part of a repeating rule</p>
+</dd>
+<dt anchor="symbol-_I_" id="_d776d230-3bcc-a136-aa8e-b6f1e6db38fd">“<tt>I</tt>”</dt><dd id="_9de0351f-b5e6-59b8-ebee-800664601569"><p id="_4e600598-b036-3a37-46a3-31fa1445e2c6">the instance designator, represented by the character “I”, indicates that a specific instance is to be selected within the time scale component</p>
+</dd>
+<dt anchor="symbol-_L_" id="_5208ce22-b8e2-22fc-19a3-4e737065bd6b">“<tt>L</tt>”</dt><dd id="_2b174f9e-5f68-325b-0a40-c6ce41aac55c"><p id="_e1913c4b-2423-7aa3-d968-43888bb9570b">the selection prefix designator, represented by the character “<tt>L</tt>”, preceding the component which represents the selection part of a repeating rule until encountering the corresponding suffix designator.</p>
+</dd>
+<dt anchor="symbol-_N_" id="_02f8176a-690c-b8be-ce91-e70e784c630c">“<tt>N</tt>”</dt><dd id="_324ccaa5-9b9b-1e9a-9638-a2264221e3d3"><p id="_a936add0-e4da-fcee-58d3-6d2d561e2567">the selection suffix designator, represented by the character “<tt>N</tt>”, following the component which represents the selection part of a repeating rule from the corresponding prefix designator.</p>
+</dd>
+<dt anchor="symbol-_R_" id="_4937aa77-077c-b7f2-a7f8-de3f6066a9ba">“<tt>R</tt>”</dt><dd id="_d7d9b12f-188e-8ac0-00f7-9f23a6dcddbc"><p id="_e42100c7-2b1e-b7a1-4f47-1b3d95f3e2ef">the recurring time interval designator, represented by the character “<tt>R</tt>”</p>
+</dd>
+<dt anchor="symbol-_x_" id="_104ce49c-927f-5a99-ee7a-555a0e8d0fca">“<tt><em>x</em></tt>”</dt><dd id="_d708574a-98d2-957d-5aa8-50c2f52aac3c"><p id="_6cb6e07c-0c4d-afd8-0996-352f1c0ff6ea">the representation of any character “<tt><em>x</em></tt>” as according to the textual representation of “<tt><em>x</em></tt>” in the <eref type="inline" bibitemid="ISOIEC646" citeas="ISO/IEC 646:1991"/> repertoire</p>
+</dd></dl>
+
+
+</definitions>
+<definitions id="_5a8b8738-745b-bda8-340b-78099a4edd58" anchor="symbols-separator" obligation="normative">
+<title id="_2c3eb3be-3693-d72c-9093-0ab1b74aa20c">Separator symbols</title>
+<p id="_ce7b30cc-f7d8-6b93-6812-99f6eed209aa">In date and time expressions and date and time representations, the following characters are used as separators.</p>
+
+<dl id="_49eff2a9-1f10-c058-fd04-9e1077e0b33c"><dt anchor="symbol-_._-_period_-and-___-_comma_" id="_885b31f1-d68a-ea2b-5823-7ec52ef1cec6">“<tt>.</tt>” (period) and “<tt>,</tt>” (comma)</dt><dd id="_b3fb22c9-eaa5-c4b1-8bfc-aa983dd2bf4c"><p id="_408add10-0a81-ce37-fd0c-714e51b45bcb">the “<tt>.</tt>” period and “<tt>,</tt>” comma characters are decimal signs used to separate the integer part from the decimal fraction of a number.</p>
+</dd>
+<dt anchor="symbol-___-_solidus_" id="_c64eb49f-02fd-c7d6-6c61-efdf60cbe058">“<tt>/</tt>” (solidus)</dt><dd id="_5fcbd054-ee61-fd96-109a-90beaa6d620c"><p id="_12ef2d99-7451-48fd-a743-9dd434a39c06">the “<tt>/</tt>” solidus character separates start and end times in the representation of a time interval, as well as the symbol ‘<tt>R</tt>‘ from the remainder of a recurring time interval representation. A solidus may be replaced with a double hyphen [“<tt>--</tt>”] by mutual agreement of the communicating partners.</p>
+</dd></dl>
+</definitions></definitions></clause>
+
+<clause id="_9148bc00-c714-bf80-44e1-c1c8b699d0c7" anchor="integer-ops" obligation="normative">
+<title id="_c27205a1-9843-ccc2-09cd-ce5ec8542ea5">Set notation</title>
+<clause id="_cb3dd370-5bdb-5d8a-943a-c9b15a90b95b" obligation="normative">
+<title id="_0175f76d-716b-304d-d5e0-55b2c2c71130">General</title>
+<p id="_f0739bd9-2636-2483-1407-d704fd7b62b2">A set is considered to be an orderless collection of elements.</p>
+</clause>
+
+<clause id="_4c4e4f53-18b0-ea90-a2ca-f41205bfdb14" anchor="integer-set" obligation="normative">
+<title id="_18658d2b-9596-667d-a7c5-e3d8b03e358b">Integer set</title>
+<p id="_d1b5990d-c859-c851-666b-2ac48b9a1254">Curly braces enclosing a set of integers (with no specified order and separated by commas and zero or more spaces) are used to mean “all members of the set”.</p>
+
+<p id="_87810216-dbcd-44cc-fbb8-d662773e4feb">Empty spaces ([” “]) after or before the element divider ([“,”]) within a set expression are considered superfluous and only allowed for better readability. The evaluation of a set expression should always omit such empty spaces.</p>
+
+<sourcecode id="_a34b73ca-e727-1674-6221-1b7e3e9bc545"><body>intset = ["{"][intexpr-1][","][intexpr-2][","] ... [intexpr-n]["}"]</body></sourcecode>
+
+
+<p id="_20da55bd-608c-d671-b284-4567c0a2cfda">Where,</p>
+
+<ul id="_f16f8cfe-e5df-ec9c-b0bd-862a22ccb8e5"><li><p id="_ddf9576e-3b5d-13d5-3feb-15d4ec38f82d"><tt>intexpr-i</tt> is <tt>[i]</tt> (a positive integer) or <tt>[!]["-"][i]</tt> (a negative integer)</p>
+</li>
+</ul>
+
+<example id="_09ee623d-d611-fe9b-26b5-32be237ccb4a"><p id="_aae28cc4-a29e-fd5a-d7da-329a6f88402a"><tt>{1, 3, 5}</tt> is a set of integers 1, 3 and 5.</p>
+</example>
+
+<example id="_3f407acb-2211-9f40-96c3-bf5fb284bd09"><p id="_2149737b-ec0f-95f4-d446-d05d4bc7c387"><tt>{-3, -6, 9}</tt> is a set of integers -3, -6 and 9.</p>
+</example>
+</clause>
+
+<clause id="_52cde3ea-4881-a13f-9373-2d8f6a5ceb26" obligation="normative">
+<title id="_8742b117-849b-c25d-5af5-8ce9e817ed0f">Date and time expression set</title>
+<p id="_e2271372-3b60-94b4-ad45-b81ddf3c55fd">The notation form specified in <xref target="integer-set" style="short"/> also applies to a set of date and time expressions.</p>
+
+<sourcecode id="_a0d0cf36-dc54-1458-dae7-f5f0010f4460"><body>exprset = ["{"][expr-1][","][expr-2][","] ... [expr-n]["}"]</body></sourcecode>
+
+
+<p id="_8b4b7ce6-8654-ec11-b682-4ac5126d46d0">Where,</p>
+
+<ul id="_fe0bf3dd-432c-3741-aeeb-c5c6c9cee389"><li><p id="_b07ecf2d-1fc6-03e0-5532-29813d885ee7"><tt>[expr-i]</tt> is a valid date and time expression</p>
+</li>
+</ul>
+
+<example id="_8a6a27f9-94c7-5f37-a908-a76bbefba8ce"><p id="_7e776a73-e885-8047-5df2-a3387bab667b"><tt>{1K,3K,5K}</tt> is a set that contains the expressions for Monday, Wednesday and Friday.</p>
+</example>
+</clause>
+
+<clause id="_104612dc-bad9-263d-b2d7-36c54614f002" anchor="int-expand" obligation="normative">
+<title id="_01f7b833-dae9-6885-c4fa-086d3ffb8f51">Integer set expansion for date and time expressions</title>
+<p id="_3283c33e-8699-74ea-cab4-856062eb5b69">An integer set [intset] can replace a time component value [i] in a representation as long as the resulting expression is valid.</p>
+
+<sourcecode id="_11fbab30-d296-29c7-c4a6-08e53e2ae3a5"><body>intexpand = [intset][symbol(c)]</body></sourcecode>
+
+
+<p id="_20b2588e-7622-3e57-aaab-f6ba62006614">Where,</p>
+
+<ul id="_30795ea2-1daa-2c29-4d10-771a96da57e9"><li><p id="_50b16e87-e758-4db1-2d29-2945d08c3e5c"><tt>[symbol(c)]</tt> is the designated symbol for the time scale component.</p>
+</li>
+</ul>
+
+<example id="_d6a36a43-15b0-8d9f-a04d-63cc330558d4"><p id="_320ad636-cafc-5511-3834-b836f952e8ff">If <tt>c</tt> is the timescale component “<tt>month</tt>”, <tt>[symbol(month)]</tt> is the symbol for the calendar month time scale component — the designated symbol <tt>["M"]</tt>.</p>
+</example>
+
+<example id="_eb8edda0-5a13-db49-3de1-716f1e9001f8"><p id="_0b4b9869-d795-4ef3-0c19-cab075f9b333"><tt>{1,2,3}K</tt> is a set that expands to <tt>{1K,2K,3K}</tt>, which contains the expressions to specify Monday, Wednesday and Friday.</p>
+</example>
+
+<example id="_04e710e7-a316-119e-f25a-061a4342885a"><p id="_540792a6-94a7-13da-0737-6301cb8bac98"><tt>2018YGP2M{1,3,5}I</tt> expresses a shorter form of the set representation of <tt>{ 2018Y1M1D/2018Y2M28D, 2018Y5M1D/2018Y6M30D, 2018Y9M1D/2018Y10M31D }</tt> that uses time intervals from  <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"/>.</p>
+</example>
+</clause>
+
+<clause id="_4a8cc921-8b61-3fd5-6694-0d2953ab806a" anchor="expr-expand" obligation="normative">
+<title id="_b5d99329-b010-0c57-0853-2c0addf6ada1">Expression set expansion for date and time expressions</title>
+<p id="_f0f879fd-ebf8-0b10-d782-7edd1b1c186e">An expression set [exprset] can be expanded with another date and time expression as long as the resulting expression is valid.</p>
+
+<sourcecode id="_269bf747-d3c9-4cb9-7ea5-1d510bc92e72"><body>exprexpand = [exprset][expr]</body></sourcecode>
+
+
+<p id="_73828143-22b5-aa9d-5379-2c9a783af732">Where,</p>
+
+<ul id="_a55db489-588d-ce1f-43b1-404e2fd7ccf7"><li><p id="_20b6f734-123f-2a49-4c14-c471982b0eff"><tt>[expr]</tt> is a date time expression, such that when conjoined with individual elements of  <tt>[exprset]</tt> the resulting expanded set of date and time expressions remain valid.</p>
+</li>
+</ul>
+
+<example id="_849f687f-7f5c-0438-83ec-10a8d6eb239f"><p id="_6ec19258-9749-e334-1c2a-928e03ebe2ad"><tt>{2018Y3M,2019Y2M}1D</tt> is a set that expands to <tt>{2018Y3M1D,2019Y2M1D}</tt>, which contains the date expressions for year 2018 March 1st and year 2019 February 1st.</p>
+</example>
+
+<example id="_a8001900-7d75-f221-cebd-a925215e1562"><p id="_09f77983-7f6e-0150-27a8-a4922caedcf8"><tt>{1778Y3M,1889Y2M}{10,20}D</tt> utilizes the syntax of <xref target="int-expand" style="short"/> and <xref target="expr-expand" style="short"/>, where the set expands to <tt>{1778Y3M10D,1889Y2M10D,1778Y3M20D,1889Y2M20D}</tt>. Since the order of elements are not specified within a set, the expression is equivalent to <tt>{1778Y3M10D,1778Y3M20D,1889Y2M10D,1889Y2M20D}</tt>.</p>
+</example>
+</clause>
+</clause>
+
+<clause id="_d88406de-b321-3257-93a9-62b58d2a1982" anchor="selection" obligation="normative">
+<title id="_557ffce2-24ce-ecc1-cee6-16ac2fb0469e">Selection of date and time</title>
+<clause id="_1eb0e9a5-8201-a727-b7f3-7c5c61bd4e11" anchor="selection-general" obligation="normative">
+<title id="_24abdf30-6d12-8734-45d3-cd1948186a03">General</title>
+<p id="_47aca358-37b8-60f9-43b0-1abcf8dcfa7f">A time scale component can be replaced with selection rules to specify matching criteria of certain time scale unit values. This clause builds upon the “<tt>explicit</tt>” syntax of time scale components specified in <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"/>.</p>
+
+<p id="_f6b28beb-ebed-face-e68e-63bfd0b54352">[selection] may include zero or more selection rules.</p>
+
+<sourcecode id="_a15d50da-f1b1-83a8-57f7-962b17fe4d19"><body>selection = ["L"][selection-rule-1]...[selection-rule-n]["N"]</body></sourcecode>
+
+
+<p id="_59eb9dc3-d9df-62f4-1997-28f185c671f5">Where,</p>
+
+<ul id="_ec0665ee-6413-ea85-c484-7cb867e79ac7"><li><p id="_03ba8c7d-ebfd-c918-2afb-15874b46f74b">[“<tt>L</tt>”] is the selection prefix designator;</p>
+</li>
+<li><p id="_ca4a18fa-c2db-7e53-aef5-e2e90fd0418c">[“<tt>N</tt>”] is the selection suffix designator;</p>
+</li>
+<li><p id="_19a08066-430b-252e-3213-7e7af22a7a42">between the selection prefix and suffix designator, there can be multiple [selection-rule-n] selection rules, which are defined in this clause.</p>
+</li>
+</ul>
+
+<p id="_69796776-99d4-8002-9555-fe2a3fda3cd8">A selection expression describes either:</p>
+
+<ul id="_ca0ac119-2d7f-58e3-596d-dedaa65021fb"><li><p id="_34327e1e-4613-0f7c-da83-6a8aa88eaffa">a set of time scale components, which may be continuous or disjoint on a time scale;</p>
+</li>
+<li><p id="_f2fd5c07-4b3f-084f-14b8-719a4e7b8cfb">a single instance of a time scale component, when the instance component (<tt>["I"]</tt>) is invoked.</p>
+</li>
+</ul>
+
+<example id="_a8432659-ec1e-e161-44b3-d7f69a994d8d"><p id="_d3513786-9a66-9766-2bd0-a7e8938ed2e0"><tt>L{1,3,5}KN</tt>, “<tt>Mondays, Wednesdays and Fridays</tt>”, describes a set of disjoint calendar days (all three calendar days are not adjacent to each other).</p>
+</example>
+
+<example id="_bdc32dce-d136-6880-a0f1-baa15e66d9c0"><p id="_bc0b72a7-9a44-bb8a-52ba-6ba0d9b83624"><tt>L{1,2}MN</tt>, “<tt>Januarys and Februarys</tt>”, describes a set of calendar months that are continuous on one side (January is next to February), but disjoint on the other, when placed on the time scale (March to December are excluded from this expression).</p>
+</example>
+
+<example id="_a00db859-6833-cb3e-3a42-18df43340d64"><p id="_c28ba09c-2258-196d-84c0-fd39937f5155"><tt>L1K1IN</tt>, “<tt>the first Monday</tt>”, describes a single calendar day.</p>
+</example>
+
+<p id="_df1c2dfd-5892-5724-9a38-cb6a43d1970a">NOTE: Selection rules specified in this clause are a superset to those of the “<tt>RECUR</tt>” syntax specified in <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>; while it is possible to translate certain selection rules specified in this document to that syntax, exceptions and limitations are noted within context of the rules specified below.</p>
+</clause>
+
+<clause id="_24e9219a-369b-4ec6-5e39-05481ef5c7db" anchor="selection-rules" obligation="normative">
+<title id="_dc1e4d8b-4dc8-d733-8380-35ffc520c927">Selection rules</title>
+<clause id="_e29fbfb6-92ed-aaa2-5c57-586e9c47ed9e" anchor="selection-months" obligation="normative">
+<title id="_901c7e18-5d1f-debf-6414-7f6513799ea6">Selection of calendar month of year</title>
+<p id="_8195bf03-8ba2-f0a4-1187-7c244e7afd1e">This selection rule specifies a set of calendar months of the calendar year.</p>
+
+<p id="_3c6979a6-bf10-f69f-93d9-fa6204f57335">Representation:</p>
+
+<sourcecode id="_8ecc61f9-9f7d-e949-08e6-e2d687496800"><body>monthSR = [monthE]</body></sourcecode>
+
+
+<p id="_4f414a93-20db-c434-3424-a8db2660cfda">Valid values are [1] to [12], corresponding to the ordinal number of the calendar month.</p>
+
+<example id="_0de5ae47-9f16-42df-e68b-a224cade5ac1"><p id="_c6a9ca7e-045f-66d6-6513-075c34e4f7fe"><tt>3M</tt> represents the third calendar month of the calendar year, i.e. March.</p>
+</example>
+
+<example id="_a0bcff85-0e43-a737-ee76-6733f704bb10"><p id="_36d8f13d-9e1b-6b2f-bcc5-d0da1f037341"><tt>12M</tt> represents the twelfth calendar month of year, i.e. December.</p>
+</example>
+</clause>
+
+<clause id="_ac4d1e5c-1fb3-af22-8b2e-b57c8a2ce99d" anchor="selection-weeks" obligation="normative">
+<title id="_e2f19980-ad4e-7cfe-95a5-7f6c251847aa">Selection of calendar week of year</title>
+<p id="_88f9ec25-1a4b-0f44-4dd7-5fc826ee6044">This selection rule specifies a set of ordinals specifying calendar weeks of the calendar year. Since the calendar week of year component has a changeable bound, negative values of week are allowed for specifying the week of year number in reverse.</p>
+
+<p id="_38388fa8-3113-9551-efcd-3c790ce79d87">Representation:</p>
+
+<sourcecode id="_8c9a045d-748e-0da7-86ce-98201ea96cfc"><body>weekSR = [weekE]</body></sourcecode>
+
+
+<p id="_6fe971d2-0525-faa2-b25c-529a6176a135">Valid values are [1] to [53] and [-53] to [-1]. This corresponds to the number of calendar weeks of a year according to week numbering as defined in  <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"/>.</p>
+
+<example id="_be204878-f815-c116-731e-89ec7d077c79"><p id="_2ffcd2fe-d32f-29d7-ae58-a0580d875cff">The tenth week of the calendar year is represented by the expression ‘<tt>10W</tt>‘.</p>
+</example>
+
+<example id="_71d2cafb-affb-5aaa-85ee-7d7baebe9f09"><p id="_497a4a6e-10f9-781c-5a75-37713fcfdc78">The second last week of the calendar year is represented by the expression ‘<tt>-2W</tt>‘.</p>
+</example>
+
+<note id="_1320d86a-d663-bdc0-0ce2-fcb581f49b6c"><p id="_8662f9b7-4ff3-e99a-56c2-e8086f648ee1">Week 53 can only occur when Thursday is January 1 or if it is a leap calendar year and Wednesday is January 1, in accordance with <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>4.2.2</referenceFrom></locality></localityStack></eref>.</p>
+</note>
+
+<note id="_b3748181-9b64-c33e-f5cd-e6269177b1ba"><p id="_cee8a1ce-14df-95f9-4588-88a4f3d3ba41">Refer to <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"><localityStack><locality type="clause"><referenceFrom>6.7</referenceFrom></locality></localityStack></eref> for negative values of weeks.</p>
+</note>
+
+<note id="_8e8a6944-f116-6819-13d5-655ffb657415"><p id="_c9a0160c-c6d0-6773-235c-cbda1a30df47">Definitions of the calendar week and the week number are provided in  <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"/>.</p>
+</note>
+
+<note id="_1495886d-606a-bee0-5845-f6583833208a"><p id="_8a9d7475-edb6-7c45-2335-1838235c9111"><eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> specifies that this rule should only be present when the frequency of the repeat rule is set to yearly (<xref target="eligible-time-intervals-year" style="short"/>).</p>
+</note>
+</clause>
+
+<clause id="_64a0cf13-1f6b-8f54-7bd0-c1fc2ed85846" anchor="selection-month-days" obligation="normative">
+<title id="_8421b329-fd18-7830-455e-d06fb1496139">Selection of calendar day of month</title>
+<p id="_f943df6f-2bdc-de6f-4f07-3c9653f7dfd5">This selection rule specifies a set of days of the calendar month. Since the calendar day of month has a changeable bound, negative values of calendar day of month are allowed for specifying the day of month ordinal number in reverse.</p>
+
+<p id="_5cea48b2-81ea-3e57-50b4-4e33b5af4824">Representation:</p>
+
+<sourcecode id="_8fd7f12b-f8ef-4a9a-a036-7bb5090aba3e"><body>daySR = [dayE]</body></sourcecode>
+
+
+<p id="_f92a391c-d01f-f22c-cba9-4333a206acdb">Valid values are [1] to [31] and [-31] to [-1]. This corresponds to the maximum number of calendar days of a calendar month.</p>
+
+<example id="_2c9f2a6a-e925-52b7-9d17-4dd8995ec4d1"><p id="_23917d33-81c4-ff77-3d74-f8608a3aa17e"><tt>18D</tt> represents the eighteenth calendar day of the calendar month.</p>
+</example>
+
+<example id="_d8a9e7fc-0e04-8806-5591-d86a6c066d30"><p id="_93564f2b-c4a4-572b-81ff-7c9bf20cfa4e"><tt>-10D</tt> represents the tenth to the last calendar day of the calendar month.</p>
+</example>
+
+<note id="_aa96e50b-0ab2-1666-84e3-6c2c7e10f46d"><p id="_714cfddc-d597-6fba-6cb2-23cafb1df153"><eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> does not allow this selection rule when the frequency part is set to weekly (<xref target="eligible-time-intervals-week" style="short"/>).</p>
+</note>
+</clause>
+
+<clause id="_67e3c50b-7ecd-c5d1-94b5-1f8b8ad2da88" anchor="selection-week-days" obligation="normative">
+<title id="_563273c2-a22a-39b3-3050-cd7033285538">Selection of week days</title>
+<p id="_a5c55890-7a74-7244-c94c-8e02e98b69f9">This selection rule specifies a set of days of the week.</p>
+
+<p id="_dca59d8a-c775-a88b-a394-66c53189648f">Representation:</p>
+
+<sourcecode id="_8129188c-6279-3c2e-e4d1-6f44d7bea379"><body>daykSR = [daykE]</body></sourcecode>
+
+
+<p id="_867a2c0b-0690-b7e6-a21a-814c7b382dd7">Valid values are [1] to [7].</p>
+
+<example id="_7e1d8032-8a21-07ba-5997-4d5be42518f5"><p id="_5301a7be-1994-6967-c775-fb0fc387df7e">Within a monthly context, “<tt>1K</tt>” represents all Mondays within the calendar month.</p>
+</example>
+
+<example id="_f5f7b149-9a40-71b0-3061-f4320e0fcf98"><p id="_152ba52a-38ac-fb22-96ea-c51289f2ba69">In a yearly context, <tt>5K</tt> represents all Fridays in the calendar year.</p>
+</example>
+</clause>
+
+<clause id="_402539a3-c822-a0dc-ddcc-05a536135693" anchor="selection-ordinal-days" obligation="normative">
+<title id="_3b61e079-6a79-96da-0cc0-9ae91f8403b9">Selection of ordinal days in calendar year</title>
+<p id="_eef378ce-19d8-25da-f74a-f42eda0569fa">This selection rule specifies a set of ordinal days of the calendar year, and should only be specified when the interval of the repeat rule is set to yearly (<xref target="eligible-time-intervals-year" style="short"/>), monthly (<xref target="eligible-time-intervals-month" style="short"/>) or daily (<xref target="eligible-time-intervals-day" style="short"/>).</p>
+
+<p id="_34f70b3a-8f50-7e08-0348-a5b5090197e0">Since the number of days in a calendar year has a changeable bound, negative values of calendar day of year are allowed for specifying the day of year ordinal number in reverse.</p>
+
+<p id="_68608134-e268-0227-7583-0348ffa88d18">Representation:</p>
+
+<sourcecode id="_1925bfe4-8f7f-5efc-9a4f-ae846909f430"><body>dayoSR = [dayoE(m)]</body></sourcecode>
+
+
+<p id="_2ecd1df8-2320-c87f-c8a5-509d99575090">Valid values are [1] to [366] and [–366] to [-1].<note id="_4fb49b84-b00a-8ba5-e136-49b6d00a19be"><p id="_3c45b667-8db9-ea90-b03f-67ba07b928f3">The values of [366] and [-366] are used to match a calendar leap year</p>
+</note></p>
+
+
+
+<example id="_49732217-ae7c-1801-b2a6-bac43655b309"><p id="_7d4bf913-9a30-a25d-33cf-6e527233f299"><tt>-1O</tt> represents the last day of the calendar year (December 31st).</p>
+</example>
+
+<example id="_93e3a435-0aef-ae71-f554-0fa0f5f9559e"><p id="_f36b5596-f862-d101-2a69-4dd88591df00"><tt>-306O</tt> represents the 306th to the last day of the calendar year (March 1st of a normal year).</p>
+</example>
+</clause>
+
+<clause id="_dc2a0f3c-efce-3fbd-86d8-2f25b2c668b2" anchor="selection-hours" obligation="normative">
+<title id="_293bd5b8-2508-816e-fa6d-029418b115b8">Selection of hours</title>
+<p id="_51fefa1f-abf9-359f-d559-9f9963cb6dff">This selection rule specifies a set of hours of the calendar day.</p>
+
+<p id="_fd5f21d6-5c8b-f251-d9fd-8bf8c44a7d56">Representation:</p>
+
+<sourcecode id="_2d5c5b9f-89bb-e928-8027-8495fd235524"><body>hourSR = [hourE]</body></sourcecode>
+
+
+<p id="_6ba0f49f-c485-2194-d955-0c69180e20a6">Valid values are [0] to [23].</p>
+
+<example id="_64bf7280-9095-d541-503c-19fbc89b6c2d"><p id="_d7b4b966-ff78-4f7f-2b31-76a8fb961e97">‘<tt>23H</tt>‘ represents the 23rd (last) hour of day.</p>
+</example>
+
+<example id="_34496521-a90e-f0bc-fbeb-60037beaf412"><p id="_f2c6270a-8110-2b10-fbd0-9ec154adcdd9">‘<tt>0H</tt>‘ represents the beginning hour of day.</p>
+</example>
+</clause>
+
+<clause id="_88b65c4d-c14a-976c-1dab-8b51efae807e" anchor="selection-minutes" obligation="normative">
+<title id="_2edd213f-ec72-a2ef-1f14-d7472e1b8455">Selection of minutes</title>
+<p id="_38794f91-007b-9f1b-310f-9cd585f19c76">This selection rule specifies a set of minutes within an hour.</p>
+
+<p id="_61287357-fedb-a4b6-669c-7c8a67450a9d">Representation:</p>
+
+<sourcecode id="_d4d9a717-5489-9d91-1e1e-a47c55f5f437"><body>minSR = [minE]</body></sourcecode>
+
+
+<p id="_52cef043-ba09-815d-fb85-dbc3e336b4c5">Valid values are [0] to [59].</p>
+
+<example id="_a19eee76-e25a-63b6-d81f-82a85b17a1f4"><p id="_4f41fff4-ac72-e439-58fa-2cd9d07573fc"><tt>59M</tt> represents the 59th minute of an hour.</p>
+</example>
+
+<example id="_f6e0ce60-b6af-75ea-fb73-a2144040c3ed"><p id="_830b9f4b-f25e-01fa-230f-d99f3edb8d22"><tt>3M</tt> represents the third minute of an hour.</p>
+</example>
+</clause>
+
+<clause id="_a6ad11c1-1370-29bb-293d-79fc2f37d703" anchor="selection-seconds" obligation="normative">
+<title id="_41102237-c60a-9461-90f0-bee6aa9326af">Selection of seconds</title>
+<p id="_9d1e6923-08dd-1614-321e-6d6e4b80f685">This selection rule specifies a set of seconds within a minute.</p>
+
+<p id="_f84fca00-81d7-9c2a-a140-456aead396a4">Representation:</p>
+
+<sourcecode id="_17a08b52-34a1-db2b-63d5-0b11c09f7029"><body>secSR = [secE]</body></sourcecode>
+
+
+<p id="_2ec41284-05ea-87d9-8fde-3f84a052408a">Valid values are [0] to [60].</p>
+
+<example id="_8b777887-a513-c7de-8ceb-8df444f087cb"><p id="_926d8f2b-2a11-6edb-5376-bcd1f9ef1bd1"><tt>30S</tt> represents the 30th second of the clock hour.</p>
+</example>
+
+<example id="_efecad08-49ab-5e84-73d0-1c5442c14ad9"><p id="_0c4e66f0-ee95-3759-f796-4a8112c4e655"><tt>60S</tt> represents a leap second.</p>
+</example>
+
+<note id="_af169412-1a75-6927-165b-86e74118d9be"><p id="_0327fb86-1979-905e-0e35-d2f068553107">The value of [60] is used to match a leap second of the calendar year.</p>
+</note>
+
+<note id="_9201afa3-c34b-7b2d-fa20-366701e0857a"><p id="_f327c8a7-c5b5-494c-95c9-5bf65ef30920">The value of [60] should be changed to [59] when converting such rule that to the  <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> <tt>BYSECOND</tt> since it does not support a value of [60].</p>
+</note>
+</clause>
+
+<clause id="_2dda64c1-b26d-16fc-d36d-04e74e2ee1c6" anchor="selection-position" obligation="normative">
+<title id="_192f4a1b-820a-1cfc-33b9-853c6fe4ed06">Selection of position</title>
+<p id="_e29c44cc-7ae8-a689-3cb5-829741559869">The position rule, if present, should be applied last, and only when there is at least one selection rule preceding it. It selects a set of occurrence that is a subset of the occurrences already selected (by the selection rules preceding it).</p>
+
+<p id="_d97b9739-a38e-b97d-0915-8fe55c50e74a">Representation:</p>
+
+<sourcecode id="_0de78984-6f61-0ca4-1ad8-27312b70d3dd"><body>positionSR = [position]["`I`"]</body></sourcecode>
+
+
+<p id="_f729ef13-7702-b1a0-9722-c4c5acab4530">Where,</p>
+
+<ul id="_ac7631c7-b084-8304-172d-af06ea8382e7"><li><p id="_1647e03b-5fed-104c-db95-099b7c99615e">[position] is a positive or negative integer, <tt>[!]["-"][i]</tt>.</p>
+</li>
+</ul>
+
+<p id="_2c81007a-0bda-34bc-fe69-fc81b52e7af2">When used in conjunction with a set of occurrences, [position] identifies the i-th occurrence amongst the set of occurrences.</p>
+
+<p id="_e3189f9d-793d-5485-d7c9-e6b4d1f2d208">Specifically, position numbers within a set of occurrences is considered to start with [1] (the first occurrence of the set of occurrences), and [-1] represents the first occurrence when counted backwards.</p>
+
+<example id="_a015404e-aa84-03f5-46f6-2e0295fa69c3"><p id="_4fdcaed5-d0ca-d24c-a4b6-1501333c621d">“<tt>The last work day of calendar months</tt>” can be represented by the repeating rule  <tt>L{1,2,3,4,5}K-1IN</tt> (using notation specified in <xref target="integer-ops" style="short"/>)</p>
+</example>
+
+<example id="_7102d17b-71fe-d9e4-224a-4ecc4501d8fb"><p id="_51976052-8e5f-62a2-a92a-66ad9d77ac7a">“<tt>The first Monday of the calendar year</tt>” can be represented as the selection rule <tt>L{1..7}O1K1IN</tt>. <tt>{1..7}O</tt> represents the first seven days of the calendar year, <tt>1K</tt> represents Monday, <tt>1I</tt> represents the first instance.</p>
+</example>
+
+<example id="_26bff1e1-ae0d-6204-9035-de7cdbe47110"><p id="_f6f24b24-df09-dd73-dd78-d569fad366f2">“<tt>The second Monday of the calendar year</tt>” can be represented as the selection rule <tt>L{1..14}O1K2IN</tt></p>
+</example>
+
+<p id="_61d404af-ab79-2cb5-51db-6eab69ff7f50">Valid values for [position] are bound to the time scale components in the context. The integer value [0] is not allowed.</p>
+
+<example id="_36bc10f6-2d97-a2af-4ea3-79f8c77c87fd"><p id="_f1083ba4-3cf2-81b0-c3d2-4fbf9bbd2e68">In a monthly context, the expression <tt>L{1,2,3}D100IN</tt> is invalid because in a single calendar month, days that can match the calendar day of month numbers 1, 2 and 3 are only 3, therefore the position of 100 cannot be selected.</p>
+</example>
+
+<example id="_f4147a92-1302-f472-2798-ed4cd0d134bd"><p id="_e7e95dd7-ee32-500f-3238-6dffa5f85064">In a monthly context, the expression ‘<tt>L2K2IN9D</tt>‘ refers to the ninth day following the second Tuesday.</p>
+</example>
+</clause>
+</clause>
+
+<clause id="_5021eb3d-251d-9676-bc5b-7315904a5c93" obligation="normative">
+<title id="_95edb380-057d-d700-14aa-ddabef806a4a">Selection with duration</title>
+<p id="_15fa79d5-c392-14f6-81a8-a6c839a9e667">This selection rule allows extending the previous selection rule with a duration.</p>
+
+<p id="_5264dd2c-6b51-ab8a-4643-0d64bcbcaadc">Representation:</p>
+
+<sourcecode id="_0a12ab76-f397-6b52-2133-196ca8d86992"><body>durSR = [selection-component]["/"][duration]</body></sourcecode>
+
+
+<p id="_c7a24691-02dd-98e1-ae58-d7a664a16a9b">Where,</p>
+
+<ul id="_c1168f18-06d1-2b5e-ba1f-ccbb01c68628"><li><p id="_cf73bd12-0069-3677-81e9-363b0b0ad8f8">[selection-component] are selection components defined in this clause;</p>
+</li>
+<li><p id="_bc2eccc8-177d-85c6-4422-3edc86b62e13">[duration] is a valid duration.</p>
+</li>
+</ul>
+
+<example id="_519e819f-6914-110b-778c-ee1d845b4bc6"><p id="_2bb76cc1-fe27-1746-448a-6a8852dba932">‘LL1K{1,3}IN/P5DN’ expresses the selection of a set of time intervals starting on the first and third Mondays, each of a duration of 5-days long.</p>
+</example>
+
+<example id="_7db73722-424f-62ce-029c-3b0b53799420"><p id="_301087ca-b01b-68c7-2e82-17421970894f">‘LLL2K2IN/P9DN4K2IN’ expresses the selection of “<tt>the second Thursday following the second Tuesday</tt>”, through selecting the “<tt>9-day blocks starting at the second Tuesday, then select the second Thursday in the 9-day blocks</tt>”.</p>
+</example>
+
+<note id="_c037690c-b232-4d11-6da4-5d97f74aa1c6"><p id="_eda042d4-e937-ff87-620f-edc98fc94d6f">[selection-component][”/“][duration] is by itself a valid time interval.</p>
+</note>
+</clause>
+
+<clause id="_ce8a9f0d-36b6-0b6b-d505-17dfb0b5059e" anchor="selection-representations" obligation="normative">
+<title id="_5a70be5f-5267-9c78-59c4-1636e0c2eae9">Application within representations</title>
+<clause id="_25dbd4f3-ed05-460f-9f92-8f0e4e63d330" obligation="normative">
+<title id="_9bbb312e-f0ff-4c46-52ea-f2cdbaf3db70">General</title>
+<p id="_23468b69-196a-25b1-836a-97479d48fa97">Selection rules may be used with any date and time representation in explicit form. This representation is especially useful for describing movable days.</p>
+
+<example id="_92169dc0-0859-af51-cb92-9bac3d876e57"><p id="_786d3655-359d-18f0-0a20-3160b788e212"><tt>2018Y3ML1KN1I</tt> is a valid date expression that refers to the date year 2018, first Monday of March.</p>
+</example>
+
+<example id="_2a122728-e15e-ea92-53e7-4eeb25b1004c"><p id="_41ff6d94-4e02-03fa-ff57-de799c6afad5"><tt>2018Y9MTLT8H20MN3I</tt> is a valid date and time expression that refers to the date year 2018, September, the third instance of 08:20 (which is September 3rd, 08:20).</p>
+</example>
+
+<example id="_cc3104e5-155f-33d9-3c41-a8170484d67c"><p id="_83884841-b553-1366-bdad-0106f3f061d4"><tt>{2018,2019,2020,2021,2022}YL2M29DN1I</tt> is a valid date expression that selects the February 29 leap day. It matches the first instance of the date February 29th in the years 2018 to 2022.</p>
+</example>
+
+<example id="_3f4b3238-7779-8129-efd9-e6cccda869a5"><p id="_c12873ec-af1c-6957-1fe2-24d1a81653d0">‘<tt>L5M7K2IN</tt>‘ represents “<tt>the second Sunday of May</tt>”. When placed in a yearly context, the date falls on the International Mother’s Day.</p>
+</example>
+
+<example id="_4ec75c73-7069-6373-2aa1-793bb19cc95e"><p id="_a44152e6-304a-bc97-43a0-bd4140b3b314">‘<tt>L11M4K4INT17HZ-05H</tt>‘ represents the date “<tt>8:00:00 p.m. of the fourth Thursday in November, in UTC-05:00</tt>”. When placed in a yearly context, it represents 8:00:00 p.m. falling on the U.S. Thanksgiving Day.</p>
+</example>
+
+<example id="_7edc202a-6814-483a-9a4f-01cabc713063"><p id="_58dab45c-2737-50bd-0f59-23dc34275e73">‘<tt>L4M{19,20,21,22,23,24,25,26}D4K1IN</tt>‘ represents the first Thursday after April 18th. When placed in a yearly context, the date falls on the First Day of Summer (sumardagurinn fyrsti) in Iceland.</p>
+</example>
+</clause>
+
+<clause id="_d69b3791-d726-5f90-f101-6a8947051f74" obligation="normative">
+<title id="_0dc5a494-839d-9013-0509-529bd130e6aa">Context set by selection</title>
+<p id="_cdb106b9-d8e8-7efe-0ee4-2ae8490c9088">A selection expression can be used to describe a single date or a set of time intervals. In a date and time representation, time scale components can be placed after a selection to point within selected results.</p>
+
+<p id="_f089d57f-f379-ea31-0a2e-bf847b7a5043">When a selection expression describes a single date, the subsequent components apply within the date.</p>
+
+<example id="_be96d6a0-b6a3-f0cb-8026-4b080cca13ed"><p id="_1989abfc-645f-91c5-536b-3ffe07e4b0c7">‘2018YL1K1IN’ is an expression for a specific calendar day. An expression with time scale components immediately after, such as ‘2018YL1K1INT10H0M0S’, represents a specific date and time.</p>
+</example>
+
+<p id="_9e3e4db9-86e7-7227-1525-55ae28220713">When a selection expression describes a set of time intervals, the subsequent components apply to all elements of the set.</p>
+
+<example id="_5ce38a01-4c5d-6574-60fb-a4b906b0a495"><p id="_d4ac5290-689a-f0c8-4a78-6d8db99aeeff">‘2018YL{1,2,5}KN’ is an expression for a time interval set. An expression with time scale components immediately after, such as ‘2018YL{1,2,5}KNT10H0M0S’, describe a time interval set ‘{ 2018Y1M1DT10H0M0S, 2018Y1M2DT10H0M0S, 2018Y1M5DT10H0M0S, 2018Y1M8DT10H0M0S, 2018Y1M9DT10H0M0S, 2018Y1M10DT10H0M0S …​ }’</p>
+</example>
+</clause>
+
+<clause id="_4ca7809e-e2f7-bbd8-e563-01e2851d6e29" obligation="normative">
+<title id="_970ca8cf-3014-3978-3e9a-0b19e6c2a549">Within time intervals</title>
+<p id="_29573ab8-a686-178c-ddad-997e057d4448">A selection expression can be used to describe a time interval start or end.</p>
+
+<example id="_040d7ea0-659e-2219-69f6-7608e195a55b"><p id="_39cb5b58-b08d-7920-6748-b93662fdf173">‘2018Y9ML1K1IN/P5D’, with the expression contain selection describing a single date, represents the time interval “first Monday in September to 5 days later”.</p>
+</example>
+
+<example id="_456910f2-1a71-7e76-8932-136f7dcc8be5"><p id="_4f37f6b8-f7ad-ad5f-6909-2b8b36dabd96">‘2018Y9ML{1,3}K1IN/P5D’, with the expression contain selection describing a time interval set, represents the “first and third Monday in September, to 5 days later”. The expression is identical to the set expression ‘{ 2018Y9ML1K1IN/P5D, 2018Y9ML3K1IN/P5D }’.</p>
+</example>
+</clause>
+</clause>
+</clause>
+
+<clause id="_e4ab3846-00b2-ed74-9586-4d67e437930d" anchor="recurrence" obligation="normative">
+<title id="_35ec2a0f-7004-d1a0-358c-4b14e48290a7">Recurring time intervals with repeat rules</title>
+<clause id="_d1026750-76b9-c12c-c5a0-8a394a93409c" obligation="normative">
+<title id="_1d0a0e6e-9129-6d18-fb0a-a14109f5544f">General</title>
+<p id="_553aa868-fc76-0906-8c31-004aaf57fa3d">This clause extends <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>5.4</referenceFrom></locality></localityStack></eref> “<tt>Recurring Time Interval</tt>”, by adding a rule part that defines the repeat pattern. The rule part is appended to the recurring time interval structure.</p>
+
+<p id="_6ebee996-8375-e5f9-756b-e2757b2f10f0">It describes a generic repeat rule representation that is a superset to, but mostly interchangeable with, the  <tt>RECUR</tt> syntax specified in IETF <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>. This feature makes use of representations defined in  <xref target="selection" style="short"/>.</p>
+</clause>
+
+<clause id="_ee57972c-0946-c684-b297-a588ef15a29d" obligation="normative">
+<title id="_db7b14c7-4740-0495-e9cc-a81f22ada4eb">Method of specification</title>
+<p id="_ac890943-4f96-c1e3-7ec3-0a2dfa401cd2">A recurring time interval is represented as follows:</p>
+
+<ul id="_18d869c0-45ee-fa1f-ff86-f717bd7ba26e"><li><p id="_38a943dc-ed32-908b-0a64-fb1b093f4a8e">Optionally, a number of occurrences. If absent, the number of occurrences is unbounded. Each occurrence is called an “<tt>event</tt>”.</p>
+</li>
+<li><p id="_74d62029-6933-c9f8-5e6d-e53094ac6c22">A time interval, as specified in <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"><localityStack><locality type="clause"><referenceFrom>6.6</referenceFrom></locality></localityStack></eref>.</p>
+</li>
+<li><p id="_c61dbee1-315b-1ead-8777-d146f6d6f609">A repeat rule.</p>
+</li>
+</ul>
+</clause>
+
+<clause id="_6fec2bf1-b6b9-a988-9764-98fd0dbb0d51" anchor="recurrence-repeat-rule" obligation="normative">
+<title id="_1cdbef66-f7cc-3d16-6790-bc6cb6f381ec">Repeat rule</title>
+<clause id="_11127de6-0f84-c4cd-c34a-a00b4b598e05" obligation="normative">
+<title id="_2ba2f2b6-9869-8a71-fc35-752cd3796612">General</title>
+<p id="_469cd57c-53ba-b506-2dc7-f83f9044425f">A repeat rule identifies a set of matching instants according to specification of a repeating cycle used together with selection rules.</p>
+
+<sourcecode id="_602bd55a-1df3-5f66-1cac-a83754225b00"><body>repeat-rule = ["F"][eligible-time-intervals][selection]</body></sourcecode>
+
+
+<p id="_c49e57d3-95d4-1c80-24e9-b8639d33a2f8">Where,</p>
+
+<ul id="_8a1a662e-2a42-ca9d-ea72-78317c7371f9"><li><p id="_8211bf1b-7537-0a1f-c994-4be504ec588f">the frequency designator [“<tt>F</tt>”] precedes the identification of a series of repeating time intervals (“<tt>repeating intervals</tt>”);</p>
+</li>
+<li><p id="_ab9cac97-0e22-9a40-78da-4e4df857c673">[selection] is specified in <xref target="selection" style="short"/>.</p>
+</li>
+</ul>
+
+<p id="_83584049-f23b-20b4-3bf2-24559280407e">Within each repeating interval, one sub-interval is distinguished, called an “<tt>eligible time interval</tt>”.</p>
+</clause>
+
+<clause id="_8410a389-b3b6-7888-5c4c-8afc5238390a" anchor="eti" obligation="normative">
+<title id="_1bd34b82-ae0a-ddc8-77be-8860d8af062f">Eligible time intervals</title>
+<p id="_f6114c87-fb06-8317-d725-e01c1c682de8">Within each eligible time interval is one or more occurrences, as determined by [selection-rules], which are optional. If <tt>[selection-rules]</tt> is omitted, there is a single occurrence at the end of the eligible time interval.</p>
+
+<p id="_ee721420-a5d0-0739-8d9a-a581612f01ad"><tt>[eligible-time-intervals]</tt> in the repeat rule above is one of the following:</p>
+
+<ol id="_8f1cb512-58a3-27fc-fab1-7341b9a7dd4b" type="arabic"><li id="_22c8617d-bd59-70cf-8263-0206cf63681f" anchor="eligible-time-intervals-year"><p id="_7779b4be-ec01-b3ab-1319-249af0f16dda">Time interval of one or more years:	<tt>[yearE]</tt></p>
+</li>
+<li id="_a2b0cdf0-c83c-5aa9-7dbf-d0d796feebe2" anchor="eligible-time-intervals-month"><p id="_bc1159ac-7386-e654-66ee-bb96cd173d66">Time interval of one or more months:	<tt>[monthE]</tt></p>
+</li>
+<li id="_1a48d89a-bea9-3b04-9b8c-c678a3abe831" anchor="eligible-time-intervals-week"><p id="_d037bc1d-3dca-92d3-44f0-0f2484b77be4">Time interval of one or more weeks: 	<tt>[weekE]</tt></p>
+</li>
+<li id="_90ac3b47-c184-8b92-f418-1ef7e063f56c" anchor="eligible-time-intervals-day"><p id="_953c5bc1-1292-4c2f-208e-09692113b591">Time interval of one or more days: 	<tt>[dayE]</tt></p>
+</li>
+<li><p id="_66e50f0e-8e12-72c0-305a-5e23fd804265">Time interval of one or more hours: 	<tt>[hourE]</tt></p>
+</li>
+<li><p id="_487868e4-23eb-f06d-7119-c586720e2367">Time interval of one or more minutes:	<tt>[minE]</tt></p>
+</li>
+<li><p id="_ef6fe6e8-d8b0-7bee-fc02-eaf20d599c9e">Time interval of one or seconds:		<tt>[secE]</tt></p>
+<ul id="_00020067-3b38-2e3e-185c-70b6acda50aa"><li><p id="_46ccef95-cde4-8474-cddf-f1dbab197e4e">The duration of each repeating interval is the value of [eligible-time-intervals].</p>
+<example id="_07db1a79-57b1-16c3-e3e0-e660800be11a"><p id="_e6fb130d-f393-18d1-e526-1d006c84a5e7">If the value of [eligible-time-intervals] is <tt>8Y</tt>, the length of each repeating time interval is 8 years.</p>
+</example>
+</li>
+<li><p id="_635d27a8-c80f-041c-2c47-ddbfe56b38c9">The duration of each eligible time interval is one-unit of the chosen time scale component in which the duration of [eligible-time-intervals] is expressed.</p>
+<example id="_5b1c44e5-bc6a-b418-618d-a46360aee781"><p id="_3a064c5b-4881-b374-4c6c-8cff4ad21fd5">If the value of [eligible-time-intervals] is <tt>8Y</tt>, then the time scale component is year, and each eligible interval is of length 1 year.</p>
+</example>
+</li>
+<li><p id="_3753c90a-076d-900e-3b1a-e49856649ff9">Each eligible time interval begins x-1 units of the selected time scale component following the beginning of its repeating interval, where x is the coefficient of the unit.</p>
+<example id="_25fc22f2-f39e-cd98-a5c2-0ee0ef787228"><p id="_05df832e-35a5-daa0-6979-02dbf8e6931a">If the value of [eligible-time-intervals] is <tt>8Y</tt>, the eligible time interval is the 7th year within the 8-year repeating interval.</p>
+</example>
+</li>
+</ul>
+</li>
+</ol>
+
+<p id="_e2187548-41a3-139f-ed42-951f437fa168">These properties together determine an exact set of eligible time intervals.</p>
+
+<example id="_856161d8-06ac-237d-20e6-5b7d93be4864"><p id="_72fd30e6-d67b-5531-0b8a-690c5948a837">In the eligibility part, the expression <tt>F2Y</tt> places the eligible time intervals as the second year of each 2-year repeating interval.</p>
+</example>
+
+<example id="_9306b994-d0eb-8472-498a-d1015a9dbf77"><p id="_7fafb77d-b44c-192c-026f-11a8ed120747">In the eligibility part, the expression <tt>F8D</tt> places the eligible time intervals as the 8th day of each 8-day interval.</p>
+</example>
+</clause>
+
+<clause id="_83a3717d-b821-2f45-8244-86130e827cc5" obligation="normative">
+<title id="_01998a55-300c-6776-1f03-79f542c283fe">Selection part and selection rules</title>
+<p id="_a4c98ff1-26fe-e187-6618-f4379a25655f">The selection part provides a list of one or more selection rules, which specify conditions of matching one or more instants within a set of time intervals. Representations for possible selection rules are specified in  <xref target="selection" style="short"/>.</p>
+
+<p id="_994505a6-9846-82ee-4a5b-04b0fdd225bc">When used with a set of eligible time intervals, the selection part identifies a set of instants within the eligible time intervals that match the selection rules.  Each instant marks the beginning of an occurrence (a recurring interval).</p>
+</clause>
+</clause>
+
+<clause id="_5fc8e4cd-f2f9-a327-92ea-a9922daef676" obligation="normative">
+<title id="_e250e81c-4c88-2971-fb55-9ea68cb71619">Complete representation</title>
+<p id="_2a7562f4-a03e-9595-05f2-59031599ccaa">A complete representation of a recurring time interval with repeat rules, shall be in accordance with  <xref target="selection" style="short"/> and <xref target="recurrence-repeat-rule" style="short"/>, combining any time interval representation as defined in <eref type="inline" bibitemid="CC18011" citeas="CalConnect CC 18011:2018"/> and in <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>5.4.3</referenceFrom></locality></localityStack></eref>, with the repeat rule:</p>
+
+<sourcecode id="_73c2e169-3b2a-2f05-fd45-5b47aae94038"><body>["R"][i]["/"][time-interval]["/"][repeat-rule]</body></sourcecode>
+
+
+<p id="_d22e68ab-fcea-0424-59b3-e11c11d4b948">Where,</p>
+
+<ul id="_2b284677-d788-7ea4-18b2-4b787644f1b0"><li><p id="_7fb2a600-8d51-7f71-60af-e6497fb8af8b">[“<tt>R</tt>”] is the recurring time interval designator;</p>
+</li>
+<li><p id="_d3bb708e-4484-2421-9d78-0ec76c0b8513">[i] is the number of recurrences (optional);</p>
+</li>
+<li><p id="_42e1df7c-c330-f4ba-2e43-9891bb18af9d">[time-interval] is a valid time interval;</p>
+</li>
+<li><p id="_975795d2-0aa4-2554-d92c-6d649fa1705a">[repeat-rule] is a repeat rule defined in <xref target="recurrence-repeat-rule" style="short"/>.</p>
+</li>
+</ul>
+
+<p id="_ffaa5f91-30a3-48d4-bcbd-7688f5bee456">The following examples all show a recurring interval of 12 occurrences, each of 90 minutes duration.  The first occurrence begins September 29, 2015 at 2pm. The second occurrence begins two weeks later, and so on.</p>
+
+<example id="_45c4be2d-2db8-e001-4038-e5db7ae437ec"><p id="_3db7fa43-84b7-1870-0670-4a82e4bd1c43"><tt>R12/20150929T140000/20150929T153000/F2W</tt>, interval in implied form, specified by start and end</p>
+</example>
+
+<example id="_3f860cdf-c906-8ffe-5599-bcb51b4dbb16"><p id="_3afb68f4-58ff-c0ea-53f2-354283b8b392"><tt>R12/20150929T140000/P1H30M0S/F2W</tt>, interval in implied form, specified by start and duration</p>
+</example>
+
+<example id="_403a7f85-374c-8111-2918-61af2341e2e6"><p id="_88b53943-d028-b954-ad60-596e7272d8ec"><tt>R12/P2H30M0S/20150929T153000/F2W</tt>, interval in implied form, specified by duration and end</p>
+</example>
+
+<example id="_fbc8e79f-8d17-f69d-4802-a18e4ce59e05"><p id="_1885a8b6-5e85-1b61-3525-24cd53b566c8"><tt>R12/2015‑09‑29T14:00:00/2015‑09‑29T15:30:00/F2W</tt>, interval in extended form, specified by start and end</p>
+</example>
+
+<example id="_e805984c-67f3-75f4-d460-d60c6cb77f82"><p id="_dddb3ad5-34d1-108b-25d8-5c46e623f56a"><tt>R12/2015‑09‑29T14:00:00/P1H30M0S/F2W</tt>, interval in extended form, specified by start and duration</p>
+</example>
+
+<example id="_0d8faaf6-dd4d-21f1-95b2-c9d4daabab50"><p id="_e207e02f-4725-7dd9-2915-5246a4110fa5"><tt>R12/P1H30M0S/2015‑09‑29T15:30:00/F2W</tt>, interval in extended form, specified by duration and end</p>
+</example>
+
+<example id="_bbd89799-cc37-d207-e1da-7a1a292fa4dd"><p id="_e5045526-94aa-c21d-a517-9204ce92bffb"><tt>R12/2015Y9M29DT14H0M0S/2015Y9M29DT15H30M00S/F2W</tt>, interval in explicit form, specified by start and end</p>
+</example>
+
+<example id="_62b2d51f-b39b-b938-ab77-d9df663b68cc"><p id="_d2ec1829-f3c0-3e6b-5bc8-e776f83bb189"><tt>R12/2015Y9M29DT14H0M0S/P1H30M0S/F2W</tt>, interval in explicit form, specified by start and duration</p>
+</example>
+
+<example id="_8b157edb-9ee4-56d9-f660-fa3361e3ce2e"><p id="_f127d5e4-d2b6-e421-e799-1e5ebb1b70c5"><tt>R12/P1H30M0S/2015Y9M29DT15H30M00S/F2W</tt>, interval in explicit form, specified by start and duration</p>
+</example>
+</clause>
+
+<clause id="_a9803d92-1cd9-ebc4-b775-f59c4ba4dac2" obligation="normative">
+<title id="_cb1d113c-a4e8-7eeb-29df-3d466e51ceda">Representations other than complete</title>
+<p id="_8f6f35b7-7666-cfd5-dd51-4f8ffd9b319d">A representation other than complete of a recurring time interval with repeat rule shall be an expression in accordance with <xref target="selection" style="short"/> and <xref target="recurrence-repeat-rule" style="short"/>, where the time interval is represented in accordance with <eref type="inline" bibitemid="ISO8601-1" citeas="ISO 8601-1:--"><localityStack><locality type="clause"><referenceFrom>4.4.5</referenceFrom></locality></localityStack></eref>.</p>
+</clause>
+
+<clause id="_1708fe76-cd5e-c9c8-3cc2-18e80a9e8e7f" obligation="normative">
+<title id="_11daf73e-28ea-1a6c-1dcd-d24d043df1dc">Evaluation of a repeat rule</title>
+<clause id="_55fb2ed5-3af5-7cf5-95ed-ddd1e5925a34" obligation="normative">
+<title id="_1e7a5c4a-e3d1-7e9e-3d25-f7ef0630483c">General</title>
+<p id="_f5d39447-d37c-d8d1-5c9d-a64b768ac5e3">A repeat rule specifies a set of occurrences where each occurrence is a time interval.</p>
+
+<p id="_4d4d9c2b-fec3-4883-a229-ef2acebe6939">The occurrences resulting from a repeat rule are calculated as follows:</p>
+
+<ul id="_80937ccd-a650-5af2-5e2a-91c7009f7abd"><li><p id="_80aa2cf8-9425-c8b0-128f-3eaf5735f448">determine the eligible time intervals;</p>
+</li>
+<li><p id="_ae7fae1d-4cea-f169-8b2b-3974c526dc0b">apply all selection rules to the eligible time intervals; and</p>
+</li>
+<li><p id="_d2edea07-2629-c02d-dd7d-76d80b7a2a87">obtain the resulting occurrences.</p>
+</li>
+</ul>
+
+<p id="_aee67b8c-e9dc-15cc-183d-7d1d25f44965">A detailed explanation of interactions between eligible time intervals and the selection part is provided in <xref target="annexa" style="short"/>.</p>
+
+<p id="_405aca64-90e7-536b-61d0-84600b64bae8">Evaluation compatibility with <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> is discussed in <xref target="annexb" style="short"/>.</p>
+
+<example id="_ed12ef15-f8df-3720-4c24-33cc687aa44f"><p id="_1852433e-8c86-8a60-e521-22408ed56460">The expression ‘<tt>R/2018-08-08/P1D/F1YL{3,8}M8DN</tt>‘, means “<tt>for every year, select the calendar months 3 (March) and 8 (August), calendar day 8, for an occurrence of 1 day duration</tt>”. The resulting occurrences are therefore { ‘<tt>2018-08-08/2018-08-09</tt>‘, ‘<tt>2019-03-08/2019-03-09</tt>‘, ‘<tt>2019-08-08/2019-08-09</tt>‘, … }.</p>
+</example>
+
+<example id="_35fecf0e-9d1f-622d-4441-29d6939626ce"><p id="_c038a3f7-d649-8cef-a486-38edcd06efbe">The expression ‘<tt>R/2018-08-01T10:20:00/PT10M/F1ML{1,10}DT10H20M0SN</tt>‘,  means that “<tt>for every month, select the calendar days 1 and 10, time 10:20:00, for an occurrence of 10 minutes duration</tt>”. The resulting occurrences are therefore { ‘<tt>2018-08-01T10:20:00/2018-08-01T10:30:00</tt>‘, ‘<tt>2018-09-01T10:20:00/2018-09-01T10:30:00</tt>‘,, … }.</p>
+</example>
+
+<example id="_57f178a3-0e6f-0d6e-d6c4-1b2fdde845d5"><p id="_29534097-5fa2-1b5b-6c64-aae8473c7218">The expression ‘<tt>R/2018-09-01/P1D/F1YL9M3K1IN</tt>‘, means “<tt>for every year, select the first Wednesday in September for an occurrence of 1 day duration</tt>”. The resulting occurrences are therefore { ‘<tt>2018-09-05/2018-08-06</tt>‘, ‘<tt>2019-09-04/2019-09-05</tt>‘, ‘<tt>2020-09-02/2020-09-02</tt>‘, … }.</p>
+</example>
+</clause>
+
+<clause id="_707d9606-c661-274d-bc1c-24d13fc42929" obligation="normative">
+<title id="_124f2af2-441f-c160-88c5-1cb24978d84a">Time scale unit precision</title>
+<p id="_917267f6-1271-5384-2b34-bd6ac206c307">The resulting occurrences of a repeat rule shall have a time scale unit resolution equal to the lowest order time scale unit specified in the repeat rule.</p>
+
+<example id="_7a7a7b0d-b50c-8275-8d34-31d424595c19"><p id="_9e339358-f6bc-3472-2dcf-7037f227f2b2">In the expression <tt>R/2018Y1M/P1M/F3M</tt>, the lowest order time scale unit specified is month, hence the resolution is month precision. This expression resolves to the set <tt>{ 2018-01/2018-02, 2018-04/2018-05 ... }</tt></p>
+</example>
+
+<example id="_232f9c4d-7b76-1a6c-5322-601198508e94"><p id="_70f4c163-b3a8-213a-a49e-bf9e40c79845">In the expression <tt>R/2018Y1M1D/P1D/F3M</tt>, the lowest order time scale unit specified is day, hence the resolution is day precision. This expression resolves to the set <tt>{ 2018-01-01/2018-01-02, 2018-04-01/2018-04-02 ... }</tt></p>
+</example>
+
+<example id="_a8d460a6-3e61-ba20-3967-68b968cdd9d2"><p id="_8fc5e0fa-e655-45e8-f834-0824570857b5">In the expression <tt>R/2018Y1M/PT10M/F1M</tt>, the lowest order time scale unit specified is minute, hence the resolution is minute precision. This expression resolves to the set <tt>{ 2018-01-01T00:00/2018-01-01T00:10, 2018-02-01T00:00/2018-02-01T00:10, ... }</tt></p>
+</example>
+</clause>
+
+<clause id="_f1772347-9f8b-4bb5-a93d-b40991f8802e" obligation="normative">
+<title id="_178f6d26-9ed4-e337-ac21-4158d34fc215">Inheritance of component values from time interval start</title>
+<p id="_bd01ff29-085b-4eb2-5d99-2342d9c3efab">In a repeat rule with a selection part, the selection rules specified do not always fully account for all the time scale components provided in the initial start time, i.e. when there is no selection part, or if there is no one-to-one correspondence of time scale units used in the initial start time and those used in the selection part.</p>
+
+<p id="_3c16d1c0-cf2b-9db5-5d48-cb06f6f0174a">In this case, the selection rules shall inherit from time interval start the values of time scale units that are of lower order than those used in the eligibility part.</p>
+
+<example id="_96a5d9d9-7d26-bb93-3396-fa0141c39e0c"><p id="_6e89cbcd-5d8f-ffb7-f508-daa175f72597">Given the expression ‘<tt>R/2018-08-01T01:02:03/P5M/F1D</tt>‘, there is no selection part, however, the selection part is inferred from the time scale units of lower order than that of the eligibility part ‘<tt>F1D</tt>‘, the “<tt>calendar day</tt>” unit. The specific time scale units specified in the time interval start and of lower order than “<tt>calendar day</tt>” are clock hour, clock minute and clock second. The inferred selection part directly takes values for those units from time interval start, resulting in the selection part ‘<tt>LT1H2M3S</tt>‘. The resulting occurrences are therefore { ‘<tt>2018-08-01T01:02:03/2018-08-01T01:07:03</tt>‘, ‘<tt>2018-08-02T01:02:03/2018-08-02T01:07:03</tt>‘, … }.</p>
+</example>
+
+<example id="_5d9070e8-eaed-15f7-2f28-d29f33508425"><p id="_b64c4ec9-5201-5437-d2b0-dd34ee53045d">Given the expression ‘<tt>R/2018Y8M1DT1H/P1D/F2ML{1,3}D</tt>‘, the eligible time intervals are the second month of a 2-month period, selecting for the calendar days “<tt>1</tt>” and “<tt>3</tt>”. Since the time scale units of lower order than calendar day (“<tt>D</tt>”) do not have specified units, the clock hours from the initial start date is inherited in the selection rule, resulting in the selection part ‘<tt>L{1,3}DT1H</tt>‘. The resulting occurrences are { ‘<tt>2018Y8M1DT1H/2018Y8M2DT1H</tt>‘ , ‘<tt>2018Y8M3DT1H/2018Y8M3DT1H</tt>‘, ‘<tt>2018Y10M1DT1H/2018Y10M2DT1H</tt>‘ , ‘<tt>2018Y10M3DT1H/2018Y10M3DT1H</tt>‘, … }</p>
+</example>
+
+<example id="_a70b84aa-783a-defa-1f13-1c0b82406318"><p id="_c127353a-2cc5-5e5b-612f-ffd35057ccdb">‘<tt>R/20150104T083000/PT15M00S/F2YL1M1KT{8,9}H30M</tt>‘ expresses a recurring interval (number of occurrences is unspecified) whose first occurrence is January 4, 2015, 8:30-8:45 AM, and subsequent occurrences, all of the same duration (15 minutes), are determined by the repeat cycle for which the following evaluation sequence is provided:</p>
+
+<ul id="_fce1183d-e202-ba8f-c1fd-775f957fc298"><li><p id="_bc6139cf-572c-e54c-2390-a9a10cd9d172">the expression ‘<tt>2Y</tt>‘ indicates that the eligible time intervals have a repeating cycle of two years, and each eligible time interval is 1 year in length, the second year within its repeating interval;</p>
+</li>
+<li><p id="_5aa0560d-e599-8849-a45f-f410ad493aef">From this information together with the specification of the first occurrence, it is calculated that:</p>
+<ul id="_c4525c80-c0a4-0fb8-abda-15c64f2cd1ab"><li><p id="_adf8aaab-13f7-8e5f-0505-dcb25a72a580">the first eligible time interval is the calendar year 2015 (the year during which the first occurrence takes place)</p>
+</li>
+<li><p id="_8756a535-fca4-09df-b210-3db6383b0277">the first repeating interval is the two-year period comprising calendar years 2014 and 2015;</p>
+</li>
+</ul>
+</li>
+<li><p id="_ab26a868-542e-9ccc-2de6-85467f004cdb">the subsequent recurring intervals are then determined by the selection part;</p>
+<ul id="_4ea1d0bf-3724-59b6-865e-43747bfaa09c"><li><p id="_51f38ce7-c1a0-8dfe-3dd7-4b2f0e9d4444">the expression ‘<tt>1M</tt>‘ indicates that the matching occurrences are limited to January only;</p>
+</li>
+<li><p id="_9b72b965-2d4d-86ba-8172-99c3eb2d1553">the expression ‘<tt>1K</tt>‘ indicates that the matching occurrences are limited to Sundays only;</p>
+</li>
+<li><p id="_85fea0e2-9262-600e-47c6-386453e22738">the expression ‘<tt>{8,9}H</tt>‘ indicates that the matching occurrences have clock hours 8 or 9;</p>
+</li>
+<li><p id="_27c979a0-f097-d1c4-1cff-e8692307de50">the expression ‘<tt>30M</tt>‘ indicates that the matching occurrences have a clock minute value of 30, combined with specified clock hours, the starting times are determined to be 8:30AM and 9:30 AM;</p>
+</li>
+<li><p id="_81d0e3dd-9b7d-a0b7-af0e-1b24cb0bdcec">since the selection rules lacks specified values for clock seconds, in accordance with 14.6.3, they should be obtained from the clock seconds value of the “<tt>time interval start</tt>” of ‘<tt>20150104T083000</tt>‘, hence the clock seconds selection rule is specified as value ‘<tt>00</tt>‘;</p>
+</li>
+<li><p id="_cf4b8832-279b-152a-21a2-e8fd1a2c6bbd">the recurrent occurrences therefore resolve to the rule “<tt>in the second year of every two year period beginning year 2014, for every Sunday in January at both 8:30:00 AM and 9:30:00 AM, create a 15 minutes occurrence.</tt>”</p>
+</li>
+</ul>
+</li>
+</ul>
+</example>
+</clause>
+</clause>
+</clause>
+
+
+
+
+
+
+</sections><annex id="_c0185ca7-def4-60ad-9d6d-be49af091d4b" anchor="annexa" obligation="informative">
+<title id="_52468eaa-568a-68ac-bbf3-5cdaaf4b63c4">Interactions between eligible time intervals with the selection part</title>
+<clause id="_a0ea48d1-1a84-cacf-77fe-6cf627dc56d8" obligation="informative">
+<title id="_cf8e0bad-9b28-c71a-cb74-cecacffc038e">General</title>
+<p id="_73c71426-7752-0282-e5f6-de04d403b32a">The interaction between eligible time intervals and selection rules specified within a repeating rule give rise to interesting properties that users should be aware of.</p>
+</clause>
+
+<clause id="_5431df62-7678-bb22-bad8-75e8c50e0949" anchor="annexa-example" obligation="informative">
+<title id="_f5c9219c-cfa4-517c-2d05-f66eca4a40d8">Sample evaluation of a recurring time interval with repeat rules</title>
+<p id="_902a2b5b-2bac-74cd-2398-c23631cc7efd"><tt>R/20150104T083000/PT15M00S/F2YL1M1KT{8,9}H30MN</tt> expresses a recurring interval (number of occurrences is unspecified) whose first occurrence is January 4, 2015, 8:30-8:45 AM, and subsequent occurrences, all of the same duration (15 minutes), are determined by the repeat cycle for which the following evaluation sequence is provided.</p>
+
+<ul id="_67b227d8-2b90-2de0-4484-d9cd50329c8f"><li><p id="_086361b6-b74a-5d04-4889-cfbd4705bd43">the character <tt>F</tt> indicates that the formula for determining eligible time intervals follows;</p>
+</li>
+<li><p id="_03797e66-9b61-3fe2-2f87-04f240d1ee0b">the expression <tt>2Y</tt> indicates that the eligible time intervals have a repeating cycle of two years, and each eligible time interval is 1 year in length, the second year within its repeating interval;</p>
+</li>
+<li><p id="_96f62cf5-37b8-54b3-069b-93ebbccbd2c7">From this information together with the specification of the first occurrence, it is calculated that:</p>
+<ul id="_2bbc30d1-a061-7d61-a9a0-2d57a209d50e"><li><p id="_a9a4d8ca-47c4-4363-04fb-042f57b93e89">the first eligible time interval is the calendar year 2015 (the year during which the first occurrence takes place)</p>
+</li>
+<li><p id="_5b34364e-fd3c-98e6-b04a-a9595087735c">the first repeating interval is the two-year period comprising calendar years 2014 and 2015;</p>
+</li>
+</ul>
+</li>
+<li><p id="_e9ac227d-9cab-f63f-28a6-131405ee6805">the subsequent recurring intervals are then determined by the selection part;</p>
+<ul id="_ce8c65ef-6607-0a2f-048b-b3d6c14715fa"><li><p id="_934a03de-6b88-faf8-8892-d557ff5b5b9a">the character <tt>L</tt> indicates that selection parts follow;</p>
+</li>
+<li><p id="_9ce18196-9ab8-f38d-2e47-e9b181b9d1dd">the expression <tt>1M</tt> indicates that the matching occurrences are limited to January only;</p>
+</li>
+<li><p id="_42643baf-c917-35b7-0770-ef16b1fd4632">the expression <tt>1K</tt> indicates that the matching occurrences are limited to Sundays only;</p>
+</li>
+<li><p id="_7925b1b5-06c6-c09d-0ce2-97ec348f01aa">the expression <tt>T</tt> indicates that intraday time scale components follow;</p>
+</li>
+<li><p id="_3a346fdc-d4c3-272f-8dc8-bceac95d991b">the expression <tt>{8,9}H</tt> indicates that the matching occurrences have clock hours 8 or 9;</p>
+</li>
+<li><p id="_83b99a9d-cdc6-35bb-f1e4-42503cc3fecd">the expression <tt>30M</tt> indicates that the matching occurrences have a clock minute value of 30, combined with specified clock hours, the starting times are determined to be 8:30AM and 9:30 AM;</p>
+</li>
+<li><p id="_331b5d44-815f-e131-0924-2d5bd38758a1">since the selection rules lacks specified values for clock seconds, in accordance with 9.3.3, they should be obtained from the clock seconds value of the “<tt>time interval start</tt>” of <tt>20150104T083000</tt>, hence the clock seconds selection rule is specified as value  <tt>00</tt>;</p>
+</li>
+<li><p id="_419cc93f-564c-34e2-889c-09fe95f0f092">the recurrent occurrences therefore resolve to the rule “in the second year of every two year period beginning year 2014, for every Sunday in January at both 8:30:00 AM and 9:30:00 AM, create a 15 minutes occurence.”</p>
+</li>
+</ul>
+</li>
+</ul>
+
+<figure id="_a9d4da2c-78e4-b523-9b44-c197e551d55c" anchor="figure-basic-recurrences">
+<name id="_655bcc8b-5060-72b2-1e56-5c97910c0ce1">Resulting occurrences of the rule F3YL{2,4,6,8,10}M1DN</name>
+<image id="_fe6b9226-a78e-3a25-943e-557a1dd6447b" src="data:image/png;base64,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" mimetype="image/png" height="auto" width="auto" filename="images/basic-concepts.png"/></figure>
+
+<p id="_7b8bdf12-01d0-3a94-d479-b498f00066d8"><xref target="figure-basic-recurrences" style="short"/> demonstrates that the repeating cycle denotes how often the eligible time intervals be evaluated. Within the eligible time intervals, the selection rules are applied. It is the overlap between the selection rules and eligible time intervals that produce the resulting occurrences.</p>
+</clause>
+
+<clause id="_555d669c-11df-d608-a8df-ac7885e90f63" anchor="annexa-special-case" obligation="informative">
+<title id="_bac5c74a-7eef-d76e-78ad-f0782fbc85a3">Special case when the repeating cycle uses value 1</title>
+<p id="_e3d46bbb-5dbb-c27d-ff4b-4bfdae6d7289">When the repeating cycle is defined with a value 1 for any time unit (e.g. calendar year, calendar month, calendar day, calendar hour, etc.), the effect on the resulting occurrences are identical – the repeating cycle fully covers all instants of the time scale. Therefore, the resulting occurrences are fully described by the selection rules that apply.</p>
+</clause>
+
+<clause id="_6fae8f83-ee26-997b-1a6d-4b4799007039" obligation="informative">
+<title id="_d5259af7-20b9-a58c-63d8-df3c1f81d0be">Orders of the repeating cycle and selection rules</title>
+<clause id="_6c581d27-c7cc-0a25-9fa2-e39b942e434a" obligation="informative">
+<title id="_f9307e54-ef0c-37fb-6a1b-5d9d627be03e">Repeating cycle of higher order than selection rules</title>
+<p id="_95a4fcfe-c567-551a-3de1-a5510322bff6">It is common in natural expressions and in calendar implementations that the repeating cycle uses a time scale unit of a higher order than that of the selection rules. The resulting occurrences are generally as expected by the creator of these rules.</p>
+
+<example id="_77d3d59e-3024-8d30-e9a2-e04aed0495d9"><p id="_9c8fd631-f752-4d4e-5a33-6bfdd01169eb"><xref target="figure-higher-order" style="short"/> provides such a case; where the resulting occurrences happen once every three years, matching a single date of September 10th.</p>
+</example>
+
+<figure id="_36689e68-3c59-61ee-27f1-96a09d18cf7e" anchor="figure-higher-order">
+<name id="_72647839-371e-b4d8-293a-e4ce2ee950ae">When the repeating cycle is of a higher order than the selection part</name>
+<image id="_1e7cd548-41c8-ca0e-99e0-b2a9fd19e2e8" src="data:image/png;base64,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" mimetype="image/png" height="auto" width="auto" filename="images/repeating-cycle-higher-order-as-selection.png"/></figure>
+</clause>
+
+<clause id="_02928feb-ed7a-d9a3-233f-532f79b26d82" anchor="annexa-same-order" obligation="informative">
+<title id="_f25b9f5c-bf75-d4cf-e174-697b2bd22545">Repeating cycle of same order with selection rules</title>
+<p id="_68cc2e2e-9272-b020-594a-3dc302488922">When a time scale unit of the same order is used for both the repeating cycle and the selection rules, the following properties arise:</p>
+
+<ul id="_be7a4da2-fdd3-e3c5-57c7-36475fd65fdd"><li><p id="_6533bd7f-881d-0f86-d6f1-de1a62712fb3">The effect of <xref target="annexa-special-case" style="short"/> applies;</p>
+</li>
+</ul>
+
+<example id="_388c683a-dbb4-ae62-9f83-537980d26aa4"><p id="_c8b2a2ed-e828-d6a6-f5b8-3da4b3af6445">A repeating rule of 1 month repeating cycle, with selection rules that are of the highest order of “<tt>month</tt>”, has the same effect as the repeating cycle of 1 calendar year because every calendar month in the calendar year will be evaluated</p>
+</example>
+
+<ul id="_7a2f1b86-64f4-3404-e83e-c84486df5790"><li><p id="_1f0d6694-2c70-43a9-9b8b-52d2a9970a6d">A repeating rule with an n time unit repeating cycle, matched with selection rules of the same time unit, will provide occurrences that depend on the start instant of the repeating cycle.</p>
+</li>
+</ul>
+
+<example id="_c76f3ebd-d7da-a3c6-3cc2-832a137f00f1"><p id="_7fa91358-dc11-c702-ec19-38ecd1e482b1">A repeating cycle starting in April every 6 months will only match a monthly selection rule that contains April or October</p>
+</example>
+
+<example id="_67418857-22c7-c4f9-79da-647e26781a7c"><p id="_0d9e046f-4fff-1df9-df38-3cee9bb1912e"><xref target="figure-same-order" style="short"/> demonstrates an instance of the second case where the repeating cycle does not overlap with eligible time intervals, resulting in no occurrences.</p>
+</example>
+
+<figure id="_3463f728-e7b3-5064-d175-32dabbe7701f" anchor="figure-same-order">
+<name id="_432a5da3-b290-9ac4-1e76-c6a41f7e3597">When the repeating cycle is of the same order as the selection part and mismatches</name>
+<image id="_e78a6604-5b4f-8122-7ed3-4ee3656971fc" src="data:image/png;base64,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" mimetype="image/png" height="auto" width="auto" filename="images/repeating-cycle-same-order-as-selection.png"/></figure>
+</clause>
+
+<clause id="_f9220db9-5b28-f6c1-1eb4-422fade92af8" obligation="informative">
+<title id="_ec42d9bf-3a6a-5e22-3f3a-d4efff849043">Repeating cycle of lower order than selection rules</title>
+<p id="_b962cd99-cbc8-ab73-af5d-278d7956454d">When a time scale unit of a lower order is used for the repeating cycle than that of the selection rules, the following should be of note:</p>
+
+<ul id="_1a08b397-e052-4f4c-4371-f0b69c784ca7"><li><p id="_53390bbd-c5e0-bb74-be9b-17241ddc88e8">The effect of <xref target="annexa-special-case" style="short"/> applies;</p>
+</li>
+<li><p id="_c5313d5c-c6fd-dde2-168d-5fdb02fe5645">A repeating rule with an n time unit repeating cycle, matched with selection rules of a lower order time unit, will provide occurrences that depend on the start instant of the repeating cycle.</p>
+</li>
+</ul>
+
+<example id="_dca67a19-2cc8-0d4b-6216-92d09f801d13"><p id="_a78866f6-2201-9815-5838-5c1d4567604d"><xref target="figure-lower-order" style="short"/> demonstrates this interaction of the second case, where the repeating cycle is of day order and a selection rule of calendar month order. Notice that there are no matches outside calendar month 3 due to the application of the selection rule.</p>
+</example>
+
+<figure id="_10ee0d28-7536-3f38-58bf-389811eed0ab" anchor="figure-lower-order">
+<name id="_5883f350-72e3-91a7-13ed-fbd4199a9c5d">When the repeating cycle is of a lower order than the selection part</name>
+<image id="_1fcedd7f-a531-e600-c89e-1041088af355" src="data:image/png;base64,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" mimetype="image/png" height="auto" width="auto" filename="images/repeating-cycle-lower-order-as-selection.png"/></figure>
+</clause>
+</clause>
+</annex><annex id="_57670421-3f35-f2ec-b3cd-98cd97cb9d9f" anchor="annexb" obligation="informative">
+<title id="_c902b388-ce54-2d4d-77a8-ef330f8911ef">Compatibility considerations of repeat rules with RFC 5545 recurrences</title>
+<clause id="_e8b9e372-9f2d-dcaa-56cd-3744a8da7b0f" obligation="informative">
+<title id="_c568f291-bab4-5c26-6ff6-3c02f48ed20f">Evaluation of repeat rules</title>
+<p id="_6327d74b-b491-bf6d-16c1-b89668a17b65">In this document, the evaluation of repeat rules (see  <xref target="recurrence-repeat-rule" style="short"/>) rely on explicit specification of selection rules (see  <xref target="selection" style="short"/>) and the direct inheritance of time scale component information from the initial start date.</p>
+</clause>
+
+<clause id="_4d1937d1-1d9d-ed76-859a-2ddcdc238fc1" obligation="informative">
+<title id="_e6ae2e08-4c19-9364-63da-6e7f2f8e6f56">Inheritance of time scale component information</title>
+<p id="_a6f8c77b-2d87-ef4b-8bf1-b3dc110f4f7c">In the evaluation of repeat rules within this document as well as in <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>, a number of time scale components can be directly inherited from the initial start date.</p>
+
+<p id="_4a389dcc-9978-6a08-4b1e-bee486fa75b1">In terms of <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> specifically:</p>
+
+<ul id="_1ef8d047-3dc3-5594-9983-5da686606fd6"><li><p id="_4570fdb6-0e29-7465-e6e3-0e57fa18f42e">when the <tt>FREQ</tt> parameter is set to <tt>SECONDLY</tt>, but without a <tt>BYSECOND</tt> parameter, the <tt>BYSECOND</tt> selection is directly inherited from the clock seconds value from the initial start date;</p>
+</li>
+<li><p id="_36e9c4ae-085e-7c01-745d-41703901933c">when the <tt>FREQ</tt> parameter is set to <tt>MINUTELY</tt>, but without a <tt>BYMINUTE</tt> parameter, the <tt>BYMINUTE</tt> selection is directly inherited from the clock minutes value from the initial start date;</p>
+</li>
+<li><p id="_02fbda74-9618-ecdf-f5b0-3612a2af07d0">when the <tt>FREQ</tt> parameter is set to <tt>HOURLY</tt>, but without a <tt>BYHOUR</tt> parameter, the <tt>BYHOUR</tt> selection is directly inherited from the clock hours value from the initial start date.</p>
+</li>
+</ul>
+</clause>
+
+<clause id="_08865346-69be-de0b-a112-489f5ede0aa5" anchor="annexb-implicit-selection" obligation="informative">
+<title id="_43cead9f-238c-e85e-9079-2cd953438ba4">Implicit selection rules of RFC 5545</title>
+<p id="_a157f72a-f020-b5b9-d912-a5d070adce23">In <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>, however, the evaluation of certain repeat rules also relies on implicit selection rules inherited indirectly from the initial start date.</p>
+
+<p id="_e011d8a7-a8b3-5984-b7bb-2bffbb2066ad">Specifically,</p>
+
+<ul id="_10116ffa-d85c-9c3a-cdfa-ab57789df1cb"><li><p id="_4acd7e33-192f-369d-4e29-cd7fcec672b5">when the <tt>FREQ</tt> parameter is set to <tt>WEEKLY</tt>, but without a <tt>BYDAY</tt> parameter, the  <tt>BYDAY</tt> selection is inherited from the calendar day of week value from the initial start date (note that the calendar day of week value is not directly specified in the initial start date, but it has to be inferred);</p>
+</li>
+<li><p id="_02a9324e-c376-ecf6-5919-b567cc0690d6">when the <tt>FREQ</tt> parameter is set to `MONTHLY, but without both <tt>BYMONTHDAY</tt> and <tt>BYDAY</tt> parameters, the <tt>BYMONTHDAY</tt> selection is inherited from the calendar month of year value from the initial start date;</p>
+</li>
+<li><p id="_921f7a54-ed28-f5d8-095c-71f836fa51e0">when the <tt>FREQ</tt> parameter is set to <tt>YEARLY</tt> but without a <tt>BYYEARDAY</tt> parameter,</p>
+<ul id="_af22b424-33bb-b96d-5bb5-c828fe3bef46"><li><p id="_254ff6a8-85bb-1677-950f-f10efbf7bc92">if no <tt>BYMONTH</tt> or <tt>BYWEEKNO</tt> parameter is set:</p>
+<ul id="_6f6e30ac-6bfa-efcf-0598-5e6f949a198b"><li><p id="_889af7b7-8736-2e23-1ac5-d84650bc2075">if the <tt>BYMONTHDAY</tt> parameter is provided, then the <tt>BYMONTH</tt> selection is inherited from the calendar month of year value from the initial start date;</p>
+</li>
+<li><p id="_9f2386c1-9cdf-e178-0bd2-720ecf8b4091">if the <tt>BYDAY</tt> parameter is not set, then the <tt>BYMONTH</tt> selection is inherited from the calendar month of year value from the initial start date;</p>
+</li>
+</ul>
+</li>
+<li><p id="_058b98f6-f27d-0f3b-9b41-c420e2ce6be3">if no <tt>BYMONTHDAY</tt>, <tt>BYWEEKNO</tt> or <tt>BYDAY</tt> parameter is set, the <tt>BYMONTHDAY</tt> selection is inherited from calendar day of month of the initial start date;</p>
+</li>
+<li><p id="_47f66838-111b-2eed-a61f-829e5e98ea8b">if there is a <tt>BYWEEKNO</tt> parameter set but no <tt>BYMONTHDAY</tt> or <tt>BYDAY</tt>, the <tt>BYDAY</tt> selection is inherited from the calendar day of week of the initial start date.</p>
+</li>
+</ul>
+</li>
+</ul>
+
+<example id="_67043515-3db7-9080-d56f-8e0a38732174"><p id="_95e9521d-5fc3-c9da-e0ed-d6e01776da05">In evaluating a simplified example expression from <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/>, with <tt>DTSTART</tt> set to <tt>19970902T090000</tt> and <tt>RRULE</tt> set to <tt>FREQ=WEEKLY;INTERVAL=2</tt>, will result in the instance series of “1997 September 2, 16, 30; October 14…​”. This resulting instance series relies on an implicit understanding that  <tt>FREQ=WEEKLY</tt> always requires selection of the  <tt>BYDAY</tt> parameter, which is not specified in the original selection rule. In this case,  <tt>BYDAY</tt> is implicitly set to Tuesdays as originally obtained from the  <tt>DTSTART</tt> value being a Tuesday.</p>
+</example>
+</clause>
+
+<clause id="_5d9e648c-29a5-332e-4a54-93ee20e8ed20" obligation="informative">
+<title id="_5825f516-99fd-c251-f075-7fd25555c7b8">Achieving equivalent selection criteria in RFC 5545 syntax</title>
+<p id="_f35a4966-2ce7-34b6-9fe5-26d797de6a6f">Using mechanisms described in this document, implicit selection rules are not allowed. In order to convert a  <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> recurrence rule into a repeat rule specified by  <xref target="recurrence-repeat-rule" style="short"/>, the implicit selection rules based on indirect inheritance must be made into explicit selection rules.</p>
+
+<example id="_f5eab3c6-f390-4d04-9c53-4c6e7f77fcc7"><p id="_a8346dca-1e60-d33c-63ff-28ac77f51834">Following the example in <xref target="annexb-implicit-selection" style="short"/>, the value of Tuesday is considered to be indirectly inferred from the initial start date since it is not explicitly specified. To achieve the same effect using mechanisms of this document, the  <tt>BYDAY</tt> selection rule in <eref type="inline" bibitemid="RFC5545" citeas="IETF RFC 5545"/> must be explicitly set as a selection rule, such as in <tt>L1KN</tt>.</p>
+</example>
+</clause>
+</annex><bibliography><references id="_ac067c12-3985-b2c4-777d-72d13ecdd002" normative="true" obligation="informative">
+<title id="_270c5ee6-077e-f285-ff95-287984a30140">Normative references</title><p id="_49996d2b-65c1-916b-9bbf-42b933aa0025">The following documents are referred to in the text in such a way that some or all of their content constitutes requirements of this document. For dated references, only the edition cited applies. For undated references, the latest edition of the referenced document (including any amendments) applies.</p>
+<bibitem id="_1ac736e6-dfc7-ffec-bd87-77456774197f" type="standard" schema-version="v1.5.6" anchor="CC18011">
+  <fetched>2026-05-13</fetched>
+  
+<title language="en">Date and time — Explicit representation</title>
+
+  <docidentifier type="CalConnect" primary="true">CC 18011:2018</docidentifier>
+  <docnumber>18011</docnumber>
+  <date type="published">
+    <on>2018-09-18</on>
+  </date>
+  <contributor>
+    <role type="author"/>
+    <organization>
+      
+<name>CalConnect</name>
+
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="publisher"/>
+    <organization>
+      
+<name>CalConnect</name>
+
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="author">
+      <description>committee</description>
+    </role>
+    <organization>
+      
+<name>CalConnect</name>
+
+      <subdivision type="technical-committee">
+        
+<name>DATETIME</name>
+
+      </subdivision>
+    </organization>
+  </contributor>
+  <edition number="1"/>
+  <version>
+    <revision-date>2018-09-18</revision-date>
+  </version>
+  <language>en</language>
+  <script>Latn</script>
+  <status>
+    <stage>published</stage>
+  </status>
+  <copyright>
+    <from>2018</from>
+    <owner>
+      <organization>
+        
+<name>CalConnect</name>
+
+      </organization>
+    </owner>
+  </copyright>
+<note type="Unpublished-Status"><p id="_0c0b57d8-5ec7-3688-1dba-14ccd50df50c">Under preparation. (Stage at the time of publication CC/DS 18011)</p>
+</note>
+</bibitem>
+<bibitem anchor="ISO8601-1" id="_7ab92864-c102-24fe-1594-9f84ab18e1a4" type="standard">
+<title format="text/plain">Date and time — Representation for information interchange — Part 1: Basic rules</title>
+<docidentifier type="ISO">ISO 8601-1:—</docidentifier><docnumber>8601-1</docnumber><date type="published"><on>–</on></date><contributor><role type="publisher"/><organization>
+<name>ISO</name>
+</organization></contributor><note format="text/plain" type="Unpublished-Status">Under preparation. (Stage at the time of publication ISO/FDIS 8601-1)</note><language>en</language><script>Latn</script>
+</bibitem>
+</references><references id="_5fdad861-7549-d7bf-0f2a-bbef97d65f02" normative="false" obligation="informative">
+<title id="_50ceb1e1-516f-2673-d73d-4f0c58b4d023">Bibliography</title><bibitem id="_e185012c-57c2-ba03-c480-aa4b9f658309" type="standard" schema-version="v1.5.6" anchor="ISOIEC646">
+  <fetched>2026-05-13</fetched>
+  
+<title language="en" script="Latn" type="title-intro" format="text/plain">Information technology</title>
+
+  
+<title language="en" script="Latn" type="title-main" format="text/plain">ISO 7-bit coded character set for information interchange</title>
+
+  
+<title language="en" script="Latn" type="main" format="text/plain">Information technology — ISO 7-bit coded character set for information interchange</title>
+
+  
+<title language="fr" script="Latn" type="title-intro" format="text/plain">Technologies de l’information</title>
+
+  
+<title language="fr" script="Latn" type="title-main" format="text/plain">Jeu ISO de caractères codés à 7 éléments pour l’échange d’information</title>
+
+  
+<title language="fr" script="Latn" type="main" format="text/plain">Technologies de l’information — Jeu ISO de caractères codés à 7 éléments pour l’échange d’information</title>
+
+  <uri type="src">https://www.iso.org/standard/4777.html</uri>
+  <uri type="obp">https://www.iso.org/obp/ui/en/#!iso:std:4777:en</uri>
+  <uri type="rss">https://www.iso.org/contents/data/standard/00/47/4777.detail.rss</uri>
+  <docidentifier type="ISO" primary="true">ISO/IEC 646:1991</docidentifier>
+  <docidentifier type="iso-reference">ISO/IEC 646:1991(E)</docidentifier>
+  <docidentifier type="URN">urn:iso:std:iso-iec:646:stage-90.93</docidentifier>
+  <docnumber>646</docnumber>
+  <date type="published">
+    <on>1991-12</on>
+  </date>
+  <contributor>
+    <role type="publisher"/>
+    <organization>
+      
+<name>International Organization for Standardization</name>
+
+      <abbreviation>ISO</abbreviation>
+      <uri>www.iso.org</uri>
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="publisher"/>
+    <organization>
+      
+<name>International Electrotechnical Commission</name>
+
+      <abbreviation>IEC</abbreviation>
+      <uri>www.iec.ch</uri>
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="author">
+      <description>committee</description>
+    </role>
+    <organization>
+      
+<name>International Organization for Standardization</name>
+
+      <subdivision type="technical-committee" subtype="IEC">
+        
+<name>Coded character sets</name>
+
+        <identifier>ISO/IEC JTC 1/SC 2</identifier>
+      </subdivision>
+      <abbreviation>ISO</abbreviation>
+    </organization>
+  </contributor>
+  <edition>3</edition>
+  <language>en</language>
+  <language>fr</language>
+  <script>Latn</script>
+  <abstract language="en" script="Latn">Specifies a set of 128 control and graphic characters such as letters, digits and symbols with their coded representation. Applies to alphabets of the Latin script.</abstract>
+  <abstract language="fr" script="Latn">Specifies a set of 128 control and graphic characters such as letters, digits and symbols with their coded representation. Applies to alphabets of the Latin script.</abstract>
+  <status>
+    <stage>90</stage>
+    <substage>93</substage>
+  </status>
+  <copyright>
+    <from>1991</from>
+    <owner>
+      <organization>
+        
+<name>ISO/IEC</name>
+
+      </organization>
+    </owner>
+  </copyright>
+  <relation type="obsoletes">
+    <bibitem type="standard">
+      <formattedref>ISO 646:1983</formattedref>
+      <docidentifier type="ISO" primary="true">ISO 646:1983</docidentifier>
+    </bibitem>
+
+  </relation>
+  <place>
+    <formattedPlace>Geneva</formattedPlace>
+  </place>
+</bibitem><bibitem id="_f5a8c59e-bfae-6901-2cd8-ad8cbccb2ba7" type="standard" schema-version="v1.5.6" anchor="ISO8601">
+  <fetched>2026-05-13</fetched>
+  
+<title language="en" script="Latn" type="title-intro" format="text/plain">Data elements and interchange formats</title>
+
+  
+<title language="en" script="Latn" type="title-main" format="text/plain">Information interchange</title>
+
+  
+<title language="en" script="Latn" type="title-part" format="text/plain">Representation of dates and times</title>
+
+  
+<title language="en" script="Latn" type="main" format="text/plain">Data elements and interchange formats — Information interchange — Representation of dates and times</title>
+
+  
+<title language="fr" script="Latn" type="title-intro" format="text/plain">Éléments de données et formats d’échange</title>
+
+  
+<title language="fr" script="Latn" type="title-main" format="text/plain">Échange d’information</title>
+
+  
+<title language="fr" script="Latn" type="title-part" format="text/plain">Représentation de la date et de l’heure</title>
+
+  
+<title language="fr" script="Latn" type="main" format="text/plain">Éléments de données et formats d’échange — Échange d’information — Représentation de la date et de l’heure</title>
+
+  <uri type="src">https://www.iso.org/standard/40874.html</uri>
+  <uri type="rss">https://www.iso.org/contents/data/standard/04/08/40874.detail.rss</uri>
+  <docidentifier type="ISO" primary="true">ISO 8601:2004</docidentifier>
+  <docidentifier type="iso-reference">ISO 8601:2004(E)</docidentifier>
+  <docidentifier type="URN">urn:iso:std:iso:8601:stage-95.99</docidentifier>
+  <docnumber>8601</docnumber>
+  <date type="published">
+    <on>2004-12</on>
+  </date>
+  <contributor>
+    <role type="publisher"/>
+    <organization>
+      
+<name>International Organization for Standardization</name>
+
+      <abbreviation>ISO</abbreviation>
+      <uri>www.iso.org</uri>
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="author">
+      <description>committee</description>
+    </role>
+    <organization>
+      
+<name>International Organization for Standardization</name>
+
+      <subdivision type="technical-committee" subtype="TC">
+        
+<name>Processes, data elements and documents in commerce, industry and administration</name>
+
+        <identifier>ISO/TC 154</identifier>
+      </subdivision>
+      <abbreviation>ISO</abbreviation>
+    </organization>
+  </contributor>
+  <edition>3</edition>
+  <language>en</language>
+  <language>fr</language>
+  <script>Latn</script>
+  <abstract language="en" script="Latn">ISO 8601:2004 is applicable whenever representation of dates in the Gregorian calendar, times in the 24-hour timekeeping system, time intervals and recurring time intervals or of the formats of these representations are included in information interchange. It includes
+- calendar dates expressed in terms of calendar year, calendar month and calendar day of the month;
+- ordinal dates expressed in terms of calendar year and calendar day of the year;
+- week dates expressed in terms of calendar year, calendar week number and calendar day of the week;
+- local time based upon the 24-hour timekeeping system;
+- Coordinated Universal Time of day;
+- local time and the difference from Coordinated Universal Time;
+- combination of date and time of day;
+- time intervals;
+- recurring time intervals.
+ISO 8601:2004 does not cover dates and times where words are used in the representation and dates and times where characters are not used in the representation.
+ISO 8601:2004 does not assign any particular meaning or interpretation to any data element that uses representations in accordance with ISO 8601:2004. Such meaning will be determined by the context of the application.</abstract>
+  <abstract language="fr" script="Latn">ISO 8601:2004 is applicable whenever representation of dates in the Gregorian calendar, times in the 24-hour timekeeping system, time intervals and recurring time intervals or of the formats of these representations are included in information interchange. It includes
+- calendar dates expressed in terms of calendar year, calendar month and calendar day of the month;
+- ordinal dates expressed in terms of calendar year and calendar day of the year;
+- week dates expressed in terms of calendar year, calendar week number and calendar day of the week;
+- local time based upon the 24-hour timekeeping system;
+- Coordinated Universal Time of day;
+- local time and the difference from Coordinated Universal Time;
+- combination of date and time of day;
+- time intervals;
+- recurring time intervals.
+ISO 8601:2004 does not cover dates and times where words are used in the representation and dates and times where characters are not used in the representation.
+ISO 8601:2004 does not assign any particular meaning or interpretation to any data element that uses representations in accordance with ISO 8601:2004. Such meaning will be determined by the context of the application.</abstract>
+  <status>
+    <stage>95</stage>
+    <substage>99</substage>
+  </status>
+  <copyright>
+    <from>2004</from>
+    <owner>
+      <organization>
+        
+<name>ISO</name>
+
+      </organization>
+    </owner>
+  </copyright>
+  <relation type="obsoletes">
+    <bibitem type="standard">
+      <formattedref>ISO 8601:2000</formattedref>
+      <docidentifier type="ISO" primary="true">ISO 8601:2000</docidentifier>
+    </bibitem>
+
+  </relation>
+  <place>
+    <formattedPlace>Geneva</formattedPlace>
+  </place>
+</bibitem><bibitem id="_3dd51edf-2298-7a56-1f6c-6e4b25b63ba5" type="standard" schema-version="v1.5.6" anchor="RFC5545">
+  <fetched>2026-05-13</fetched>
+  
+<title type="main">Internet Calendaring and Scheduling Core Object Specification (iCalendar)</title>
+
+  <uri type="src">https://www.rfc-editor.org/info/rfc5545</uri>
+  <docidentifier type="IETF" primary="true">RFC 5545</docidentifier>
+  <docidentifier type="DOI">10.17487/RFC5545</docidentifier>
+  <docnumber>RFC5545</docnumber>
+  <date type="published">
+    <on>2009-09</on>
+  </date>
+  <contributor>
+    <role type="editor"/>
+    <person>
+      
+<name>                    <formatted-initials language="en" script="Latn">B.</formatted-initials>          <surname language="en" script="Latn">Desruisseaux</surname>          <completename language="en" script="Latn">B. Desruisseaux</completename>       </name>
+
+    </person>
+  </contributor>
+  <contributor>
+    <role type="publisher"/>
+    <organization>
+      
+<name language="en">RFC Publisher</name>
+
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="authorizer"/>
+    <organization>
+      
+<name language="en">RFC Series</name>
+
+    </organization>
+  </contributor>
+  <contributor>
+    <role type="author">
+      <description>committee</description>
+    </role>
+    <organization>
+      
+<name language="en">Internet Engineering Task Force</name>
+
+      <subdivision type="workgroup">
+        
+<name>Calendaring and Scheduling Standards Simplification</name>
+
+        <identifier>calsify</identifier>
+      </subdivision>
+      <abbreviation language="en">IETF</abbreviation>
+    </organization>
+  </contributor>
+  <language>en</language>
+  <script>Latn</script>
+  <abstract language="en" script="Latn">
+    <p id="_4ba80b5b-4009-69c5-69ec-f49b713e0546">This document defines the iCalendar data format for representing and exchanging calendaring and scheduling information such as events, to-dos, journal entries, and free/busy information, independent of any particular calendar service or protocol. [STANDARDS-TRACK]</p>
+
+  </abstract>
+  <status>
+    <stage>PROPOSED STANDARD</stage>
+  </status>
+  <series>
+    
+<title>RFC</title>
+
+    <number>5545</number>
+  </series>
+  <series type="stream">
+    
+<title>IETF</title>
+
+  </series>
+  <keyword>
+    <vocab>calsify</vocab>
+  </keyword>
+  <keyword>
+    <vocab>calsched</vocab>
+  </keyword>
+  <keyword>
+    <vocab>calsch</vocab>
+  </keyword>
+  <keyword>
+    <vocab>caldav</vocab>
+  </keyword>
+  <keyword>
+    <vocab>calendar</vocab>
+  </keyword>
+  <keyword>
+    <vocab>calendaring</vocab>
+  </keyword>
+  <keyword>
+    <vocab>meeting</vocab>
+  </keyword>
+  <keyword>
+    <vocab>event</vocab>
+  </keyword>
+  <keyword>
+    <vocab>task</vocab>
+  </keyword>
+  <keyword>
+    <vocab>to-do</vocab>
+  </keyword>
+  <keyword>
+    <vocab>journal</vocab>
+  </keyword>
+  <keyword>
+    <vocab>appointment</vocab>
+  </keyword>
+  <keyword>
+    <vocab>agenda</vocab>
+  </keyword>
+  <keyword>
+    <vocab>schedule</vocab>
+  </keyword>
+  <keyword>
+    <vocab>scheduling</vocab>
+  </keyword>
+  <keyword>
+    <vocab>ical</vocab>
+  </keyword>
+  <keyword>
+    <vocab>icalendar</vocab>
+  </keyword>
+  <keyword>
+    <vocab>itip</vocab>
+  </keyword>
+  <keyword>
+    <vocab>imip</vocab>
+  </keyword>
+  <keyword>
+    <vocab>text/calendar</vocab>
+  </keyword>
+  <keyword>
+    <vocab>ischedule</vocab>
+  </keyword>
+  <keyword>
+    <vocab>xCalendar</vocab>
+  </keyword>
+</bibitem>
+
+
+
+</references></bibliography>
+</metanorma>

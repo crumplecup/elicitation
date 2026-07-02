@@ -124,6 +124,23 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### elicit_temporal Interface Crate
+
+**Document:** [ELICIT_TEMPORAL_PLAN.md](ELICIT_TEMPORAL_PLAN.md)
+
+**Status:** 🟨 In Progress
+
+**Description:** Introduce `elicit_temporal` as a branch-level interface crate
+that transcribes ISO 8601, RFC 3339, RFC 9557, and related temporal standards
+into a proof-carrying contract language shared by `elicit_time`,
+`elicit_chrono`, `elicit_jiff`, and downstream consumers such as `elicit_db`,
+`elicit_polars`, and `elicit_bevy`.
+
+**Architecture principle:** Contracts first. Mine standards deeply, cite them
+precisely, define neutral temporal descriptors and propositions, then express
+every lawful exchange through `ProvableFrom` proof sidecars so higher layers
+inherit correctness by construction instead of repeating validation.
+
 ### elicit_ratatui Total Rewrite
 
 **Document:** [ELICIT_RATATUI_REWRITE_PLAN.md](ELICIT_RATATUI_REWRITE_PLAN.md)
