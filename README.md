@@ -331,7 +331,7 @@ One registry, one transport, zero glue code.
 | `elicitation_kani` / `elicitation_creusot` | Proof gallery and support |
 | `elicit_server` | MCP server support |
 | `elicit_clap` | CLI vocabulary (canonical shadow crate reference) |
-| `elicit_*` | 30+ domain shadow crates — see [Shadow Crates](#shadow-crates--the-agents-dictionary) above |
+| `elicit_*` | 30+ domain shadow crates — see [Shadow Crates](#shadow-crates--familiar-apis-over-mcp) above |
 
 ---
 
@@ -340,6 +340,7 @@ One registry, one transport, zero glue code.
 | Document | Topic |
 |---|---|
 | [`SHADOW_CRATE_MOTIVATION.md`](SHADOW_CRATE_MOTIVATION.md) | The inversion thesis |
+| [`ELICIT_INTERFACE.md`](ELICIT_INTERFACE.md) | Why branch-level interface crates govern lawful exchange |
 | [`THIRD_PARTY_SUPPORT_GUIDE.md`](THIRD_PARTY_SUPPORT_GUIDE.md) | Adding a new shadow crate |
 | [`ELICITATION_WORKFLOW_ARCHITECTURE.md`](ELICITATION_WORKFLOW_ARCHITECTURE.md) | Workflow infrastructure |
 | [`CREUSOT_GUIDE.md`](CREUSOT_GUIDE.md) | Creusot annotation patterns |

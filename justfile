@@ -158,9 +158,16 @@ rebuild: clean build
 # Testing
 # =======
 
-# Run tests: just test [package] [test_name]
-test package="" test_name="":
+# Run tests: just test [package] [test_name] [features]
+test package="" test_name="" features="":
     #!/usr/bin/env bash
+    if [ "{{features}}" = "all" ]; then
+        FEATURES_FLAG="--all-features"
+    elif [ -n "{{features}}" ]; then
+        FEATURES_FLAG="--features {{features}}"
+    else
+        FEATURES_FLAG=""
+    fi
     if [ -z "{{package}}" ]; then
         # No package specified - run stable crates then nightly crates separately
         echo "🧪 Testing stable workspace crates..."
@@ -171,10 +178,10 @@ test package="" test_name="":
         RUSTC={{nightly_rustc}} {{nightly_cargo}} test -p elicitation_creusot -p elicitation_kani --lib --tests
     elif [ -z "{{test_name}}" ]; then
         # Package specified, no test - run all tests for package
-        {{cargo}} test --package {{package}} --lib --tests
+        {{cargo}} test --package {{package}} $FEATURES_FLAG --lib --tests
     else
         # Package and test specified - run specific test
-        {{cargo}} test --package {{package}} --lib --tests {{test_name}} -- --nocapture
+        {{cargo}} test --package {{package}} $FEATURES_FLAG --lib --tests {{test_name}} -- --nocapture
     fi
 
 # Run tests with verbose output
@@ -250,12 +257,34 @@ test-full: test test-doc
 # Code Quality
 # ============
 
-# Run clippy linter (no warnings allowed)
-lint package='':
+# Run clippy linter: just lint [package] [features]
+# features: empty = all-features, "all" = all-features, "chrono" = --features chrono, etc.
+lint package='' features='':
     #!/usr/bin/env bash
     set -uo pipefail
     LOG_FILE="/tmp/elicitation_lint.log"
     rm -f "$LOG_FILE"
+
+    # Resolve features flag
+    if [ "{{features}}" = "all" ] || [ -z "{{features}}" -a -z "{{package}}" ]; then
+        FEATURES_FLAG="--all-features"
+    elif [ -n "{{features}}" ]; then
+        FEATURES_FLAG="--features {{features}}"
+    else
+        FEATURES_FLAG="--all-features"
+    fi
+
+    # Helper: fail if the log contains any clippy/rustc warnings
+    _check_warnings() {
+        local label="$1"
+        if grep -q "^warning" "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  $label: warnings found. Full log: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
+    }
+
     echo "🎨 Checking formatting"
     if ! cargo fmt --all -- --check 2>&1 | tee "$LOG_FILE"; then
         echo ""
@@ -263,64 +292,46 @@ lint package='':
         exit 1
     fi
     rm -f "$LOG_FILE"
+
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets --all-features \
+        cargo clippy --workspace --all-targets --all-features \
             --exclude elicitation_creusot \
             --exclude elicitation_kani \
             --exclude elicit_proofs \
-            -- -D warnings 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+            2>&1 | tee "$LOG_FILE" || { echo "❌ Clippy failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "Workspace"
+
         echo "🔍 Linting nightly-only crates (elicitation_creusot, elicitation_kani)"
-        if ! RUSTC={{nightly_rustc}} {{nightly_cargo}} clippy -p elicitation_creusot -p elicitation_kani --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Lint (nightly) failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+        RUSTC={{nightly_rustc}} {{nightly_cargo}} clippy -p elicitation_creusot -p elicitation_kani --all-targets \
+            2>&1 | tee "$LOG_FILE" || { echo "❌ Clippy (nightly) failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "Nightly"
+
         echo "🔍 Linting elicitation_verus (workspace-excluded crate)"
-        if ! (cd crates/elicitation_verus && cargo fmt -- --check) 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Lint (elicitation_verus fmt) failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
+        (cd crates/elicitation_verus && cargo fmt -- --check) 2>&1 | tee "$LOG_FILE" \
+            || { echo "❌ Lint (elicitation_verus fmt) failed. Full log: $LOG_FILE"; exit 1; }
         rm -f "$LOG_FILE"
-        if ! (cd crates/elicitation_verus && cargo clippy --all-targets -- -D warnings) 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Lint (elicitation_verus clippy) failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+        (cd crates/elicitation_verus && cargo clippy --all-targets) 2>&1 | tee "$LOG_FILE" \
+            || { echo "❌ Lint (elicitation_verus clippy) failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "elicitation_verus"
+
         echo "📖 Checking documentation"
-        if ! RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features \
+        RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features \
             --exclude elicitation_creusot \
             --exclude elicitation_kani \
             --exclude elicit_proofs \
-            2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+            2>&1 | tee "$LOG_FILE" || { echo "❌ Doc check failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "Docs"
     else
-        echo "🔍 Linting {{package}}"
-        if ! cargo clippy -p {{package}} --all-targets --all-features -- -D warnings 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+        echo "🔍 Linting {{package}} (features: ${FEATURES_FLAG})"
+        cargo clippy -p {{package}} --all-targets $FEATURES_FLAG \
+            2>&1 | tee "$LOG_FILE" || { echo "❌ Clippy failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "{{package}}"
+
         echo "📖 Checking documentation for {{package}}"
-        if ! RUSTDOCFLAGS="-D warnings" cargo doc -p {{package}} --no-deps --all-features 2>&1 | tee "$LOG_FILE"; then
-            echo ""
-            echo "⚠️  Doc check failed. Full log saved to: $LOG_FILE"
-            exit 1
-        fi
-        rm -f "$LOG_FILE"
+        RUSTDOCFLAGS="-D warnings" cargo doc -p {{package}} --no-deps $FEATURES_FLAG \
+            2>&1 | tee "$LOG_FILE" || { echo "❌ Doc check failed. Full log: $LOG_FILE"; exit 1; }
+        _check_warnings "Docs ({{package}})"
     fi
 
 # Run clippy and fix issues automatically

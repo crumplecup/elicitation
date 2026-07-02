@@ -27,8 +27,10 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use elicit_db::{DbQueryExecutor, DbSchemaManager, DbServerAdmin, DbTableManager};
 use elicit_server::archive::{
-    ArchiveDbBackend, ArchiveKvBackend, NavTree, egui_frontend::run_egui,
-    leptos_frontend::run_browser, nav_tree::{build_nav_tree, build_nav_tree_kv},
+    ArchiveDbBackend, ArchiveKvBackend, NavTree,
+    egui_frontend::run_egui,
+    leptos_frontend::run_browser,
+    nav_tree::{build_nav_tree, build_nav_tree_kv},
     ratatui_frontend::run_tui,
 };
 use tracing_subscriber::EnvFilter;
