@@ -204,9 +204,11 @@ impl ToCodeLiteral for Version {
 // named fields in its serialized form, so it is a hand-written trenchcoat per
 // the "fields need names" branch of the SUPPORT_PATTERNS.md decision tree.
 
-use elicitation::{Elicitation, ElicitIntrospect, ElicitPromptTree, ElicitSpec, Prompt, PromptTree,
-    TypeMetadata, TypeSpec};
 use elicitation::Elicit;
+use elicitation::{
+    ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation, Prompt, PromptTree, TypeMetadata,
+    TypeSpec,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema, Elicit)]
 #[prompt("Describe an HTTP header value:")]
@@ -270,9 +272,8 @@ impl Elicitation for HeaderValue {
     #[tracing::instrument(skip(communicator), level = "debug")]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let data = HeaderValueData::elicit(communicator).await?;
-        let value = http::HeaderValue::from_bytes(&data.bytes).map_err(|error| {
-            ElicitError::new(ElicitErrorKind::ParseError(error.to_string()))
-        })?;
+        let value = http::HeaderValue::from_bytes(&data.bytes)
+            .map_err(|error| ElicitError::new(ElicitErrorKind::ParseError(error.to_string())))?;
         Ok(Self::from(value))
     }
 
@@ -429,8 +430,7 @@ impl<'de> Deserialize<'de> for HeaderMap {
         for (k, v) in raw {
             let name = http::header::HeaderName::from_bytes(k.as_bytes())
                 .map_err(serde::de::Error::custom)?;
-            let value =
-                http::HeaderValue::from_str(&v).map_err(serde::de::Error::custom)?;
+            let value = http::HeaderValue::from_str(&v).map_err(serde::de::Error::custom)?;
             map.insert(name, value);
         }
         Ok(map.into())

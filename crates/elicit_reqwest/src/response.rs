@@ -69,7 +69,10 @@ impl Elicitation for Response {
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let snapshot = ResponseSnapshot::elicit(communicator).await?;
-        Ok(Self { snapshot, cursor: 0 })
+        Ok(Self {
+            snapshot,
+            cursor: 0,
+        })
     }
 
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

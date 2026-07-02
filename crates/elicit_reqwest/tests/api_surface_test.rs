@@ -14,8 +14,8 @@ use futures::StreamExt;
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 fn test_cert() -> Certificate {
-    let certified = rcgen::generate_simple_self_signed(vec!["localhost".to_string()])
-        .expect("rcgen cert");
+    let certified =
+        rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).expect("rcgen cert");
     Certificate::from_pem(certified.cert.pem().as_bytes()).expect("parse pem")
 }
 
@@ -386,7 +386,10 @@ fn request_builder_body_shadow_type() {
         .body(body)
         .build()
         .expect("valid request");
-    assert_eq!(req.body().map(|b| b.as_bytes()), Some(b"shadow body".as_ref()));
+    assert_eq!(
+        req.body().map(|b| b.as_bytes()),
+        Some(b"shadow body".as_ref())
+    );
 }
 
 #[test]
@@ -632,7 +635,9 @@ fn proxy_with_custom_http_auth() {
     let proxy = Proxy::http(url("http://proxy.corp.example:3128/"))
         .expect("valid proxy")
         .custom_http_auth("Basic dXNlcjpwYXNz".to_string());
-    let _ = proxy.build_raw().expect("builds raw proxy with custom auth");
+    let _ = proxy
+        .build_raw()
+        .expect("builds raw proxy with custom auth");
 }
 
 #[test]

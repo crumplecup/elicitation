@@ -1,7 +1,9 @@
 //! Shadows for reqwest TLS helper types.
 
-use elicitation::{ElicitComplete, Elicit, Prompt, elicit_newtype, emit_code::ToCodeLiteral,
-    proc_macro2::TokenStream};
+use elicitation::{
+    Elicit, ElicitComplete, Prompt, elicit_newtype, emit_code::ToCodeLiteral,
+    proc_macro2::TokenStream,
+};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -299,8 +301,7 @@ impl ToCodeLiteral for TlsInfo {
     #[tracing::instrument(skip(self), level = "trace")]
     fn to_code_literal(&self) -> TokenStream {
         let inner = self.0.to_code_literal().to_string();
-        let fixed =
-            inner.replace("::elicitation::ReqwestTlsInfo", "::elicit_reqwest::TlsInfo");
+        let fixed = inner.replace("::elicitation::ReqwestTlsInfo", "::elicit_reqwest::TlsInfo");
         TokenStream::from_str(&fixed).unwrap_or_else(|_| self.0.to_code_literal())
     }
 }
