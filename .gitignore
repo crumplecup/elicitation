@@ -8,6 +8,9 @@ doc/
 # Local environment — never commit secrets
 .env
 
+# elicit_doc pipeline cache — belongs in elicit_doc repo, not here
+verif/cache/
+
 # Verification artifacts
 *.log
 *.csv
