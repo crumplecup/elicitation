@@ -284,7 +284,7 @@ defer aspirational raster processing abstractions.
 
 ### Support Patterns Reference
 
-**Document:** [SUPPORT_PATTERNS.md](SUPPORT_PATTERNS.md)
+**Document:** [SHADOW_SUPPORT.md](SHADOW_SUPPORT.md)
 
 **Status:** ✅ Active Reference
 

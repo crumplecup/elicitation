@@ -12,7 +12,10 @@ shadow crates exist; read this document for *how* to implement them correctly.
 |---|---|
 | Upstream type lacks `Serialize`/`JsonSchema` (orphan rule) | **Trenchcoat** → `elicit_newtype!` |
 | Reflecting a wrapped type's own methods into MCP tools | **`#[reflect_methods]`** (full-featured) or **`elicit_newtype_methods!`** (simple cases) |
-| Free function, constructor, or plugin instance method | **`#[elicit_tool]`** |
+| Stateless plugin with multiple tools | **`#[reflect_methods]`** on `impl PluginStruct` |
+| Stateful plugin tool (needs `Arc<Ctx>`) | **`#[elicit_tool]`** free function |
+| Free function or constructor tool | **`#[elicit_tool]`** |
+| Adding comparison/ordering traits to a newtype | **`elicit_newtype_traits!`** |
 | Generic type `Foo<T>` where T is chosen by the caller | **Factory pattern** |
 | Tool needs live objects that survive across calls | **Stateful plugin** — `(Arc<Ctx>)` newtype + `#[derive(ElicitPlugin)]` |
 | Plugin with no inter-call state | **Stateless plugin** — unit struct + `#[derive(ElicitPlugin)]` |
@@ -298,6 +301,7 @@ elicit_newtype!(reqwest::Client, as Client);
 ```
 
 Variants:
+
 - `elicit_newtype!(T, as W)` — Arc-backed, no serde derives on wrapper
 - `elicit_newtype!(T, as W, serde)` — adds Serialize/Deserialize (requires T: Serde)
 - `elicit_newtype!(T, as W, schema)` — adds JsonSchema
@@ -323,41 +327,188 @@ instead.
 ### `#[reflect_methods]` — full method reflection via proc macro
 
 **Use for:** reflecting a wrapped type's `impl` block into MCP tools, including
-methods with generic type parameters.
+methods with generic type parameters.  Also used directly on stateless plugin
+structs to register multiple tool methods in one block.
+
+#### What `#[reflect_methods]` generates
+
+Given:
+
+```rust
+#[reflect_methods]
+impl MyString {
+    pub fn repeat(&self, n: usize) -> String { self.0.repeat(n) }
+    pub async fn fetch(&self, url: String) -> Result<String, ErrorData> { … }
+}
+```
+
+The macro outputs **three things** beside the original impl block:
+
+1. **A param struct** per method that has non-`&self` parameters, named
+   `{PascalCase(method_name)}Params`:
+
+   ```rust
+   // generated — do NOT define this yourself
+   #[derive(Debug, Clone, Elicit, JsonSchema, Serialize, Deserialize)]
+   pub struct RepeatParams { pub n: usize }
+
+   #[derive(Debug, Clone, Elicit, JsonSchema, Serialize, Deserialize)]
+   pub struct FetchParams { pub url: String }
+   ```
+
+2. **Wrapper methods** with a `_tool` suffix that accept
+   `Parameters<XxxParams>` and return `Result<Json<T>, ErrorData>`:
+
+   ```rust
+   // generated
+   #[::rmcp::tool(description = "repeat operation")]
+   pub fn repeat_tool(&self, params: Parameters<RepeatParams>)
+       -> Result<Json<String>, ErrorData> { … }
+
+   #[::rmcp::tool(description = "fetch operation")]
+   pub async fn fetch_tool(&self, params: Parameters<FetchParams>)
+       -> Result<Json<String>, ErrorData> { … }
+   ```
+
+3. Tool descriptions default to `"{snake method name} operation"`.  There is
+   **no** mechanism to customise the description via an attribute on the
+   original method — put description text in the doc comment instead.
+
+#### Rules when writing methods for `#[reflect_methods]`
+
+- **Individual named parameters only** — not a pre-made params struct.
+  The macro reads each parameter's name and type and builds the struct for you.
+
+  ```rust
+  // ✅ Individual params — macro generates AssertInRangeParams { datetime, start, end }
+  pub async fn assert_in_range(&self, datetime: String, start: String, end: String)
+
+  // ❌ Pre-made struct — macro tries to re-generate AssertInRangeParams, causing
+  //    "defined multiple times" compile errors
+  pub async fn assert_in_range(&self, p: AssertInRangeParams)
+  ```
+
+- **Return `Result<T, ErrorData>` where `T: Serialize`**, not
+  `Result<CallToolResult, ErrorData>`.  `CallToolResult` is itself a structured
+  MCP response object; wrapping it in `Json<…>` double-nests the content.
+
+  ```rust
+  // ✅ Plain return value — macro wraps in Json<String>
+  pub async fn parse_datetime(&self, datetime: String) -> Result<String, ErrorData>
+
+  // ❌ CallToolResult — gets wrapped in Json<CallToolResult>, breaking the schema
+  pub async fn parse_datetime(&self, datetime: String) -> Result<CallToolResult, ErrorData>
+  ```
+
+- **Do not put `#[tool(…)]` on the original method** — the `#[tool]` attribute
+  belongs on the generated `_tool` wrapper, not the original method.  If you
+  add it to the original, rustc will complain "cannot find attribute `tool` in
+  this scope".
+
+- **Do not import `schemars::JsonSchema` or `serde::Deserialize`** just for the
+  param structs — the macro generates those derives on your behalf.
+
+#### Using `#[reflect_methods]` on a stateless plugin
+
+A stateless plugin (no shared state between calls) can replace a collection of
+`#[elicit_tool]` free functions with a single `#[reflect_methods] impl` block:
+
+```rust
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow};
+use elicitation_derive::reflect_methods;
+use rmcp::ErrorData;
+
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "chrono_workflow")]
+pub struct ChronoWorkflowPlugin;
+
+#[reflect_methods]
+impl ChronoWorkflowPlugin {
+    /// Parse an RFC 3339 datetime string. Establishes: DateTimeParsed.
+    #[instrument(skip_all)]
+    pub async fn parse_datetime(&self, datetime: String) -> Result<String, ErrorData> {
+        // … returns a human-readable summary string
+    }
+
+    /// Add seconds to a datetime. Establishes: DateTimeParsed(result).
+    #[instrument(skip_all)]
+    pub async fn add_seconds(&self, datetime: String, seconds: i64) -> Result<String, ErrorData> {
+        // …
+    }
+}
+// → generates ParseDatetimeParams, AddSecondsParams, parse_datetime_tool, add_seconds_tool
+```
+
+`#[elicit_tool]` free functions are the right choice for **stateful** plugins
+where each tool receives `Arc<Ctx>` — `reflect_methods` does not thread context.
+
+#### Param struct naming
+
+`reflect_methods` converts method names with `to_pascal_case` and appends
+`Params`.  Each word (split on `_`) gets its first letter uppercased:
+
+| method name       | generated struct name     |
+|-------------------|---------------------------|
+| `repeat`          | `RepeatParams`            |
+| `assert_future`   | `AssertFutureParams`      |
+| `parse_datetime`  | `ParseDatetimeParams`     |
+| `assert_in_range` | `AssertInRangeParams`     |
+
+Note: multi-word segments like `datetime` → `Datetime` (not `DateTime`).
+
+### `elicit_newtype_traits!` — add comparison traits to newtypes
+
+**Use for:** adding `PartialEq + Eq + Hash + PartialOrd + Ord` to a newtype
+generated by `elicit_newtype!` with the `serde` flag.  The `serde` form of
+`elicit_newtype!` does not derive these automatically; call
+`elicit_newtype_traits!` separately.
 
 ```rust
 use elicitation::elicit_newtype;
-use elicitation_derive::reflect_methods;
 
-elicit_newtype!(String, as MyString);
-
-#[reflect_methods]
-impl MyString {
-    pub fn len(&self) -> usize { self.0.len() }
-    pub fn contains<P: Pattern>(&self, pat: P) -> bool { self.0.contains(pat) }
-    //                ^^^^^^^^^^^^^^^^^^^^ generics supported
-}
-// Generates: len_tool(), contains_tool(), param structs, inventory registration
+elicit_newtype!(chrono::NaiveDateTime, as NaiveDateTime, serde);
+elicitation::elicit_newtype_traits!(NaiveDateTime, chrono::NaiveDateTime, [cmp]);
+//                                                                          ^^^
+//                                        [cmp] adds PartialEq+Eq+Hash+PartialOrd+Ord
+//                                        all delegating through *self.0 (deref through Arc)
 ```
 
-`#[reflect_methods]` has full AST access via `syn` and handles:
-- `&self` and `&mut self` methods
-- Consuming (`self`) methods
-- Generic type parameters and where clauses
-- Async methods
+Shadow types should derive the same traits as their upstream types.  If the
+upstream implements `PartialEq + Ord + Hash`, the shadow must too — otherwise
+it silently fails to provide the same guarantees.
+
+```rust
+// ✅ Shadow matches upstream's guarantees
+elicit_newtype_traits!(NaiveDateTime, chrono::NaiveDateTime, [cmp]);
+
+// For types that are manually written (not via elicit_newtype! serde form),
+// add the derives directly on the struct:
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct DateTimeUtc(pub Arc<chrono::DateTime<chrono::Utc>>);
+// Arc<T> delegates PartialEq/Ord/Hash to T by value, not by pointer — correct.
+```
 
 ### Decision tree
 
-```
+```text
 Does the upstream type need JsonSchema/Serialize?
   └─ Yes, it's an opaque handle → elicit_newtype!(T, as W)
   └─ Yes, fields need names      → hand-written trenchcoat struct
+
+Does the shadow need PartialEq/Ord/Hash like upstream?
+  └─ elicit_newtype! serde form → elicit_newtype_traits!(W, T, [cmp])
+  └─ Manually written struct    → #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 
 Do you need to expose the type's methods as MCP tools?
   └─ Simple, non-generic methods → elicit_newtype_methods! { W => T, fn … }
   └─ Generic methods, complex signatures → #[reflect_methods] on impl W { … }
 
-Is the function a standalone tool, constructor, or StatefulPlugin tool?
+Do you need a multi-tool plugin struct?
+  └─ No shared state between calls (stateless) → #[reflect_methods] on impl PluginStruct
+  └─ Shared handles/transactions between calls (stateful) → #[elicit_tool] free functions
+     with Arc<Ctx> first param, + #[derive(ElicitPlugin)] on (Arc<Ctx>) newtype
+
+Is the function a standalone tool, constructor, or stateful plugin tool?
   └─ #[elicit_tool(plugin = "…", name = "…", description = "…", emit = …)]
 
 Is T generic and the concrete type chosen by the caller?
@@ -404,7 +555,7 @@ mod csv_impls {
 }
 ```
 
-```
+```bash
 cargo check -p elicitation --features csv-types
 ```
 
@@ -622,3 +773,9 @@ let proof = Established::prove(&NormalContrastVerified);
 | Storing `&'static str` or `&'static [u8]` in tool params | Borrow from `p.field` at call time; the params outlive the table operation |
 | `persistent_savepoint()` returns `u64`, not `Savepoint` | Call `txn.get_persistent_savepoint(id)` immediately to get the `Savepoint` struct |
 | Two `#[elicit_tool]` functions share the same params struct | Each tool must have a **unique** params struct; sharing one triggers conflicting generated `EmitCode` impls |
+| Pre-defining `*Params` structs for `#[reflect_methods]` methods | `reflect_methods` generates `{PascalCase}Params` for you; manually defining the same name causes "defined multiple times" errors |
+| Using `Result<CallToolResult, ErrorData>` as `#[reflect_methods]` return type | The macro wraps the `Ok` value in `Json<T>`, so `Json<CallToolResult>` double-nests the response; return `Result<String, ErrorData>` (or any serializable `T`) instead |
+| Putting `#[tool(description = "…")]` on a method inside `#[reflect_methods]` | `reflect_methods` does not consume this attribute; rustc sees an unknown `tool` attribute and errors; put the description in the `///` doc comment instead |
+| Using a single `p: SomeParams` parameter with `#[reflect_methods]` | The macro generates a new struct from the method's individual parameters; passing a pre-built struct conflicts with the generated one; use individual named params (`datetime: String, seconds: i64`) |
+| Shadow type missing comparison traits present on the upstream | Each shadow must provide the same guarantees as upstream; use `elicit_newtype_traits!(W, T, [cmp])` for `elicit_newtype!` newtypes, or `#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]` on hand-written structs |
+| Reading the `reflect_methods` source before using it | **Always read `elicitation_derive/src/method_reflection/`** before attempting a `reflect_methods` impl; the macro has clear opinions about param shape and return types that are not obvious from the attribute name alone |
