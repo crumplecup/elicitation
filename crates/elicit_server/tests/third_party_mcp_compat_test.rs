@@ -35,7 +35,7 @@
 //! | `chrono::NaiveDateTime`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature   |
 //! | `jiff::Zoned`                   | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature   |
 //! | `jiff::Timestamp`               | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature   |
-//! | `elicit_chrono::DateTimeUtc`    | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
+//! | `elicit_chrono::DateTime`       | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
 //! | `elicit_chrono::DateTimeFixed`  | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
 //! | `elicit_chrono::NaiveDateTime`  | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
 //! | `elicit_url::Url`               | ✅     | ✅ (delegated)            | ✅ elicit_url     |
@@ -121,8 +121,8 @@ fn elicit_time_primitive_datetime_is_mcp_compat() {
 // adds reflect_methods for field access and formatting as MCP tools.
 
 #[test]
-fn elicit_chrono_date_time_utc_is_mcp_compat() {
-    assert_mcp_compat::<elicit_chrono::DateTimeUtc>();
+fn elicit_chrono_date_time_is_mcp_compat() {
+    assert_mcp_compat::<elicit_chrono::DateTime>();
 }
 
 #[test]

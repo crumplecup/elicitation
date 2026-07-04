@@ -114,7 +114,7 @@ pub fn emit_dispatch_crate(
         // elicit_reqwest
         std::mem::size_of::<elicit_reqwest::BuildRequestParams>(),
         // elicit_chrono
-        std::mem::size_of::<elicit_chrono::ParseDateTimeParams>(),
+        std::mem::size_of::<elicit_chrono::ParseDatetimeParams>(),
         // elicit_jiff
         std::mem::size_of::<elicit_jiff::ParseTimestampParams>(),
         // elicit_time
