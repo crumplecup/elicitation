@@ -1,6 +1,6 @@
 //! `ChronoWorkflowPlugin` — contract-verified datetime composition tools.
 //!
-//! While the atomic types (`DateTimeUtc`, `DateTimeFixed`, `NaiveDateTime`) wrap
+//! While the atomic types (`DateTime`, `DateTimeFixed`, `NaiveDateTime`) wrap
 //! chrono for MCP reflection, this plugin provides **phrase-level** tools:
 //! parsing, temporal assertions, duration computation, and formatting.
 //!
@@ -33,13 +33,9 @@
 
 use chrono::{DateTime, Duration, Utc};
 use elicitation::contracts::{And, Established};
-use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
-use rmcp::{
-    ErrorData,
-    model::{CallToolResult, Content},
-};
-use schemars::JsonSchema;
-use serde::Deserialize;
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow};
+use elicitation_derive::reflect_methods;
+use rmcp::ErrorData;
 use tracing::instrument;
 
 // ── Propositions ──────────────────────────────────────────────────────────────
@@ -173,55 +169,12 @@ impl RangedDateTimeState {
 
 // ── Params structs ────────────────────────────────────────────────────────────
 
-/// Parameters for `parse_datetime`.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub struct ParseDateTimeParams {
-    /// RFC 3339 datetime string (e.g. `"2025-03-05T12:00:00Z"`).
-    pub datetime: String,
-}
-
-/// Parameters for `assert_future`.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub struct AssertFutureParams {
-    /// RFC 3339 datetime string to check.
-    pub datetime: String,
-}
-
-/// Parameters for `assert_in_range`.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub struct AssertInRangeParams {
-    /// RFC 3339 datetime to check.
-    pub datetime: String,
-    /// RFC 3339 start of the inclusive range.
-    pub start: String,
-    /// RFC 3339 end of the inclusive range.
-    pub end: String,
-}
-
-/// Parameters for `compute_duration`.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub struct ComputeDurationParams {
-    /// RFC 3339 start datetime. Assumes: valid, before `to`.
-    pub from: String,
-    /// RFC 3339 end datetime. Assumes: valid, after `from`.
-    pub to: String,
-}
-
-/// Parameters for `add_seconds`.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub struct AddSecondsParams {
-    /// RFC 3339 base datetime.
-    pub datetime: String,
-    /// Seconds to add (negative to subtract).
-    pub seconds: i64,
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/// Parse a datetime string. Returns an error string on failure.
-pub fn parse_rfc3339(s: &str) -> Result<DateTime<Utc>, String> {
-    s.parse::<DateTime<Utc>>()
-        .map_err(|e| format!("DateTimeParsed not established: {e}"))
+fn parse_rfc3339(s: &str) -> Result<DateTime<Utc>, ErrorData> {
+    s.parse::<DateTime<Utc>>().map_err(|e| {
+        ErrorData::internal_error(format!("DateTimeParsed not established: {e}"), None)
+    })
 }
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
@@ -243,164 +196,129 @@ pub struct ChronoWorkflowPlugin;
 
 // ── Tool handlers ─────────────────────────────────────────────────────────────
 
-#[elicit_tool(
-    plugin = "chrono_workflow",
-    name = "parse_datetime",
-    description = "Parse an RFC 3339 datetime string and normalize it to UTC. \
-                   Establishes: DateTimeParsed. \
-                   Returns year, month, day, hour, minute, second, weekday, and Unix timestamp."
-)]
-#[instrument(skip_all)]
-async fn parse_datetime(p: ParseDateTimeParams) -> Result<CallToolResult, ErrorData> {
-    let (parsed, _proof) = match UnvalidatedDateStr::new(p.datetime).parse() {
-        Ok(r) => r,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let dt = parsed.inner;
-    use chrono::{Datelike, Timelike};
-    let summary = format!(
-        "DateTimeParsed established.\n\
-         rfc3339:   {}\n\
-         year:      {}\n\
-         month:     {}\n\
-         day:       {}\n\
-         hour:      {}\n\
-         minute:    {}\n\
-         second:    {}\n\
-         weekday:   {}\n\
-         timestamp: {}",
-        dt.to_rfc3339(),
-        dt.year(),
-        dt.month(),
-        dt.day(),
-        dt.hour(),
-        dt.minute(),
-        dt.second(),
-        dt.weekday(),
-        dt.timestamp(),
-    );
-    Ok(CallToolResult::success(vec![Content::text(summary)]))
-}
+#[reflect_methods]
+impl ChronoWorkflowPlugin {
+    /// Parse an RFC 3339 datetime string and normalize it to UTC.
+    /// Establishes: DateTimeParsed.
+    /// Returns year, month, day, hour, minute, second, weekday, and Unix timestamp.
+    #[instrument(skip_all)]
+    pub async fn parse_datetime(&self, datetime: String) -> Result<String, ErrorData> {
+        let (parsed, _proof) = UnvalidatedDateStr::new(datetime)
+            .parse()
+            .map_err(|e| ErrorData::internal_error(e, None))?;
+        let dt = parsed.inner;
+        use chrono::{Datelike, Timelike};
+        Ok(format!(
+            "DateTimeParsed established.\n\
+             rfc3339:   {}\n\
+             year:      {}\n\
+             month:     {}\n\
+             day:       {}\n\
+             hour:      {}\n\
+             minute:    {}\n\
+             second:    {}\n\
+             weekday:   {}\n\
+             timestamp: {}",
+            dt.to_rfc3339(),
+            dt.year(),
+            dt.month(),
+            dt.day(),
+            dt.hour(),
+            dt.minute(),
+            dt.second(),
+            dt.weekday(),
+            dt.timestamp(),
+        ))
+    }
 
-#[elicit_tool(
-    plugin = "chrono_workflow",
-    name = "assert_future",
-    description = "Parse an RFC 3339 datetime and assert it is strictly after the current UTC time. \
-                   Establishes: DateTimeParsed ∧ DateTimeFuture. \
-                   Useful for validating scheduling inputs before committing a workflow."
-)]
-#[instrument(skip_all)]
-async fn assert_future(p: AssertFutureParams) -> Result<CallToolResult, ErrorData> {
-    let (parsed, parsed_proof) = match UnvalidatedDateStr::new(p.datetime).parse() {
-        Ok(r) => r,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let (future, _proof) = match parsed.assert_future(parsed_proof) {
-        Ok(r) => r,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    Ok(CallToolResult::success(vec![Content::text(format!(
-        "DateTimeParsed ∧ DateTimeFuture established.\n\
-         datetime: {}\n\
-         seconds_from_now: {}",
-        future.inner.to_rfc3339(),
-        (future.inner - Utc::now()).num_seconds(),
-    ))]))
-}
+    /// Parse an RFC 3339 datetime and assert it is strictly after the current UTC time.
+    /// Establishes: DateTimeParsed ∧ DateTimeFuture.
+    /// Useful for validating scheduling inputs before committing a workflow.
+    #[instrument(skip_all)]
+    pub async fn assert_future(&self, datetime: String) -> Result<String, ErrorData> {
+        let (parsed, parsed_proof) = UnvalidatedDateStr::new(datetime)
+            .parse()
+            .map_err(|e| ErrorData::internal_error(e, None))?;
+        let (future, _proof) = parsed
+            .assert_future(parsed_proof)
+            .map_err(|e| ErrorData::internal_error(e, None))?;
+        Ok(format!(
+            "DateTimeParsed ∧ DateTimeFuture established.\n\
+             datetime: {}\n\
+             seconds_from_now: {}",
+            future.inner.to_rfc3339(),
+            (future.inner - Utc::now()).num_seconds(),
+        ))
+    }
 
-#[elicit_tool(
-    plugin = "chrono_workflow",
-    name = "assert_in_range",
-    description = "Parse an RFC 3339 datetime and assert it falls within [start, end] (inclusive). \
-                   Establishes: DateTimeParsed ∧ DateTimeInRange. \
-                   All three inputs must be valid RFC 3339 strings."
-)]
-#[instrument(skip_all)]
-async fn assert_in_range(p: AssertInRangeParams) -> Result<CallToolResult, ErrorData> {
-    let start = match parse_rfc3339(&p.start) {
-        Ok(d) => d,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let end = match parse_rfc3339(&p.end) {
-        Ok(d) => d,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let (parsed, parsed_proof) = match UnvalidatedDateStr::new(p.datetime).parse() {
-        Ok(r) => r,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let (ranged, _proof) = match parsed.assert_in_range(start, end, parsed_proof) {
-        Ok(r) => r,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    Ok(CallToolResult::success(vec![Content::text(format!(
-        "DateTimeParsed ∧ DateTimeInRange established.\n\
-         datetime: {}\n\
-         range:    [{}, {}]",
-        ranged.inner.to_rfc3339(),
-        start.to_rfc3339(),
-        end.to_rfc3339(),
-    ))]))
-}
+    /// Parse an RFC 3339 datetime and assert it falls within [start, end] (inclusive).
+    /// Establishes: DateTimeParsed ∧ DateTimeInRange.
+    /// All three inputs must be valid RFC 3339 strings.
+    #[instrument(skip_all)]
+    pub async fn assert_in_range(
+        &self,
+        datetime: String,
+        start: String,
+        end: String,
+    ) -> Result<String, ErrorData> {
+        let start = parse_rfc3339(&start)?;
+        let end = parse_rfc3339(&end)?;
+        let (parsed, parsed_proof) = UnvalidatedDateStr::new(datetime)
+            .parse()
+            .map_err(|e| ErrorData::internal_error(e, None))?;
+        let (ranged, _proof) = parsed
+            .assert_in_range(start, end, parsed_proof)
+            .map_err(|e| ErrorData::internal_error(e, None))?;
+        Ok(format!(
+            "DateTimeParsed ∧ DateTimeInRange established.\n\
+             datetime: {}\n\
+             range:    [{}, {}]",
+            ranged.inner.to_rfc3339(),
+            start.to_rfc3339(),
+            end.to_rfc3339(),
+        ))
+    }
 
-#[elicit_tool(
-    plugin = "chrono_workflow",
-    name = "compute_duration",
-    description = "Compute the signed duration between two RFC 3339 datetimes. \
-                   Establishes: DateTimeParsed(from) ∧ DateTimeParsed(to). \
-                   Returns duration in seconds, minutes, hours, and days."
-)]
-#[instrument(skip_all)]
-async fn compute_duration(p: ComputeDurationParams) -> Result<CallToolResult, ErrorData> {
-    let from = match parse_rfc3339(&p.from) {
-        Ok(d) => d,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let to = match parse_rfc3339(&p.to) {
-        Ok(d) => d,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let dur = to.signed_duration_since(from);
-    let secs = dur.num_seconds();
-    let summary = format!(
-        "DateTimeParsed(from) ∧ DateTimeParsed(to) established.\n\
-         from:    {}\n\
-         to:      {}\n\
-         seconds: {}\n\
-         minutes: {}\n\
-         hours:   {}\n\
-         days:    {}",
-        from.to_rfc3339(),
-        to.to_rfc3339(),
-        secs,
-        dur.num_minutes(),
-        dur.num_hours(),
-        dur.num_days(),
-    );
-    Ok(CallToolResult::success(vec![Content::text(summary)]))
-}
+    /// Compute the signed duration between two RFC 3339 datetimes.
+    /// Establishes: DateTimeParsed(from) ∧ DateTimeParsed(to).
+    /// Returns duration in seconds, minutes, hours, and days.
+    #[instrument(skip_all)]
+    pub async fn compute_duration(&self, from: String, to: String) -> Result<String, ErrorData> {
+        let from = parse_rfc3339(&from)?;
+        let to = parse_rfc3339(&to)?;
+        let dur = to.signed_duration_since(from);
+        Ok(format!(
+            "DateTimeParsed(from) ∧ DateTimeParsed(to) established.\n\
+             from:    {}\n\
+             to:      {}\n\
+             seconds: {}\n\
+             minutes: {}\n\
+             hours:   {}\n\
+             days:    {}",
+            from.to_rfc3339(),
+            to.to_rfc3339(),
+            dur.num_seconds(),
+            dur.num_minutes(),
+            dur.num_hours(),
+            dur.num_days(),
+        ))
+    }
 
-#[elicit_tool(
-    plugin = "chrono_workflow",
-    name = "add_seconds",
-    description = "Add (or subtract) a number of seconds to an RFC 3339 datetime. \
-                   Establishes: DateTimeParsed ⟹ DateTimeParsed(result). \
-                   Returns the resulting datetime as RFC 3339."
-)]
-#[instrument(skip_all)]
-async fn add_seconds(p: AddSecondsParams) -> Result<CallToolResult, ErrorData> {
-    let dt = match parse_rfc3339(&p.datetime) {
-        Ok(d) => d,
-        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-    };
-    let result = dt + Duration::seconds(p.seconds);
-    Ok(CallToolResult::success(vec![Content::text(format!(
-        "DateTimeParsed ⟹ DateTimeParsed(result) established.\n\
-         original: {}\n\
-         delta_s:  {}\n\
-         result:   {}",
-        dt.to_rfc3339(),
-        p.seconds,
-        result.to_rfc3339(),
-    ))]))
+    /// Add (or subtract) a number of seconds to an RFC 3339 datetime.
+    /// Establishes: DateTimeParsed ⟹ DateTimeParsed(result).
+    /// Returns the resulting datetime as RFC 3339.
+    #[instrument(skip_all)]
+    pub async fn add_seconds(&self, datetime: String, seconds: i64) -> Result<String, ErrorData> {
+        let dt = parse_rfc3339(&datetime)?;
+        let result = dt + Duration::seconds(seconds);
+        Ok(format!(
+            "DateTimeParsed ⟹ DateTimeParsed(result) established.\n\
+             original: {}\n\
+             delta_s:  {}\n\
+             result:   {}",
+            dt.to_rfc3339(),
+            seconds,
+            result.to_rfc3339(),
+        ))
+    }
 }

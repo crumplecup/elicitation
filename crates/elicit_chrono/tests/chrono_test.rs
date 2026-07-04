@@ -1,13 +1,13 @@
 //! Integration tests for `elicit_chrono` types.
 
-use elicit_chrono::{DateTimeFixed, DateTimeUtc, NaiveDateTime};
+use elicit_chrono::{DateTime, DateTimeFixed, NaiveDateTime};
 use schemars::schema_for;
 
-// ── DateTimeUtc ───────────────────────────────────────────────────────────────
+// ── DateTime ───────────────────────────────────────────────────────────────
 
 #[test]
 fn date_time_utc_parse_and_reflect() {
-    let dt = DateTimeUtc::parse("2024-01-15T12:30:00Z").unwrap();
+    let dt = DateTime::parse("2024-01-15T12:30:00Z").unwrap();
     assert_eq!(dt.year(), 2024);
     assert_eq!(dt.month(), 1);
     assert_eq!(dt.day(), 15);
@@ -18,15 +18,15 @@ fn date_time_utc_parse_and_reflect() {
 
 #[test]
 fn date_time_utc_serde_roundtrip() {
-    let dt = DateTimeUtc::parse("2024-06-01T00:00:00Z").unwrap();
+    let dt = DateTime::parse("2024-06-01T00:00:00Z").unwrap();
     let json = serde_json::to_string(&dt).unwrap();
-    let dt2: DateTimeUtc = serde_json::from_str(&json).unwrap();
+    let dt2: DateTime = serde_json::from_str(&json).unwrap();
     assert_eq!(dt.timestamp(), dt2.timestamp());
 }
 
 #[test]
 fn date_time_utc_reflect_extras() {
-    let dt = DateTimeUtc::parse("2024-03-11T00:00:00Z").unwrap(); // Monday
+    let dt = DateTime::parse("2024-03-11T00:00:00Z").unwrap(); // Monday
     assert_eq!(dt.weekday(), "Mon");
     assert!(dt.ordinal() > 0);
     assert!(dt.timestamp() > 0);
@@ -35,14 +35,14 @@ fn date_time_utc_reflect_extras() {
 
 #[test]
 fn date_time_utc_to_rfc3339() {
-    let dt = DateTimeUtc::parse("2024-01-01T00:00:00Z").unwrap();
+    let dt = DateTime::parse("2024-01-01T00:00:00Z").unwrap();
     let s = dt.to_rfc3339();
     assert!(s.starts_with("2024-01-01"));
 }
 
 #[test]
 fn date_time_utc_json_schema_is_string() {
-    let schema = schema_for!(DateTimeUtc);
+    let schema = schema_for!(DateTime);
     let value = serde_json::to_value(&schema).unwrap();
     assert_eq!(value["type"], serde_json::json!("string"));
 }
@@ -82,9 +82,9 @@ fn naive_date_time_parse_and_reflect() {
 }
 
 #[test]
-fn naive_date_time_format_str() {
+fn naive_date_time_format() {
     let dt = NaiveDateTime::parse("2024-12-25T08:00:00").unwrap();
-    let formatted = dt.format_str("%Y/%m/%d".to_string());
+    let formatted = dt.format("%Y/%m/%d".to_string());
     assert_eq!(formatted, "2024/12/25");
 }
 

@@ -15,7 +15,7 @@ newtypes via `schemars`' `chrono04` feature, with transparent serialization and
 
 | Type | Inner | Description |
 |---|---|---|
-| `DateTimeUtc` | `chrono::DateTime<Utc>` | UTC timestamp |
+| `DateTime` | `chrono::DateTime<Utc>` | UTC timestamp |
 | `DateTimeFixed` | `chrono::DateTime<FixedOffset>` | Timezone-offset timestamp |
 | `NaiveDateTime` | `chrono::NaiveDateTime` | Calendar datetime without timezone |
 
@@ -23,7 +23,7 @@ newtypes via `schemars`' `chrono04` feature, with transparent serialization and
 
 | Type | Tools |
 |---|---|
-| `DateTimeUtc` | `year`, `month`, `day`, `hour`, `minute`, `second`, `timestamp`, `weekday`, `ordinal`, `to_rfc3339`, `to_rfc2822` |
+| `DateTime` | `year`, `month`, `day`, `hour`, `minute`, `second`, `timestamp`, `weekday`, `ordinal`, `to_rfc3339`, `to_rfc2822` |
 | `DateTimeFixed` | `year`, `month`, `day`, `hour`, `minute`, `second`, `timestamp`, `offset_seconds`, `weekday`, `ordinal`, `to_rfc3339` |
 | `NaiveDateTime` | `year`, `month`, `day`, `hour`, `minute`, `second`, `timestamp`, `weekday`, `ordinal`, `format_str` |
 
@@ -37,9 +37,9 @@ elicit_chrono = "0.11"
 ```
 
 ```rust
-use elicit_chrono::{DateTimeUtc, NaiveDateTime};
+use elicit_chrono::{DateTime, NaiveDateTime};
 
-let dt = DateTimeUtc::parse("2024-01-15T12:30:00Z").unwrap();
+let dt = DateTime::parse("2024-01-15T12:30:00Z").unwrap();
 println!("{}-{}-{} {:?}", dt.year(), dt.month(), dt.day(), dt.weekday());
 
 let naive = NaiveDateTime::parse("2024-01-15T12:30:00").unwrap();
