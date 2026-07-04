@@ -35,14 +35,16 @@ use crate::{
 
 /// Emit validated ISO 8601, ISO 8601-2, and RFC-profiled descriptors into wire forms.
 ///
-/// Normative sources: ISO 8601-1:2019 - basic and extended forms;
-/// ISO 8601-2:2019 - qualified and extended temporal forms;
-/// CalConnect CC 18011:2018 - explicit forms and formula-oriented extensions.
+/// Normative sources: ISO 8601-1:2019, 2.3.3, 2.3.4, 5.2, 5.3, 5.4, 5.5, and
+/// 5.6; ISO 8601-2:2019, 4.3.5, 4.3.6, 4.7.2, 4.7.3, 4.7.4, 4.8.1, 4.8.2,
+/// 4.8.3, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 8.2.1, 8.2.2,
+/// 8.2.3, 8.4.4, 8.4.5, 8.4.6, 8.5, 9.2.1, 9.2.2, 9.3, 10.2, 14.1, 14.2,
+/// 14.3, and 14.4; CalConnect CC 18011:2018 §4.3, §5, and §8.
 /// Informative cross-checks: RFC 3339 §5.6; RFC 9557 §3.1.
 pub trait TemporalFormatter: Send + Sync {
     /// Emit a calendar date using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - extended representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.2.
     fn format_calendar_date_extended(
         &self,
         date: &CalendarDateDescriptor,
@@ -51,7 +53,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a calendar date using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - basic representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.2.
     fn format_calendar_date_basic(
         &self,
         date: &CalendarDateDescriptor,
@@ -63,7 +65,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a reduced-precision calendar date using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - reduced precision calendar date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.2.
     fn format_reduced_calendar_date_extended(
         &self,
         date: &ReducedCalendarDateDescriptor,
@@ -72,7 +74,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a reduced-precision calendar date using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - reduced precision calendar date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.2.
     fn format_reduced_calendar_date_basic(
         &self,
         date: &ReducedCalendarDateDescriptor,
@@ -84,7 +86,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ordinal date using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - ordinal date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.3.
     fn format_ordinal_date_extended(
         &self,
         date: &OrdinalDateDescriptor,
@@ -93,7 +95,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ordinal date using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - ordinal date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.3.
     fn format_ordinal_date_basic(
         &self,
         date: &OrdinalDateDescriptor,
@@ -105,7 +107,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a week date using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - week date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.4.
     fn format_week_date_extended(
         &self,
         date: &WeekDateDescriptor,
@@ -114,7 +116,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a week date using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - week date representation.
+    /// Normative source: ISO 8601-1:2019, 5.2.4.
     fn format_week_date_basic(
         &self,
         date: &WeekDateDescriptor,
@@ -126,7 +128,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a local time-of-day using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - local time representation.
+    /// Normative sources: ISO 8601-1:2019, 5.3.1; ISO 8601-1:2019/Amd 1:2022,
+    /// 5.3.1.4 and 5.3.2.
     fn format_local_time_extended(
         &self,
         time: &LocalTimeDescriptor,
@@ -135,7 +138,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a local time-of-day using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - local time representation.
+    /// Normative sources: ISO 8601-1:2019, 5.3.1; ISO 8601-1:2019/Amd 1:2022,
+    /// 5.3.1.4 and 5.3.2.
     fn format_local_time_basic(
         &self,
         time: &LocalTimeDescriptor,
@@ -147,7 +151,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a reduced-accuracy local time-of-day using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - reduced accuracy local time representation.
+    /// Normative sources: ISO 8601-1:2019, 5.3.1; ISO 8601-1:2019/Amd 1:2022,
+    /// 5.3.1.4 and 5.3.2.
     fn format_reduced_local_time_extended(
         &self,
         time: &ReducedLocalTimeDescriptor,
@@ -156,7 +161,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a reduced-accuracy local time-of-day using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - reduced accuracy local time representation.
+    /// Normative sources: ISO 8601-1:2019, 5.3.1; ISO 8601-1:2019/Amd 1:2022,
+    /// 5.3.1.4 and 5.3.2.
     fn format_reduced_local_time_basic(
         &self,
         time: &ReducedLocalTimeDescriptor,
@@ -168,7 +174,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a numeric UTC offset using ISO 8601 extended separators.
     ///
-    /// Normative source: ISO 8601-1:2019 - UTC offset representation.
+    /// Normative source: ISO 8601-1:2019, 5.3.4.
+    /// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.2.5.1 and 4.2.5.2.
     /// Informative cross-check: RFC 3339 §4.2-§4.4.
     fn format_utc_offset_extended(
         &self,
@@ -178,7 +185,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a numeric UTC offset using ISO 8601 basic compact form.
     ///
-    /// Normative source: ISO 8601-1:2019 - UTC offset representation.
+    /// Normative source: ISO 8601-1:2019, 5.3.4.
+    /// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.2.5.1 and 4.2.5.2.
     /// Informative cross-check: RFC 3339 §4.2-§4.4.
     fn format_utc_offset_basic(
         &self,
@@ -195,7 +203,7 @@ pub trait TemporalFormatter: Send + Sync {
     /// the representation is structurally valid, but it does not identify a
     /// fixed instant without additional zone or offset law.
     ///
-    /// Normative source: ISO 8601-1:2019 - combined date-time representation.
+    /// Normative source: ISO 8601-1:2019, 5.4.2 and 5.4.3.
     fn format_local_date_time_extended(
         &self,
         timestamp: &LocalDateTimeDescriptor,
@@ -209,7 +217,7 @@ pub trait TemporalFormatter: Send + Sync {
     /// the representation is structurally valid, but it does not identify a
     /// fixed instant without additional zone or offset law.
     ///
-    /// Normative source: ISO 8601-1:2019 - combined date-time representation.
+    /// Normative source: ISO 8601-1:2019, 5.4.2 and 5.4.3.
     fn format_local_date_time_basic(
         &self,
         timestamp: &LocalDateTimeDescriptor,
@@ -226,7 +234,7 @@ pub trait TemporalFormatter: Send + Sync {
     /// consumers can rely on the represented instant without re-deriving that
     /// semantic fact from the lexical offset.
     ///
-    /// Normative source: ISO 8601-1:2019 - date-time with UTC relationship.
+    /// Normative sources: ISO 8601-1:2019, 5.3.4, 5.4.2, and 5.4.3.
     fn format_offset_date_time_extended(
         &self,
         timestamp: &OffsetDateTimeDescriptor,
@@ -244,7 +252,7 @@ pub trait TemporalFormatter: Send + Sync {
     /// consumers can rely on the represented instant without re-deriving that
     /// semantic fact from the lexical offset.
     ///
-    /// Normative source: ISO 8601-1:2019 - date-time with UTC relationship.
+    /// Normative sources: ISO 8601-1:2019, 5.3.4, 5.4.2, and 5.4.3.
     fn format_offset_date_time_basic(
         &self,
         timestamp: &OffsetDateTimeDescriptor,
@@ -276,7 +284,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 extended year form.
     ///
-    /// Normative source: ISO 8601-2:2019 - letter-prefixed, negative, exponential, and significant-digit year forms.
+    /// Normative source: ISO 8601-2:2019, 4.7.2, 4.7.3, and 4.7.4.
     /// Informative cross-check: public LOC EDTF Level 1 - Letter-prefixed calendar year; Negative calendar year. Level 2 - Exponential year; Significant digits.
     fn format_extended_year(
         &self,
@@ -286,8 +294,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601 decade representation from its neutral ordinal descriptor.
     ///
-    /// Normative sources: ISO 8601-1:2019/Amd 1:2022 - decade component;
-    /// ISO 8601-2:2019 - decade representations.
+    /// Normative sources: ISO 8601-1:2019/Amd 1:2022, 4.3.11; ISO 8601-2:2019,
+    /// 4.3.5.
     fn format_decade(
         &self,
         decade: &DecadeDescriptor,
@@ -296,8 +304,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601 century representation from its neutral ordinal descriptor.
     ///
-    /// Normative sources: ISO 8601-1:2019/Amd 1:2022 - century component;
-    /// ISO 8601-2:2019 - century representations.
+    /// Normative sources: ISO 8601-1:2019/Amd 1:2022, 4.3.12; ISO 8601-2:2019,
+    /// 4.3.6.
     fn format_century(
         &self,
         century: &CenturyDescriptor,
@@ -306,7 +314,8 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a qualified temporal value with explicit uncertainty and/or approximation semantics.
     ///
-    /// Normative source: ISO 8601-2:2019 - qualification of temporal expressions.
+    /// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
+    /// 8.4.6, and 8.5.
     fn format_qualified_temporal_value(
         &self,
         value: &QualifiedTemporalValueDescriptor,
@@ -357,7 +366,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 seasonal temporal expression.
     ///
-    /// Normative source: ISO 8601-2:2019 - seasons and seasonal temporal expressions.
+    /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Seasons.
     fn format_seasonal_temporal_expression(
         &self,
@@ -367,7 +376,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 Level 2 sub-year grouping expression.
     ///
-    /// Normative source: ISO 8601-2:2019 - sub-year groupings.
+    /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 2 - Sub-year groupings.
     fn format_sub_year_grouping_expression(
         &self,
@@ -377,7 +386,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 unspecified-component temporal expression.
     ///
-    /// Normative source: ISO 8601-2:2019 - unspecified digits and unspecified components.
+    /// Normative source: ISO 8601-2:2019, 9.2.1, 9.2.2, and 9.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Unspecified digit(s) from the right; Level 2 - Unspecified Digit.
     fn format_unspecified_component_expression(
         &self,
@@ -387,7 +396,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 temporal set expression including range refinements.
     ///
-    /// Normative source: ISO 8601-2:2019 - temporal sets and set representation refinements.
+    /// Normative source: ISO 8601-2:2019, 6.1, 6.2, 6.3, 6.4, 6.5, and 6.6.
     /// Informative cross-check: public LOC EDTF Level 2 - Set representation.
     fn format_temporal_set(
         &self,
@@ -398,7 +407,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a grouped time scale unit expression through the neutral ISO 8601-2 seam.
     ///
-    /// Normative source: ISO 8601-2:2019 - grouped time scale units.
+    /// Normative source: ISO 8601-2:2019, 5.1, 5.2, 5.3, 5.4, and 5.4.2.
     /// Informative cross-check: CalConnect CC 18011:2018 §5 - Grouped time scale units.
     fn format_grouped_time_scale_unit(
         &self,
@@ -408,7 +417,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a date-time formula through the neutral ISO 8601-2 seam.
     ///
-    /// Normative source: ISO 8601-2:2019 - date and time arithmetic.
+    /// Normative source: ISO 8601-2:2019, 14.1, 14.2, 14.3, and 14.4.
     /// Informative cross-check: CalConnect CC 18011:2018 §8 - Evaluation of date and time with duration.
     fn format_date_time_formula(
         &self,

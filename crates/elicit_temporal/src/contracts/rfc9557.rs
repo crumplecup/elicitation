@@ -26,7 +26,7 @@ mod emit_impls {
 
     /// An IXDTF timestamp appends additional information to an RFC 3339 timestamp.
     ///
-    /// Normative source: RFC 9557 §3.3 — Full Syntax
+    /// Normative source: RFC 9557 §4.1 — ABNF
     pub struct IxdtfSuffixFollowsRfc3339Timestamp;
     structural_prop!(
         IxdtfSuffixFollowsRfc3339Timestamp,
@@ -35,7 +35,7 @@ mod emit_impls {
 
     /// A time-zone annotation uses bracketed content naming a zone or offset identifier.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §4.1 — ABNF
     pub struct IxdtfTimeZoneSuffixUsesBracketedNameOrOffset;
     structural_prop!(
         IxdtfTimeZoneSuffixUsesBracketedNameOrOffset,
@@ -44,7 +44,7 @@ mod emit_impls {
 
     /// A critical annotation, when present, begins with `!`.
     ///
-    /// Normative source: RFC 9557 §3.2 — Critical Flags
+    /// Normative sources: RFC 9557 §3.3 — Optional Generation and Elective vs. Critical Consumption; §4.1 — ABNF
     pub struct IxdtfCriticalFlagIsLeadingExclamationWhenPresent;
     structural_prop!(
         IxdtfCriticalFlagIsLeadingExclamationWhenPresent,
@@ -53,13 +53,13 @@ mod emit_impls {
 
     /// Additional-information keys are lowercase.
     ///
-    /// Normative source: RFC 9557 §3.3 — Full Syntax
+    /// Normative source: RFC 9557 §3.1 — Format of Extended Information
     pub struct IxdtfSuffixKeysAreLowercase;
     structural_prop!(IxdtfSuffixKeysAreLowercase, "IxdtfSuffixKeysAreLowercase");
 
     /// A suffix tag uses bracketed key-value form with `=` between key and value.
     ///
-    /// Normative sources: RFC 9557 §3.3 — Full Syntax; §4.1 — ABNF
+    /// Normative sources: RFC 9557 §3.1 — Format of Extended Information; §4.1 — ABNF
     pub struct IxdtfSuffixTagsUseBracketedKeyValueForm;
     structural_prop!(
         IxdtfSuffixTagsUseBracketedKeyValueForm,
@@ -68,7 +68,7 @@ mod emit_impls {
 
     /// A suffix value uses one or more hyphen-delimited items.
     ///
-    /// Normative sources: RFC 9557 §3.3 — Full Syntax; §4.1 — ABNF
+    /// Normative sources: RFC 9557 §3.1 — Format of Extended Information; §4.1 — ABNF
     pub struct IxdtfSuffixValuesUseHyphenDelimitedItems;
     structural_prop!(
         IxdtfSuffixValuesUseHyphenDelimitedItems,
@@ -77,7 +77,7 @@ mod emit_impls {
 
     /// Suffix values are case-sensitive unless a key specification says otherwise.
     ///
-    /// Normative source: RFC 9557 §3.3 — Full Syntax
+    /// Normative source: RFC 9557 §3.1 — Format of Extended Information
     pub struct IxdtfSuffixValuesAreCaseSensitiveUnlessOtherwiseSpecified;
     structural_prop!(
         IxdtfSuffixValuesAreCaseSensitiveUnlessOtherwiseSpecified,
@@ -111,9 +111,18 @@ mod emit_impls {
         "IxdtfCriticalSuffixTagsRequireProcessingOrErrorHandling"
     );
 
+    /// Duplicate elective suffix keys use the first occurrence when no additional inconsistency handling is performed.
+    ///
+    /// Normative source: RFC 9557 §3.3 — Optional Generation and Elective vs. Critical Consumption
+    pub struct IxdtfDuplicateElectiveSuffixUsesFirstOccurrence;
+    structural_prop!(
+        IxdtfDuplicateElectiveSuffixUsesFirstOccurrence,
+        "IxdtfDuplicateElectiveSuffixUsesFirstOccurrence"
+    );
+
     /// Experimental suffix keys use a leading underscore.
     ///
-    /// Normative sources: RFC 9557 §3.3 — Suffix tag key registration and experimental use; §4.1 — ABNF
+    /// Normative sources: RFC 9557 §3.2 — Registering Keys for Extended Information Tags; §4.1 — ABNF
     pub struct IxdtfExperimentalSuffixKeysUseLeadingUnderscore;
     structural_prop!(
         IxdtfExperimentalSuffixKeysUseLeadingUnderscore,
@@ -122,7 +131,7 @@ mod emit_impls {
 
     /// Experimental suffix keys are not valid for general interchange.
     ///
-    /// Normative source: RFC 9557 §3.3 — Suffix tag key registration and experimental use
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
     pub struct IxdtfExperimentalSuffixKeysAreNotForInterchange;
     structural_prop!(
         IxdtfExperimentalSuffixKeysAreNotForInterchange,
@@ -131,11 +140,20 @@ mod emit_impls {
 
     /// Recipients must reject experimental suffix keys when not configured for the experiment.
     ///
-    /// Normative source: RFC 9557 §3.3 — Suffix tag key registration and experimental use
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
     pub struct IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys;
     structural_prop!(
         IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys,
         "IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys"
+    );
+
+    /// Experimental suffix keys cannot be registered.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfExperimentalSuffixKeysCannotBeRegistered;
+    structural_prop!(
+        IxdtfExperimentalSuffixKeysCannotBeRegistered,
+        "IxdtfExperimentalSuffixKeysCannotBeRegistered"
     );
 
     /// A calendar-awareness annotation is present in the IXDTF suffix.
@@ -177,7 +195,8 @@ pub use emit_impls::{
     IxdtfCalendarKeyUsesUCa, IxdtfCalendarValueUsesUnicodeCalendarIdentifier,
     IxdtfCriticalFlagIsLeadingExclamationWhenPresent,
     IxdtfCriticalSuffixTagsRequireProcessingOrErrorHandling,
-    IxdtfExperimentalSuffixKeysAreNotForInterchange,
+    IxdtfDuplicateElectiveSuffixUsesFirstOccurrence,
+    IxdtfExperimentalSuffixKeysAreNotForInterchange, IxdtfExperimentalSuffixKeysCannotBeRegistered,
     IxdtfExperimentalSuffixKeysUseLeadingUnderscore, IxdtfGeneratorsMayOmitSuffixTags,
     IxdtfRecipientsMayIgnoreElectiveSuffixTags,
     IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys,

@@ -28,7 +28,8 @@ mod emit_impls {
 
     /// ISO 8601 basic form uses a compact representation without separators.
     ///
-    /// Normative source: ISO 8601-1:2019 — basic format
+    /// Normative basis: ISO 8601-1:2019, 3.1.3 and 5.1.
+    /// Open-text cross-check: ISO/WD 8601-1:2016(E), 2.3.3.
     pub struct Iso8601BasicFormUsesCompactRepresentation;
     structural_prop!(
         Iso8601BasicFormUsesCompactRepresentation,
@@ -37,7 +38,8 @@ mod emit_impls {
 
     /// ISO 8601 extended form uses separators between major components.
     ///
-    /// Normative source: ISO 8601-1:2019 — extended format
+    /// Normative basis: ISO 8601-1:2019, 3.1.3 and 5.1.
+    /// Open-text cross-check: ISO/WD 8601-1:2016(E), 2.3.4.
     pub struct Iso8601ExtendedFormUsesSeparators;
     structural_prop!(
         Iso8601ExtendedFormUsesSeparators,
@@ -46,8 +48,9 @@ mod emit_impls {
 
     /// The chosen serialization profile is explicitly declared.
     ///
-    /// Normative source: ISO 8601-1:2019 — basic and extended forms
-    /// Informative cross-checks: RFC 3339 §5.6; RFC 9557 §3.3
+    /// Normative basis: ISO 8601-1:2019, 3.1.3 and 5.1.
+    /// Open-text cross-checks: ISO/WD 8601-1:2016(E), 2.3.3 and 2.3.4;
+    /// RFC 3339 §5.6; RFC 9557 §3.3.
     pub struct SerializationProfileDeclared;
     structural_prop!(SerializationProfileDeclared, "SerializationProfileDeclared");
 

@@ -25,6 +25,9 @@ use crate::{
     DateIdentifiesPositionWithinCalendar, DateTimeFormulaCombinesTemporalValueWithDuration,
     DateTimeFormulaEvaluationModeDeclared, DateTimeFormulaTruncatesAtComponentBoundaries,
     DateTimeFormulaUsesCarryOverSemantics, DecadeOrdinalInRangeZeroToNineHundredNinetyNine,
+    DurationAlternativeFormCarriesCompleteCalendarAndClockComponents,
+    DurationAlternativeFormRequiresPartnerAgreement,
+    DurationAlternativeFormUsesDateAndTimeComponentSlots,
     DurationTimeComponentsFollowTimeDesignator, DurationUsesPeriodDesignator,
     DurationWeekFormNotMixedWithCalendarOrClockUnits, DurationWeekFormUsesSingleWeekUnit,
     ExactDurationSemanticsDeclared, ExpandedRepresentationRequiresAdditionalAgreement,
@@ -511,7 +514,7 @@ structural_prop!(
 
 /// Evidence bundle for a valid calendar date.
 ///
-/// Normative source: ISO 8601-1:2019 — calendar date interchange core
+/// Normative source: ISO 8601-1:2019, 5.2.2.
 pub struct CalendarDateEvidence {
     /// The representation is a Gregorian calendar date.
     pub calendar: Established<CalendarDateUsesGregorianCalendar>,
@@ -559,8 +562,8 @@ pub struct ReducedCalendarDateEvidence {
 
 /// Evidence bundle for a valid Gregorian calendar decade.
 ///
-/// Normative sources: ISO 8601-1:2019/Amd 1:2022 — decade component ordinal range;
-/// ISO 8601-2:2019 — decade representations
+/// Normative sources: ISO 8601-1:2019/Amd 1:2022, 4.3.11; ISO 8601-2:2019,
+/// 4.3.5.
 pub struct DecadeEvidence {
     /// The decade ordinal is within the legal ISO range.
     pub ordinal: Established<DecadeOrdinalInRangeZeroToNineHundredNinetyNine>,
@@ -570,8 +573,8 @@ pub struct DecadeEvidence {
 
 /// Evidence bundle for a valid Gregorian calendar century.
 ///
-/// Normative sources: ISO 8601-1:2019/Amd 1:2022 — century component ordinal range;
-/// ISO 8601-2:2019 — century representations
+/// Normative sources: ISO 8601-1:2019/Amd 1:2022, 4.3.12; ISO 8601-2:2019,
+/// 4.3.6.
 pub struct CenturyEvidence {
     /// The century ordinal is within the legal ISO range.
     pub ordinal: Established<CenturyOrdinalInRangeZeroToNinetyNine>,
@@ -637,7 +640,7 @@ pub struct ExtendedYearEvidence {
 
 /// Evidence bundle for a valid ordinal date.
 ///
-/// Normative source: ISO 8601-1:2019 — ordinal date interchange core
+/// Normative source: ISO 8601-1:2019, 5.2.3.
 pub struct OrdinalDateEvidence {
     /// The representation carries year and day-of-year fields.
     pub shape: Established<OrdinalDateHasYearAndDayOfYear>,
@@ -647,7 +650,7 @@ pub struct OrdinalDateEvidence {
 
 /// Evidence bundle for a valid week date.
 ///
-/// Normative source: ISO 8601-1:2019 — week date interchange core
+/// Normative source: ISO 8601-1:2019, 5.2.4.
 pub struct WeekDateEvidence {
     /// The representation carries week-year, week, and weekday fields.
     pub shape: Established<WeekDateHasWeekYearWeekAndWeekday>,
@@ -686,8 +689,8 @@ pub enum DateEvidence {
 
 /// Evidence bundle for a valid local time.
 ///
-/// Normative sources: ISO 8601-1:2019 — time-of-day interchange core;
-/// ISO 8601-1:2019/Amd 1:2022 — end-of-day technical correction
+/// Normative sources: ISO 8601-1:2019, 5.3.1; ISO 8601-1:2019/Amd 1:2022,
+/// 5.3.1.4 and 5.3.2.
 pub struct LocalTimeEvidence {
     /// The representation carries hour, minute, and second fields.
     pub shape: Established<LocalTimeHasHourMinuteSecond>,
@@ -748,7 +751,8 @@ pub struct ReducedLocalTimeEvidence {
 
 /// Evidence branch for the declared numeric UTC-offset precision.
 ///
-/// Normative source: ISO/WD 8601-1:2016(E), 4.2.5.1
+/// Normative source: ISO 8601-1:2019, 5.3.4.
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.2.5.1.
 pub enum UtcOffsetPrecisionEvidence {
     /// The offset is expressed with hours only.
     HourOnly {
@@ -764,7 +768,8 @@ pub enum UtcOffsetPrecisionEvidence {
 
 /// Evidence bundle for a valid numeric UTC offset.
 ///
-/// Normative source: ISO/WD 8601-1:2016(E), 4.2.5.1
+/// Normative source: ISO 8601-1:2019, 5.3.4.
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.2.5.1.
 pub struct UtcOffsetEvidence {
     /// The offset includes a sign, an hour component, and optional minute precision.
     pub shape: Established<UtcOffsetCarriesSignHourAndOptionalMinute>,
@@ -902,7 +907,7 @@ pub enum TimeEvidence {
 
 /// Evidence branch for the complete date family carried by a combined date-time representation.
 ///
-/// Normative source: ISO 8601-1:2019 — combined date and time interchange core
+/// Normative source: ISO 8601-1:2019, 5.4.2 and 5.4.3.
 pub enum CombinedDateTimeDateEvidence {
     /// The combined representation uses the calendar-date family.
     Calendar {
@@ -929,7 +934,7 @@ pub enum CombinedDateTimeDateEvidence {
 
 /// Evidence bundle for a valid combined local date-time.
 ///
-/// Normative source: ISO 8601-1:2019 — combined date and time interchange core
+/// Normative source: ISO 8601-1:2019, 5.4.2 and 5.4.3.
 pub struct LocalDateTimeEvidence {
     /// The date component is valid and belongs to a lawful combined date-time family.
     pub date: CombinedDateTimeDateEvidence,
@@ -945,7 +950,7 @@ pub struct LocalDateTimeEvidence {
 
 /// Evidence bundle for a valid offset date-time.
 ///
-/// Normative source: ISO 8601-1:2019 — date-time with UTC relationship
+/// Normative sources: ISO 8601-1:2019, 5.3.4, 5.4.2, and 5.4.3.
 pub struct OffsetDateTimeEvidence {
     /// The local date-time component is valid.
     pub local: Established<LocalDateTimeValid>,
@@ -1061,7 +1066,7 @@ pub struct ExplicitDateTimeWithShiftEvidence {
 
 /// Evidence bundle for a fixed instant.
 ///
-/// Normative source: ISO 8601-1:2019 — date-time with UTC relationship
+/// Normative sources: ISO 8601-1:2019, 5.3.4, 5.4.2, and 5.4.3.
 /// Informative cross-check: RFC 3339 §5.6
 pub struct FixedInstantEvidence {
     /// The offset date-time representation is structurally valid.
@@ -1335,8 +1340,8 @@ pub struct OffsetOnlySemanticsEvidence {
 
 /// Evidence bundle for precision preservation.
 ///
-/// Normative source: ISO 8601-1:2019 — decimal fractions
-/// Informative cross-check: RFC 3339 §5.6
+/// Normative sources: ISO 8601-1:2019/Amd 1:2022, 5.3.1.4;
+/// RFC 3339 §5.6.
 pub struct PrecisionPreservationEvidence {
     /// The source subsecond precision is explicitly declared.
     pub precision: Established<FractionalSecondPrecisionDeclared>,
@@ -1360,8 +1365,8 @@ pub struct TemporalOrderingEvidence {
 
 /// Evidence bundle for backend-conversion semantics.
 ///
-/// Normative source: ISO 8601-1:2019 — representation changes across equivalent forms
-/// Informative cross-check: RFC 3339 §5.1
+/// Normative sources: ISO 8601-1:2019, 3.1.3, 5.2, 5.3, 5.4, 5.5, and 5.6;
+/// RFC 3339 §5.1.
 pub struct BackendConversionEvidence {
     /// The source semantic kind is explicitly declared.
     pub source_kind: Established<ConversionSourceSemanticKindDeclared>,
@@ -1375,7 +1380,9 @@ pub struct BackendConversionEvidence {
 
 /// Evidence bundle for explicit lossy-conversion authority.
 ///
-/// Normative source: ISO 8601-2:2019 — reduced-precision and rounding semantics
+/// Normative basis: ISO 8601-2:2019, 7.13, 14.2, 14.3, and 14.4.
+/// The authority sidecar is an accord law layered on top of the standard
+/// reduced-precision and truncation regimes.
 pub struct LossyConversionAuthorityEvidence {
     /// Lossy conversion was explicitly authorized.
     pub explicit_lossy_authority: Established<ConversionRequiresExplicitAuthorityWhenLossy>,
@@ -1389,7 +1396,8 @@ pub struct LossyConversionAuthorityEvidence {
 
 /// Evidence bundle for a lossless conversion.
 ///
-/// Normative sources: RFC 3339 §5.1, §5.6; ISO 8601-2:2019 reduced-precision semantics
+/// Normative sources: RFC 3339 §5.1 and §5.6; ISO 8601-2:2019, 7.11, 7.12,
+/// and 7.13.
 pub struct LosslessConversionEvidence {
     /// Shared backend-conversion semantics are established.
     pub conversion: Established<BackendConversionSemanticsValid>,
@@ -1399,7 +1407,7 @@ pub struct LosslessConversionEvidence {
 
 /// Evidence bundle for subsecond truncation.
 ///
-/// Normative source: ISO 8601-2:2019 — reduced-precision and rounding semantics
+/// Normative basis: ISO 8601-2:2019, 7.13, 14.2, 14.3, and 14.4.
 pub struct SubsecondTruncationEvidence {
     /// Shared backend-conversion semantics are established.
     pub conversion: Established<BackendConversionSemanticsValid>,
@@ -1409,17 +1417,57 @@ pub struct SubsecondTruncationEvidence {
 
 /// Evidence bundle for a valid duration form.
 ///
-/// Normative sources: ISO 8601-1:2019, 4.4.2 b); 4.4.3.2
-/// Informative cross-check: CalConnect CC 18011:2018 §7.3 — Representations
+/// Normative sources: ISO 8601-1:2019, 4.4.2 b); 4.4.3.2; 4.4.3.3
+/// Informative cross-checks: CalConnect CC 18011:2018 §7.3 — Representations;
+/// ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
+pub struct DurationWeekFormEvidence {
+    /// Week-form durations use the week-unit shape.
+    pub form: Established<DurationWeekFormUsesSingleWeekUnit>,
+    /// Week-form durations are not mixed with calendar or clock units.
+    pub exclusive: Established<DurationWeekFormNotMixedWithCalendarOrClockUnits>,
+}
+
+/// Evidence bundle for the alternative complete duration representation.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.3.3
+/// Informative cross-checks: ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3;
+/// 4.4.4.4; 4.4.5
+pub struct DurationAlternativeFormEvidence {
+    /// Use of the alternative duration form is explicitly agreed by the parties.
+    pub agreement: Established<DurationAlternativeFormRequiresPartnerAgreement>,
+    /// The payload uses calendar-date and time-of-day component slots.
+    pub slots: Established<DurationAlternativeFormUsesDateAndTimeComponentSlots>,
+    /// The payload carries a complete calendar-and-clock component set.
+    pub complete: Established<DurationAlternativeFormCarriesCompleteCalendarAndClockComponents>,
+}
+
+/// Evidence branch for the chosen duration representation family.
+///
+/// Normative sources: ISO 8601-1:2019, 4.4.3.2; 4.4.3.3
+/// Informative cross-checks: CalConnect CC 18011:2018 §7.3 — Representations;
+/// ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
+pub enum DurationRepresentationEvidence {
+    /// The duration uses the designator-based representation.
+    Designator {
+        /// Time components, when present, are placed after the `T` designator.
+        time_components: Established<DurationTimeComponentsFollowTimeDesignator>,
+        /// Week-form semantics when the duration is expressed as `PnnW`.
+        week_form: Option<DurationWeekFormEvidence>,
+    },
+    /// The duration uses the alternative complete representation.
+    Alternative(DurationAlternativeFormEvidence),
+}
+
+/// Evidence bundle for a valid duration form.
+///
+/// Normative sources: ISO 8601-1:2019, 4.4.2 b); 4.4.3.2; 4.4.3.3
+/// Informative cross-checks: CalConnect CC 18011:2018 §7.3 — Representations;
+/// ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
 pub struct DurationFormEvidence {
     /// The representation begins with the duration designator.
     pub period: Established<DurationUsesPeriodDesignator>,
-    /// Time components are placed after the `T` designator.
-    pub time_components: Established<DurationTimeComponentsFollowTimeDesignator>,
-    /// Week-form durations use the week-unit shape.
-    pub week_form: Established<DurationWeekFormUsesSingleWeekUnit>,
-    /// Week-form durations are not mixed with calendar or clock units.
-    pub week_form_exclusive: Established<DurationWeekFormNotMixedWithCalendarOrClockUnits>,
+    /// The concrete representation family and its associated laws.
+    pub representation: DurationRepresentationEvidence,
 }
 
 /// Evidence bundle for a valid time interval form.
@@ -1467,7 +1515,8 @@ pub struct RecurringIntervalEvidence {
 
 /// Evidence bundle for a qualified temporal expression.
 ///
-/// Normative source: ISO 8601-2:2019 — uncertain and approximate temporal expressions
+/// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
+/// 8.4.6, and 8.5.
 /// Informative cross-check: public LOC EDTF Level 1 — Qualification of a date (complete);
 /// Level 2 — Qualification
 pub enum QualificationPlacementEvidence {
@@ -1489,7 +1538,8 @@ pub enum QualificationPlacementEvidence {
 
 /// Evidence bundle for a qualified temporal expression.
 ///
-/// Normative source: ISO 8601-2:2019 — uncertain and approximate temporal expressions
+/// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
+/// 8.4.6, and 8.5.
 /// Informative cross-check: public LOC EDTF Level 1 — Qualification of a date (complete);
 /// Level 2 — Qualification
 pub struct QualifiedTemporalExpressionEvidence {
@@ -1595,7 +1645,7 @@ pub struct ExplicitDurationEvidence {
 
 /// Evidence bundle for extended interval boundary semantics.
 ///
-/// Normative source: ISO 8601-2:2019 — open and unknown interval boundaries
+/// Normative source: ISO 8601-2:2019, 10.2.
 /// Informative cross-check: public LOC EDTF Level 1 — Extended Interval
 pub struct ExtendedIntervalBoundaryEvidence {
     /// The underlying interval representation is structurally valid.
@@ -1650,7 +1700,7 @@ pub struct DateTimeFormulaEvaluationSemanticsEvidence {
 
 /// Evidence bundle for a seasonal temporal expression.
 ///
-/// Normative source: ISO 8601-2:2019 — seasons and named seasonal temporal expressions
+/// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
 /// Informative cross-check: public LOC EDTF Level 1 — Seasons; Level 2 — Sub-year groupings
 pub struct SeasonalTemporalExpressionEvidence {
     /// The expression uses a year-and-season form.
@@ -1665,7 +1715,7 @@ pub struct SeasonalTemporalExpressionEvidence {
 
 /// Branch evidence for the specific Level 2 sub-year grouping family in use.
 ///
-/// Normative source: ISO 8601-2:2019 — sub-year groupings
+/// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
 /// Informative cross-check: public LOC EDTF Level 2 — Sub-year groupings
 pub enum SubYearGroupingKindEvidence {
     /// Seasonal grouping semantics, including hemisphere scope when declared.
@@ -1694,7 +1744,7 @@ pub enum SubYearGroupingKindEvidence {
 
 /// Evidence bundle for a Level 2 sub-year grouping expression.
 ///
-/// Normative source: ISO 8601-2:2019 — sub-year groupings
+/// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
 /// Informative cross-check: public LOC EDTF Level 2 — Sub-year groupings
 pub struct SubYearGroupingExpressionEvidence {
     /// The expression uses a year-and-grouping form.
@@ -1707,7 +1757,7 @@ pub struct SubYearGroupingExpressionEvidence {
 
 /// Evidence bundle for masked precision and unspecified-component semantics.
 ///
-/// Normative source: ISO 8601-2:2019 — unspecified digits and unspecified components
+/// Normative source: ISO 8601-2:2019, 9.2.1, 9.2.2, and 9.3.
 /// Informative cross-check: public LOC EDTF Level 1 — Unspecified digit(s) from the right;
 /// Level 2 — Unspecified Digit
 pub struct UnspecifiedComponentExpressionEvidence {
@@ -1723,7 +1773,7 @@ pub struct UnspecifiedComponentExpressionEvidence {
 
 /// Evidence bundle for a temporal set expression.
 ///
-/// Normative source: ISO 8601-2:2019 — temporal set expressions
+/// Normative source: ISO 8601-2:2019, 6.1, 6.2, 6.3, and 6.4.
 /// Informative cross-check: public LOC EDTF Level 2 — Set representation
 pub struct TemporalSetExpressionEvidence {
     /// Member expressions are explicitly separated.
@@ -1734,7 +1784,7 @@ pub struct TemporalSetExpressionEvidence {
 
 /// Evidence bundle for refined temporal-set range semantics.
 ///
-/// Normative source: ISO 8601-2:2019 — set representation
+/// Normative source: ISO 8601-2:2019, 6.3 and 6.4.
 /// Informative cross-check: public LOC EDTF Level 2 — Set representation
 pub struct TemporalSetRangeSemanticsEvidence {
     /// The underlying temporal-set expression is structurally valid.

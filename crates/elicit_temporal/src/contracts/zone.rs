@@ -1,7 +1,7 @@
 //! Named-zone and zone-identity propositions.
 //!
 //! Sources:
-//! - RFC 9557 §3.1, §3.3
+//! - RFC 9557 §1.1, §1.2, §3.4, §4.1
 //! - BCP 175 / IANA Time Zone Database, where named-zone semantics matter
 
 mod emit_impls {
@@ -27,7 +27,7 @@ mod emit_impls {
 
     /// An IXDTF timestamp carries a named time-zone annotation.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §4.1 — ABNF
     pub struct NamedTimeZoneAnnotationPresent;
     structural_prop!(
         NamedTimeZoneAnnotationPresent,
@@ -36,7 +36,7 @@ mod emit_impls {
 
     /// A named time-zone annotation uses an IANA time-zone identifier.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative sources: RFC 9557 §1.2 — Definitions; §4.1 — ABNF
     pub struct NamedTimeZoneUsesIanaIdentifier;
     structural_prop!(
         NamedTimeZoneUsesIanaIdentifier,
@@ -45,7 +45,7 @@ mod emit_impls {
 
     /// An IXDTF timestamp may carry an offset time-zone annotation.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative sources: RFC 9557 §1.2 — Definitions; §4.1 — ABNF
     pub struct OffsetTimeZoneAnnotationPresent;
     structural_prop!(
         OffsetTimeZoneAnnotationPresent,
@@ -54,7 +54,8 @@ mod emit_impls {
 
     /// Named time-zone identifiers are case-sensitive.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
+    /// Informative cross-check: BCP 175 / IANA TZDB naming semantics
     pub struct NamedTimeZoneIdentifierIsCaseSensitive;
     structural_prop!(
         NamedTimeZoneIdentifierIsCaseSensitive,
@@ -63,7 +64,7 @@ mod emit_impls {
 
     /// A named time zone is not equivalent to a bare numeric UTC offset.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct NamedTimeZoneIsNotNumericOffsetAlias;
     structural_prop!(
         NamedTimeZoneIsNotNumericOffsetAlias,
@@ -72,7 +73,7 @@ mod emit_impls {
 
     /// A bare numeric UTC offset does not identify a named time zone.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct NumericOffsetDoesNotIdentifyNamedZone;
     structural_prop!(
         NumericOffsetDoesNotIdentifyNamedZone,
@@ -81,7 +82,7 @@ mod emit_impls {
 
     /// An offset time-zone annotation repeats the RFC 3339 timestamp offset.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative sources: RFC 9557 §1.2 — Definitions; §3.4 — Inconsistent time-offset and Time Zone Information
     pub struct OffsetTimeZoneRepeatsTimestampOffset;
     structural_prop!(
         OffsetTimeZoneRepeatsTimestampOffset,
@@ -90,7 +91,7 @@ mod emit_impls {
 
     /// Use of offset time zones is strongly discouraged.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct OffsetTimeZoneUseIsStronglyDiscouraged;
     structural_prop!(
         OffsetTimeZoneUseIsStronglyDiscouraged,
@@ -99,7 +100,7 @@ mod emit_impls {
 
     /// Programs must not synthesize an offset time-zone annotation by copying the timestamp offset.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset;
     structural_prop!(
         OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset,
@@ -108,7 +109,7 @@ mod emit_impls {
 
     /// A named time zone retains civil-time rule identity beyond the current offset.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     /// Informative cross-check: BCP 175 / IANA TZDB semantics
     pub struct NamedTimeZoneRetainsCivilRuleIdentity;
     structural_prop!(
@@ -118,7 +119,7 @@ mod emit_impls {
 
     /// The named-zone rules resolve an offset for the represented instant.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct ZoneOffsetResolvedForRepresentedInstant;
     structural_prop!(
         ZoneOffsetResolvedForRepresentedInstant,
@@ -127,7 +128,7 @@ mod emit_impls {
 
     /// A named IANA time zone is interpreted using the rules current at the time of interpretation.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct NamedTimeZoneMeaningUsesCurrentTzdbRules;
     structural_prop!(
         NamedTimeZoneMeaningUsesCurrentTzdbRules,
@@ -136,7 +137,7 @@ mod emit_impls {
 
     /// An unrecognized IANA time-zone name due to TZDB revision skew is treated as an inconsistency.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §4.1 — ABNF
     pub struct UnknownNamedTimeZoneIdentifierTreatedAsInconsistency;
     structural_prop!(
         UnknownNamedTimeZoneIdentifierTreatedAsInconsistency,
@@ -145,7 +146,7 @@ mod emit_impls {
 
     /// A local timestamp explicitly declares when a zone transition introduces ambiguity.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct ZoneTransitionAmbiguityDeclared;
     structural_prop!(
         ZoneTransitionAmbiguityDeclared,
@@ -154,13 +155,13 @@ mod emit_impls {
 
     /// A local timestamp explicitly declares when a zone transition creates a gap.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct ZoneTransitionGapDeclared;
     structural_prop!(ZoneTransitionGapDeclared, "ZoneTransitionGapDeclared");
 
     /// Resolution of an ambiguous local timestamp uses explicit disambiguation authority.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative sources: RFC 9557 §1.1 — Scope; §3.4 — Inconsistent time-offset and Time Zone Information
     pub struct ZoneTransitionDisambiguationAuthorityDeclared;
     structural_prop!(
         ZoneTransitionDisambiguationAuthorityDeclared,
@@ -169,7 +170,7 @@ mod emit_impls {
 
     /// Resolution of a skipped local timestamp uses explicit gap-handling authority.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative sources: RFC 9557 §1.1 — Scope; §3.4 — Inconsistent time-offset and Time Zone Information
     pub struct ZoneTransitionGapHandlingAuthorityDeclared;
     structural_prop!(
         ZoneTransitionGapHandlingAuthorityDeclared,

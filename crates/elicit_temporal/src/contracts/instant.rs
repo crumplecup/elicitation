@@ -37,8 +37,8 @@ mod emit_impls {
 
     /// An offset date-time identifies a single fixed instant on the UTC timeline.
     ///
-    /// Normative source: ISO 8601-1:2019 — date-time with UTC relationship
-    /// Informative cross-check: RFC 3339 §5.6
+    /// Normative basis: ISO 8601-1:2019, 5.4.2 and 5.4.3.
+    /// Informative cross-check: RFC 3339 §5.6.
     pub struct OffsetDateTimeIdentifiesSingleInstant;
     structural_prop!(
         OffsetDateTimeIdentifiesSingleInstant,

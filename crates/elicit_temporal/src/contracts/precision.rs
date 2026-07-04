@@ -1,7 +1,10 @@
 //! Precision and subsecond-retention propositions.
 //!
 //! Sources:
-//! - ISO 8601-1:2019 — decimal fractions
+//! - ISO 8601-1:2019/Amd 1:2022, 5.3.1.4
+//! - ISO 8601-2:2019, 7.11, 7.12, 7.13, 14.2, 14.3, 14.4
+//! - CalConnect CC 18011:2018, representations-precision,
+//!   representations-decimal, representations-reduced-precision, §8.2, §8.3-§8.5
 //! - RFC 3339 §5.6
 
 mod emit_impls {
@@ -27,8 +30,8 @@ mod emit_impls {
 
     /// Fractional-second precision is explicitly declared when subseconds are present.
     ///
-    /// Normative source: ISO 8601-1:2019 — decimal fractions
-    /// Informative cross-check: RFC 3339 §5.6
+    /// Normative basis: ISO 8601-1:2019/Amd 1:2022, 5.3.1.4.
+    /// Informative cross-check: RFC 3339 §5.6.
     pub struct FractionalSecondPrecisionDeclared;
     structural_prop!(
         FractionalSecondPrecisionDeclared,
@@ -37,8 +40,8 @@ mod emit_impls {
 
     /// Fractional-second digits form a contiguous decimal suffix.
     ///
-    /// Normative source: ISO 8601-1:2019 — decimal fractions
-    /// Informative cross-check: RFC 3339 §5.6
+    /// Normative basis: ISO 8601-1:2019/Amd 1:2022, 5.3.1.4.
+    /// Informative cross-check: RFC 3339 §5.6.
     pub struct FractionalSecondDigitsAreContiguous;
     structural_prop!(
         FractionalSecondDigitsAreContiguous,
@@ -47,13 +50,17 @@ mod emit_impls {
 
     /// A precision reduction is explicitly declared rather than implicit.
     ///
-    /// Normative source: ISO 8601-2:2019 — reduced precision and truncation semantics
+    /// Normative basis: ISO 8601-2:2019, 7.11 and 7.13.
+    /// Informative cross-check: CalConnect CC 18011:2018,
+    /// representations-precision and representations-reduced-precision.
     pub struct PrecisionReductionDeclared;
     structural_prop!(PrecisionReductionDeclared, "PrecisionReductionDeclared");
 
     /// A rounding mode is explicitly declared when precision is reduced.
     ///
-    /// Normative source: ISO 8601-2:2019 — reduced precision and rounding semantics
+    /// Normative basis: ISO 8601-2:2019, 7.13, 14.2, 14.3, and 14.4.
+    /// Informative cross-check: CalConnect CC 18011:2018 §8.2 and §8.3-§8.5.
+    /// The accord requires this policy to remain explicit rather than implicit.
     pub struct RoundingModeDeclared;
     structural_prop!(RoundingModeDeclared, "RoundingModeDeclared");
 

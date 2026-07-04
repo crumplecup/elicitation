@@ -67,6 +67,36 @@ mod emit_impls {
         "DurationWeekFormNotMixedWithCalendarOrClockUnits"
     );
 
+    /// The alternative duration form is only used when the interchange partners agree to it.
+    ///
+    /// Normative source: ISO 8601-1:2019, 4.4.3.3
+    /// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.2.2
+    pub struct DurationAlternativeFormRequiresPartnerAgreement;
+    structural_prop!(
+        DurationAlternativeFormRequiresPartnerAgreement,
+        "DurationAlternativeFormRequiresPartnerAgreement"
+    );
+
+    /// The alternative duration form uses calendar-date and time-of-day component slots.
+    ///
+    /// Normative source: ISO 8601-1:2019, 4.4.3.3
+    /// Open-text cross-checks: ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
+    pub struct DurationAlternativeFormUsesDateAndTimeComponentSlots;
+    structural_prop!(
+        DurationAlternativeFormUsesDateAndTimeComponentSlots,
+        "DurationAlternativeFormUsesDateAndTimeComponentSlots"
+    );
+
+    /// The alternative duration form carries a complete set of calendar and clock components.
+    ///
+    /// Normative source: ISO 8601-1:2019, 4.4.3.3
+    /// Open-text cross-checks: ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
+    pub struct DurationAlternativeFormCarriesCompleteCalendarAndClockComponents;
+    structural_prop!(
+        DurationAlternativeFormCarriesCompleteCalendarAndClockComponents,
+        "DurationAlternativeFormCarriesCompleteCalendarAndClockComponents"
+    );
+
     /// A time interval separates its two components with the solidus `/`.
     ///
     /// Normative source: ISO 8601-1:2019, 4.4.2 a)
@@ -153,6 +183,9 @@ mod emit_impls {
 }
 
 pub use emit_impls::{
+    DurationAlternativeFormCarriesCompleteCalendarAndClockComponents,
+    DurationAlternativeFormRequiresPartnerAgreement,
+    DurationAlternativeFormUsesDateAndTimeComponentSlots,
     DurationTimeComponentsFollowTimeDesignator, DurationUsesPeriodDesignator,
     DurationWeekFormNotMixedWithCalendarOrClockUnits, DurationWeekFormUsesSingleWeekUnit,
     IntervalDurationIsNonNegative, IntervalStartPrecedesEnd,
