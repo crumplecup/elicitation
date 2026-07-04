@@ -3794,7 +3794,9 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]
