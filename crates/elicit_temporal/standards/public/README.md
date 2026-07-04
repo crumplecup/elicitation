@@ -15,6 +15,26 @@ erase the remaining need for official searchable `ISO 8601-1` and
 
 ## Public source text
 
+- `iso-wd-8601-1-2016.txt`
+  - Origin: staged extraction from
+    `../iso-tc154-wg5_n0038_iso_wd_8601-1_2016-02-16.pdf`
+  - Scope: open working-draft clause text for ISO 8601-1 concepts such as
+    representation families, UTC offsets, combined date-time forms, intervals,
+    durations, and recurring intervals
+- `iso-wd-8601-2-2016.txt`
+  - Origin: staged extraction from
+    `../iso-tc154-wg5_n0039_iso_wd_8601-2_2016-02-16.pdf`
+  - Scope: open working-draft clause text for ISO 8601-2 concepts such as
+    before or after qualification, enhanced intervals, year extensions,
+    seasonal forms, temporal sets, and repeat rules
+- `rfc3339.txt`
+  - Origin: [https://www.rfc-editor.org/rfc/rfc3339.txt](https://www.rfc-editor.org/rfc/rfc3339.txt)
+  - Scope: Internet timestamp profile, local-offset semantics, ordering,
+    profile grammar, restrictions
+- `rfc9557.txt`
+  - Origin: [https://www.rfc-editor.org/rfc/rfc9557.txt](https://www.rfc-editor.org/rfc/rfc9557.txt)
+  - Scope: IXDTF suffix syntax, time-zone semantics, calendar annotations,
+    registry rules, RFC 3339 update
 - `calconnect-cc-18011-2018.xml`
   - Origin: [https://standards.calconnect.org/cc/cc-18011-2018.xml](https://standards.calconnect.org/cc/cc-18011-2018.xml)
   - Scope: explicit representations, grouped time scale units, explicit

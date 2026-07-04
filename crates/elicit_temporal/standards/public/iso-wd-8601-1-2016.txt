@@ -1,0 +1,2219 @@
+© ISO 2016 – All rights reserved
+
+
+
+
+                                                                          ISO/TC 154/WG 5 N0038
+                                                                                      Date: 2016-02-16
+
+                                                                                      ISO/WD 8601-1
+                                                                                        ISO/TC 154/WG 5
+
+                                                                                         Secretariat: SAC
+
+
+
+
+Data elements and interchange formats — Information interchange -
+Representation of dates and times — Part 1: Basic rules
+Eléments de données et formats d'échange — Échange d'information - Représentation de la date et de
+l'heure — Partie 1: Règles de base
+
+
+
+                                                Warning
+
+This document is not an ISO International Standard. It is distributed for review and comment. It is
+subject to change without notice and may not be referred to as an International Standard.
+
+Recipients of this draft are invited to submit, with their comments, notification of any relevant patent
+rights of which they are aware and to provide supporting documentation.
+
+
+
+
+Document type: International Standard
+Document subtype:
+Document stage: (20) Preparatory
+Document language: E
+
+Documents:MyDocuments:Work:ISO-TC154:WG5:N-Documents:ISO-TC154-
+WG5_N0038_ISO_WD_8601-1_2016-02-16.docx STD Version 2.7f
+ISO/WD 8601-1
+
+
+
+                                        Copyright notice
+This ISO document is a working draft or committee draft and is copyright-protected by ISO. While the
+reproduction of working drafts or committee drafts in any form for use by participants in the ISO
+standards development process is permitted without prior permission from ISO, neither this
+document nor any extract from it may be reproduced, stored or transmitted in any form for any other
+purpose without prior written permission from ISO.
+
+Requests for permission to reproduce this document for the purpose of selling it should be addressed
+as shown below or to ISO's member body in the country of the requester:
+       ISO copyright office
+       Case postale 56 • CH-1211 Geneva 20
+       Tel. + 41 22 749 01 11
+       Fax + 41 22 749 09 47
+       E-mail copyright@iso.org
+       Web www.iso.org
+
+Reproduction for sales purposes may be subject to royalty payments or a licensing agreement.
+
+Violators may be prosecuted.
+
+
+
+
+  ii                                                                       © ISO 2016 – All rights reserved
+                                                                                                                                                      ISO/WD 8601-1
+
+
+
+
+Contents                                                                                                                                                                      Page
+
+Foreword ....................................................................................................................................................................... iv
+Introduction.................................................................................................................................................................. iv
+1            Scope .................................................................................................................................................................. 1
+2            Terms and definitions .................................................................................................................................. 1
+2.1          Basic concepts ................................................................................................................................................. 1
+2.2          Time units, nominal durations and time intervals............................................................................. 5
+2.3          Representations and formats .................................................................................................................... 7
+3            Fundamental principles .............................................................................................................................. 8
+3.1          Basic rules ........................................................................................................................................................ 8
+3.2          Time scales ....................................................................................................................................................... 9
+3.3          Representations and format representations .................................................................................. 11
+3.4          Characters used in the representations .............................................................................................. 12
+3.5          Expansion ...................................................................................................................................................... 14
+3.6          Leading zeros ............................................................................................................................................... 14
+3.7          Mutual agreement ...................................................................................................................................... 14
+4            Date and time representations .............................................................................................................. 14
+4.1          Date.................................................................................................................................................................. 14
+4.2          Time of day.................................................................................................................................................... 17
+4.3          Date and time of day .................................................................................................................................. 20
+4.4          Time interval ................................................................................................................................................ 22
+4.5          Recurring time interval ............................................................................................................................ 26
+5            Date and time format representations ................................................................................................ 27
+Annex A (informative) Relationship to ISO 2014, ISO 2015, ISO 2711, ISO 3307 and
+      ISO 4031 ......................................................................................................................................................... 28
+Annex B (informative) Examples of representations .................................................................................. 29
+Bibliography ............................................................................................................................................................... 35
+
+
+
+
+     © ISO 2016 – All rights reserved                                                                                                                                              iii
+ISO/WD 8601-1
+
+
+
+
+Foreword
+ISO (the International Organization for Standardization) is a worldwide federation of national
+standards bodies (ISO member bodies). The work of preparing International Standards is normally
+carried out through ISO technical committees. Each member body interested in a subject for which a
+technical committee has been established has the right to be represented on that committee.
+International organizations, governmental and non-governmental, in liaison with ISO, also take part in
+the work. ISO collaborates closely with the International Electrotechnical Commission (IEC) on all
+matters of electrotechnical standardization.
+
+The procedures used to develop this document and those intended for its further maintenance are
+described in the ISO/IEC Directives, Part 1. In particular the different approval criteria needed for the
+different types of ISO documents should be noted. This document was drafted in accordance with the
+editorial rules of the ISO/IEC Directives, Part 2 (see www.iso.org/directives).
+
+Attention is drawn to the possibility that some of the elements of this document may be the subject of
+patent rights. ISO shall not be held responsible for identifying any or all such patent rights. Details of
+any patent rights identified during the development of the document will be in the Introduction and/or
+on the ISO list of patent declarations received (see www.iso.org/patents).
+
+Any trade name used in this document is information given for the convenience of users and does not
+constitute an endorsement.
+
+For an explanation on the meaning of ISO specific terms and expressions related to conformity
+assessment, as well as information about ISO's adherence to the WTO principles in the Technical
+Barriers to Trade (TBT) see the following URL: Foreword - Supplementary information
+
+The committee responsible for this document is ISO/154, Processes, data elements and documents in
+commerce, industry and administration.
+
+This fourth edition cancels and replaces the third edition (ISO 8601:2004), which has been technically
+revised with the following changes:
+
+— Conversion of the content as Part 1 with the part title "Basic rules" due to the addition of another
+  Part 2 "Extensions" of ISO 8601;
+
+— Elimination of the term "midnight" and changes to the use of the value '24' for hour. This is in
+  response to requests from the Information Technology user communities to (1) remove
+  ambiguities caused by the term "midnight", which has been replaced by "Beginning of day" and
+  "End of day"; and (2) align the representation of the beginning/end of day with current de facto
+  industry practice;
+
+— Amendment of the recurring time interval (2.1.17 and 4.5) to provide a link to Part 2 which
+  contains in section 5 the ‘Repeat Rules for Recurring Time Intervals’.
+
+
+
+
+   iv                                                                         © ISO 2016 – All rights reserved
+                                                                                    ISO/WD 8601-1
+
+
+
+ISO 8601 consists of the following parts, under the generic title Data elements and interchange formats
+— Information interchange - Representation of dates and times:
+
+— Part 1: Basic rules
+
+— Part 2: Extensions
+
+
+
+
+  © ISO 2016 – All rights reserved                                                                   v
+ISO/WD 8601-1
+
+
+
+
+Introduction
+Although ISO Recommendations and Standards in this field have been available since 1971, different
+forms of numeric representation of dates and times have been in common use in different countries.
+Where such representations are interchanged across national boundaries misinterpretation of the
+significance of the numerals can occur, resulting in confusion and other consequential errors or losses.
+The purpose of this International Standard is to eliminate the risk of misinterpretation and to avoid the
+confusion and its consequences.
+
+This International Standard includes specifications for a numeric representation of information
+regarding date and time of day. In addition this International Standard includes specifications for
+representation of the formats of these numeric representations.
+
+In order to achieve similar formats for the representations of calendar dates, ordinal dates, dates
+identified by week number, time intervals, recurring time intervals, combined date and time of day, and
+differences between local time and UTC of day, and to avoid ambiguities between these representations,
+it has been necessary to use, apart from numeric characters, either single alphabetic characters or other
+graphic characters or a combination of alphabetic and other characters in some of the representations.
+
+The above action has had the benefit of enhancing the versatility and general applicability of previous
+International Standards in this field, and provides for the unique representation of any date or time
+expression or combination of these. Each representation can be easily recognized, which is beneficial
+when human interpretation is required.
+
+This International Standard retains the most commonly used expressions for date and time of day and
+their representations from the earlier International Standards and provides unique representations for
+some new expressions used in practice. Its application in information interchange, especially between
+data processing systems and associated equipment will eliminate errors arising from misinterpretation
+and the costs these generate. The promotion of this International Standard will not only facilitate
+interchange across international boundaries, but will also improve the portability of software, and will
+ease problems of communication within an organization, as well as between organizations.
+
+Several of the alphabetic and graphic characters used in the text of this International Standard are
+common both to the representations specified and to normal typographical presentation. Note that for
+units of time in plain text the symbols given in ISO 31-1 should be used.
+
+To avoid confusion between the representations and the actual text, its punctuation marks and
+associated graphic characters, all the representations are contained in brackets [ ]. The brackets are not
+part of the representation, and should be omitted when implementing the representations. All matter
+outside the brackets is normal text, and not part of the representation. In the associated examples, the
+brackets and typographical markings are omitted.
+
+
+
+
+   vi                                                                         © ISO 2016 – All rights reserved
+WORKING DRAFT                                                                          ISO/WD 8601-1
+
+
+
+
+Data elements and interchange formats — Information
+interchange - Representation of dates and times — Part 1:
+Basic rules
+
+
+1 Scope
+This International Standard is applicable whenever representation of dates in the Gregorian calendar,
+times in the 24-hour timekeeping system, time intervals and recurring time intervals or of the formats
+of these representations are included in information interchange. It includes
+— calendar dates expressed in terms of calendar year, calendar month and calendar day of the month;
+— ordinal dates expressed in terms of calendar year and calendar day of the year;
+— week dates expressed in terms of calendar year, calendar week number and calendar day of the
+  week;
+— local time based upon the 24-hour timekeeping system;
+— Coordinated Universal Time of day;
+— local time and the difference from Coordinated Universal Time;
+— combination of date and time of day;
+— time intervals;
+— recurring time intervals.
+
+This International Standard does not cover dates and times where words are used in the representation
+and dates and times where characters are not used in the representation.
+
+This International Standard does not assign any particular meaning or interpretation to any data element
+that uses representations in accordance with this International Standard. Such meaning will be
+determined by the context of the application.
+
+2 Terms and definitions
+For the purposes of this document, the following terms and definitions apply.
+
+2.1 Basic concepts
+
+2.1.1
+time axis
+mathematical representation of the succession in time of instantaneous events along a unique axis
+[IEC 60050-111]
+
+2.1.2
+instant
+point on the time axis
+
+
+   © ISO 2016 – All rights reserved                                                                   1
+ISO/WD 8601-1
+
+
+[IEC 60050-111]
+Note to entry:     An instantaneous event occurs at a specific instant.
+
+2.1.3
+time interval
+part of the time axis limited by two instants
+
+[IEC 60050-111]
+
+Note to entry:      A time interval comprises all instants between the two limiting instants and, unless otherwise
+stated, the limiting instants themselves.
+
+2.1.4
+time scale
+system of ordered marks which can be attributed to instants on the time axis, one instant being chosen
+as the origin
+
+[IEC 60050-111]
+
+Note 1 to entry: A time scale may amongst others be chosen as:
+— continuous, e.g. international atomic time (TAI) (see IEC 60050-713, item 713-05-18);
+— continuous with discontinuities, e.g. Coordinated Universal Time (UTC) due to leap seconds, standard time
+   due to summer time and winter time;
+— successive steps, e.g. usual calendars, where the time axis is split up into a succession of consecutive time
+   intervals and the same mark is attributed to all instants of each time interval;
+— discrete, e.g. in digital techniques.
+
+Note 2 to entry: For physical and technical applications, a time scale with quantitative marks is preferred, based
+on a chosen initial instant together with a unit of measurement.
+
+Note 3 to entry: Customary time scales use various units of measurement in combination, such as second,
+minute, hour, or various time intervals of the calendar such as calendar day, calendar month and calendar year.
+
+Note 4 to entry: A time scale has a reference point which attributes one of the marks of the time scale to one of
+the instants, thus determining the attribution of marks to instants for the time scale.
+
+2.1.5
+time point
+date
+time
+mark attributed to an instant by means of a specified time scale
+
+[IEC 60050-111]
+
+Note 1 to entry: On a time scale consisting of successive steps, two distinct instants may be expressed by the
+same time point (see Note 1 of the term “time scale”).
+
+Note 2 to entry: For many time scales with quantitative marks, the numerical value of the time point of an
+instant may also be considered to be equal to the duration between the origin of the time scale and the considered
+instant.
+
+Note 3 to entry:   In IEC 60050-111 this definition corresponds with the term “date”.
+
+Note 4 to entry: The term “time” is often used in common language. However, it should only be used if the
+meaning is clearly visible from the context, since the term “time” is also used with other meanings.
+
+
+
+   2                                                                                © ISO 2016 – All rights reserved
+                                                                                                ISO/WD 8601-1
+
+
+
+2.1.6
+duration
+non-negative quantity attributed to a time interval, the value of which is equal to the difference between
+the time points of the final instant and the initial instant of the time interval, when the time points are
+quantitative marks
+
+[IEC 60050-111]
+
+Note 1 to entry: In the case of discontinuities in the time scale, such as a leap second or the change from winter
+time to summer time and back, the computation of the duration requires the subtraction or addition of the change
+of duration of the discontinuity.
+
+Note 2 to entry: Duration is one of the base quantities in the International System of Quantities (ISQ) on which
+the International System of Units (SI) is based. The term “time” instead of “duration” is often used in this context.
+
+Note 3 to entry: For the term “duration”, expressions such as “time” or “time interval” are often used. The term
+“time” is not recommended in this sense and the term “time interval” is deprecated in this sense to avoid
+confusion with the concept “time interval”.
+
+Note 4 to entry:   The SI unit of duration is the second.
+
+2.1.7
+nominal duration
+duration expressed amongst others in years, months, weeks or days
+
+Note to entry:      The duration of a calendar year, a calendar month, a calendar week or a calendar day depends
+on its position in the calendar. Therefore, the exact duration of a nominal duration can only be evaluated if the
+duration of the calendar years, calendar months, calendar weeks or calendar days used are known.
+
+2.1.8
+date
+time point representing a calendar day on a time scale consisting of an origin and a succession of
+calendar days
+
+Note to entry:     In IEC 60050-111 this definition corresponds with the term “calendar date”.
+
+2.1.9
+calendar date
+date representing a particular calendar day by its calendar year, its calendar month and its ordinal
+number within its calendar month
+
+2.1.10
+ordinal date
+date representing a particular calendar day by its calendar year and its ordinal number within its
+calendar year
+
+2.1.11
+week date
+date representing a particular calendar day by the calendar year to which its calendar week belongs, the
+ordinal number of its calendar week within that calendar year and its ordinal number within its
+calendar week
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                                3
+ISO/WD 8601-1
+
+
+2.1.12
+Coordinated Universal Time
+UTC
+time scale which forms the basis of a coordinated radio dissemination of standard frequencies and time
+signals; it corresponds exactly in rate with international atomic time, but differs from it by an integral
+number of seconds
+
+[IEC 60050-713]
+
+Note 1 to entry: UTC is established by the International Bureau of Weights and Measures (BIPM, i.e. Bureau
+International des Poids et Mesures) and the International Earth Rotation Service (IERS). UTC provides the basis of
+standard time, the use of which is legal in most countries. The 15th Conférence Géneral des Poids et Mesures
+(CGPM) (1975) judged in its Resolution 5 that this usage can be strongly recommended.
+
+Note 2 to entry:   UTC is adjusted to UT1 by the insertion or deletion of seconds, known as “leap seconds”.
+
+Note 3 to entry: Greenwich Mean Time (GMT) is internationally replaced by UTC. UTC is often (incorrectly)
+referred to as GMT. UTC is generally used by aviation and maritime navigation that also uses local apparent time
+and local mean time for celestial navigation (see ISO 19018).
+
+Note 4 to entry: Additional information can be found as follows:
+—          the URL for the ITU http://www.itu.int/itudoc/itu-r/rec/tf/index.html
+—          the URL for the International Bureau of Weights and Measures http://www.bipm.fr
+—          the URL for the International Earth Rotation Service http://hpiers.obspm.fr.
+
+2.1.13
+UTC of day
+quantitative expression marking an instant within a calendar day in accordance with UTC
+
+2.1.14
+standard time
+time scale derived from coordinated universal time, UTC, by a time shift established in a given location
+by the competent authority
+
+[IEC 60050-111]
+
+Note to entry:     This time shift may be varied in the course of a year.
+
+2.1.15
+standard time of day
+quantitative expression marking an instant within a calendar day by the duration elapsed after the
+beginning of the day in the local standard time
+
+[IEC 60050-111] --> due to the changed definition the reference needs to be deleted!
+
+Note to entry:     Standard time of day is called “clock time” in IEC 60050-111.
+
+2.1.16
+local time
+locally applicable time of day such as standard time of day, or a non-UTC based time of day
+
+2.1.17
+recurring time interval
+series of consecutive time intervals of the same duration or nominal duration
+
+
+
+
+   4                                                                                 © ISO 2016 – All rights reserved
+                                                                                               ISO/WD 8601-1
+
+
+
+Note 1 to entry:       If the duration of the time intervals is measured in calendar entities, the duration of each
+time interval depends on the calendar dates of its start and its end.
+
+Note 2 to entry:        If the time interval is repeating to a set of rules, section 5 – “Repeat Rules for Recurring
+Time Intervals”, of ISO 8601 Part to shall be applied.
+
+2.2 Time units, nominal durations and time intervals
+
+2.2.1
+second
+base unit of measurement of time in the International System of Units (SI) as defined by the
+International Committee of Weights and Measures (CIPM, i.e. Comité International des Poids et
+Mesures)
+Note 1 to entry:   See also ISO 31-1.
+
+Note 2 to entry:   It is the base unit for expressing duration.
+
+2.2.2
+leap second
+intentional time step of one second to adjust UTC to ensure appropriate agreement with UT1, a time
+scale based on the rotation of the Earth
+
+[Rec. ITU-R TF.460-5]
+NOTE        An inserted second is called positive leap second and an omitted second is called negative leap second.
+A positive leap second is inserted between [23:59:59Z] and [24:00:00Z] and can be represented as [23:59:60Z].
+Negative leap seconds are achieved by the omission of [23:59:59Z]. Insertion or omission takes place as
+determined by IERS, normally on 30 June or 31 December, but if necessary on 31 March or 30 September.
+
+2.2.3
+minute
+unit of time, equal to 60 seconds
+
+[ISO 31-1]
+
+2.2.4
+hour
+unit of time, equal to 60 minutes
+
+[ISO 31-1]
+
+2.2.5
+day
+〈unit of time〉 unit of time, equal to 24 hours
+
+[ISO 31-1]
+
+2.2.6
+calendar day
+time interval starting at the beginning of the day and ending with the beginning of the next day, the
+latter being the starting instant of the next calendar day
+Note 1 to entry:   A calendar day is often also referred to as day.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                               5
+ISO/WD 8601-1
+
+
+Note 2 to entry: The duration of a calendar day is 24 hours; except if modified by:
+— the insertion or deletion of leap seconds, by decision of the International Earth Rotation Service (IERS), or
+— the insertion or deletion of other time intervals, as may be prescribed by local authorities to alter the time
+   scale of local time.
+
+2.2.7
+day
+〈duration〉 duration of a calendar day
+Note to entry:      The term “day” applies also to the duration of any time interval which starts at a certain time of
+day at a certain calendar day and ends at the same time of day at the next calendar day.
+
+2.2.8
+calendar week
+time interval of seven calendar days starting with a Monday
+Note 1 to entry:   A calendar week is often also referred to as week.
+
+Note 2 to entry:   See 3.2.2 for the names of the calendar days and their day numbers.
+
+Note 3 to entry:   A calendar week may be identified by its ordinal number within its calendar year.
+
+2.2.9
+week
+duration of a calendar week
+Note to entry:     The term “week” applies also to the duration of any time interval which starts at a certain time
+of day at a certain calendar day and ends at the same time of day at the same calendar day of the next calendar
+week.
+
+2.2.10
+calendar week number
+ordinal number which identifies a calendar week within its calendar year according to the rule that the
+first calendar week of a year is that one which includes the first Thursday of that year and that the last
+calendar week of a calendar year is the week immediately preceding the first calendar week of the next
+calendar year
+
+2.2.11
+calendar month
+time interval resulting from the division of a calendar year in 12 time intervals, each with a specific
+name and containing a specific number of calendar days
+Note 1 to entry:   A calendar month is often referred to as month.
+
+Note 2 to entry: See 3.2.1 for the names of the months of the calendar year in the Gregorian calendar, listed in
+their order of occurrence, for their number of days, and for the ordinal dates of the days in common and leap
+years.
+
+2.2.12
+month
+duration of 28, 29, 30 or 31 calendar days depending on the start and/or the end of the corresponding
+time interval within the specific calendar month
+
+Note 1 to entry: The term “month” applies also to the duration of any time interval which starts at a certain time
+of day at a certain calendar day of the calendar month and ends at the same time of day at the same calendar day
+of the next calendar month, if it exists. In other cases the ending calendar day has to be agreed on.
+
+
+
+
+   6                                                                                   © ISO 2016 – All rights reserved
+                                                                                               ISO/WD 8601-1
+
+
+
+Note 2 to entry:   In certain applications a month is considered as a duration of 30 calendar days.
+
+2.2.13
+calendar year
+cyclic time interval in a calendar which is required for one revolution of the Earth around the Sun and
+approximated to an integral number of calendar days
+
+Note 1 to entry:   A calendar year is often also referred to as year.
+
+Note 2 to entry: Unless otherwise specified the term designates in this International Standard a calendar year in
+the Gregorian calendar.
+
+2.2.14
+year
+duration of 365 or 366 calendar days depending on the start and/or the end of the corresponding time
+interval within the specific calendar year
+
+Note to entry:      The term “year” applies also to the duration of any time interval which starts at a certain time
+of day at a certain calendar date of the calendar year and ends at the same time of day at the same calendar date of
+the next calendar year, if it exists. In other cases the ending calendar date has to be agreed on.
+
+2.2.15
+Gregorian calendar
+calendar in general use, introduced in 1582 to define a calendar year that more closely approximated
+the tropical year than the Julian calendar
+
+Note to entry:      In this International Standard the term Gregorian calendar is used to refer to the time scale
+described in 3.2.1.
+
+2.2.16
+common year
+calendar year in the Gregorian calendar that has 365 calendar days
+
+2.2.17
+leap year
+calendar year in the Gregorian calendar that has 366 calendar days
+
+2.2.18
+centennial year
+calendar year in the Gregorian calendar whose year number is divisible without remainder by hundred
+
+2.3 Representations and formats
+
+2.3.1
+date and time representation
+expression indicating a time point, time interval or recurring time interval
+
+2.3.2
+date and time format representation
+expression describing the format of a group of date and time representations
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                               7
+ISO/WD 8601-1
+
+
+2.3.3
+basic format
+format of a date and time representation or date and time format representation comprising the
+minimum number of time elements necessary for the accuracy required
+
+Note to entry:   The basic format should be avoided in plain text.
+
+2.3.4
+extended format
+extension of the basic format that includes additional separators
+
+2.3.5
+complete representation
+representation that includes all the date and time components associated with the expression; limited,
+if applicable, for time elements of representations expressing a calendar year to four digits
+
+2.3.6
+decimal representation
+expansion of a representation by addition of a decimal fraction to the lowest order component of the
+expression
+
+2.3.7
+representation with reduced accuracy
+abbreviation of a representation by omission of lower order components
+
+2.3.8
+expanded representation
+expansion of a representation to allow identification of dates in calendar years outside the range [0000]
+till [9999]
+
+3 Fundamental principles
+3.1 Basic rules
+
+This International Standard gives a set of rules for the representation of
+
+— time points,
+
+— time intervals,
+
+— recurring time intervals.
+
+Both accurate and approximate representations can be identified by means of unique and unambiguous
+expressions specifying the relevant dates, times of day and durations. The degree of accuracy required
+and obtainable can be varied by including or deleting the appropriate time elements (such as seconds).
+
+In addition, this International Standard gives rules for the representation of expressions describing the
+format of the above representations.
+
+The decreasing order of time elements, left-to-right, is common to these representations.
+
+
+
+
+   8                                                                          © ISO 2016 – All rights reserved
+                                                                                           ISO/WD 8601-1
+
+
+
+3.2 Time scales
+3.2.1 The Gregorian calendar
+
+This International Standard uses the Gregorian calendar for the identification of calendar days. This
+calendar provides a time scale consisting of a, potentially infinite, series of contiguous calendar years.
+Consecutive calendar years are identified by sequentially assigned year numbers.
+
+The Gregorian calendar distinguishes common years of 365 consecutive calendar days and leap years of
+366 consecutive calendar days. A leap year is a year whose year number is divisible by four an integral
+number of times. However, a centennial year is not a leap year unless its year number is divisible by
+four hundred an integral number of times.
+
+In the Gregorian calendar each calendar year is divided in 12 sequential calendar months, each
+consisting of a specific number of calendar days as indicated in Table 1.
+
+The Gregorian calendar has a reference point that assigns 20 May 1875 to the calendar day that the
+“Convention du Mètre” was signed in Paris.
+
+This International Standard allows the identification of calendar years by their year number for years
+both before and after the introduction of the Gregorian calendar. For the determination of calendar
+years, the year number and the calendar day within the calendar year only the rules mentioned above
+are used. For the purposes of this International Standard the calendar based on these rules is referred
+to as the Gregorian calendar. The use of this calendar for dates preceding the introduction of the
+Gregorian calendar (also called the proleptic Gregorian calendar) should only be by agreement of the
+partners in information interchange.
+
+The introduction of the Gregorian calendar included the cancellation of the accumulated inaccuracies of
+the Julian calendar. However, no dates shall be inserted or deleted when determining dates in the
+proleptic Gregorian calendar.
+NOTE       In the proleptic Gregorian calendar, the calendar year [0000] is a leap year.
+
+EXAMPLE         The Gregorian calendar was introduced on 15 October 1582. In the calendar set by this standard
+the calendar day preceding that calendar day is referred to as 14 October 1582. In the Julian calendar that
+calendar day is referred to as 4 October 1582.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                         9
+ISO/WD 8601-1
+
+
+                                       Table 1 — Calendar months
+
+ Calendar month       Calendar        Number of days in Ordinal dates of the days   Ordinal dates of the
+     number          month name          the month         in common years           days in leap years
+         01             January                31                  001-031                 001-031
+                                              28
+         02            February                                    032-059                 032-060
+                                        (leap year 29)
+         03             March                  31                  060-090                 061-091
+         04              April                 30                  091-120                 092-121
+         05              May                   31                  121-151                 122-152
+         06              June                  30                  152-181                 153-182
+         07               July                 31                  182-212                 183-213
+         08             August                 31                  213-243                 214-244
+         09           September                30                  244-273                 245-274
+         10             October                31                  274-304                 275-305
+         11           November                 30                  305-334                 306-335
+         12           December                 31                  335-365                 336-366
+
+
+3.2.2 The week calendar
+
+This International Standard allows the use of the week calendar time scale for the identification of
+calendar days.
+
+This time scale is based on an unbounded series of contiguous calendar weeks. The calendar week
+number identifies the calendar week within the calendar year. Each calendar week has seven calendar
+days as indicated in Table 2.
+
+The reference point of the time scale assigns Saturday to 1 January 2000.
+
+                                         Table 2 — Calendar days
+
+                                  Ordinal day number in
+                                                          Calendar day name
+                                        the week
+                                           1                  Monday
+                                           2                  Tuesday
+                                           3                 Wednesday
+                                           4                  Thursday
+                                           5                   Friday
+                                           6                  Saturday
+                                           7                   Sunday
+
+NOTE 1    A calendar year has 52 or 53 calendar weeks.
+
+
+
+
+   10                                                                         © ISO 2016 – All rights reserved
+                                                                                             ISO/WD 8601-1
+
+
+
+NOTE 2      The first calendar week of a calendar year includes up to three days from the previous calendar year;
+the last calendar week of a calendar year includes up to three days from the following calendar year. Therefore,
+for certain calendar days the calendar date contains a different calendar year than the week date. For instance:
+— Sunday 1 January 1995 is identified by the calendar date [1995-01-01] and week date [1994-W52-7]
+— Tuesday 31 December 1996 is identified by the calendar date [1996-31-12] and week date [1997-W01-2].
+
+NOTE 3      The rule for determining the first calendar week (see the definition of calendar week number in
+Clause 2) is equivalent with the rule “the first calendar week is the calendar week which includes 4 January”.
+
+3.2.3 Time scales within the calendar day
+
+This International Standard recommends the use of time scales applying the 24-hour time keeping
+system for the identification of time points within a calendar day.
+
+These time scales provide marks which, except in case of discontinuities, represent the duration elapsed
+after the start of the calendar day. In this International Standard these marks, which are collectively
+referred to as time of day, are represented by the number of hours elapsed after the beginning of the
+day, the number of minutes elapsed after the last full hour, the number of seconds elapsed after the last
+full minute, with decimal parts of a second if necessary.
+
+3.3 Representations and format representations
+
+This International Standard defines date and time representations to express time points, time intervals
+and recurring time intervals.
+
+EXAMPLE         The date and time representation [2003-02-10] identifies 10 February 2003.
+
+To define the date and time representations permitted by this International Standard, use is made of
+date and time format representations in which specific characters are used to represent digits or other
+characters in date and time representations. A date and time format representation, together with its
+description, defines permitted date and time representations.
+
+EXAMPLE         The date and time format representation [YYYY-MM-DD], together with the associated
+description, defines the complete, extended format, calendar date representations permitted by this International
+Standard.
+
+By mutual agreement the parties in information interchange may transfer the date and time format
+representations. Only the date and time format representations permitted by this International
+Standard shall be used.
+
+The date and time format representations use characters that potentially expand into more than one
+character in the date and time representation; this is indicated by underlining. If at the time of
+information interchange of the date and time format representation the number of characters to be
+used in the date and time representation is known, the variable expansion representation (i.e.
+underlining) shall not be used.
+
+EXAMPLE        Local time with three decimals for the fraction of the seconds is represented by [hh:mm:ss,sss],
+not by [hh:mm:ss,s].
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                          11
+ISO/WD 8601-1
+
+
+3.4 Characters used in the representations
+3.4.1 Introduction
+
+The representations specified in this International Standard make use of graphic characters as specified
+in 3.4. Note that, except for “hyphen”, “minus” and “plus-minus”, these characters are part of the
+ISO/IEC 646 repertoire.
+
+In an environment where use is made of a character repertoire based on ISO/IEC 646, “hyphen” and
+“minus” are both mapped onto “hyphen-minus”. Representations with a “plus-minus” shall only be used
+in such environment if the interchange repertoire includes “plus-minus”.
+
+In an environment where use is made of the ITU-T S.1 repertoire (e.g. telex) date and time format
+representations shall not be used.
+
+In date and time format representations underlining of characters is used. In environments that do not
+support the representation of underlined characters, the underline shall precede the character to be
+underlined.
+
+NOTE 1     In date and time representations lower case characters may be used when upper case characters are
+not available.
+
+NOTE 2    Encoding of characters for the interchange of dates and times is not in the scope of this International
+Standard.
+
+Unless explicitly allowed by this International Standard the character “space” shall not be used in the
+representations.
+
+3.4.2 Characters used in place of digits or signs
+
+In date and time format representations characters are used to represent characters in the date and
+time representations as follows:
+
+    [Y] represents a digit used in the time element “year”;
+
+    [M] represents a digit used in the time element “month”;
+
+    [D] represents a digit used in the time element “day”;
+
+    [w] represents a digit used in the time element “week”;
+
+    [h] represents a digit used in the time element “hour”;
+
+    [m] represents a digit used in the time element “minute”;
+
+    [s] represents a digit used in the time element “second”;
+
+    [n] represents a digit from a positive integer or zero;
+
+    [±] represents a plus sign [+] if in combination with the following element a positive value or zero
+        needs to be represented (in this case, unless explicitly stated otherwise, the plus sign shall not
+        be omitted), or a minus sign [−] if in combination with the following element a negative value
+        needs to be represented.
+
+
+
+
+   12                                                                               © ISO 2016 – All rights reserved
+                                                                                                ISO/WD 8601-1
+
+
+
+In addition the following convention applies:
+
+    [_] When any of the characters representing a digit is underlined, it represents zero or more digits
+        in the corresponding date and time representation.
+
+Other characters in the date and time format representations are copied in the date and time
+representations.
+
+3.4.3 Characters used as designators
+
+In representations the following characters are used as designators:
+
+    [P] is used as duration designator, preceding the component which represents the duration;
+
+    NOTE     The use of the character P is based on the historical use of the term “period” for duration.
+
+    [R] is used as recurring time interval designator;
+
+    [T] is used as time designator to indicate:
+
+    — the start of the representation of local time to designate local time expressions as such,
+
+    — the start of the representation of the time of day in date and time of day expressions,
+
+    — the start of the representation of the number of hours, minutes or seconds in expressions of
+      duration;
+
+    [W] is used as week designator, preceding a data element which represents the ordinal number of a
+        calendar week within the calendar year;
+
+    [Z] is used as UTC designator.
+
+In representations of duration (4.4.3.2), the following designators are used as part of the expression:
+
+    [Y] [M] [W] [D] [H] [M] [S]
+
+NOTE 1     In these expressions, [M] may be used to indicate “month” or “minute”, or both.
+
+NOTE 2     In date and time format representations the interpretation of the characters [Y], [M] and [D] as
+characters used in place of digits or as designators depends on their position in the expression.
+
+NOTE 3     These designators are used for the designation of units of time and nominal durations in the
+representations defined in this International Standard. For the designation of units of time and durations in other
+contexts ISO 31-1 should be applied.
+
+3.4.4 Characters used as separators
+
+In representations the following characters are used as separators:
+
+    [-] (hyphen):        to separate the time elements “year” and “month”, “year” and “week”, “year” and
+                         “day”, “month” and “day”, and “week” and “day”;
+
+    [:] (colon):         to separate the time elements “hour” and “minute”, and “minute” and “second”;
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                            13
+ISO/WD 8601-1
+
+
+    [/] (solidus):    to separate components in the representation of time intervals and recurring time
+                      intervals.
+
+NOTE      Representations defined in this International Standard also make use of the decimal separator.
+
+3.5 Expansion
+
+By mutual agreement of the partners in information interchange, it is permitted to expand the
+component identifying the calendar year, which is otherwise limited to four digits. This enables
+reference to dates and times in calendar years outside the range supported by complete
+representations, i.e. before the start of the year [0000] or after the end of the year [9999].
+
+3.6 Leading zeros
+
+If a time element in a defined representation has a defined length, then leading zeros shall be used as
+required.
+
+3.7 Mutual agreement
+
+Some of the representations identified in this International Standard are only allowed by mutual
+agreement of the partners in information interchange. Such agreement should ensure that fields in
+which the representation may occur are not allowed to hold other representations that cannot be
+unambiguously distinguished from the agreed representation.
+
+4 Date and time representations
+4.1 Date
+4.1.1 General
+
+For ease of comparison, in all the following examples of representations of dates, the date of
+12 April 1985 is used as an illustration, if applicable.
+
+4.1.2 Calendar date
+
+4.1.2.1   General
+
+In expressions of calendar dates
+
+— calendar year is, unless specified otherwise, represented by four digits. Calendar years are
+  numbered in ascending order according to the Gregorian calendar by values in the range [0000] to
+  [9999]. Values in the range [0000] through [1582] shall only be used by mutual agreement of the
+  partners in information interchange.
+
+— calendar month is represented by two digits. January is represented by [01], and subsequent
+  calendar months are numbered in ascending sequence.
+
+— calendar day of the month is represented by two digits. The first calendar day of any calendar
+  month is represented by [01] and subsequent calendar days of the same calendar month are
+  numbered in ascending sequence.
+
+
+
+
+   14                                                                              © ISO 2016 – All rights reserved
+                                                                                               ISO/WD 8601-1
+
+
+
+4.1.2.2      Complete representations
+
+When the application identifies the need for a complete representation of a calendar date, it shall be one
+of the numeric expressions as follows, where [YYYY] represents a calendar year, [MM] the ordinal
+number of a calendar month within the calendar year, and [DD] the ordinal number of a calendar day
+within the calendar month.
+
+      Basic format:    YYYYMMDD                       Example:      19850412
+      Extended format: YYYY-MM-DD                     Example:      1985-04-12
+
+4.1.2.3      Representations with reduced accuracy
+
+If in a given application it is sufficient to express a calendar date with less accuracy than a complete
+representation as specified in 4.1.2.2, either two, four or six digits may be omitted, the omission starting
+from the extreme right-hand side. The resulting representation will then indicate a month, a year or a
+century, as set out below. When only [DD] is omitted, a separator shall be inserted between [YYYY] and
+[MM], but separators shall not be used in the other representations with reduced accuracy.
+
+a) A specific month
+   Basic format:    YYYY-MM                           Example:      1985-04
+   Extended format: not applicable
+
+b) A specific year
+   Basic format:    YYYY                              Example:      1985
+   Extended format: not applicable
+
+c)    A specific century
+      Basic format:      YY                           Example:      19
+      Extended format: not applicable
+
+4.1.2.4      Expanded representations
+
+If, by agreement, expanded representations are used, the formats shall be as specified below. The
+interchange parties shall agree the additional number of digits in the time element year. In the examples
+below it has been agreed to expand the time element year with two digits.
+
+a) A specific day
+   Basic format:    ±YYYYYMMDD                        Example:      +0019850412
+   Extended format: ±YYYYY-MM-DD                      Example:      +001985-04-12
+
+b) A specific month
+   Basic format:    ±YYYYY-MM                         Example:      +001985-04
+   Extended format: not applicable
+
+c)    A specific year
+      Basic format:    ±YYYYY                         Example:      +001985
+      Extended format: not applicable
+
+d) A specific century
+   Basic format:      ±YYY                            Example:      +0019
+   Extended format: not applicable
+
+NOTE         4.1.2.4 includes the definition of representations that are expanded and have reduced accuracy.
+
+
+
+
+     © ISO 2016 – All rights reserved                                                                          15
+ISO/WD 8601-1
+
+
+4.1.3 Ordinal date
+
+4.1.3.1   General
+
+In expressions of ordinal dates
+
+— calendar year is represented as in 4.1.2.
+
+— calendar day of the year is represented by three decimal digits. The first calendar day of any
+  calendar year is represented by [001] and subsequent calendar days are numbered in ascending
+  sequence.
+
+4.1.3.2   Complete representations
+
+When the application identifies the need for a complete representation of an ordinal date, it shall be one
+of the numeric expressions as follows, where [YYYY] represents a calendar year and [DDD] the ordinal
+number of a calendar day within the calendar year.
+
+    Basic format:    YYYYDDD                     Example:    1985102
+    Extended format: YYYY-DDD                    Example:    1985-102
+
+4.1.3.3   Expanded representations
+
+If, by agreement, expanded representations are used the formats shall be as specified below. The
+interchange parties shall agree the additional number of digits in the time element year. In the examples
+below it has been agreed to expand the time element year with two digits.
+
+    A specific day
+    Basic format:    ±YYYYYDDD                   Example:    +001985102
+    Extended format: ±YYYYY-DDD                  Example:    +001985-102
+
+4.1.4 Week date
+
+4.1.4.1   General
+
+In expressions of week dates
+
+— calendar year is represented as in 4.1.2.
+
+— calendar week is represented by two decimal digits. The first calendar week of a year shall be
+  identified as [01] and subsequent weeks shall be numbered in ascending sequence.
+
+— calendar day of the week is represented by one decimal digit. Monday shall be identified as
+  calendar day [1] of any calendar week, and subsequent calendar days of the same calendar week
+  shall be numbered in ascending sequence to Sunday (calendar day [7]).
+
+4.1.4.2   Complete representations
+
+When the application identifies the need for a complete representation of a week date, it shall be one of
+the alphanumeric expressions as follows, where [YYYY] represents a calendar year, [W] is the week
+designator, [ww] represents the ordinal number of a calendar week within the year, and [D] represents
+the ordinal number of a calendar day within the calendar week.
+
+
+
+
+   16                                                                         © ISO 2016 – All rights reserved
+                                                                                             ISO/WD 8601-1
+
+
+
+    Basic format:    YYYYWwwD                       Example:      1985W155
+    Extended format: YYYY-Www-D                     Example:      1985-W15-5
+
+4.1.4.3    Representations with reduced accuracy
+
+If the degree of accuracy required permits, one digit may be omitted from the representation in 4.1.4.2.
+
+    A specific week
+    Basic format:    YYYYWww                        Example:      1985W15
+    Extended format: YYYY-Www                       Example:      1985-W15
+
+4.1.4.4    Expanded representations
+
+If, by agreement, expanded representations are used the formats shall be as specified below. The
+interchange parties shall agree the additional number of digits in the time element year. In the examples
+below it has been agreed to expand the time element year with two digits.
+
+a) A specific day
+   Basic format:    ±YYYYYWwwD                      Example:      +001985W155
+   Extended format: ±YYYYY-Www-D                    Example:      +001985-W15-5
+
+b) A specific week
+   Basic format:    ±YYYYYWww                       Example:      +001985W15
+   Extended format: ±YYYYY-Www                      Example:      +001985-W15
+NOTE       4.1.4.4 includes the definition of representations that are expanded and have reduced accuracy.
+
+4.2 Time of day
+4.2.1 General
+
+This International Standard is based on the 24-hour timekeeping system that is now in common use. In
+expressions of time of day
+
+— hour is represented by two digits from [00] to [24]. The representation of the hour by [24] is
+  allowed only to indicate the end of a calendar day within a time interval, see 4.2.3.
+
+— minute is represented by two digits from [00] to [59].
+
+— second is represented by two digits from [00] to [60]. The representation of the second by [60] is
+  allowed only to indicate a positive leap second or an instant within that second.
+NOTE       These expressions apply to both UTC and non-UTC based time scales for time of day.
+
+4.2.2 Local time
+
+4.2.2.1    General
+
+In the representations of local time as defined below no provisions have been made to prevent
+ambiguities in expressions that result from discontinuities in the time scale of local time (e.g. daylight
+saving time). When an application identifies the need to prevent these ambiguities, use can be made of
+the provision of 4.2.5.2.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                          17
+ISO/WD 8601-1
+
+
+4.2.2.2     Complete representations
+
+When the application identifies the need for an expression of local time then the complete re-
+presentation shall be a single numeric expression comprising six digits in the basic format, where [hh]
+represents hours, [mm] minutes and [ss] seconds.
+
+     Basic format:    hhmmss                       Example:    232050
+     Extended format: hh:mm:ss                     Example:    23:20:50
+
+4.2.2.3     Representations with reduced accuracy
+
+If the degree of accuracy required permits, either two or four digits may be omitted from the represen-
+tation in 4.2.2.2.
+
+a) A specific hour and minute
+   Basic format:     hhmm                          Example:    2320
+   Extended format: hh:mm                          Example:    23:20
+
+b) A specific hour
+   Basic format:    hh                             Example:    23
+   Extended format: not applicable
+
+4.2.2.4     Representations with decimal fraction
+
+If necessary for a particular application a decimal fraction of hour, minute or second may be included. If
+a decimal fraction is included, lower order time elements (if any) shall be omitted and the decimal
+fraction shall be divided from the integer part by the decimal sign specified in ISO 31-0, i.e. the comma
+[,] or full stop [.]. Of these, the comma is the preferred sign. If the magnitude of the number is less than
+unity, the decimal sign shall be preceded by two zeros in accordance with 3.6.
+
+The interchange parties, dependent upon the application, shall agree the number of digits in the decimal
+fraction. The format shall be [hhmmss,ss], [hhmm,mm] or [hh,hh] as appropriate (hour minute second,
+hour minute, and hour, respectively), with as many digits as necessary following the decimal sign. A
+decimal fraction shall have at least one digit. In the examples below it has been agreed to give the
+smallest time element a decimal fraction with one digit.
+
+a) A specific hour, minute and second and a decimal fraction of the second
+   Basic format:      hhmmss,ss               Example: 232050,5
+   Extended format: hh:mm:ss,ss               Example: 23:20:50,5
+
+b) A specific hour and minute and a decimal fraction of the minute
+   Basic format:     hhmm,mm                   Example: 2320,8
+   Extended format: hh:mm,mm                   Example: 23:20,8
+
+c)   A specific hour and a decimal fraction of the hour
+     Basic format:     hh,hh                       Example:    23,3
+     Extended format: not applicable
+
+NOTE        4.2.2.4 includes the definition of representations that have both reduced accuracy and a decimal
+fraction.
+
+
+
+
+     18                                                                         © ISO 2016 – All rights reserved
+                                                                                                ISO/WD 8601-1
+
+
+
+4.2.2.5    Representations with time designator
+
+In expressions of local time, applications may put the time designator [T] immediately in front of the
+representations defined in 4.2.2.2 through 4.2.2.4.
+
+If the local time is represented in a context that does not clearly identify a local time expression, the
+time designator [T] shall be used immediately in front of the representations defined in 4.2.2.2 through
+4.2.2.4.
+
+4.2.3 Beginning/end of the day
+
+The complete representations in basic and extended format for the end of the day and the beginning of
+the following day, in accordance with 4.2.2, shall be expressed as follows:
+
+          Basic format       Extended format
+             000000               00:00:00      Beginning of day
+             240000               24:00:00      End of day
+The representations may have reduced accuracy in accordance with 4.2.2.3 or may be designated as a
+time expression in accordance with 4.2.2.5. To represent the start or end of a day, the representations
+may be expanded with a decimal fraction containing only zeros in accordance with 4.2.2.4.
+
+NOTE 1     The end of one calendar day [24:00] coincides with [00:00] at the start of the next calendar day, e.g.
+[24:00] on 12 April 1985 is the same as [00:00] on 13 April 1985.
+
+NOTE 2     The end of day representations, where [hh] has the value [24], shall be used only to represent the end
+of day within a time interval in accordance with 4.4 or recurring time interval in accordance with 4.5.
+
+NOTE 3     The end of day representation, where [hh] has a value of [24], shall not be used for a single time point.
+
+4.2.4 UTC of day
+
+To express UTC of day the representations specified in 4.2.2.2 through 4.2.2.4 shall be used, followed
+immediately, without space, by the UTC designator [Z]. The examples below are complete and reduced
+accuracy representations of the UTC of day 20 minutes and 30 seconds past 23 hours:
+
+    Basic format:         hhmmssZ                     Example:      232030Z
+                          hhmmZ                                     2320Z
+                          hhZ                                       23Z
+
+    Extended format: hh:mm:ssZ                        Example:      23:20:30Z
+                     hh:mmZ                                         23:20Z
+                     not applicable
+
+4.2.5 Local time and Coordinated Universal Time (UTC)
+
+4.2.5.1    Difference between local time and UTC of day
+
+When it is required to indicate the difference between local time and UTC of day, the representation of
+the difference can be expressed in hours and minutes, or hours only. It shall be expressed as positive
+(i.e. with the leading plus sign [+]) if the local time is ahead of or equal to UTC of day and as negative
+(i.e. with the leading minus sign [-]) if it is behind UTC of day. The minutes time element of the
+difference may only be omitted if the difference between the time scales is exactly an integral number of
+hours.
+
+
+
+   © ISO 2016 – All rights reserved                                                                               19
+ISO/WD 8601-1
+
+
+    Basic format:     ±hhmm                     Example:    +0100
+                      ±hh                                   +01
+
+    Extended format: ±hh:mm                     Example:    +01:00
+
+Expressions of the difference between local time and UTC of day are a component in the
+representations defined in 4.2.5.2; they shall not be used as self-standing expressions.
+
+4.2.5.2   Local time and the difference from UTC
+
+When it is required to indicate local time and the difference between the time scale of local time and
+UTC, the representation of the difference shall be appended to the representation of the local time
+following immediately, without space, the lowest order (extreme right-hand) time element of the local
+time expression. The difference between the time scale of local time and UTC shall be expressed in
+hours-and-minutes, or hours-only independent of the accuracy of the local time expression associated
+with it.
+
+The complete representation of the time of 27 minutes and 46 seconds past 15 hours locally in Geneva
+(in winter one hour ahead of UTC), and in New York (in winter five hours behind UTC), together with
+the indication of the difference between the time scale of local time and UTC, are used as examples.
+
+    Basic format:     hhmmss±hhmm               Example:       152746+0100
+                                                               152746−0500
+                      hhmmss±hh                                152746+01
+                                                               152746−05
+
+    Extended format: hh:mm:ss±hh:mm             Example:       15:27:46+01:00
+                                                               15:27:46−05:00
+                      hh:mm:ss±hh                              15:27:46+01
+                                                               15:27:46−05
+
+In these expressions the local time component may be represented with reduced accuracy as defined in
+4.2.2.3 or with decimal fraction as defined in 4.2.2.4.
+
+4.3 Date and time of day
+4.3.1 General
+
+When the application does not clearly identify the need for only a date expression (see 4.1) or only a
+time of day expression (see 4.2), then a time point can be identified through a date and time of day
+expression.
+
+4.3.2 Complete representations
+
+The time elements of a date and time of day expression shall be written in the following sequence.
+
+a) For calendar dates:
+   year – month – day of the month – time designator – hour – minute – second – zone designator
+
+b) For ordinal dates:
+   year – day of the year – time designator – hour – minute – second – zone designator
+
+
+
+
+   20                                                                        © ISO 2016 – All rights reserved
+                                                                                                ISO/WD 8601-1
+
+
+
+c)    For week dates:
+      year – week designator – week – day of the week – time designator – hour – minute – second – zone
+      designator
+
+The zone designator is empty if use is made of local time in accordance with 4.2.2.2 through 4.2.2.4, it is
+the UTC designator [Z] if use is made of UTC of day in accordance with 4.2.4 and it is the
+difference-component if use is made of local time and the difference from UTC in accordance with
+4.2.5.2.
+
+The character [T] shall be used as time designator to indicate the start of the representation of the time
+of day component in these expressions. The hyphen [-] and the colon [:] shall be used, in accordance
+with 4.4.4, as separators within the date and time of day expressions, respectively, when required.
+
+NOTE       By mutual agreement of the partners in information interchange, the character [T] may be omitted in
+applications where there is no risk of confusing a date and time of day representation with others defined in this
+International Standard.
+
+The following are examples of complete representations of date and time of day representations:
+
+      Basic format:         YYYYMMDDThhmmss                       Example: 19850412T101530
+                            YYYYMMDDThhmmssZ                               19850412T101530Z
+                            YYYYMMDDThhmmss±hhmm                           19850412T101530+0400
+                            YYYYMMDDThhmmss±hh                             19850412T101530+04
+
+      Extended format: YYYY-MM-DDThh:mm:ss                        Example: 1985-04-12T10:15:30
+                       YYYY-MM-DDThh:mm:ssZ                                1985-04-12T10:15:30Z
+                       YYYY-MM-DDThh:mm:ss±hh:mm                           1985-04-12T10:15:30+04:00
+                       YYYY-MM-DDThh:mm:ss±hh                              1985-04-12T10:15:30+04
+
+Where complete representations using calendar dates are shown, ordinal dates (4.1.3.2) or week dates
+(4.1.4.2) may be substituted.
+
+4.3.3 Representations other than complete
+
+For reduced accuracy, decimal or expanded representations of date and time of day, any of the
+representations in 4.1.2 (calendar dates), 4.1.3 (ordinal dates) or 4.1.4 (week dates) followed
+immediately by the time designator [T] may be combined with any of the representations in 4.2.2.2
+through 4.2.2.4 (local time), 4.2.4 (UTC of day) or 4.2.5.2 (local time and the difference from UTC)
+provided that
+
+a) the rules specified in those sections are applied;
+
+b) the resulting expression does not qualify as a complete representation in accordance with 4.3.2;
+
+c)    the date component shall not be represented with reduced accuracy;
+
+     NOTE       This excludes also the date representations in 4.1.2.4 and 4.1.4.4 that are expanded and reduced.
+
+d) the expression shall either be completely in basic format, in which case the minimum number of
+separators necessary for the required expression is used, or completely in extended format, in which
+case additional separators shall be used in accordance with 4.1 and 4.2.
+
+The following are examples of reduced representations of combinations of date and time of day
+representations:
+
+
+     © ISO 2016 – All rights reserved                                                                               21
+ISO/WD 8601-1
+
+
+a) Calendar date and local time
+   Basic format:    YYYYMMDDThhmm                     Example:     19850412T1015
+   Extended format: YYYY-MM-DDThh:mm                  Example:     1985-04-12T10:15
+
+b) Ordinal date and UTC of day
+   Basic format:     YYYYDDDThhmmZ                    Example:     1985102T1015Z
+   Extended format: YYYY-DDDThh:mmZ                   Example:     1985-102T10:15Z
+
+c)   Week date and local time and the difference from UTC
+     Basic format:    YYYYWwwDThhmm±hhmm                  Example:
+     1985W155T1015+0400
+     Extended format: YYYY-Www-DThh:mm±hh Example: 1985-W15-5T10:15+04
+
+4.4 Time interval
+4.4.1 Means of specifying time intervals
+
+A time interval shall be expressed in one of the following ways:
+
+a) by a start and an end;
+
+b) by a duration and context information;
+
+c)   by a start and a duration;
+
+d) by a duration and an end.
+
+NOTE        The time interval expressed by method b) is not fully determined by the information provided in the
+expression. It is assumed that, where needed, additional information to completely determine the time interval is
+available from the context. It should however be noted that, although the expression contains only duration
+information it represents a (not fully determined) time interval; not a duration.
+
+4.4.2 Separators and designators
+
+A time interval is expressed according to the following rules:
+
+a) a solidus [/] shall be used to separate the two components in each of 4.4.1 a), c) and d);
+
+b) for 4.4.1 b), c) and d) the designator [P] shall precede, without space, the remainder of the
+   expression of duration;
+
+c)   other designators shall be used as shown in 4.4.4 and 4.4.5 below.
+
+NOTE       In certain application areas a double hyphen is used as a separator instead of a solidus.
+
+4.4.3 Duration
+
+4.4.3.1   General
+
+Duration can be expressed by a combination of components with accurate duration (hour, minute and
+second) and components with nominal duration (year, month, week and day). The term duration will be
+used to designate expressions containing components with accurate duration, with nominal duration,
+or both.
+
+
+
+
+     22                                                                               © ISO 2016 – All rights reserved
+                                                                                        ISO/WD 8601-1
+
+
+
+NOTE 1    Applications requiring accurate duration using the time unit day can make use of the provisions of
+ISO 31-1.
+
+NOTE 2    Duration is used as a component in representations of time intervals and recurring time intervals,
+representation of duration as such is not facilitated by this International Standard.
+
+4.4.3.2      Format with designators
+
+In expressions of time interval or recurring time interval, duration can be represented by a combination
+of components with designators. The number of years shall be followed by the designator [Y], the
+number of months by [M], the number of weeks by [W], and the number of days by [D]. The part
+including time components shall be preceded by the designator [T]; the number of hours shall be
+followed by [H], the number of minutes by [M] and the number of seconds by [S]. In these expressions
+the day component [nnD] is expressed as a multiple of the duration of a calendar day.
+
+In both basic and extended format the complete representation of the expression for duration shall be
+[PnnW] or [PnnYnnMnnDTnnHnnMnnS].
+
+In these representations the maximum number of digits in a component needs to be agreed by the
+partners in information interchange.
+
+For reduced accuracy or decimal representations of this representation, the following rules apply.
+
+a) If necessary for a particular application, the lowest order components may be omitted to represent
+   duration with reduced accuracy.
+
+b) If necessary for a particular application, the lowest order components may have a decimal fraction.
+   The decimal fraction shall be divided from the integer part by the decimal sign specified in
+   ISO 31-0, i.e. the comma [,] or full stop [.]. Of these, the comma is the preferred sign. The decimal
+   fraction shall at least have one digit, the maximum number of digits in the decimal component
+   needs to be agreed by the partners in information interchange. If the magnitude of the number is
+   less than unity, the decimal sign shall be preceded by a zero (see ISO 31-0).
+
+c)    If the number of years, months, days, hours, minutes or seconds in any of these expressions equals
+      zero, the number and the corresponding designator may be absent; however, at least one number
+      and its designator shall be present.
+
+d) The designator [T] shall be absent if all of the time components are absent.
+
+4.4.4 Complete representations
+
+4.4.4.1      Representations of time intervals identified by start and end
+
+When the application identifies the need for a complete representation of a time interval, identified by
+its start and its end, it shall use an expression in accordance with 4.4.2 combining any two complete
+date and time of day representations as defined in 4.3.2, provided that the resulting expression is either
+consistently in basic format or consistently in extended format.
+      Basic format:         YYYYMMDDThhmmss/YYYYMMDDThhmmss
+      Example:              19850412T232050/19850625T103000
+
+      Extended format: YYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
+      Example:         1985-04-12T23:20:50/1985-06-25T10:30:00
+
+
+
+
+     © ISO 2016 – All rights reserved                                                                   23
+ISO/WD 8601-1
+
+
+The examples represent a time interval beginning at 20 minutes and 50 seconds past 23 hours on
+12 April 1985 local time and ending at 30 minutes past 10 hours on 25 June 1985 local time.
+
+4.4.4.2     Representations of time intervals by duration and context information
+
+4.4.4.2.1    Format with designators
+
+When an application identifies the need for a complete representation of a time interval through its
+duration and context information, with duration in the format with designators, it shall use an
+expression in accordance with 4.4.2 using a complete duration representation as defined in 4.4.3.2.
+    Basic and extended format: PnnYnnMnnDTnnHnnMnnS
+                               PnnW
+    Example 1:                    P2Y10M15DT10H30M20S
+    Example 2:                    P6W
+Example 1 represents a time interval with a duration of 2 years, 10 months, 15 days, 10 hours,
+30 minutes and 20 seconds. Example 2 represents a time interval with a duration of six weeks.
+
+4.4.4.2.2    Alternative format
+
+If, by agreement, a complete representation of a time interval through its duration and context
+information, with duration in the alternative format, is used, the expression shall be in accordance with
+4.4.2 and use a complete duration representation as defined in 4.4.3.3.
+    Basic format:    PYYYYMMDDThhmmss                        Example:    P00021015T103020
+    Extended format: PYYYY-MM-DDThh:mm:ss                                Example:
+                     P0002-10-15T10:30:20
+The examples represent a time interval with a duration of 2 years, 10 months, 15 days, 10 hours,
+30 minutes and 20 seconds.
+
+4.4.4.3     Representations of time interval identified by start and duration
+
+When the application identifies the need for a complete representation of a time interval identified by
+its start and its duration, it shall use an expression in accordance with 4.4.2, combining any complete
+date and time of day representation as defined in 4.3.2 with any complete representation of duration as
+defined in 4.4.3, provided that the resulting expression is either consistently in basic format or
+consistently in extended format.
+
+    Basic format:      YYYYMMDDThhmmss/PnnYnnMnnDTnnHnnMnnS
+                       YYYYMMDDThhmmss/PYYYYMMDDThhmmss
+
+    Example:           19850412T232050/P1Y2M15DT12H30M0S
+                       19850412T232050/P00010215T123000
+
+    Extended format: YYYY-MM-DDThh:mm:ss/PnnYnnMnnDTnnHnnMnnS
+                     YYYY-MM-DDThh:mm:ss/PYYYY-MM-DDThh:mm:ss
+
+    Example:           1985-04-12T23:20:50/P1Y2M15DT12H30M0S
+                       1985-04-12T23:20:50/P0001-02-15T12:30:00
+
+The examples represent a time interval of 1 year, 2 months, 15 days, 12 hours and 30 minutes,
+beginning on 12 April 1985 at 20 minutes and 50 seconds past 23 hours local time.
+
+
+
+
+   24                                                                         © ISO 2016 – All rights reserved
+                                                                                         ISO/WD 8601-1
+
+
+
+4.4.4.4      Representations of time interval identified by duration and end
+
+When the application identifies the need for a complete representation of a time interval identified by
+its duration and its end, it shall use an expression in accordance with 4.4.2, combining any complete
+representation of the duration as defined in 4.4.3 with any complete representation of date and time of
+day as defined in 4.3.2, provided that the resulting expression is either consistently in basic format or
+consistently in extended format.
+
+      Basic format:              PnnYnnMnnDTnnHnnMnnS/YYYYMMDDThhmmss
+                                 PYYYYMMDDThhmmss/YYYYMMDDThhmmss
+
+      Example:                   P1Y2M15DT12H30M0S/19850412T232050
+                                 P00010215T123000/19850412T232050
+
+      Extended format:           PnnYnnMnnDTnnHnnMnnS/YYYY-MM-DDThh:mm:ss
+                                 PYYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
+
+      Example:                   P1Y2M15DT12H30M0S/1985-04-12T23:20:50
+                                 P0001-02-15T12:30:00/1985-04-12T23:20:50
+
+The examples represent a time interval of 1 year, 2 months, 15 days and 12 hours and 30 minutes,
+ending on 12 April 1985 at 20 minutes and 50 seconds past 23 hours local time.
+
+4.4.4.5      Other complete representations
+
+In 4.4.4.1 through 4.4.4.4 representations are shown using calendar date, local time and duration
+components. Other complete representations are found by making the following substitutions in each of
+4.4.4.1 through 4.4.4.4:
+
+— where representations using calendar dates in a time point component are shown, a complete
+  representation of ordinal dates (4.1.3) or of week dates (4.1.4) may be substituted for the calendar
+  date;
+
+— where representations using local time in a time point component are shown, a complete
+  representation of UTC (4.2.4) or local time and the difference from UTC (4.2.5.2) may be substituted
+  for local time;
+
+— where representations using the expression [PnnYnnMnnDTnnHnnMnnS] are shown, the
+  expression [PnnW] (4.4.3.2) may be substituted.
+
+4.4.5 Representations other than complete
+
+A representation other than complete of a time interval shall be an expression in accordance with 4.4.1
+and 4.4.2, where time points are represented in accordance with 4.1, 4.2 or 4.3 and where duration is
+represented in accordance with 4.4.3.2 or 4.4.3.3, provided that
+
+a) the rules specified in those sections are applied;
+
+b) the result is not a complete representation in accordance with 4.4.4; and
+
+c)    the resulting expression is either consistently in basic format or consistently in extended format.
+
+The use of a representation needs to be agreed by the partners in information interchange if the use of
+any of its constituent parts needs to be agreed by these partners.
+
+
+
+     © ISO 2016 – All rights reserved                                                                       25
+ISO/WD 8601-1
+
+
+In the representation of time intervals in accordance with 4.4.1 a),
+
+— higher order time elements may be omitted from the expression following the solidus (i.e. the
+  representation for “end of time interval”); in such a case it shall be assumed that the corresponding
+  time elements from the “start of time interval” expression apply (e.g. if [YYYYMM] are omitted, the
+  end of the time interval is in the same calendar year and calendar month as the start of the time
+  interval);
+
+— representations for time zones and UTC included with the component preceding the solidus shall
+  be assumed to apply to the component following the solidus, unless a corresponding alternative is
+  included.
+
+4.5 Recurring time interval
+
+ISO 8601 Part 2, section 5 “Repeat Rules for Recurring Time Intervals”, extends this section by adding a
+rule part to define the repeat pattern to the end of the recurring time interval structure.
+
+4.5.1 Means of specifying recurring time intervals
+
+A recurring time interval shall be expressed in one of the following ways.
+
+a) By a number of recurrences (optional), a start and an end. This represents a recurring time interval
+   of which the first time interval is identified by the last two components of the expression and the
+   number of recurrences by the first component. If the number of recurrences is absent, the number
+   of occurrences is unbounded.
+
+b) By a number of recurrences (optional), a duration and context. This represents a recurring time
+   interval with the indicated duration for each time interval and with the indicated number of
+   recurrences. If the number of recurrences is absent, the number of occurrences is unbounded.
+
+c)   By a number of recurrences (optional), a start and a duration. This represents a recurring time
+     interval of which the first time interval is identified by the last two components of the expression
+     and the number of recurrences by the first component. If the number of recurrences is absent, the
+     number of occurrences is unbounded.
+
+d) By a number of recurrences (optional), a duration and an end. This represents a recurring time
+   interval of which the last time interval is identified by the last two components of the expression
+   and the number of recurrences by the first component. If the number of recurrences is absent, the
+   number of occurrences is unbounded.
+
+4.5.2 Separators and designators
+
+A recursive time interval is expressed according to the following rule.
+
+All representations start with the designator [R], followed, without spaces, by the number of
+recurrences, if present, followed, without spaces, by a solidus [/], followed, without spaces, by the
+expression of a time interval as per 4.4.1. For the representations 4.5.1 a), 4.5.1 b), 4.5.1 c) and 4.5.1 d)
+the time intervals as per 4.4.1 a), 4.4.1 b), 4.4.1 c) and 4.4.1 d) shall be used, respectively.
+
+4.5.3 Complete representations
+
+When the application identifies the need for a complete representation of a recurring time interval, it
+shall use an expression in accordance with 4.5.2, combining any complete time interval representation
+as defined in 4.4.4 with the number of recurrences.
+
+
+
+     26                                                                          © ISO 2016 – All rights reserved
+                                                                                            ISO/WD 8601-1
+
+
+
+         Basic format:         Rn/YYYYMMDDThhmmss/YYYYMMDDThhmmss
+                               Rn/PnnYnnMnnDTnnHnnMnnS
+                               Rn/YYYYMMDDThhmmss/PnnYnnMnnDTnnHnnMnnS
+                               RnPnnYnnMnnDTnnHnnMnnS/YYYYMMDDThhmmss
+
+         Example:              R12/19850412T232050/19850625T103000
+                               R12/P2Y10M15DT10H30M20S
+                               R12/19850412T232050/P1Y2M15DT12H30M0S
+                               R12/P1Y2M15DT12H30M0S/19850412T232050
+
+         Extended format: Rn/YYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
+                          Rn/YYYY-MM-DDThh:mm:ss/PnYnMnDTnHnMnS
+                          Rn/PnnYnnMnnDTnnHnnMnnS/YYYY-MM-DDThh:mm:ss
+
+         Example:              R12/l985-04-12T23:20:50/1985-06-25T10:30:00
+                               R12/1985-04-12T23:20:50/P1Y2M15DT12H30M0S
+                               R12/P1Y2M15DT12H30M0S/1985-04-12T23:20:50
+
+4.5.4 Representations other than complete
+
+A representation other than complete of a recurring time interval shall be an expression in accordance
+with 4.5.1 and 4.5.2, where the time interval is represented in accordance with 4.4.5.
+
+5 Date and time format representations
+For the description of the date and time representations in Clause 4, use has been made of date and
+time format representations in which characters are used either to represent themselves or to
+represent other characters (typically digits) in the date and time representations.
+
+When an application identifies the need for the use of date and time format representations and by
+agreement of the communicating partners, the date and time format representations may be
+interchanged. A specific date and time format representation may only be interchanged
+
+— if the interchange of data and time format representations in general has been agreed, and
+
+— if applicable, if the interchange of date and time representations derived from the date and time
+  format representation has been agreed.
+
+EXAMPLE         The date and time format representation [hh:mm:ss,sss] may only be interchanged if (1) the
+interchange of date and time format representations has been agreed and (2) the interchange of local time with a
+decimal fraction in the time element second with three decimal digits has been agreed.
+
+Underlining of characters in a date and time format representation, to represent zero or more of the
+underlined characters in the derived date and time representation (in accordance with 3.4.2), is only
+permitted if, at the time of interchange of the date and time format representation, the number of
+characters in the derived date and time representation is not known.
+
+The date and time format representations permitted by this International Standard are specified in
+Clause 4.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                         27
+ISO/WD 8601-1
+
+
+
+                                             Annex A
+                                          (informative)
+
+ Relationship to ISO 2014, ISO 2015, ISO 2711, ISO 3307 and ISO 4031
+
+
+In preparing the first edition of ISO 2014 an examination was carried out of the potential uses of
+all-numeric dates. The advantages of the descending order year-month-day were found to outweigh
+those for the ascending order day-month-year, already established at that time in many parts of the
+world.
+
+The advantages of the descending order were found to include the following:
+
+— avoidance of the confusion between existing national conventions that use different systems of
+  ascending order;
+
+— the ease with which the whole date may be treated as a single numeral for the purposes of filing
+  and classification;
+
+— arithmetic calculation, particularly in computer uses;
+
+— the possibility of continuing the order by adding digits for hour-minute-second.
+
+For times, use of the 24-hour timekeeping system is now so common (particularly in view of the wide
+availability and use of digital watches) that separators to aid human interpretation are no longer
+necessary but are included as options.
+
+The natural addition of the lower order time digits to the higher order date digits (see above) estab-
+lished the basic concept used in the preparation of this International Standard: that a point in time
+could be uniquely represented in all-numeric form by a string of digits commencing with year and
+ending with hour, minute or second, depending on the accuracy desired.
+
+From that concept representations of all other date and time values were logically derived; thus,
+ISO 2014, ISO 3307 and ISO 4031 have been superseded.
+
+Numbering of days and weeks in the year based on the Gregorian calendar is important in many
+commercial applications. Methods of numbering the weeks of the year vary from country to country,
+and, therefore, for international trade and for industrial planning within international companies it is
+essential to use uniform numbering of weeks. ISO 2015 and ISO 2711 were prepared to meet these
+requirements.
+
+The uniform numbering of weeks necessitates a unique designation of the day on which a week begins.
+For commercial purposes, i.e. accounting, planning and similar purposes for which a week number
+might be used, Monday has been found the most appropriate as the first day of the week.
+
+Identification of a particular date by means of ordinal dates (ISO 2711) and by means of the week
+numbering system (ISO 2015) were alternative methods that the basic concept of this International
+Standard could also encompass; thus, ISO 2015 and ISO 2711 have now been superseded.
+
+
+
+
+   28                                                                         © ISO 2016 – All rights reserved
+                                                                                             ISO/WD 8601-1
+
+
+
+                                                     Annex B
+                                                  (informative)
+
+                                     Examples of representations
+
+
+B.1 Date and time representations
+B.1.1 Date
+
+Calendar date — 12 April 1985
+
+   Basic format                  Extended format         Explanation
+   19850412                      1985-04-12              Complete
+
+Ordinal date — 12 April 1985
+
+   Basic format                  Extended format         Explanation
+   1985102                       1985-102                Complete
+
+Week date — Friday 12 April 1985
+
+   Basic format                  Extended format         Explanation
+   1985W155                      1985-W15-5              Complete
+
+Calendar week — 15th week of 1985
+
+   Basic format                  Extended format         Explanation
+   1985W15                       1985-W15                Reduced accuracy
+
+Calendar month — April 1985
+
+   Basic format                  Extended format         Explanation
+   1985-04                       not applicable          Reduced accuracy
+
+Calendar year — 1985
+
+   Basic format                  Extended format         Explanation
+   1985                          not applicable          Reduced accuracy
+
+Calendar date —
+
+   Basic format                  Extended format         Explanation
+                                                         Expanded; six digits to represent the year.
+   +0119850412                   +011985-04-12
+                                                         12 April 11985
+
+   −00020412                     −0002-04-12             Expanded; four digits to represent the year.
+                                                         The twelfth of April in the second year
+
+
+
+  © ISO 2016 – All rights reserved                                                                      29
+ISO/WD 8601-1
+
+
+                                                    before the year [0000]
+
+
+B.1.2 Time of day
+
+Local time — 27 minutes and 46 seconds past 15 hours
+    Basic format            Extended format         Explanation
+    152746                  15:27:46                Complete
+    1528                    15:28                   Reduced to hour and minute
+    15                      not applicable          Reduced to hour
+
+Local time with decimal fractions — 27 minutes and 35 and a half second past 15 hours
+
+    Basic format            Extended format         Explanation
+                                                    Complete,     with       decimal
+    152735,5                15:27:35,5
+                                                    fraction
+
+The beginning of a day
+
+    Basic format            Extended format         Explanation
+    000000                  00:00:00                Complete
+    0000                    00:00                   Hour and minute only
+
+UTC of day — 20 minutes and 30 seconds past 23 hours
+
+    Basic format            Extended format         Explanation
+    232030Z                 23:20:30Z               Complete
+    2320Z                   23:20Z                  Reduced to hour and minute
+    23Z                     not applicable          Reduced to hour
+
+Local time and the difference from UTC —
+   27 minutes 46 seconds past 15 hours locally in Geneva (one hour ahead of UTC)
+
+    Basic format            Extended format         Explanation
+
+    152746+0100             15:27:46+01:00          Complete
+                                                    Time difference expressed in hours
+    152746+01               5:27:46+01
+                                                    only
+
+   27 minutes 46 seconds past 15 hours locally in New York (five hours behind UTC)
+
+    Basic format            Extended format         Explanation
+    152746-0500             15:27:46-05:00          Complete
+                                                    Time difference expressed in hours
+    152746-05               15:27:46-05
+                                                    only
+
+
+
+
+  30                                                                            © ISO 2016 – All rights reserved
+                                                                                      ISO/WD 8601-1
+
+
+
+B.1.3 Date and time of day
+
+Combinations of calendar date and local time
+
+    Basic format                 Extended format           Explanation
+    19850412T101530              1985-04-12T10:15:30       Complete
+
+Combinations of ordinal date and UTC of day
+
+    Basic format                 Extended format           Explanation
+    1985102T235030Z              1985-102T23:50:30Z        Complete
+
+Combinations of week date and local time
+
+    Basic format                 Extended format           Explanation
+    1985W155T235030              1985-W15-5T23:50:30       Complete
+
+
+
+B.1.4 Time interval
+
+Defined by start and end
+A time interval starting at 20 minutes and 50 seconds past 23 hours on 12 April 1985 and ending at
+30 minutes past 10 hours on 25 June 1985
+
+    Basic format                          Extended format
+    19850412T232050/19850625T103 1985-04-12T23:20:50/1985-06-25T10:3
+    000                          0:00
+
+A time interval starting at 12 April 1985 and ending on 25 June 1985
+
+    Basic format                          Extended format
+    19850412/0625                         1985-04-12/06-25
+
+Defined by duration and context
+A time interval of 2 years, 10 months, 15 days, 10 hours, 20 minutes and 30 seconds
+
+    Basic format                          Extended format
+    P2Y10M15DT10H20M30S                   not applicable
+    P00021015T102030                      P0002-10-15T10:20:30
+
+A time interval of 1 year and 6 months
+
+    Basic format                          Extended format
+    P1Y6M                                 not applicable
+    P0001-06                              not applicable
+
+A time interval of seventy-two hours
+
+
+
+  © ISO 2016 – All rights reserved                                                              31
+ISO/WD 8601-1
+
+
+
+    Basic format                       Extended format
+    PT72H                              not applicable
+
+Defined by start and duration
+A time interval of 1 year, 2 months, 15 days and 12 hours, beginning on 12 April 1985 at 20 minutes
+past 23 hours
+
+    Basic format                       Extended format
+    19850412T232000/P1Y2M15DT12
+                                       1985-04-12T23:20:00/P1Y2M15DT12H
+    H
+
+Defined by duration and end
+A time interval of 1 year, 2 months, 15 days and 12 hours, ending on 12 April 1985 at 20 minutes past
+23 hours
+
+    Basic format                       Extended format
+    P1Y2M15DT12H/19850412T23200
+                                P1Y2M15DT12H/1985-04-12T23:20:00
+    0
+
+
+
+B.1.5 Recurring time interval
+
+Defined by recurrences, duration and context
+Fifteen recurrences of a time interval of 2 years, 10 months, 15 days, 10 hours, 20 minutes and
+30 seconds
+
+    Basic format                       Extended format
+    R15/P2Y10M15DT10H20M30S            not applicable
+
+An unbounded number of recurrences of a time interval of 2 years, 15 days, 10 hours, 20 minutes and
+30 seconds
+
+    Basic format                       Extended format
+    R/P00020015T102030                 R/P0002-00-15T10:20:30
+
+Two recurrences of a time interval of 1 year and 6 months
+
+    Basic format                       Extended format
+    R2/P1Y6M                           not applicable
+    R2/P0001-06                        not applicable
+
+Eight recurrences of a time interval of 72 hours
+
+    Basic format                       Extended format
+    R8/PT72H                           not applicable
+
+Defined by recurrences, duration and end
+
+
+
+   32                                                                      © ISO 2016 – All rights reserved
+                                                                                           ISO/WD 8601-1
+
+
+
+An unbounded number of occurrences of a time interval of 1 year, 2 months, 15 days and 12 hours of
+which the last occurrence ends at 12 April 1985 at 20 minutes and 50 seconds past 23 hours
+
+    Basic format                            Extended format
+    R/P1Y2M15DT12H/19850412T232 R/P1Y2M15DT12H/1985-04-12T23:20:5
+    050                         0
+
+
+
+B.2 Date and time format representations
+B.2.1 Date
+    Basic format                 Extended format         Explanation
+    YYYYMMDD                     YYYY-MM-DD              complete calendar date
+                                                         expanded ordinal date with two digits
+    ±YYYYYYDDD                   ±YYYYYY-DDD
+                                                         added
+    YYYYWww                      YYYY-Www                week date with accuracy reduced to week
+
+
+
+B.2.2 Time of day
+    Basic format                 Extended format         Explanation
+    hhmmss                       hh:mm:ss                complete local time
+                                                         reduced accuracy UTC of day with one
+    hhmm,mZ                      hh:mm,mZ
+                                                         digit decimal fraction for minutes
+                                                         local time and the difference from UTC —
+    hhmm±hhmm                    hh:mm±hh:mm
+                                                         reduced accuracy
+
+
+
+B.2.3 Date and time of day
+    Basic format                 Extended format         Explanation
+                                                         complete ordinal date — reduced
+    YYYYDDDThhmm                 YYYY-DDDThh-mm
+                                                         accuracy time of day
+                                                         complete calendar date — reduced
+                                                         accuracy time of day with one digit
+    YYYYMMDDhhmm,m               YYYY-MM-DDhh:mm,m
+                                                         decimal fraction for minute — no time
+                                                         designator
+                                                         complete week date — reduced accuracy
+    YYYYWwwDThh,hhZ              YYYY-Www-DThh,hhZ       UTC of day with two digit decimal
+                                                         fraction for the hour
+
+
+
+B.2.4 Time interval
+
+Time interval by start and end — complete calendar date — reduced accuracy UTC of day with one digit
+decimal fraction
+
+    Basic format                                   Extended format
+
+
+
+  © ISO 2016 – All rights reserved                                                                   33
+ISO/WD 8601-1
+
+
+
+    YYYYMMDDThhmm,mZ/YYYYMMDDThhmm, YYYY-MM-DDThh:mm,mZ/YYYY-MM-DDThh:mm,
+    m                               m
+
+Time interval by duration and context — duration with only day component of three digits
+
+    Basic format                             Extended format
+    PnnnD
+
+Time interval by duration and context — duration with only hour component with one or more digits in
+the integral part and one or more digits in the decimal part
+
+    Basic format                             Extended format
+    PTnn,nnH
+
+
+
+B.2.5 Recurring time interval
+
+Time interval by number of recurrences, start and end — recurrence specified through zero or more
+digits — start and end by week date with reduced accuracy
+
+    Basic format                             Extended format
+    Rn/YYYYWww/YYYYWww                       Rn/YYYY-Www/YYYY-Www
+
+Time interval by number of recurrences, begin and duration — recurrence specified through zero or
+more digits — start by complete ordinal date — duration by a number of days, where the number has at
+least one digit
+
+    Basic format                             Extended format
+    Rn/YYYYDDD/PnnD                          Rn/YYYY-DDD/PnnD
+
+
+
+
+  34                                                                       © ISO 2016 – All rights reserved
+                                                                                               ISO/WD 8601-1
+
+
+
+                                                Bibliography
+
+
+[1]       ISO 80000-1:2009, Quantities and units -- Part 1: General
+
+[2]       ISO 80000-3:2006, Quantities and units -- Part 3: Space and time
+
+[3]       ISO/IEC 646:1991, Information technology — ISO 7-bit coded character set for information interchange
+
+[4]       ISO 19018:2004, Ships and marine technology — Terms, abbreviations, graphical symbols and concepts on
+          navigation
+
+[5]       IEC 60050-112:2010, International Electrotechnical Vocabulary — Part 112: Quantities and units
+
+[6]       IEC 60050-113:2011, International Electrotechnical Vocabulary — Part 113: Physics for electrotechnology
+
+[7]       IEC 60050-114:2011, International Electrotechnical Vocabulary — Part 114: Electrochemistry
+
+[8]       IEC 60050-713:1998, International Electrotechnical Vocabulary — Part 713: Radiocommunications:
+          transmitters, receivers, networks and operation
+
+[9]       Rec. ITU-R TF.460-6 (2002-02), Standard-frequency and time-signal emissions
+
+[10]      ITU-T Recommendation S.1 (1993), International Telegraph Alphabet No. 2
+
+
+
+
+      © ISO 2016 – All rights reserved                                                                           35
+

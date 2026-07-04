@@ -24,6 +24,17 @@ Its purpose is operational, not decorative:
 
 ## Current public artifacts
 
+- `public/iso-wd-8601-1-2016.txt`
+  - clause-addressable text extracted from the staged public `ISO/WD 8601-1`
+    working-draft PDF
+- `public/iso-wd-8601-2-2016.txt`
+  - clause-addressable text extracted from the staged public `ISO/WD 8601-2`
+    working-draft PDF
+- `public/rfc3339.txt`
+  - public RFC source text for the base Internet timestamp profile
+- `public/rfc9557.txt`
+  - public RFC source text for IXDTF suffix, time-zone, and calendar
+    annotation semantics
 - `public/loc-edtf-2019.html`
   - Library of Congress EDTF specification page used as an informative
     cross-check for ISO 8601-2-aligned heading names
@@ -48,6 +59,10 @@ Its purpose is operational, not decorative:
 
 The public-source acquisition pass is no longer blocked. The repo now carries:
 
+- public clause-addressable working-draft text for `ISO/WD 8601-1:2016(E)`
+- public clause-addressable working-draft text for `ISO/WD 8601-2:2016(E)`
+- a public clause-addressable text for the RFC 3339 Internet timestamp profile
+- a public clause-addressable text for the RFC 9557 IXDTF extension profile
 - a public clause-addressable text for CalConnect explicit temporal extensions
 - a public clause-addressable text for CalConnect recurrence semantics
 - a public EDTF profile for ISO 8601-2-aligned headings
@@ -55,9 +70,13 @@ The public-source acquisition pass is no longer blocked. The repo now carries:
 
 ## Remaining ISO-specific gap
 
-Exact `ISO 8601-1` and `ISO 8601-2` clause or subclause citations still require
-official ISO text with searchable numbering. The remaining local corpus target
-is:
+The remaining gap is no longer clause-addressable text in the abstract. The
+repo now has open working-draft text that is sufficient for worksheet-driven
+coverage audits and source-anchored gap analysis.
+
+What still remains unavailable locally is the final published clause authority
+for the exact `ISO 8601-1:2019`, `ISO 8601-1:2019/Amd 1:2022`, and
+`ISO 8601-2:2019` text. The remaining local corpus target is:
 
 - `licensed/iso-8601-1-2019.*`
 - `licensed/iso-8601-1-2019-amd1-2022.*`
@@ -68,9 +87,10 @@ if it exposes searchable clause or subclause numbering with enough fidelity to
 distinguish neighboring provisions without guesswork.
 
 The CalConnect XML artifacts already satisfy this standard for their own source
-families, but they do not substitute for the exact governing ISO clause numbers
-where a contract is explicitly claimed as an `ISO 8601-1` or `ISO 8601-2`
-mirror.
+families. The staged working-draft ISO texts are also sufficient for coverage
+audits, worksheet checklists, and next-best open-source line anchors. Neither
+substitutes for the exact governing published ISO clause numbers where a
+contract is explicitly claimed as a final `ISO 8601-1` or `ISO 8601-2` mirror.
 
 ## Extraction workflow
 

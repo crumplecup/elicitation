@@ -1,0 +1,1526 @@
+© ISO 2016 – All rights reserved
+
+
+
+
+                                                                                  ISO/TC 154 N0039
+                                                                                      Date: 2016-02-16
+
+                                                                                      ISO/WD 8601-2
+                                                                                        ISO/TC 154/WG 5
+
+                                                                                         Secretariat: SAC
+
+
+
+
+Data elements and interchange formats — Information interchange -
+Representation of dates and times — Part 2: Extensions
+Eléments de données et formats d'échange — Échange d'information - Représentation de la date et de
+l'heure — Partie 2: Extensions
+
+
+
+                                                Warning
+
+This document is not an ISO International Standard. It is distributed for review and comment. It is
+subject to change without notice and may not be referred to as an International Standard.
+
+Recipients of this draft are invited to submit, with their comments, notification of any relevant patent
+rights of which they are aware and to provide supporting documentation.
+
+
+
+
+Document type: International Standard
+Document subtype:
+Document stage: (20) PreparatoryStage
+Document language: E
+
+Documents:MyDocuments:Work:ISO-TC154:WG5:N-Documents:ISO-TC154-
+WG5_N0039_ISO_WD_8601-2_2016-02-16.docx STD Version 2.7f
+ISO/WD 8601-2
+
+
+
+                                        Copyright notice
+This ISO document is a working draft or committee draft and is copyright-protected by ISO. While the
+reproduction of working drafts or committee drafts in any form for use by participants in the ISO
+standards development process is permitted without prior permission from ISO, neither this
+document nor any extract from it may be reproduced, stored or transmitted in any form for any other
+purpose without prior written permission from ISO.
+
+Requests for permission to reproduce this document for the purpose of selling it should be addressed
+as shown below or to ISO's member body in the country of the requester:
+       ISO copyright office
+       Case postale 56 • CH-1211 Geneva 20
+       Tel. + 41 22 749 01 11
+       Fax + 41 22 749 09 47
+       E-mail copyright@iso.org
+       Web www.iso.org
+
+Reproduction for sales purposes may be subject to royalty payments or a licensing agreement.
+
+Violators may be prosecuted.
+
+
+
+
+  ii                                                                       © ISO 2016 – All rights reserved
+                                                                                                                                         ISO/WD 8601-2
+
+
+
+
+Contents                                                                                                                                               Page
+
+1 Scope ..........................................................................................................................................................1
+2 Normative references ..........................................................................................................................1
+3 Terms and definitions ..........................................................................................................................1
+4 Date and Time Extensions ..................................................................................................................2
+4.1 General ....................................................................................................................................................... 2
+4.2 Uncertain and/or approximate date .......................................................................................................... 2
+4.3 Unspecified ................................................................................................................................................ 4
+4.4 Before or after ............................................................................................................................................ 5
+4.5 Enhanced time interval .............................................................................................................................. 5
+4.6 Year exceeding four digits .......................................................................................................................... 6
+4.7 Significant digits ......................................................................................................................................... 7
+4.8 Divisions of a year ...................................................................................................................................... 7
+4.9 One of a set ................................................................................................................................................ 8
+4.10 Multiple dates .......................................................................................................................................... 8
+4.11 Decade ..................................................................................................................................................... 9
+5 Repeat rules for recurring time intervals .....................................................................................9
+5.1      Means of specifying repeat rules ............................................................................................................... 9
+5.2      Separators and designators ..................................................................................................................... 10
+5.3      Repeat rules ............................................................................................................................................. 10
+5.4      Frequency rule part .................................................................................................................................. 10
+5.5      Divisional rule part ................................................................................................................................... 10
+5.6      Time interval rule part ............................................................................................................................. 10
+5.7      By rule parts ............................................................................................................................................. 11
+5.8      Complete representations ....................................................................................................................... 13
+5.9      Representations other than complete ..................................................................................................... 13
+Annex A (normative) EBNF notation ................................................................................................... 14
+Annex B (normative) ISO 8601 profiles ............................................................................................. 19
+B.1      Statement of the problem ....................................................................................................................... 19
+Annex C (informative) The Extended Date/Time Format - A Profile of ISO 8601 (Parts 1
+and 2) ............................................................................................................................................................ 21
+C.1      Introduction ............................................................................................................................................. 21
+
+
+
+
+      © ISO 2016 – All rights reserved                                                                                                                              iii
+ISO/WD 8601-2
+
+
+
+
+Foreword
+ISO (the International Organization for Standardization) is a worldwide federation of national
+standards bodies (ISO member bodies). The work of preparing International Standards is normally
+carried out through ISO technical committees. Each member body interested in a subject for which a
+technical committee has been established has the right to be represented on that committee.
+International organizations, governmental and non-governmental, in liaison with ISO, also take part in
+the work. ISO collaborates closely with the International Electrotechnical Commission (IEC) on all
+matters of electrotechnical standardization.
+
+The procedures used to develop this document and those intended for its further maintenance are
+described in the ISO/IEC Directives, Part 1. In particular the different approval criteria needed for the
+different types of ISO documents should be noted. This document was drafted in accordance with the
+editorial rules of the ISO/IEC Directives, Part 2 (see www.iso.org/directives).
+
+Attention is drawn to the possibility that some of the elements of this document may be the subject of
+patent rights. ISO shall not be held responsible for identifying any or all such patent rights. Details of
+any patent rights identified during the development of the document will be in the Introduction and/or
+on the ISO list of patent declarations received (see www.iso.org/patents).
+
+Any trade name used in this document is information given for the convenience of users and does not
+constitute an endorsement.
+
+For an explanation on the meaning of ISO specific terms and expressions related to conformity
+assessment, as well as information about ISO's adherence to the WTO principles in the Technical
+Barriers to Trade (TBT) see the following URL: Foreword - Supplementary information
+
+The committee responsible for this document is ISO/154, Processes, data elements and documents in
+commerce, industry and administration.
+
+This first edition of ISO 8601-2 extends ISO 8601-1:2016
+
+ISO 8601 consists of the following part, under the generic title Data elements and interchange formats —
+Information interchange - Representation of dates and times:
+
+— Part 1: Basic rules
+
+— Part 2: Extensions
+
+
+
+
+   iv                                                                         © ISO 2016 – All rights reserved
+                                             ISO/WD 8601-2
+
+
+
+
+Introduction
+To be developed during the Committee Stage
+
+
+
+
+  © ISO 2016 – All rights reserved                       v
+WORKING DRAFT                                                                          ISO/WD 8601-2
+
+
+
+
+Data elements and interchange formats — Information
+interchange - Representation of dates and times — Part 2:
+Extensions
+
+
+1 Scope
+This International Standard is applicable whenever representation of dates in the Gregorian calendar,
+times in the 24-hour timekeeping system, extending ISO 8601-1:2016. It includes
+— calendar dates expressed in terms of calendar year, calendar month and/or calendar day of the
+  month;
+
+— combination of date and time of day including local time based upon the 24 hour timekeeping system
+  and the difference from Coordinated Universal Time;
+
+— Uncertain or approximate dates, or dates with portions unspecified.
+
+— time intervals ;
+
+— Divisions of a year ;
+
+— Sets and choices of calendar dates ;
+
+— repeat rules for recurring time intervals.
+
+This International Standard does not cover dates and times where words are used in the representation
+and dates and times where characters are not used in the representation.
+
+This International Standard does not assign any particular meaning or interpretation to any data element
+that uses representations in accordance with this International Standard. Such meaning will be
+determined by the context of the application.
+
+2 Normative references
+The following documents, in whole or in part, are normatively referenced in this document and are
+indispensable for its application. For dated references, only the edition cited applies. For undated
+references, the latest edition of the referenced document (including any amendments) applies.
+
+ISO/WD 8601-1:2016, Data elements and interchange formats — Information interchange -
+Representation of dates and times — Part 1: Basic rules
+
+ISO/IEC 14977:1996 Information technology — Syntactic metalanguage — Extended BNF
+
+3 Terms and definitions
+For the purposes of this document, the following terms and definitions.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                   1
+ISO/WD 8601-2
+
+
+3.1
+uncertain
+date whose source is considered dubious
+
+3.2
+approximate
+date which is an estimate whose value is asserted to be possibly correct, and if not, close to correct
+
+Note 1 to entry:   Where 'close to correct' means "close enough, for the application".
+
+3.3
+unspecified
+part of a date which is unstated, which could be because it has not (yet) been assigned (it might be
+assigned in the future), or because it is classified, or unknown, or for any other reason. The unspecified
+part may be the year, year and month, month, month and day, or year and day.
+
+4 Date and Time Extensions
+4.1 General
+4.1.1 Extended format
+
+For features described in this part of ISO 8601, Clause 4, only the extended format (YYYY-MM-DD) is
+used. Basic format (YYYYMMDD) is not to be used.
+
+4.1.2 Levels
+
+For the extension features, two levels are defined: level 1 and level 2. Each major subsection of section 4
+covers a general feature; some functions covered by that feature are level 1 and some are level 2. These
+levels are defined for the purpose of profiles, which may refer to the levels when specifying
+conformance to the profile. Profiles are described in Annex B.
+
+4.2 Uncertain and/or approximate date
+
+The character '?' (question mark) is used to mean "uncertain". The character '~' (tilde) is used to mean
+"approximate". The character '%’ (percent) is used to mean “both uncertain and approximate".
+
+4.2.1 Level 1
+
+For level 1, ‘?,’ ‘~’, or ‘%’ may only occur at the end of the date string, and it applies to the entire date.
+
+Format:       YYYY-MM-DD ?                Example: 1985-04-12?
+              YYYY-MM-DD ~                Example: 1985-04-12~
+              YYYY-MM-DD %                Example: 1985-04-12%
+
+Representations with reduced accuracy
+
+    a) Year and month
+       Format: YYYY-MM?                   Example: 2004-06?
+                 YYYY-MM ~                Example: 1985-04~
+                 YYYY-MM %                Example: 1985-04%
+    b) Year only
+       Format: YYYY?                      Example: 2004?
+                 YYYY~                    Example: 1985~
+
+
+
+   2                                                                                     © ISO 2016 – All rights reserved
+                                                                                           ISO/WD 8601-2
+
+
+
+                      YYYY%             Example: 1985%
+4.2.2 Level 2
+
+For level 2, the characters ‘?’, ‘~’, and ‘%’ may be used to qualify a portion of the date (not necessarily
+the whole date).
+    • One of the three characters may occur immediately to the right of one of the date components,
+        in which case it applies to that component as well as any components to the left.
+        For example if it occurs immediately to the right of the day, it applies to the day, month, and
+        year (i.e. the entire date string). If it occurs to the right of the month, it applies to the month and
+        year (but not the day). If it occurs to the right of the year, it applies to the year only.
+        Examples:
+             o 2004?-06-11
+                 uncertain year; month, day known
+             o 2004-06~-11
+                 year and month are both approximate; day known
+             o 2004-06%-11
+                 year and month are both uncertain and approximate ; day known
+    • One of the three characters may occur immediately to the left of one of the date components, in
+        which case it applies only to that component.
+        For example if it occurs immediately to the left of the day, it applies only to the day (and not to
+        the month, or year). If it occurs to the left of the month, it applies only to the month (and not to
+        the year or day). If it occurs to the left of the year, it applies only to the year (and not to the day
+        or month)..
+        Examples:
+             o 2004-?06-11
+                 uncertain month; year and day known
+             o 2004-~06-11
+                 approximate month, year and day known
+             o 2004-%06-11
+                 month uncertain and approximate, year and day known
+             o ?2004-06-?11
+                 uncertain year and day, month known
+             o ?2004-06-~11
+                 Year uncertain, month known, day approximate
+    • The above two features may be combined
+             o 2004-06?-~11
+                 Year and month uncertain (because ‘?’ is to the right of month meaning that it applies to
+                 month as well as components to the left of month) and day approximate
+             o 2004?-06-~11
+                 Same meaning as ?2004-06-~11 (earlier example): Year uncertain, month known, day
+                 approximate.
+Guidelines
+
+There are cases where more than one string has the same meaning.
+For example:‘
+    1. ‘2015-02?-31’ has the same meaning as ‘ ?2015-?02-31’ . In this case, the first form is preferred
+       because there are less special characters.
+    2. 2015?-02-31 has the same meaning as ?2015-02-31. In this case the second form is preferred,
+       because it may simplify parsing.
+    3. 2015-02?-31’ has the same meaning as ‘ 2015-?02?-31’ . In this case, the first form is preferred
+       because the ‘?’ in “?02” in the second form is redundant.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                           3
+ISO/WD 8601-2
+
+
+   4. 2015-02%-31?’ has the same meaning as ‘2015-02~-31?’ . In this case, the first form is preferred
+      because it is simpler.
+
+4.3 Unspecified
+
+The character 'X' may be used as a replacement character, in place of a digit to indicate that the value of
+that digit is unspecified.
+
+4.3.1 Level 1
+
+The replacement character ‘X’ may be substituted for the right-most digits in the following cases:
+        • Year and month specified, day unspecified.
+        • Year specified, day and month unspecified.
+        • Entire date unspecified
+Format: YYYY-MM-XX           Example: 1985-04-XX
+        YYYY-XX-XX           Example: 1985-XX-XX
+        XXXX-XX-XX           Example: XXXX-XX-XX
+
+
+Representations with reduced accuracy
+
+For representations with reduced accuracy, ‘X’ may be used in the following cases:
+        • A year-month, with month unspecified.
+        • A year-month, with year and month unspecified.
+        • A year with one or two (rightmost) unspecified digits.
+        • A year, entire year unspecified.
+
+
+Format: YYYY-XX       Example: 2004-XX
+        XXXX-XX       Example: XXXX-XX
+        YYYX          Example: 209X
+         YYXX         Example: 20XX
+         XXXX         Example: XXXX
+
+4.3.2 Level 2
+
+For level 2 the character ‘X’ may be used as a replacement for any character in the string.
+
+Examples
+
+  156X-12-25     December 25 sometime during the 1560s
+  15XX-12-25     December 25 sometime during the 1500s
+  15XX-12-XX     Some day in December in some year during the 1500s
+  1560-XX-25     The 25th day of some month in year 1560.
+  1560-X2        The month of either February or December of the year 1560.
+  1XXX-XX        Some month during the 1000s
+  1XXX-12         Some December during the 1000s
+  1XXX           Some year during the 1000s
+  1XX3           Some year ending in 3during the 1000s
+
+
+
+
+   4                                                                            © ISO 2016 – All rights reserved
+                                                                                       ISO/WD 8601-2
+
+
+
+4.4 Before or after
+
+A date may be qualified to indicate “before or on” or “on or after” the date.
+
+4.4.1 Level 1
+
+This feature is not used in level 1.
+
+4.4.2 Level 2
+
+For level 2, the dot notation “..” (two dots) may be used before a date to denote “before or on the date”
+or after a date to denote “on this date or after:
+
+Examples
+
+    •   ..1984 before or during the year 1984
+    •     1984.. during the year 1984 or later
+    •   ..1984-04-04 before or on 4 April1984
+
+
+4.5 Enhanced time interval
+
+An enhanced time interval extends the specification of time interval in Part 1 of this standard (start and
+end date separated by ‘/’) by indicating that the start or end date is:
+   • Unknown. Start or end date unknown. The character ‘*’ (asterisk) may be used for the start or
+        end date to indicate “unknown”.
+   • Open Start or date open. The start or end date may be left blank, either because there is none
+        or for any other reason.
+The following are allowed but should be used only with caution:
+   • ‘*/* start and end both unknown
+   • ‘/’ start and end date both open
+   • ‘*/’ Start unknown, end open
+   • ‘/*’ . Start open, end unknown
+
+4.5.1 Level 1
+
+        format: YYYY-MM-DD/*           Example: 1985-04-12/*
+                */YYYY-MM-DD           Example: */1985-04-12
+                YYYY-MM-DD/            Example: 1985-04-12/
+                /YYYY-MM-DD            Example: /1985-04-12
+
+In addition a modifier may appear at the end of the date to indicate "uncertain" and/or "approximate"
+as described in 4.2.
+
+Examples:
+   • 1984-01-02~/2004-06-04
+      beginning approximately 1984-01-02 and ending 2004-06-04
+   • 1984-01-02~/
+      beginning approximately 1984-01-02; no end date
+   • 1984-01-02~/*
+      beginning approximately 1984-01-02; end date unknown
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                      5
+ISO/WD 8601-2
+
+
+   •   1984~/2004-06
+       beginning approximately 1984 and ending June 2004
+   •   1984/2004-06~
+       beginning 1984 and ending approximately June 2004
+   •   1984?/2004%
+       beginning is uncertain but thought to be 1984; end is uncertain but thought to be approximately
+       2004
+
+4.5.2 Level 2
+
+The Level 2 enhanced time interval feature extends Level 1:
+   • Portions of a date may be designated as approximate, uncertain, or unspecified.
+   • The start date may be tagged as “before or” that date, and the end date “or after”.
+
+Examples:
+    • 2004-06-~01/2004-06-~20
+       A time interval in June 2004 beginning approximately the first and ending approximately the
+       20th.
+    • 2004-06-XX/2004-07-03
+       The time interval began on an unspecified day in June 2004 and ended July 3.
+    • ..2004-06-01/~2004-06-20
+       A time interval beginning before or on 1 June 2004 and ending approximately the 20th
+    • 2004-06-01~/2004-06-20..
+       A time interval beginning before approximately 1 June 2004 and the 20th or later.
+
+4.6 Year exceeding four digits
+
+Part 1 of this standard allows a year to exceed four digits (a year after 9999 or before -9999) however it
+requires mutual agreement of the partners in the information exchange.
+Presented here is an alternative method, which does not require mutual consent. It may be used only
+for dates where only the year is significant, not the month or day.
+
+4.6.1 Level 1
+
+'Y’ may be used at the beginning of the date string to signify that the date is a year, when (and only
+when) the year exceeds four digits, i.e. for years later than 9999 or earlier than -9999.
+
+    Format: “Y”YYYYY….. Example: Y170000002 (the year 170000002)
+            “Y-”YYYYY….. Example: Y-170000002 (the year -170000002)
+
+4.6.2 Level 2 (needs reconsideration)
+
+Level 2 presents an alternative, exponential form. 'E' is used to mean "times 10 to the power of" thus
+17E8 means "17 times (10 to the eighth power)", or 170000000000. (And as in level 1.'Y' at the
+beginning of the string indicates "year”.)
+
+Examples
+    • y17E7
+         the year 170000000
+    • y-17E7
+         the year -170000000
+
+
+
+
+   6                                                                            © ISO 2016 – All rights reserved
+                                                                                        ISO/WD 8601-2
+
+
+
+4.7 Significant digits
+
+When a year is followed by ‘S’, followed by a positive integer, the integer indicates the number of
+significant digits for the expressed year.
+
+4.7.1 Level 1
+
+This feature is not used in level 1.
+
+4.7.2 Level 2
+
+For level 2 this feature may be used for any of the following three ways to express a year:
+   • Four-digit year
+   • Year longer than four digits expressed as an integer.
+   • Year expressed in exponential form.
+
+Examples
+   • 1950S2
+     Some year between 1900 and 1999 , estimated to be 1950.
+   • Y171010000S3
+      Some year between 171000000 and 171999999, estimated to be 171010000 .
+   •   Y17101E4S3
+      Same meaning as previous example.
+
+4.8 Divisions of a year
+
+For a year-and-month expression (e.g. 1984-04) the month component may take on values of 21 or
+above (in place of a month value, 01 through 12). These values signify a division of a year (e.g. “the
+season Spring”).
+
+4.8.1 Level 1
+
+    The values 21, 22, 23, 24 may be used to signify ' Spring', 'Summer', 'Autumn', 'Winter', respectively.
+
+    Format: YYYY-SS              Example: 2001-21 (Spring, 2001)
+
+4.8.2 Level 2
+
+Values greater than 24 may be used.
+
+This specification provides an initial set of values, and there will be a registration mechanism for
+additional values.
+
+The initial sets of values for traditional division of a year are:
+
+  21-24 = Spring, Summer, Autumn, Winter, independent of “Hemisphere”
+  25-28 = Spring - Northern Hemisphere, Summer- Northern Hemisphere, Autumn - Northern
+          Hemisphere, Winter - Northern Hemisphere
+  29-32 = Spring – Southern Hemisphere, Summer– Southern Hemisphere, Autumn – Southern
+          Hemisphere, Winter - Southern Hemisphere
+  33-36 = Quarter 1, Quarter 2, Quarter 3, Quarter 4 (3 months each)
+  37-39 = Quadrimester 1, Quadrimester 2, Quadrimester 3 (4 months each)
+
+
+
+   © ISO 2016 – All rights reserved                                                                      7
+ISO/WD 8601-2
+
+
+  40-41 = Semestral 1, Semestral-2 (6 months each)
+
+4.9 One of a set
+
+Square brackets enclosing a list of dates are used to mean “one of these dates”. This feature may be used
+for example to express “Year of Publication”, when it is known that the year is one of a set of years, for
+example 1984, 1986, or 1988.
+
+4.9.1 Level 1
+
+This feature is not used for level 1.
+
+4.9.2 Level 2
+
+For level 2 double-dot notation may be used. double-dot indicates all the values between the two values
+it separates, inclusive. Double-dot at the beginning or end of the list means "on or before" or "on or
+after" respectively; see the second, third, and fourth example below. Different elements of a list may
+have different precisions, as in the fifth example.
+
+Examples
+
+       •   [1667, 1668, 1670..1672]
+           One of the years 1667, 1668, 1670, 1671, 1672
+       •    [..1760-12-03]
+            December 3, 1760; or some earlier date
+       •   [1760-12..]
+           December 1760, or some later month
+       •   [1760-01, 1760-02, 1760-12..]
+           January or February of 1760 or December 1760 or some later month
+       •   [1667, 1760-12]
+            Either the year 1667 or the month December of 1760.
+
+4.10 Multiple dates
+
+Curly braces may be used to wrap an inclusive list (all members included).
+For example {1960,1961,1962,1963} might be used to indicate the years of publication of a book - it
+was published in each of 1960, 1961, 1962, and 1963. Different elements of a list may have different
+precisions, as in the second example.
+
+4.10.1 Level 1
+
+This feature is not used in level 1.
+
+4.10.2 Level 2
+
+Examples
+    • {1667,1668,1670..1672}
+        All of the years 1667, 1668, 1670, 1671, 1672
+    • {1960, 1961-12}
+       The year 1960 and the month December of 1961.
+
+
+
+
+   8                                                                           © ISO 2016 – All rights reserved
+                                                                                          ISO/WD 8601-2
+
+
+
+4.11 Decade
+
+A string consisting of three digits represents a decade, for example “the 1960s”. It is the ten-year time
+interval of those years where the three specified digits are the first three digits of the year.
+
+Representation of a decade must be exactly three digits, leading zeros, if any, must be included. Thus the
+time interval 200 through 209 is represented as ‘020’ and NOT ‘20’; the latter would represent the time
+interval 2000 through 2099. Furthermore, ‘196’ is not to be confused with the year 196, that would be
+represented as ‘0196’.
+
+4.11.1 Level 1
+
+This feature is not used for level 1.
+
+4.11.2 Level 2
+
+    Format: YYY            Example: 196 (1960-1969)                Example: 196~ (approximate decade)
+
+    Note: as a decade expresses decade precision, in the second example, “approximate decade” means for
+    example “the decade is approximated to be the 1960s, but it might be the 1950s or 1970s.” It does NOT
+    mean the time interval beginning approximately at the beginning of and ending approximately at the
+    end of the 1960s. The latter would be expressed as 1960~/1970~ and would have year precision.
+
+
+5 Repeat rules for recurring time intervals
+This section extends ISO 8601-1:2016, 4.5 “Recurring Time Interval”, by adding a rule part that defines
+the repeat pattern to the end of the recurring time interval structure.
+
+All features in this section are defined at level 1 for the purpose of profiles, which may refer to the levels
+when specifying conformance to the profile. (Profiles are described in Annex B.)
+
+The section is based on the [RFC 5545:2009] “Internet Calendaring and Scheduling Core Object
+Specification (iCalendar), Section 3.3.10, Recurrence Rule” to ensure easy migration and transition
+between the two standards.
+
+5.1 Means of specifying repeat rules
+
+Repeat rules for recurring time intervals shall be expressed in one of the following ways.
+
+a) By a number of recurrences (optional), a start and end of the time interval, and repeat rule. If the
+   number of recurrences is absent, the number of occurrences is unbounded.
+
+b) By a number of recurrences (optional), a duration and repeat rule. If the number of recurrences is
+   absent, the number of occurrences is unbounded.
+
+c) By a number of recurrences (optional), a start and duration of the time interval, and repeat rule. If
+   the number of recurrences is absent, the number of occurrences is unbounded.
+
+d) By a number of recurrences (optional), a duration and end of the time interval, and repeat rule. If
+   the number of recurrences is absent, the number of occurrences is unbounded.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                         9
+ISO/WD 8601-2
+
+
+5.2 Separators and designators
+
+Repeat rules for a recurring time interval is expressed according to the following structure.
+
+All representations start with the designator [R], followed, without spaces, by the number of
+recurrences, if present, followed, without spaces, by a solidus [/], followed, without spaces, by the
+expression of a time interval as per ISO 8601-1:2016, 4.4.1, without spaces, by a solidus [/], followed,
+without spaces, followed by the repeat rule as per 5.3. For the representations 5.1 a), 5.1 b), 5.1 c) and
+5.1 d) the time intervals as per ISO 8601-1:2016, 4.4.1 a), 4.4.1 b), 4.4.1 c) and 4.4.1 d) shall be used,
+respectively.
+
+5.3 Repeat rules
+
+A repeat rule [RRULE] shall be expressed as a structured component consisting of a list of one or more
+repeat rule parts. Each rule part is defined by a name=value pair. The rule parts are separated from
+each other by the semicolon [;] character. The rule parts are not ordered in any particular sequence.
+Individual rule parts must only be specified once.
+
+5.4 Frequency rule part
+
+The “Frequency” [FREQ] rule part identifies the type of recurrence rule. This rule part MUST be
+specified in the repeat rule unless the “Divisional” [DIVI] is present, only one of the two can be used.
+Valid values include SECONDLY [SE], to specify recurring time intervals based on a time interval of a
+second or more; MINUTELY [MI], to specify recurring time intervals based on a time interval of a minute
+or more; HOURLY [HR], to specify recurring time intervals based on a time interval of an hour or more;
+DAILY [DY], to specify recurring time intervals based on a time interval of a day or more; WEEKLY [WE],
+to specify recurring time intervals based on a time interval of a week or more; MONTHLY [MO], to
+specify recurring time intervals based on a time interval of a month or more; and YEARLY [YR], to
+specify recurring time intervals based on a time interval of a year or more.
+
+5.5 Divisional rule part
+
+The “Divisional” [DIVI] rule part identifies the type of recurrence rule. This rule part MUST be specified
+in the repeat rule unless the “Frequency” [FREQ] is present, only one of the two can be used. Valid
+“Division of a year” values are defined in section 4.8.2.
+
+5.6 Time interval rule part
+
+The “Time interval” [INTR] rule part contains a positive integer representing at which time intervals the
+“Frequency” or “Divisional” rule part repeats. The default value rule is "1", meaning every second for a
+SECONDLY rule, every minute for a MINUTELY rule, every hour for an HOURLY rule, every day for a
+DAILY rule, every week for a WEEKLY rule, every month for a MONTHLY rule, every year for a YEARLY
+rule, and a single repeat for each DIVISIONAL rule.
+
+For example, used with the FREQUENCY rule value of DAILY rule, a value of "8" means every eight days:
+
+     FREQ=DA;INTR=8
+
+Used with a DIVISIONAL rule value of SUMMER, a value of “2” means every second summer:
+
+      DIVI=22;INTR=2
+
+
+
+
+   10                                                                           © ISO 2016 – All rights reserved
+                                                                                        ISO/WD 8601-2
+
+
+
+5.7 By rule parts
+
+“By rule parts” [BYXX] modifies the repeats in some manner. By rule parts for a time interval of the
+same length or longer than the frequency generally reduces or limits the number of occurrences of the
+repeats generated.
+
+   Example:
+
+        FREQ=DA;BYMO=1 reduces the number of repeat instances from all days (if By Month rule
+        part is not present) to all days in January.
+
+By rule parts for a time interval shorter than the frequency generally increases or expands the number
+of occurrences of the repeats.
+
+   Example:
+
+        FREQ=YE;BYMO=1,2 increases the number of days within the yearly repeat set from 1 (if By
+        Month rule part is not present) to 2.
+
+5.7.1 By second rule part
+
+The “By Second” [BYSE] rule part specifies a comma-separated list of seconds within a minute. Valid
+values are 0 to 59.
+
+5.7.2 By minute rule part
+
+The “By Minute” [BYMI] rule part specifies a comma-separated list of minutes within an hour. Valid
+values are 0 to 59.
+
+5.7.3 By hour rule part
+
+The “By Hour” [BYHR] rule part specifies a comma-separated list of hours of the day. Valid values are 0
+to 23.
+
+5.7.4 By day rule part
+
+The “By Day” [BYDY] rule part specifies a comma-separated list of days of the week; MO indicates
+Monday; TU indicates Tuesday; WE indicates Wednesday; TH indicates Thursday; FR indicates Friday;
+SA indicates Saturday; and SU indicates Sunday.
+
+Each By Day value can also be preceded by a positive (+n) or negative (-n) integer. If present, this
+indicates the nth occurrence of a specific day within the MONTHLY or YEARLY "RRULE".
+
+For example, within a MONTHLY rule, +1MO (or simply 1MO) represents the first Monday within the
+month, whereas -1MO represents the last Monday of the month. The numeric value in a By Day rule
+part with the FREQ rule part set to YEARLY corresponds to an offset within the month when the By
+Month rule part is present, and corresponds to an offset within the year when the By Week No or By
+Month rule parts are present. If an integer modifier is not present, it means all days of this type within
+the specified frequency. For example, within a MONTHLY rule, MO represents all Mondays within the
+month. The By Day rule part MUST NOT be specified with a numeric value when the FREQ rule part is
+not set to MONTHLY or YEARLY. Furthermore, the By Day rule part MUST NOT be specified with a
+numeric value with the FREQ rule part set to YEARLY when the By Week No rule part is specified.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                     11
+ISO/WD 8601-2
+
+
+5.7.5 By month day rule part
+
+The “By Month Day” [BYMD] rule part specifies a comma-separated list of days of the month. Valid
+values are 1 to 31 or -31 to -1. For example, -10 represents the tenth to the last day of the month. The
+By Month Day rule part MUST NOT be specified when the FREQ rule part is set to WEEKLY.
+
+5.7.6 By year day rule part
+
+The “By Year Day” [BYYD] rule part specifies a comma-separated list of days of the year. Valid values
+are 1 to 366 or -366 to -1. For example, -1 represents the last day of the year (December 31st) and -306
+represents the 306th to the last day of the year (March 1st). The By Year Day rule part MUST NOT be
+specified when the FREQ rule part is set to DAILY, WEEKLY, or MONTHLY.
+
+5.7.7 By week no rule part
+
+The “By Week No” [BYWN] rule part specifies a comma-separated list of ordinals specifying weeks of
+the year. Valid values are 1 to 53 or -53 to -1. This corresponds to weeks according to week numbering
+as defined in ISO 8601-1:2016. A week is defined as a seven-day time interval, starting with a Monday.
+Week number one of the calendar year is the first week that contains at least four (4) days in that
+calendar year. This rule part MUST NOT be used when the FREQ rule part is set to anything other than
+YEARLY. For example, 3 represents the third week of the year.
+
+        Note: Week 53 can only occur when Thursday is January 1 or if it is a leap year and Wednesday is
+        January 1.
+
+5.7.8 By month rule part
+
+The “By Month” [BYMO] rule part specifies a comma-separated list of months of the year. Valid values
+are 1 to 12.
+
+5.7.9 Multiple “By rule” parts
+
+If multiple By rule parts are specified, then after evaluating the specified Frequency and Time
+interval rule parts, the By rule parts are applied to the current set of evaluated occurrences in the
+following order: By Month, By Week No, By Year Day, By Month Day, By Day, By Hour, By Minute
+and By Second; then number of recurrences and duration are evaluated.
+
+5.7.10 Example of evaluating multiple By xxx rule parts
+
+R/20150104T083000/PM15S00/FREQ=YR;INTR=2;BYMO=1;BYDA=SU;BYHO=8,9;BYMIN=30
+
+First, the "INTR=2" would be applied to "FREQ=YR" and be evaluated as "every other year". Then,
+"BYMO=1" would be evaluated as "every January, every other year". Then, "BYDA=SU" would be
+evaluated as "every Sunday in January, every other year". Then, "BYHO=8,9" would be evaluated as
+"every Sunday in January at 8 AM and 9 AM, every other year". Then, "BYMI=30" would be evaluated as
+"every Sunday in January at 8:30 AM and 9:30 AM, every other year". Then, lacking information from
+"RRULE", the second is derived from "Time interval Start" value, to end up in "every Sunday in January
+at 8:30:00 AM and 9:30:00 AM, every other year". Similarly, if the By Minute, By Hour, By Day, By Month
+Day, or By Month rule part is missing, the appropriate minute, hour, day, or month will be retrieved
+from the "Time interval Start" value. Finally, the time interval duration is defined by the “Duration”
+value, which in this case is 15 minutes.
+
+
+
+
+   12                                                                          © ISO 2016 – All rights reserved
+                                                                                      ISO/WD 8601-2
+
+
+
+5.8 Complete representations
+
+When the application identifies the need for a complete representation of a recurring time interval with
+repeat rules, it shall use an expression in accordance with 5.2, combining any complete recurring time
+interval representation as defined in ISO 8601-1:2016, 4.5.3 with the repeat rule.
+
+Basic format:       Rn/YYYYMMDDThhmmss/YYYYMMDDThhmmss/FREQ=value;INTR=n
+                    Rn/YYYYMMDDThhmmss/PnnYnnMnnDTnnHnnMnnS/FREQ=value;INTR=n
+                    RnPnnYnnMnnDTnnHnnMnnS/YYYYMMDDThhmmss/FREQ=value;INTR=n
+                    Rn/PnnYnnMnnDTnnHnnMnnS/FREQ=value;INTR=n
+
+Example:            R12/20150929T140000/20150929T153000/FREQ=WE;INTR=2
+                    R12/20150929T140000/P1H30M0S/ FREQ=WE;INTR=2
+                    R12/P2H30M0S/ 20150929T153000/ FREQ=WE;INTR=2
+                    R12/P2Y10M15DT10H30M20S/FREQ=WE;INTR=2
+
+Extended format: Rn/YYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss/FREQ=value;INTR=n
+                 Rn/YYYY-MM-DDThh:mm:ss/PnYnMnDTnHnMnS/FREQ=value;INTR=n
+                 Rn/PnnYnnMnnDTnnHnnMnnS/YYYY-MM-DDThh:mm:ss/FREQ=value;INTR=n
+
+Example:            R12/2015-09-29T14:00:00/2015-09-29T15:30:00/FREQ=WE;IINTR=2
+                    R12/2015-09-29T14:00:00/P1H30M0S/FREQ=WE;INTR=2
+                    R12/P1H30M0S/ 2015-09-29T15:30:00/FREQ=WE;INTR=2
+
+5.9 Representations other than complete
+
+A representation other than complete of a recurring time interval with repeat rule shall be an
+expression in accordance with 5.1 and 5.2, where the time interval is represented in accordance with
+ISO 8601-1:2016, 4.4.5.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                    13
+ISO/WD 8601-2
+
+
+
+                                       Annex A
+                                     (normative)
+
+                                 EBNF notation
+
+
+The syntax used in this EBNF description is ISO/IEC 14977:1996
+
+Rule:                   name = ... ;
+Terminal:               '...' or "..."
+Non Terminal:           ...
+Concatination:           ,
+Choice:                    |
+Optional:               [...]
+Repetition (0 or more): {...}
+Repetition (1 or more): {...}-
+Repetition (n times):   n * ...
+Grouping:               (...)
+Exception:              ...-...
+Special sequence:       ?...?
+Comment:                (*...*)
+
+(* Base definitions *)
+
+year = positiveYear | negativeYear | "0000" ;
+
+positiveYear = positiveDigit, digit, digit, digit
+               | "0", positiveDigit, digit, digit
+               | "00", positiveDigit, digit
+               | "000", positiveDigit ;
+
+negativeYear = "-", positiveYear ;
+
+monthDay = ("01" | "03" | "05" |"07" |"08" |"10" |"12"), "-", OneThru31
+           | ("04" | "06" | "09" | "11"), "-", OneThru30
+           | "02-", OneThru29 ;
+
+yearMonth = year "-" month ;
+
+month = oneThru12 ;
+
+day = oneThru31 ;
+
+date = year | yearMonth | yearMonthDay ;
+
+oneThru12 = ("0", positiveDigit) | "10" | "11" | 12" ;
+
+oneThru29 = ("0", positiveDigit) | (("1" | "2"), digit) ;
+
+oneThru30 = OneThru29 | "30" ;
+
+oneThru31 = OneThru30 | "31" ;
+
+digit = positiveDigit | "0" ;
+
+positiveDigit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+
+
+
+  14                                                        © ISO 2016 – All rights reserved
+                                                                    ISO/WD 8601-2
+
+
+
+(* 4. Date and Time Extensions *)
+
+(* 4.1.1 Extended Format *)
+
+yearMonthDay = year, "-", monthDay ;
+
+(* 4.1.1 Levels *)
+
+(* For the extension features, two levels are defined: level 1 *)
+(* and level 2. Each major subsection of section 4 covers a    *)
+(* general feature; some functions covered by that feature are *)
+(* level 1 and some are level 2. These levels are defined for *)
+(* the purpose of profiles, which may refer to the levels when *)
+(* specifying conformance to the profile.                      *)
+
+(* 4.2.1 Level 1 - Uncertain and/or Approximate Date *)
+
+uaDate = yearMonthDay, uaSymbol ;
+
+uaSymbol = "?" | "~" | "%" ;
+
+(* Reduced accuracy *)
+
+reducedDate = (year | yearMonth), uaSymbol ;
+
+(* 4.2.2 Level 2 - Uncertain and/or Approximate Date *)
+
+qualifiedDate = [uaSymbol], year, [uaSymbol], "-",
+                [uaSymbol], month, [uaSymbol], "-",
+                [uaSymbol], day, [uaSymbol] ;
+
+(* 4.3.1 Level 1 - Unspecified Date *)
+
+unspecifiedDate = (yearMonth, "-XX") | (year, "-XX-XX") | "XXXX-XX-XX" ;
+
+(* Reduced accuracy *)
+
+reduceAccuracyDate = (2 * digit, "XX")
+                     | (3 * digit, "X")
+                     | ("XXXX", ["-XX"])
+                     | (year, "-XX") ;
+
+(* 4.3.2 Level 2 - Unspecified Date *)
+
+replacementDate = 4 * (digit | "X"),
+                  ["-", 2 * (digit | "X"),
+                  ["-", 2 * (digit | "X")]] ;
+
+(* 4.4.1 Level 1 - Before or After *)
+
+(* This feature is not used in level 1. *)
+
+(* 4.4.2 Level 2 - Before or After *)
+
+beforeAfterDate = ("..", year, ["-", month, ["-", day]])
+                  | (year, ["-", month, ["-", day]], "..") ;
+
+(* 4.5.1 Level 1 - Enhanced Interval *)
+
+
+
+  © ISO 2016 – All rights reserved                                            15
+ISO/WD 8601-2
+
+
+
+startEndOpenOrUnknown = [yearMonthDay],["*"],"/",["*"],[yearMonthDay] ;
+
+L1Interval = [year | yearMonth | yearMonthDay], [uaSymbol | "*"],
+             "/", ["*"], [year | yearMonth | yearMonthDay], [uaSymbol] ;
+
+(* 4.5.2 Level 2 - Enhanced Interval *)
+
+L2Interval = [".."], (qualifiedDate | unspecifiedDate | replacementDate),
+             "/", (qualifiedDate | unspecifiedDate | replacementDate ), [..] ;
+
+(* 4.6.1 Level 1 - Year Exceeding Four Digits *)
+
+longYear = "Y", ["-"], positiveDigit 4 * digit, {digit} ;
+
+(* 4.6.2 Level 2 - Year Exceeding Four Digits *)
+
+longYearScientific = "y", ["-"], positiveDigit, digit, "e" {digit}- ;
+
+(* 4.7.1 Level 1 - Significant Digits *)
+
+(* This feature is not used in level 1. *)
+
+(* 4.7.2 Level 2 - Significant Digits *)
+
+yearDate = (year | longYear | longYearScientific), "S", positiveDigit, {digit} ;
+
+(* 4.8.1 Level 1 Divisions of a year *)
+
+divisionL1 = year, divisionSet1;
+
+divisionSet1 = ("21" | "22" | "23" | "24") ;
+
+(* 4.8.2 Level 2 Divisions of a year *)
+
+divisionL2 = year, divisionSet2 ;
+
+divisionSet2 = (("2" | "3"), digit) | "40" | "41"   ;
+
+(* 4.9.1 Level 1 - One of a Set     *)
+
+(* This feature is not used in level 1. *)
+
+(* 4.9.2 Level 2 - One of a Set     *)
+
+choiceList = "[", listContent "]" ;
+
+listContent = earlier, {",", listElement}
+              | [earlier, ","], {listElement, ","}, later
+              | listElement {"," listElement}-
+              | consecutives ;
+
+listElement = date | qualifiedDate | unspecifiedDate | consecutives ;
+
+earlier =   "..", date ;
+
+later = date ".." ;
+
+consecutives = yearMonthDay, "..", yearMonthDay
+
+
+
+  16                                                        © ISO 2016 – All rights reserved
+                                                                    ISO/WD 8601-2
+
+
+                     | yearMonth, "..", yearMonth
+                     | year, "..", year ;
+
+(* 4.10.1 Level 1 - Multiple Dates *)
+
+(* This feature is not used in level 1. *)
+
+(* 4.10.2 Level 2 - Multiple Dates *)
+
+inclusiveList = "{" listContent "}" ;
+
+(* 4.11.1 Level 1 - Decade *)
+
+(* This feature is not used in level 1. *)
+
+(* 4.11.2 Level 2 - Decade *)
+
+decade = 3 * digit, ["~"] ;
+
+
+(* 5. Repeat Rules for Recurring Time Intervals *)
+
+(* All features in this section are defined at level 1 for the *)
+(* purpose of profiles, which may refer to the levels when     *)
+(* specifying conformance to the profile.                      *)
+
+recurringIntervalWithRules = recurringInterval, "/", recurringRule ;
+
+recurringInterval = 'R', {integer}, '/', interval ;
+
+interval = intervalExplicit | intervalStart | intervalEnd | duration ;
+
+intervalExplicit = dateAndTime, '/', dateAndTime ;
+
+intervalStart = dateAndTime, '/', duration ;
+
+intervalEnd = duration, '/', dateAndTime ;
+
+duration = 'P', (durationTime | durationDate | durationWeek) ;
+
+durationDate = durationDay, [durationTime] ;
+
+durationTime = 'T', (durationHour | durationMinute | durationSecond) ;
+
+durationHour = hour, 'H', [durationMinute] ;
+
+durationMinute = minute, 'M', [durationSecond] ;
+
+durationSecond = second, 'S' ;
+
+durationDay = day, 'D' ;
+
+durationWeek = week, 'W' ;
+
+recurringRule = recurringRulePart, {';', recurringRulePart} ;
+
+recurringRulePart = ( ('FREQ', '=', freqency) | ('DIVI', '=', division))
+                    | ( 'INTR', '=', digit {digit} )
+                    | ( 'BYSE', '=', second )
+
+
+
+  © ISO 2016 – All rights reserved                                            17
+ISO/WD 8601-2
+
+
+                     | ( 'BYMI', '=', minute )
+                     | ( 'BYHR', '=', hour )
+                     | ( 'BYDY', '=', byWeekDayList )
+                     | ( 'BYMD', '=', byMonthDayList )
+                     | ( 'BYYD', '=', byYearDayList )
+                     | ( 'BYWN', '=', byweekNumberberList )
+                     | ( 'BYMO', '=', byMonthList ) ;
+
+freqency = 'SE' | 'MI' | 'HR' | 'DY' | 'WE' | 'MO' | 'YR' ;
+
+division = divisionSet2 ;      (* see 4.8.2 *)
+
+byWeekDayList = weekDayNumber, {',', weekDayNumber} ;
+
+weekDayNumber   = [weekByNumber], weekDay ;
+
+weekDay = 'SU' | 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' ;
+
+byMonthDayList = monthDayNumber, {',', monthDayNumber} ;
+
+monthDayNumber = ["+" | "-"], monthDay ;
+
+byYearDayList = yearDayNumber, {',', yearDayNumber} ;
+
+yearDayNumber = ["+" | "-"], yearDay ;
+
+byweekNumberList = weekNumber, {',', weekNumber} ;
+
+weekByNumber = ["+" | "-"], weekNumber ;
+
+byMonthList = monthNumber, {',', monthNumber} ;
+
+
+
+
+  18                                                          © ISO 2016 – All rights reserved
+                                                                                          ISO/WD 8601-2
+
+
+
+                                         Annex B (normative)
+
+                                           ISO 8601 profiles
+
+
+
+B.1 Statement of the problem
+ISO 8601 includes many features, and, in many cases, several different formats to represent a single
+feature. Two vendors implementing 8601 may implement different features, or different
+representations of a given feature, and their products might not interoperate. Moreover, some features
+have more than one interpretation and different vendors might select different interpretation, making
+interoperability even less likely. 8601 does not provide guidelines to address these concerns, levels of
+support, or conformance requirements. Each vendor is left to decide for itself what features,
+representation, and interpretations to implement.
+
+B.1.1 Some historical background
+
+The W3C defined date and time formats to begin to address these concerns:
+http://www.w3.org/TR/xmlschema-2/#isoformats. These formats are based on 8601, and they have
+proved invaluable for the interoperability of Web data. These formats have their roots in what we call a
+“profile” of ISO 8601: Date and Time Formats. http://www.w3.org/TR/NOTE-datetime which states
+
+“This document defines a profile of ISO 8601, the International Standard for the representation of dates
+and times. ISO 8601 describes a large number of date/time formats. To reduce the scope for error and the
+complexity of software, it is useful to restrict the supported formats to a small number. This profile defines
+a few date/time formats, likely to satisfy most requirements.
+
+The W3C Note, submitted in 1997 by Reuters, was never endorsed by the W3C, but it did provide the
+original impetus for the development of the very useful and successful W3C date and time formats.
+
+B.1.2 Generalizing the concept of an ISO 8601 profile
+
+This document attempts to expand and generalize the concept of an ISO 8601 Profile.
+
+A Profile of ISO 8601 is a specification developed by a particular community which explains how ISO
+8601 is to be used, to carry out a particular function or group of functions relevant to that community.
+
+1.        It may list features of 8601 to be supported.
+
+2.        In cases where there are multiple methods specified in 8601 to support a particular function,
+          the profile may select a single method.
+
+3.        In cases where there are different interpretations of a particular function, the profile may select
+          a single interpretation, or provide clarification.
+
+4.        It might list features that are not relevant and need not be supported.
+
+5.        It might specify several levels of support.
+
+
+
+
+     © ISO 2016 – All rights reserved                                                                     19
+ISO/WD 8601-2
+
+
+At minimum, a profile should state what an implementer must implement in order to claim
+conformance to the profile. If there are multiple levels specified, it should state conformance
+requirements for each level.
+
+Different communities may define different profiles. In fact any given community may define multiple
+profiles. “Community” is used loosely to mean a group with a common interest in 8601. It is not
+intended that 8601 profiles be approved by any formal body; any person or community can develop a
+profile. There should however be a unique name for every profile so that it may be referenced. The
+registration agency for ISO 8601 should register profiles upon request, and help to assure uniqueness of
+names. It is hoped that there will be mechanisms developed to provide interoperability between
+profiles however that is beyond the scope of this document.
+
+This document provides one (draft) profile (section 2), and it is expected that additional profiles will be
+developed.
+
+B.1.3 Multiple profiles
+
+A product may implement several profiles. Here we distinguish between static support and dynamic
+operation.
+
+B.1.3.1 Static Support
+
+Suppose profile X specifies features A, B, and C, and excludes feature D. If a product claims to support
+profile X that does not mean that it cannot support feature D. A different profile – profile Y – might
+specify features C, D, and E. And there is not, nor should there be, anything inherent in the profile
+concept that would preclude a product from supporting as many profiles as it chooses to support.
+
+B.1.3.2 Dynamic Operation
+
+On the other hand suppose there are two communication parties, P1 and P2, exchanging ISO 8601 data.
+P1 uses a product that supports profile X (only) while P2 uses a product that supports profiles X and Y.
+In order for P1 and P2 to interoperate they must operate under profile X, because it is the only profile in
+common supported. (Thus P2 must be able to suppress features excluded by P1.)
+
+The process by which two communicating parties agree to operate according to a particular profile is a
+complex area which needs further study. It is not fully addressed by this document and is to a certain
+extend outside the scope of this document. Three possible approaches:
+
+    1) Specified by Protocol. The exchange of ISO 8601 data might be done under the control of a
+       protocol, which could be used to negotiate a particular profile. (8601 itself is a data format, not
+       a protocol, and could not be adapted to accomplish this task.)
+
+    2) Specified by Format.Two parties might be exchanging data of a certain type, for example
+       bibliographic data. The definition of the bibliographic format could specify that date/time data
+       conform to a specific profile.
+
+    3) Specified by datatype. For exchange of date serialized into XML, or RDF (any RDF
+       serialization), date and time data can carry its datatype, for example xs:date, which, as noted
+       above, corresponds to the W3C profile.
+
+
+
+
+   20                                                                          © ISO 2016 – All rights reserved
+                                                                                           ISO/WD 8601-2
+
+
+
+                                      Annex C (informative)
+
+The Extended Date/Time Format - A Profile of ISO 8601 (Parts 1 and 2)
+
+
+
+C.1 Introduction
+The Extended Date/Time Format (EDTF) profile of ISO 8601 was developed by the bibliographic
+community along with the participation of communities with related interests.
+
+This profile specifies three levels: level 0, level 1, and level 2. Level 0 specifies features of ISO 8601 Part
+1. Levels 1 and 2 specify features of Part 2/level 1 and Part2 /level 2 respectively.
+
+C.1.1 Compliance
+
+An implementation of this specification must support all of the features listed for Level 0, and the
+vendor should state one of the following:
+
+    •   Level 0 (only) is supported.
+    •   Level 0 is supported and in addition the following features of levels 1 and 2 are supported (list
+        features).
+    •   Level 1 is supported.
+    •   Level 1 is supported and in addition the following features of level 2 are supported (list
+        features).
+    •   Level 2 is supported.
+
+Two communication parties that agree to operate according to this profile must suppress, during their
+communication, any ISO 8601 features that are not included in level 0.
+
+C.1.2 Extended format
+
+All features in this profile use extended format: hyphens separating date components and colons
+separating time components. Basic format is not used.
+
+C.1.3 Level 0
+
+In order to claim support for level 0 of this profile, an implementation must support date (year only,
+year and month, and year, month and day), date and time, time interval, and century, as specified in
+2.3.1-2.3.3
+
+C.1.3.1 Date
+
+A date string represents one of the following:
+
+    •   year, month, and day (e.g. 2001-02-03)
+    •   year and month (e.g. 2008-12 )
+    •   year (e.g. 2008)
+
+Year must be four digits. (Years longer than four digits are covered in levels 1 and 2.)
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                        21
+ISO/WD 8601-2
+
+
+A year may be positive, negative, or year zero. (This specification assumes astronomical numbering,
+which includes the year zero. )
+
+C.1.3.2 Date and Time
+
+A date/time string is composed according to one of three representations as illustrated in the following
+three examples:
+
+   •    2001-02-03T09:30:01
+   •    2004-01-01T10:10:10Z
+   •    2004-01-01T10:10:10+05:00
+
+Zone-offset may be omitted or included. Time zone designation consists of either a 'Z' to indicate UTC,
+or a '+' or '-' to indicate "ahead of UTC" or "behind UTC", followed by a 2-digit hour, followed optionally
+by a colon and the 2-digit minutes.
+
+C.1.3.3 Time interval
+
+A time interval, as represented by a start date and an end date (separated by a forward slash), is a time
+interval beginning sometime during the start date and ending sometime during the end date. The actual
+instants at which the time interval begins or ends can be narrowed down only to the precision of the
+start or end date. The start and end dates are both as prescribed in 2.3.1. Either endpoint may be a year,
+year-month, or year-month-day. The end endpoint must be later than or equal to the start endpoint.
+
+Examples
+
+   •    1964/2008
+        A time interval with year precision, beginning sometime in 1964 and ending sometime in 2008.
+   •    2004-06/2006-08
+        A time interval with month precision, beginning sometime in June 2004 and ending sometime in
+        August of 2006.
+   •    2004-02-01/2005-02-08
+        A time interval with day precision, beginning sometime on February 1, 2004 and ending sometime
+        on February 8, 2005.
+   •    2004-02-01/2005-02
+        A time interval beginning sometime on February 1, 2004 and ending sometime in February 2005.
+        Note that the start endpoint has different precision than the end endpoint (day/month) and
+        therefore the precision of the time interval at large is undefined.
+   •    2004-02-01/2005
+        A time interval beginning sometime on February 1, 2004 and ending sometime in 2005. The start
+        endpoint has day precision and the end endpoint has year precision. Similar to the previous
+        example, the precision of the time interval at large is undefined.
+   •    2005/2006-02
+         A time interval beginning sometime in 2005 and ending sometime in February 2006.
+
+A time interval represents one of the following, depending on the application:
+
+   a) The period of time represented by the time interval;
+   b) A specific date during that time interval, when an event occurred.
+
+So for example, the time interval ‘1956/1967’, depending on the application, means either
+
+   a) The time interval beginning sometime in 1956 and ending sometime in 1967; or
+
+
+
+   22                                                                            © ISO 2016 – All rights reserved
+                                                                                       ISO/WD 8601-2
+
+
+
+    b) The event in question occurred during one of the years 1956, 1957, …., 1967
+
+and in this case, has year precision.
+
+In a similar sense, the time interval ‘1956-01/1967-06’ has month precision, and ‘1956-01-15/1967-
+06-20’ has day precision.
+
+
+
+C.1.3.4 Century
+
+Two digits may be used to indicate the century which is the hundred year time interval consisting of
+years beginning with those two digits.
+
+For example ‘19’ may be used to indicate the time interval represented by ‘1900/1999’.
+
+Note: For purposes of this profile, a “century” is a 100-year time interval. For example, ‘1866/1965’ is a
+century. ‘1900/1999’ and ‘1901/2000’ are also centuries, and although the latter is sometimes referred
+to as the “18th century”, this specification DOES NOT address named centuries such as the “18th century”
+nor does it take a position on the meaning of a named century. The profile addresses centuries of the
+form nn00/nn99 only, where ‘nn’ is any two–digit number, for example ‘1900/1999’.
+
+C.1.4 Level 1
+
+Level 1 of this profile requires support for:
+
+    •   Level 0, and
+    •   all of the features of Level 1 of ISO 8601 Part 2, with the exception of recurring time intervals
+        (section 5).
+
+C.1.5 Level 2
+
+Level 2 of this profile requires support for:
+
+    •   Level 1, (with the exception of recurring time intervals, section 5) and
+    •   all of the features of Level 2 of ISO 8601 Part 2.
+
+
+
+
+   © ISO 2016 – All rights reserved                                                                   23
+ISO/WD 8601-2
+
+
+
+Bibliography
+
+
+[1]        ISO 80000-1:2009, Quantities and units -- Part 1: General
+
+[2]        ISO 80000-3:2006, Quantities and units -- Part 3: Space and time
+
+[3]        ISO/IEC 646:1991, Information technology — ISO 7-bit coded character set for information interchange
+
+[4]        ISO 19018:2004, Ships and marine technology — Terms, abbreviations, graphical symbols and concepts on
+           navigation
+
+[5]        IEC 60050-112:2010, International Electrotechnical Vocabulary — Part 112: Quantities and units
+
+[6]        IEC 60050-113:2011, International Electrotechnical Vocabulary — Part 113: Physics for electrotechnology
+
+[7]        IEC 60050-114:2011, International Electrotechnical Vocabulary — Part 114: Electrochemistry
+
+[8]        IEC 60050-713:1998, International Electrotechnical Vocabulary — Part 713: Radiocommunications:
+           transmitters, receivers, networks and operation
+
+[9]        Rec. ITU-R TF.460-6 (2002-02), Standard-frequency and time-signal emissions
+
+[10]       ITU-T Recommendation S.1 (1993), International Telegraph Alphabet No. 2
+
+
+
+
+      24                                                                                 © ISO 2016 – All rights reserved
+
