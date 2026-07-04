@@ -545,15 +545,43 @@ mod chrono_specs {
         "Iterator over consecutive NaiveDates with a step of seven days."
     );
 
-    // LocalResult<T> is generic, so TypeId requires a concrete T — cannot use
-    // inventory::submit! here. Callers that need a concrete TypeSpec look up the
-    // inner type and wrap it. No ElicitComplete impl either (foreign generic).
+    // LocalResult<T> / LocalResultWrap<T> are generic — cannot use
+    // inventory::submit! here (TypeId requires a concrete type).
     impl<T: crate::ElicitSpec> crate::ElicitSpec for chrono::LocalResult<T> {
         fn type_spec() -> crate::TypeSpec {
             crate::TypeSpec::new(
                 "chrono::LocalResult",
                 "Result of a local-to-UTC conversion: None (no matching instant), \
                  Single (exactly one), or Ambiguous (two candidates near a DST gap/fold).",
+                vec![crate::SpecCategory::new(
+                    "variants",
+                    vec![
+                        crate::SpecEntry::new(
+                            "None",
+                            "No instant in UTC corresponds to the local time (e.g. within a DST gap).",
+                        ),
+                        crate::SpecEntry::new(
+                            "Single",
+                            "Exactly one UTC instant corresponds to the local time (the common case).",
+                        ),
+                        crate::SpecEntry::new(
+                            "Ambiguous",
+                            "Two UTC instants correspond to the local time (clock was set back — a DST fold).",
+                        ),
+                    ],
+                )],
+            )
+        }
+    }
+
+    // LocalResultWrap<T> — trenchcoat that can be ElicitComplete where T: ElicitComplete.
+    // Same spec content as chrono::LocalResult<T> since it mirrors the same semantics.
+    impl<T: crate::ElicitSpec> crate::ElicitSpec for crate::LocalResultWrap<T> {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "LocalResultWrap",
+                "Serialisable mirror of chrono::LocalResult<T>: the result of a \
+                 local-to-UTC conversion (None, Single, or Ambiguous).",
                 vec![crate::SpecCategory::new(
                     "variants",
                     vec![

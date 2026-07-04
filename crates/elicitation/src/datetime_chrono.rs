@@ -6020,11 +6020,14 @@ impl ToCodeLiteral for NaiveDateWeeksIteratorWrap {
 //   - Single(T)      — exactly one result
 //   - Ambiguous(T,T) — two results (fold in local time; earliest, latest)
 //
-// Generic impl: Elicitation, ElicitPromptTree, ToCodeLiteral for LocalResult<T>
-// where T: Elicitation + Clone + Send (+ ToCodeLiteral + ElicitPromptTree as needed).
+// Generic impls: Elicitation, ElicitPromptTree, ToCodeLiteral, ElicitSpec for
+// chrono::LocalResult<T> with the minimum bounds on T.
 //
-// ElicitComplete is NOT implemented generically; only concrete monomorphizations
-// (e.g. LocalResult<NaiveDate>) could satisfy Serialize + Deserialize + JsonSchema.
+// Trenchcoat: LocalResultWrap<T> is our owned mirror enum — it derives
+// Serialize + Deserialize + JsonSchema (which the orphan rule prevents adding
+// directly to chrono::LocalResult).  ElicitComplete is impl'd generically for
+// LocalResultWrap<T> where T: ElicitComplete.  MappedLocalTime<T> is just a
+// type alias for LocalResult<T>, so this single trenchcoat covers both.
 //
 // ParseResult<T>: this is a type alias `type ParseResult<T> = Result<T, ParseError>`.
 // Since Result<T, E>: Elicitation is already implemented generically in
@@ -6239,6 +6242,141 @@ impl<T: crate::emit_code::ToCodeLiteral> crate::emit_code::ToCodeLiteral
         crate::quote::quote! { chrono::LocalResult<#t> }
     }
 }
+
+// ── LocalResultWrap<T> — serialisable trenchcoat ─────────────────────────────
+//
+// chrono::LocalResult<T> derives only Clone/PartialEq/Debug/Copy/Eq/Hash — no
+// serde or schemars.  The orphan rule blocks us from adding those impls.
+// LocalResultWrap<T> is our owned mirror: same three variants, derives the
+// wire traits, and delegates every elicitation trait to the underlying
+// chrono::LocalResult<T> via From/Into.
+
+/// Serialisable mirror of `chrono::LocalResult<T>`.
+///
+/// `chrono::LocalResult<T>` does not implement `Serialize`, `Deserialize`, or
+/// `JsonSchema`, and the orphan rule prevents adding those from outside chrono.
+/// This owned enum has identical semantics and freely converts to/from the
+/// chrono type.  All elicitation traits delegate through that conversion.
+///
+/// `MappedLocalTime<T>` is a type alias for `LocalResult<T>`; this trenchcoat
+/// covers both names.
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[serde(tag = "variant", content = "value")]
+pub enum LocalResultWrap<T> {
+    /// No UTC instant corresponds to the local time (DST gap or error).
+    None,
+    /// Exactly one UTC instant corresponds to the local time.
+    Single(T),
+    /// Two UTC instants correspond to the local time (DST fold: earliest, latest).
+    Ambiguous(T, T),
+}
+
+impl<T> From<chrono::LocalResult<T>> for LocalResultWrap<T> {
+    fn from(r: chrono::LocalResult<T>) -> Self {
+        match r {
+            chrono::LocalResult::None => LocalResultWrap::None,
+            chrono::LocalResult::Single(v) => LocalResultWrap::Single(v),
+            chrono::LocalResult::Ambiguous(e, l) => LocalResultWrap::Ambiguous(e, l),
+        }
+    }
+}
+
+impl<T> From<LocalResultWrap<T>> for chrono::LocalResult<T> {
+    fn from(w: LocalResultWrap<T>) -> Self {
+        match w {
+            LocalResultWrap::None => chrono::LocalResult::None,
+            LocalResultWrap::Single(v) => chrono::LocalResult::Single(v),
+            LocalResultWrap::Ambiguous(e, l) => chrono::LocalResult::Ambiguous(e, l),
+        }
+    }
+}
+
+/// Style for `LocalResultWrap<T>` — structurally identical to `LocalResultStyle`.
+pub type LocalResultWrapStyle = LocalResultStyle;
+
+impl<T> Prompt for LocalResultWrap<T> {
+    fn prompt() -> Option<&'static str> {
+        <chrono::LocalResult<T> as Prompt>::prompt()
+    }
+}
+
+impl<T: Elicitation + Clone + Send> Elicitation for LocalResultWrap<T> {
+    type Style = LocalResultWrapStyle;
+
+    #[tracing::instrument(
+        skip(communicator),
+        fields(
+            type_name = "LocalResultWrap",
+            inner_type = std::any::type_name::<T>()
+        )
+    )]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let inner = chrono::LocalResult::<T>::elicit(communicator).await?;
+        Ok(inner.into())
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::kani_proof()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::verus_proof()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::creusot_proof()
+    }
+}
+
+impl<T: ElicitPromptTree> ElicitPromptTree for LocalResultWrap<T> {
+    fn prompt_tree() -> PromptTree {
+        <chrono::LocalResult<T> as ElicitPromptTree>::prompt_tree()
+    }
+}
+
+impl<T: ElicitIntrospect + Clone + Send> ElicitIntrospect for LocalResultWrap<T> {
+    fn pattern() -> ElicitationPattern {
+        <chrono::LocalResult<T> as ElicitIntrospect>::pattern()
+    }
+
+    fn metadata() -> TypeMetadata {
+        <chrono::LocalResult<T> as ElicitIntrospect>::metadata()
+    }
+}
+
+impl<T: crate::emit_code::ToCodeLiteral> crate::emit_code::ToCodeLiteral for LocalResultWrap<T> {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let inner: chrono::LocalResult<&T> = match self {
+            LocalResultWrap::None => chrono::LocalResult::None,
+            LocalResultWrap::Single(v) => chrono::LocalResult::Single(v),
+            LocalResultWrap::Ambiguous(e, l) => chrono::LocalResult::Ambiguous(e, l),
+        };
+        match inner {
+            chrono::LocalResult::None => {
+                let t = <T as crate::emit_code::ToCodeLiteral>::type_tokens();
+                crate::quote::quote! { crate::LocalResultWrap::<#t>::None }
+            }
+            chrono::LocalResult::Single(v) => {
+                let lit = v.to_code_literal();
+                crate::quote::quote! { crate::LocalResultWrap::Single(#lit) }
+            }
+            chrono::LocalResult::Ambiguous(e, l) => {
+                let e_lit = e.to_code_literal();
+                let l_lit = l.to_code_literal();
+                crate::quote::quote! { crate::LocalResultWrap::Ambiguous(#e_lit, #l_lit) }
+            }
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        let t = <T as crate::emit_code::ToCodeLiteral>::type_tokens();
+        crate::quote::quote! { crate::LocalResultWrap<#t> }
+    }
+}
+
+impl<T: crate::ElicitComplete + Clone + Send> crate::ElicitComplete for LocalResultWrap<T> {}
 
 // ============================================================================
 // format::Item<'a> — lifetime-bound format item enum
