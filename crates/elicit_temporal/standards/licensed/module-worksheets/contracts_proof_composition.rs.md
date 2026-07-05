@@ -10,6 +10,7 @@ This worksheet tracks exact standards citations for the aggregate evidence bundl
 - `../iso-8601-2-2019.*`
 - `../../public/calconnect-cc-18011-2018.xml`
 - `../../public/iso-wd-8601-1-2016.txt`
+- `../../public/iso-wd-8601-2-2016.txt`
 
 ## Standards evidence map
 
@@ -33,12 +34,26 @@ This worksheet tracks exact standards citations for the aggregate evidence bundl
 | `LossyConversionAuthorityEvidence` | `reduced-precision and rounding semantics` | `ISO 8601-2:2019 7.13; 14.2; 14.3; 14.4` | `iso-8601-2-2019.sample.txt lines 261, 437-441` | `yes` |
 | `LosslessConversionEvidence` | `reduced-precision semantics` | `ISO 8601-2:2019 7.11; 7.12; 7.13; RFC 3339 §5.1; §5.6` | `iso-8601-2-2019.sample.txt lines 259-261; RFC 3339` | `yes` |
 | `SubsecondTruncationEvidence` | `reduced-precision and rounding semantics` | `ISO 8601-2:2019 7.13; 14.2; 14.3; 14.4` | `iso-8601-2-2019.sample.txt lines 261, 437-441` | `yes` |
+| `DurationDesignatorRepresentationEvidence` | `designator-based duration representation family` | `4.4.3.2` | `../../public/iso-wd-8601-1-2016.txt` lines 1515-1524 | `yes` |
 | `DurationFormEvidence` | `duration representations` | `4.4.2 b); 4.4.3.2; 4.4.3.3` | `contracts_interval.rs.md` | `yes` |
 | `TimeIntervalEvidence` | `time interval representations` | `4.4.1; 4.4.2 a)` | `contracts_interval.rs.md` | `yes` |
+| `InheritedIntervalEndComponentsEvidence` | `interval end-component inheritance semantics` | `4.4.5` | `contracts_interval.rs.md` | `yes` |
+| `InheritedIntervalZoneEvidence` | `interval trailing-zone inheritance semantics` | `4.4.5` | `contracts_interval.rs.md` | `yes` |
 | `IntervalEndpointOrderingEvidence` | `interval ordering and duration semantics` | `3.1.1.6; 3.1.1.8` | `contracts_interval.rs.md` | `yes` |
 | `RecurringIntervalEvidence` | `recurring interval representations` | `4.5.1; 4.5.2` | `contracts_interval.rs.md` | `yes` |
+| `CompleteRecurringIntervalRepresentationEvidence` | `complete recurring interval representation family` | `4.5.3` | `contracts_interval.rs.md` | `yes` |
+| `OtherThanCompleteRecurringIntervalRepresentationEvidence` | `other-than-complete recurring interval representation family` | `4.5.4` | `contracts_interval.rs.md` | `yes` |
+| `CompleteTimePointDateRepresentationEvidence` | `complete interval date substitution families` | `4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1655-1657 | `yes` |
+| `CompleteTimePointTimeRepresentationEvidence` | `complete interval time substitution families` | `4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1659-1661 | `yes` |
+| `CompleteTimePointRepresentationEvidence` | `complete interval time-point substitution bundle` | `4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1655-1661 | `yes` |
+| `CompleteIntervalDurationRepresentationEvidence` | `complete interval duration substitution families` | `4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1663-1664 | `yes` |
+| `CompleteStartEndIntervalSubstitutionEvidence` | `complete start/end interval substitution semantics` | `4.4.4.1; 4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1548-1568, 1651-1664 | `yes` |
+| `CompleteStartDurationIntervalSubstitutionEvidence` | `complete start/duration interval substitution semantics` | `4.4.4.3; 4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1595-1616, 1651-1664 | `yes` |
+| `CompleteDurationEndIntervalSubstitutionEvidence` | `complete duration/end interval substitution semantics` | `4.4.4.4; 4.4.4.5` | `../../public/iso-wd-8601-1-2016.txt` lines 1626-1647, 1651-1664 | `yes` |
 | `QualifiedTemporalExpressionEvidence` | `uncertain and approximate temporal expressions` | `ISO 8601-2:2019 8.2.1; 8.2.2; 8.2.3; 8.4.4; 8.4.5; 8.4.6; 8.5` | `iso-8601-2-2019.sample.txt lines 280-345` | `yes` |
 | `ExtendedIntervalBoundaryEvidence` | `open and unknown interval boundaries` | `ISO 8601-2:2019 10.2` | `iso-8601-2-2019.sample.txt lines 360-360` | `yes` |
+| `EnhancedIntervalLevelOneEvidence` | `enhanced interval Level 1 qualification semantics` | `ISO 8601-2:2019 4.5.1; open-text cross-check ISO/WD 8601-2:2016(E) 4.5.1` | `../../public/iso-wd-8601-2-2016.txt lines 446-447` | `yes` |
+| `EnhancedIntervalLevelTwoEvidence` | `enhanced interval Level 2 boundary qualification semantics` | `ISO 8601-2:2019 4.5.2; open-text cross-check ISO/WD 8601-2:2016(E) 4.5.2` | `../../public/iso-wd-8601-2-2016.txt lines 474-476` | `yes` |
 | `SeasonalTemporalExpressionEvidence` | `seasons and named seasonal temporal expressions` | `ISO 8601-2:2019 4.8.1; 4.8.2; 4.8.3` | `iso-8601-2-2019.sample.txt lines 154-158, 873-875` | `yes` |
 | `UnspecifiedComponentExpressionEvidence` | `unspecified digits and unspecified components` | `ISO 8601-2:2019 9.2.1; 9.2.2; 9.3` | `iso-8601-2-2019.sample.txt lines 350-356` | `yes` |
 | `TemporalSetExpressionEvidence` | `temporal set expressions` | `ISO 8601-2:2019 6.1; 6.2; 6.3; 6.4` | `iso-8601-2-2019.sample.txt lines 201-209` | `yes` |
@@ -58,11 +73,14 @@ This worksheet tracks exact standards citations for the aggregate evidence bundl
 | Evidence family | Coverage status | Current surface anchors | Follow-up |
 | --- | --- | --- | --- |
 | `core ISO 8601-1 bundles` | `covered` | `CalendarDateEvidence`, `OrdinalDateEvidence`, `WeekDateEvidence`, `UtcOffsetEvidence`, `LocalDateTimeEvidence`, `OffsetDateTimeEvidence` | Repo-local WD text now anchors the open-text cross-checks. |
-| `interval and duration bundles` | `partially covered` | `DurationFormEvidence`, `DurationRepresentationEvidence`, `DurationAlternativeFormEvidence`, `DurationWeekFormEvidence`, `TimeIntervalEvidence`, `RecurringIntervalEvidence`, `ExtendedIntervalBoundaryEvidence` | The alternative-duration branch is now explicit; inherited-end semantics and recurring-form splits remain open from `contracts_interval.rs.md`. |
-| `extended temporal bundles` | `covered` | `QualifiedTemporalExpressionEvidence`, `SeasonalTemporalExpressionEvidence`, `UnspecifiedComponentExpressionEvidence`, `TemporalSetExpressionEvidence` | Extended expression families remain explicitly bundled. |
+| `interval and duration bundles` | `covered` | `DurationDesignatorRepresentationEvidence`, `DurationFormEvidence`, `DurationRepresentationEvidence`, `DurationAlternativeFormEvidence`, `DurationWeekFormEvidence`, `TimeIntervalEvidence`, `InheritedIntervalEndComponentsEvidence`, `InheritedIntervalZoneEvidence`, `CompleteTimePointDateRepresentationEvidence`, `CompleteTimePointTimeRepresentationEvidence`, `CompleteTimePointRepresentationEvidence`, `CompleteIntervalDurationRepresentationEvidence`, `CompleteStartEndIntervalSubstitutionEvidence`, `CompleteStartDurationIntervalSubstitutionEvidence`, `CompleteDurationEndIntervalSubstitutionEvidence`, `RecurringIntervalEvidence`, `CompleteRecurringIntervalRepresentationEvidence`, `OtherThanCompleteRecurringIntervalRepresentationEvidence`, `ExtendedIntervalBoundaryEvidence` | Designator and alternative duration families, `4.4.5` inheritance, `4.4.4.5` substitution branches, and recurring-form families are all explicit in the proof graph. |
+| `extended temporal bundles` | `covered` | `QualifiedTemporalExpressionEvidence`, `EnhancedIntervalLevelOneEvidence`, `EnhancedIntervalLevelTwoEvidence`, `SeasonalTemporalExpressionEvidence`, `UnspecifiedComponentExpressionEvidence`, `TemporalSetExpressionEvidence` | Extended expression families, including enhanced-interval Level 1/Level 2 semantics, remain explicitly bundled. |
 | `precision and conversion bundles` | `covered` | `PrecisionPreservationEvidence`, `LossyConversionAuthorityEvidence`, `LosslessConversionEvidence`, `SubsecondTruncationEvidence` | Accord-level sidecars remain explicit and clause-backed. |
 
 ## Checklist
 
-- [ ] Revisit `TimeIntervalEvidence` and `ExtendedIntervalBoundaryEvidence`
-  when the interval worksheet grows first-class `4.4.3/4.4.5` sidecars.
+- [x] Revisit recurring-interval proof bundles once the interval worksheet
+  decides whether complete and other-than-complete recurring forms need
+  distinct sidecars.
+- [x] Add explicit proof bundles for the `4.4.4.5` complete-interval
+  substitution families.

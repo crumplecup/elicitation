@@ -34,7 +34,7 @@ This worksheet tracks exact standards citations for the parser trait seams in
 | `parse_temporal_set` | `temporal sets and set representation refinements` | `ISO 8601-2:2019 6.1; 6.2; 6.3; 6.4; 6.5; 6.6` | `iso-8601-2-2019.sample.txt lines 201-212` | `yes` |
 | `parse_grouped_time_scale_unit` | `grouped time scale units` | `ISO 8601-2:2019 5.1; 5.2; 5.3; 5.4; 5.4.2` | `iso-8601-2-2019.sample.txt lines 167-177, 935-942` | `yes` |
 | `parse_date_time_formula` | `date and time arithmetic` | `ISO 8601-2:2019 14.1; 14.2; 14.3; 14.4` | `iso-8601-2-2019.sample.txt lines 438-441` | `yes` |
-| `parse_time_interval` | `time interval representations; open and unknown interval boundaries` | `4.4.1; 4.4.2; 4.4.4; 4.4.5; ISO 8601-2:2019 10.2` | `../../public/iso-wd-8601-1-2016.txt` lines 1688-1943; `iso-8601-2-2019.sample.txt` line 360 | `yes` |
+| `parse_time_interval` | `time interval representations; open and unknown interval boundaries` | `4.4.1; 4.4.2; 4.4.4; 4.4.5; ISO 8601-2:2019 10.2` | `../../public/iso-wd-8601-1-2016.txt` lines 1460-1697; `iso-8601-2-2019.sample.txt` line 360 | `yes` |
 
 ## Parser Seam Coverage Audit
 
@@ -42,14 +42,14 @@ This worksheet tracks exact standards citations for the parser trait seams in
 | --- | --- | --- | --- |
 | `parse_utc_offset` | `covered` | `parse_utc_offset`, `UtcOffsetEvidence` | Repo-local WD text now anchors the open-text clause cross-check. |
 | `parse_local_date_time` | `covered` | `parse_local_date_time`, `LocalDateTimeEvidence` | Combined date-time clause coverage is explicit and stable. |
-| `parse_time_interval` | `partially covered` | `parse_time_interval`, `TimeIntervalEvidence`, `ExtendedIntervalBoundaryEvidence` | Interval parsing still inherits the open `4.4.3/4.4.5` distinctions tracked in `traits_interval.rs.md`. |
+| `parse_time_interval` | `covered` | `parse_time_interval`, `TimeIntervalEvidence`, `ExtendedIntervalBoundaryEvidence`, `InheritedIntervalEndComponentsEvidence`, `InheritedIntervalZoneEvidence`, `CompleteIntervalSubstitutionProofBranch`, `DurationRepresentationProofBranch` | Interval parsing now carries explicit `4.4.5` inherited sidecars and `4.4.4.5` substitution semantics, while the parser seam family now exposes designator versus alternative duration branches directly. |
 | `parse_qualified_temporal_value` | `covered` | `parse_qualified_temporal_value`, `QualifiedTemporalExpressionEvidence` | Qualification placement and scope are explicit. |
 | `parse_temporal_set` | `covered` | `parse_temporal_set`, `TemporalSetExpressionEvidence`, `TemporalSetRangeSemanticsEvidence` | Set-family semantics are explicit. |
 
 ## Checklist
 
-- [ ] Keep `parse_time_interval` aligned with the interval worksheet once the
-  inherited-end and alternative-duration sidecars land.
+- [x] Decide whether parser seams should expose designator versus alternative
+  complete-duration branches as dedicated result sidecars.
 
 ## Notes
 

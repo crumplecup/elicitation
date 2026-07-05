@@ -41,9 +41,9 @@ This worksheet tracks exact standards citations for the formatter trait seams in
 | `format_temporal_set` | `temporal sets and set representation refinements` | `ISO 8601-2:2019 6.1; 6.2; 6.3; 6.4; 6.5; 6.6` | `iso-8601-2-2019.sample.txt lines 201-212` | `yes` |
 | `format_grouped_time_scale_unit` | `grouped time scale units` | `ISO 8601-2:2019 5.1; 5.2; 5.3; 5.4; 5.4.2` | `iso-8601-2-2019.sample.txt lines 167-177, 935-942` | `yes` |
 | `format_date_time_formula` | `date and time arithmetic` | `ISO 8601-2:2019 14.1; 14.2; 14.3; 14.4` | `iso-8601-2-2019.sample.txt lines 438-441` | `yes` |
-| `format_duration` | `duration representations` | `4.4.2 b); 4.4.3` | `../../public/iso-wd-8601-1-2016.txt` lines 1704-1768 | `yes` |
-| `format_recurring_interval` | `recurring interval representations` | `4.5.1; 4.5.2; 4.5.3; 4.5.4` | `../../public/iso-wd-8601-1-2016.txt` lines 1949-2011 | `yes` |
-| `format_time_interval` | `time interval representations; open and unknown interval boundaries` | `4.4.1; 4.4.2; 4.4.4; 4.4.5; ISO 8601-2:2019 10.2` | `../../public/iso-wd-8601-1-2016.txt` lines 1688-1943; `iso-8601-2-2019.sample.txt` line 360 | `yes` |
+| `format_duration` | `duration representations` | `4.4.2 b); 4.4.3` | `../../public/iso-wd-8601-1-2016.txt` lines 1477-1544 | `yes` |
+| `format_recurring_interval` | `recurring interval representations` | `4.5.1; 4.5.2; 4.5.3; 4.5.4` | `../../public/iso-wd-8601-1-2016.txt` lines 1699-1770 | `yes` |
+| `format_time_interval` | `time interval representations; open and unknown interval boundaries` | `4.4.1; 4.4.2; 4.4.4; 4.4.5; ISO 8601-2:2019 10.2` | `../../public/iso-wd-8601-1-2016.txt` lines 1460-1697; `iso-8601-2-2019.sample.txt` line 360 | `yes` |
 
 ## Formatter Seam Coverage Audit
 
@@ -51,14 +51,16 @@ This worksheet tracks exact standards citations for the formatter trait seams in
 | --- | --- | --- | --- |
 | `format_utc_offset_*` | `covered` | `format_utc_offset_extended`, `format_utc_offset_basic`, `UtcOffsetEvidence` | Repo-local WD text now anchors the open-text clause cross-check. |
 | `format_local_date_time_*` | `covered` | `format_local_date_time_extended`, `format_local_date_time_basic`, `LocalDateTimeEvidence` | Combined date-time clause coverage is explicit and stable. |
-| `format_duration` | `partially covered` | `format_duration`, `DurationFormEvidence` | Formatter coverage inherits the open alternative-duration distinction tracked in `traits_interval.rs.md`. |
-| `format_recurring_interval` | `partially covered` | `format_recurring_interval`, `RecurringIntervalEvidence` | Complete versus other-than-complete recurring families remain flattened. |
-| `format_time_interval` | `partially covered` | `format_time_interval`, `TimeIntervalEvidence`, `ExtendedIntervalBoundaryEvidence` | Formatter coverage inherits the open `4.4.5` substitution semantics tracked in `traits_interval.rs.md`. |
+| `format_duration` | `covered` | `format_duration`, `FormattedDurationResult`, `DurationRepresentationProofBranch`, `DurationDesignatorRepresentationEvidence`, `DurationAlternativeFormEvidence` | Formatter output now carries an explicit proof branch that distinguishes designator-based and alternative complete-duration families. |
+| `format_recurring_interval` | `covered` | `format_recurring_interval`, `FormattedRecurringIntervalResult`, `RecurringIntervalRepresentationProofBranch`, `RecurringIntervalEvidence` | Formatter output now carries an explicit proof branch for complete versus other-than-complete recurring families. |
+| `format_time_interval` | `covered` | `format_time_interval`, `TimeIntervalEvidence`, `ExtendedIntervalBoundaryEvidence`, `InheritedIntervalEndComponentsEvidence`, `InheritedIntervalZoneEvidence`, `CompleteIntervalSubstitutionProofBranch` | Formatter output now carries explicit `4.4.5` inherited interval semantics and the `4.4.4.5` complete-representation substitution branch rather than relying on implicit substitution semantics. |
 
 ## Checklist
 
-- [ ] Keep formatter interval seams aligned with the interval worksheet once the
-  remaining interval-form distinctions land.
+- [x] Decide whether formatter seams should expose complete versus
+  other-than-complete recurring interval distinctions directly.
+- [x] Add a formatter-side proof branch for the `4.4.4.5` complete-interval
+  substitution families.
 
 ## Notes
 

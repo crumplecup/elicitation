@@ -24,6 +24,10 @@ contracts in `src/contracts/extended.rs`.
 | `BeforeOrAfterQualificationIsLevelTwoOnly` | `before or after` | `4.4.1; 4.4.2` | `../../public/iso-wd-8601-2-2016.txt` lines 407-422 | `yes` |
 | `BeforeOrOnDateUsesLeadingDoubleDotQualifier` | `before or on` | `4.4.2` | `../../public/iso-wd-8601-2-2016.txt` lines 414-422 | `yes` |
 | `OnOrAfterDateUsesTrailingDoubleDotQualifier` | `on or after` | `4.4.2` | `../../public/iso-wd-8601-2-2016.txt` lines 414-422 | `yes` |
+| `EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification` | `enhanced interval Level 1 terminal boundary qualification` | `4.5.1` | `../../public/iso-wd-8601-2-2016.txt` lines 446-447 | `yes` |
+| `EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification` | `enhanced interval Level 2 internal boundary qualification` | `4.5.2` | `../../public/iso-wd-8601-2-2016.txt` lines 474-475 | `yes` |
+| `EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits` | `enhanced interval Level 2 internal boundary unspecified digits` | `4.5.2` | `../../public/iso-wd-8601-2-2016.txt` lines 474-475 | `yes` |
+| `EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification` | `enhanced interval Level 2 before-or/or-after boundary qualification` | `4.5.2` | `../../public/iso-wd-8601-2-2016.txt` lines 474-476 | `yes` |
 | `OpenIntervalBoundaryDeclared` | `open interval boundaries` | `10.2` | `iso-8601-2-2019.sample.txt` line 360; `loc-edtf-2019.html` lines 166-176 | `yes` |
 | `UnknownIntervalBoundaryDeclared` | `unknown interval boundaries` | `10.2` | `iso-8601-2-2019.sample.txt` line 360; `loc-edtf-2019.html` lines 166-176 | `yes` |
 | `LetterPrefixedCalendarYearUsesLeadingYDesignator` | `letter-prefixed calendar year` | `4.7.2` | `iso-8601-2-2019.sample.txt` lines 146, 961; `loc-edtf-2019.html` lines 202-208 | `yes` |
@@ -65,7 +69,7 @@ contracts in `src/contracts/extended.rs`.
 | `4.2 Uncertain and/or approximate date` | `covered` | `UncertaintyQualificationDeclared`, `ApproximationQualificationDeclared`, `UncertaintyAndApproximationMayBeCombined` | Qualification presence and composition are explicit. |
 | `4.3 Unspecified` | `covered` | `UnspecifiedDigitUsesUppercaseXPlaceholder`, `UnspecifiedDigitsDeclareUnknownValue`, `LevelOneUnspecifiedDigitsOccupyRightmostPositions`, `LevelTwoUnspecifiedDigitsMayAppearWithinComponent` | Level split and placement rules are explicit. |
 | `4.4 Before or after` | `covered` | `BeforeOrAfterQualificationIsLevelTwoOnly`, `BeforeOrOnDateUsesLeadingDoubleDotQualifier`, `OnOrAfterDateUsesTrailingDoubleDotQualifier` | Single-date before-or-on and on-or-after semantics are now first-class. |
-| `4.5 Enhanced time interval` | `covered` | `OpenIntervalBoundaryDeclared`, `UnknownIntervalBoundaryDeclared`, qualification props in this module | Boundary-state and qualification vocabulary are explicit; interval-form distinctions remain tracked in `contracts_interval.rs.md`. |
+| `4.5 Enhanced time interval` | `covered` | `EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification`, `EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification`, `EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits`, `EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification`, `OpenIntervalBoundaryDeclared`, `UnknownIntervalBoundaryDeclared` | Boundary-state and Level 1/Level 2 qualification semantics are explicit; interval-form distinctions remain tracked in `contracts_interval.rs.md`. |
 | `4.6 Year exceeding four digits` | `covered` | `LetterPrefixedCalendarYearUsesLeadingYDesignator`, `LetterPrefixedCalendarYearMagnitudeExceedsFourDigits`, `ExponentialYearUsesPowerOfTenNotation`, `ExponentialYearExponentIsPositiveInteger` | Integer and exponential year extensions are explicit. |
 | `4.7 Significant digits` | `covered` | `SignificantDigitYearUsesTrailingSSuffix`, `SignificantDigitYearCountIsPositiveInteger` | Significant-digit suffix semantics are explicit. |
 | `4.8 Divisions of a year` | `covered` | `SeasonalExpressionUsesYearAndSeasonForm`, `SeasonCodeDeclaresNamedSeason`, `SeasonCodeDeclaresSeasonScope`, `SubYearGrouping*` | Named seasons and registered grouping families are explicit. |
@@ -75,5 +79,5 @@ contracts in `src/contracts/extended.rs`.
 
 ## Checklist
 
-- [ ] Decide whether enhanced-interval level partitioning itself needs a
+- [x] Decide whether enhanced-interval level partitioning itself needs a
   first-class proposition beyond the specific `4.4` and `10.2` laws.

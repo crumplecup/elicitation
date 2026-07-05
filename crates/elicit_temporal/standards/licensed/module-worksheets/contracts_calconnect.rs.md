@@ -67,6 +67,11 @@ surface in `src/contracts/calconnect.rs`.
   tightening.
 - The `Source artifact` column points at local public XML corpora already staged
   in `standards/public`.
+- `calconnect.rs` remains the right home for primitive CalConnect
+  propositions. Proof-graph bundling belongs in
+  `contracts_proof_composition.rs.md`, and consumer-facing method concordance
+  belongs in the trait worksheets, so no proposition migration is currently
+  warranted.
 
 ## Remaining Coverage Checklist
 
@@ -83,4 +88,4 @@ surface in `src/contracts/calconnect.rs`.
 
 - [x] Walk CalConnect CC 18011 clause-by-clause and mark which substantive clauses are intentionally represented elsewhere in `elicit_temporal`.
 - [x] Walk CalConnect CC 18012 clause-by-clause and do the same for recurrence and selection semantics.
-- [ ] Decide whether any CalConnect propositions currently embedded in `calconnect.rs` should move into separate proof-composition or trait worksheets for better concordance.
+- [x] Decide whether any CalConnect propositions currently embedded in `calconnect.rs` should move into separate proof-composition or trait worksheets for better concordance.
