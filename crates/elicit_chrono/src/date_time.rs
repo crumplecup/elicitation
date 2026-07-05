@@ -509,21 +509,27 @@ impl DateTime {
         chrono::DateTime::from_naive_utc_and_offset(*dt, chrono::Utc).into()
     }
 
-    /// Parse an RFC 3339 string (delegates to `parse`). Returns `None` if invalid.
-    pub fn from_str(s: &str) -> Option<Self> {
-        Self::parse(s)
-    }
-
-    /// Returns the default datetime (Unix epoch, `1970-01-01T00:00:00Z`).
-    pub fn default() -> Self {
-        chrono::DateTime::<chrono::Utc>::default().into()
-    }
-
     /// Parse a datetime string with format, returning `(datetime, unparsed_remainder)`. Returns `None` if invalid.
     pub fn parse_and_remainder(s: &str, fmt: &str) -> Option<(Self, String)> {
         chrono::DateTime::<chrono::FixedOffset>::parse_and_remainder(s, fmt)
             .ok()
             .map(|(dt, rem)| (dt.with_timezone(&chrono::Utc).into(), rem.to_string()))
+    }
+}
+
+impl Default for DateTime {
+    fn default() -> Self {
+        chrono::DateTime::<chrono::Utc>::default().into()
+    }
+}
+
+impl std::str::FromStr for DateTime {
+    type Err = crate::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.parse::<chrono::DateTime<chrono::FixedOffset>>()
+            .map(|dt| dt.with_timezone(&chrono::Utc).into())
+            .map_err(|e| crate::ParseError(elicitation::ParseErrorWrap::from(e)))
     }
 }
 
@@ -536,6 +542,114 @@ impl std::ops::AddAssign<crate::Duration> for DateTime {
 impl std::ops::SubAssign<crate::Duration> for DateTime {
     fn sub_assign(&mut self, rhs: crate::Duration) {
         self.0 = std::sync::Arc::new(*self.0 - *rhs);
+    }
+}
+
+impl chrono::Datelike for DateTime {
+    fn year(&self) -> i32 {
+        self.0.year()
+    }
+    fn month(&self) -> u32 {
+        self.0.month()
+    }
+    fn month0(&self) -> u32 {
+        self.0.month0()
+    }
+    fn day(&self) -> u32 {
+        self.0.day()
+    }
+    fn day0(&self) -> u32 {
+        self.0.day0()
+    }
+    fn ordinal(&self) -> u32 {
+        self.0.ordinal()
+    }
+    fn ordinal0(&self) -> u32 {
+        self.0.ordinal0()
+    }
+    fn weekday(&self) -> chrono::Weekday {
+        self.0.weekday()
+    }
+    fn iso_week(&self) -> chrono::IsoWeek {
+        self.0.iso_week()
+    }
+    fn with_year(&self, year: i32) -> Option<Self> {
+        self.0.with_year(year).map(Into::into)
+    }
+    fn with_month(&self, month: u32) -> Option<Self> {
+        self.0.with_month(month).map(Into::into)
+    }
+    fn with_month0(&self, month0: u32) -> Option<Self> {
+        self.0.with_month0(month0).map(Into::into)
+    }
+    fn with_day(&self, day: u32) -> Option<Self> {
+        self.0.with_day(day).map(Into::into)
+    }
+    fn with_day0(&self, day0: u32) -> Option<Self> {
+        self.0.with_day0(day0).map(Into::into)
+    }
+    fn with_ordinal(&self, ordinal: u32) -> Option<Self> {
+        self.0.with_ordinal(ordinal).map(Into::into)
+    }
+    fn with_ordinal0(&self, ordinal0: u32) -> Option<Self> {
+        self.0.with_ordinal0(ordinal0).map(Into::into)
+    }
+}
+
+impl chrono::Timelike for DateTime {
+    fn hour(&self) -> u32 {
+        self.0.hour()
+    }
+    fn minute(&self) -> u32 {
+        self.0.minute()
+    }
+    fn second(&self) -> u32 {
+        self.0.second()
+    }
+    fn nanosecond(&self) -> u32 {
+        self.0.nanosecond()
+    }
+    fn with_hour(&self, hour: u32) -> Option<Self> {
+        self.0.with_hour(hour).map(Into::into)
+    }
+    fn with_minute(&self, min: u32) -> Option<Self> {
+        self.0.with_minute(min).map(Into::into)
+    }
+    fn with_second(&self, sec: u32) -> Option<Self> {
+        self.0.with_second(sec).map(Into::into)
+    }
+    fn with_nanosecond(&self, nano: u32) -> Option<Self> {
+        self.0.with_nanosecond(nano).map(Into::into)
+    }
+}
+
+impl std::ops::Add<chrono::TimeDelta> for DateTime {
+    type Output = DateTime;
+    fn add(self, rhs: chrono::TimeDelta) -> Self::Output {
+        (*self.0 + rhs).into()
+    }
+}
+
+impl std::ops::Sub<chrono::TimeDelta> for DateTime {
+    type Output = DateTime;
+    fn sub(self, rhs: chrono::TimeDelta) -> Self::Output {
+        (*self.0 - rhs).into()
+    }
+}
+
+impl chrono::DurationRound for DateTime {
+    type Err = chrono::RoundingError;
+
+    fn duration_round(self, duration: chrono::TimeDelta) -> Result<Self, Self::Err> {
+        (*self.0).duration_round(duration).map(Into::into)
+    }
+
+    fn duration_trunc(self, duration: chrono::TimeDelta) -> Result<Self, Self::Err> {
+        (*self.0).duration_trunc(duration).map(Into::into)
+    }
+
+    fn duration_round_up(self, duration: chrono::TimeDelta) -> Result<Self, Self::Err> {
+        (*self.0).duration_round_up(duration).map(Into::into)
     }
 }
 

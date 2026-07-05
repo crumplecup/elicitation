@@ -35,11 +35,8 @@ impl JsonSchema for Duration {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "Duration".into()
     }
-    fn json_schema(_gen: &mut SchemaGenerator) -> Schema {
-        schemars::json_schema!({
-            "type": "integer",
-            "description": "Duration in whole seconds (can be negative)"
-        })
+    fn json_schema(schema_gen: &mut SchemaGenerator) -> Schema {
+        schema_gen.subschema_for::<i64>()
     }
 }
 

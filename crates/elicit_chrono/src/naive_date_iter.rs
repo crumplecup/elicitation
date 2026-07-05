@@ -149,7 +149,7 @@ async fn chrono_date_iter_iter_days(
     let body = serde_json::to_string(&IterIdResult {
         iter_id: id.to_string(),
     })
-    .map_err(|e| iter_err(e))?;
+    .map_err(iter_err)?;
     Ok(ok_text(body))
 }
 
@@ -177,7 +177,7 @@ async fn chrono_date_iter_iter_weeks(
     let body = serde_json::to_string(&IterIdResult {
         iter_id: id.to_string(),
     })
-    .map_err(|e| iter_err(e))?;
+    .map_err(iter_err)?;
     Ok(ok_text(body))
 }
 

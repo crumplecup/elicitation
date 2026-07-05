@@ -134,7 +134,7 @@ async fn chrono_dt_create(
     let body = serde_json::to_string(&DtIdResult {
         dt_id: id.to_string(),
     })
-    .map_err(|e| dt_err(e))?;
+    .map_err(dt_err)?;
     Ok(ok_text(body))
 }
 

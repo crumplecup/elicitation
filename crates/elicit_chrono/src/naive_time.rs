@@ -141,16 +141,6 @@ impl NaiveTime {
             .map(Into::into)
     }
 
-    /// Parse an ISO 8601 time string (delegates to `parse`). Returns `None` if invalid.
-    pub fn from_str(s: &str) -> Option<Self> {
-        Self::parse(s)
-    }
-
-    /// Returns the default time (midnight, `00:00:00`).
-    pub fn default() -> Self {
-        chrono::NaiveTime::default().into()
-    }
-
     /// Parse a time string with format, returning `(time, unparsed_remainder)`. Returns `None` if invalid.
     pub fn parse_and_remainder(s: &str, fmt: &str) -> Option<(Self, String)> {
         chrono::NaiveTime::parse_and_remainder(s, fmt)
@@ -175,6 +165,23 @@ impl NaiveTime {
     }
 }
 
+impl Default for NaiveTime {
+    fn default() -> Self {
+        chrono::NaiveTime::default().into()
+    }
+}
+
+impl std::str::FromStr for NaiveTime {
+    type Err = crate::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        chrono::NaiveTime::parse_from_str(s, "%H:%M:%S")
+            .or_else(|_| chrono::NaiveTime::parse_from_str(s, "%H:%M:%S%.f"))
+            .map(Into::into)
+            .map_err(|e| crate::ParseError(elicitation::ParseErrorWrap::from(e)))
+    }
+}
+
 impl std::ops::AddAssign<crate::Duration> for NaiveTime {
     fn add_assign(&mut self, rhs: crate::Duration) {
         self.0 = std::sync::Arc::new(*self.0 + *rhs);
@@ -184,6 +191,47 @@ impl std::ops::AddAssign<crate::Duration> for NaiveTime {
 impl std::ops::SubAssign<crate::Duration> for NaiveTime {
     fn sub_assign(&mut self, rhs: crate::Duration) {
         self.0 = std::sync::Arc::new(*self.0 - *rhs);
+    }
+}
+
+impl chrono::Timelike for NaiveTime {
+    fn hour(&self) -> u32 {
+        self.0.hour()
+    }
+    fn minute(&self) -> u32 {
+        self.0.minute()
+    }
+    fn second(&self) -> u32 {
+        self.0.second()
+    }
+    fn nanosecond(&self) -> u32 {
+        self.0.nanosecond()
+    }
+    fn with_hour(&self, hour: u32) -> Option<Self> {
+        self.0.with_hour(hour).map(Into::into)
+    }
+    fn with_minute(&self, min: u32) -> Option<Self> {
+        self.0.with_minute(min).map(Into::into)
+    }
+    fn with_second(&self, sec: u32) -> Option<Self> {
+        self.0.with_second(sec).map(Into::into)
+    }
+    fn with_nanosecond(&self, nano: u32) -> Option<Self> {
+        self.0.with_nanosecond(nano).map(Into::into)
+    }
+}
+
+impl std::ops::Add<chrono::TimeDelta> for NaiveTime {
+    type Output = NaiveTime;
+    fn add(self, rhs: chrono::TimeDelta) -> Self::Output {
+        (*self.0 + rhs).into()
+    }
+}
+
+impl std::ops::Sub<chrono::TimeDelta> for NaiveTime {
+    type Output = NaiveTime;
+    fn sub(self, rhs: chrono::TimeDelta) -> Self::Output {
+        (*self.0 - rhs).into()
     }
 }
 

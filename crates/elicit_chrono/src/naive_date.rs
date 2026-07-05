@@ -292,16 +292,6 @@ impl NaiveDate {
         chrono::NaiveDate::from_yo_opt(year, ordinal).map(Into::into)
     }
 
-    /// Parse an ISO 8601 date string (e.g. `"2024-01-15"`). Returns `None` if invalid.
-    pub fn from_str(s: &str) -> Option<Self> {
-        Self::parse(s)
-    }
-
-    /// Returns the default date (January 1, year 1 in the proleptic Gregorian calendar).
-    pub fn default() -> Self {
-        chrono::NaiveDate::default().into()
-    }
-
     /// Parse a date string with format, returning `(date, unparsed_remainder)`. Returns `None` if invalid.
     pub fn parse_and_remainder(s: &str, fmt: &str) -> Option<(Self, String)> {
         chrono::NaiveDate::parse_and_remainder(s, fmt)
@@ -362,6 +352,22 @@ impl NaiveDate {
     }
 }
 
+impl Default for NaiveDate {
+    fn default() -> Self {
+        chrono::NaiveDate::default().into()
+    }
+}
+
+impl std::str::FromStr for NaiveDate {
+    type Err = crate::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+            .map(Into::into)
+            .map_err(|e| crate::ParseError(elicitation::ParseErrorWrap::from(e)))
+    }
+}
+
 impl std::ops::AddAssign<crate::Duration> for NaiveDate {
     fn add_assign(&mut self, rhs: crate::Duration) {
         self.0 = std::sync::Arc::new(*self.0 + *rhs);
@@ -371,6 +377,57 @@ impl std::ops::AddAssign<crate::Duration> for NaiveDate {
 impl std::ops::SubAssign<crate::Duration> for NaiveDate {
     fn sub_assign(&mut self, rhs: crate::Duration) {
         self.0 = std::sync::Arc::new(*self.0 - *rhs);
+    }
+}
+
+impl chrono::Datelike for NaiveDate {
+    fn year(&self) -> i32 {
+        self.0.year()
+    }
+    fn month(&self) -> u32 {
+        self.0.month()
+    }
+    fn month0(&self) -> u32 {
+        self.0.month0()
+    }
+    fn day(&self) -> u32 {
+        self.0.day()
+    }
+    fn day0(&self) -> u32 {
+        self.0.day0()
+    }
+    fn ordinal(&self) -> u32 {
+        self.0.ordinal()
+    }
+    fn ordinal0(&self) -> u32 {
+        self.0.ordinal0()
+    }
+    fn weekday(&self) -> chrono::Weekday {
+        self.0.weekday()
+    }
+    fn iso_week(&self) -> chrono::IsoWeek {
+        self.0.iso_week()
+    }
+    fn with_year(&self, year: i32) -> Option<Self> {
+        self.0.with_year(year).map(Into::into)
+    }
+    fn with_month(&self, month: u32) -> Option<Self> {
+        self.0.with_month(month).map(Into::into)
+    }
+    fn with_month0(&self, month0: u32) -> Option<Self> {
+        self.0.with_month0(month0).map(Into::into)
+    }
+    fn with_day(&self, day: u32) -> Option<Self> {
+        self.0.with_day(day).map(Into::into)
+    }
+    fn with_day0(&self, day0: u32) -> Option<Self> {
+        self.0.with_day0(day0).map(Into::into)
+    }
+    fn with_ordinal(&self, ordinal: u32) -> Option<Self> {
+        self.0.with_ordinal(ordinal).map(Into::into)
+    }
+    fn with_ordinal0(&self, ordinal0: u32) -> Option<Self> {
+        self.0.with_ordinal0(ordinal0).map(Into::into)
     }
 }
 

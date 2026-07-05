@@ -130,7 +130,7 @@ async fn chrono_utc_create(
     let body = serde_json::to_string(&UtcIdResult {
         utc_id: id.to_string(),
     })
-    .map_err(|e| utc_err(e))?;
+    .map_err(utc_err)?;
     Ok(ok_text(body))
 }
 

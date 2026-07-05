@@ -128,7 +128,7 @@ async fn chrono_date_create(
     let body = serde_json::to_string(&DateIdResult {
         date_id: id.to_string(),
     })
-    .map_err(|e| date_err(e))?;
+    .map_err(date_err)?;
     Ok(ok_text(body))
 }
 
