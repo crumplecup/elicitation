@@ -1238,7 +1238,169 @@ impl ToCodeLiteral for time::PrimitiveDateTime {
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::Time {
     fn to_code_literal(&self) -> TokenStream {
-        EmitCode::emit_code(self)
+        let h = self.hour();
+        let m = self.minute();
+        let s = self.second();
+        let ns = self.nanosecond();
+        quote::quote! {
+            ::time::Time::from_hms_nano(#h, #m, #s, #ns)?
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::Date {
+    fn to_code_literal(&self) -> TokenStream {
+        let year: i32 = self.year();
+        let month: u8 = u8::from(self.month());
+        let day: u8 = self.day();
+        quote::quote! {
+            ::time::Date::from_calendar_date(#year, ::time::Month::try_from(#month)?, #day)?
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::Duration {
+    fn to_code_literal(&self) -> TokenStream {
+        let seconds: i64 = self.whole_seconds();
+        let nanoseconds: i32 = self.subsec_nanoseconds();
+        quote::quote! {
+            ::time::Duration::new(#seconds, #nanoseconds)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::UtcDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        let nanos: i128 = self.unix_timestamp_nanos();
+        quote::quote! {
+            ::time::UtcDateTime::from_unix_timestamp_nanos(#nanos)?
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::UtcOffset {
+    fn to_code_literal(&self) -> TokenStream {
+        let seconds: i32 = self.whole_seconds();
+        quote::quote! {
+            ::time::UtcOffset::from_whole_seconds(#seconds)?
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::Weekday {
+    fn to_code_literal(&self) -> TokenStream {
+        let variant = match self {
+            time::Weekday::Monday => "Monday",
+            time::Weekday::Tuesday => "Tuesday",
+            time::Weekday::Wednesday => "Wednesday",
+            time::Weekday::Thursday => "Thursday",
+            time::Weekday::Friday => "Friday",
+            time::Weekday::Saturday => "Saturday",
+            time::Weekday::Sunday => "Sunday",
+        };
+        let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+        quote::quote! { ::time::Weekday::#ident }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::Month {
+    fn to_code_literal(&self) -> TokenStream {
+        let variant = match self {
+            time::Month::January => "January",
+            time::Month::February => "February",
+            time::Month::March => "March",
+            time::Month::April => "April",
+            time::Month::May => "May",
+            time::Month::June => "June",
+            time::Month::July => "July",
+            time::Month::August => "August",
+            time::Month::September => "September",
+            time::Month::October => "October",
+            time::Month::November => "November",
+            time::Month::December => "December",
+        };
+        let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+        quote::quote! { ::time::Month::#ident }
+    }
+}
+
+/// `time::error::ConversionRange` — single-value unit-struct error; reproduce by triggering
+/// a known-failing `std::time::Duration` → `time::Duration` conversion.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::error::ConversionRange {
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! {
+            match ::time::Duration::try_from(::std::time::Duration::new(u64::MAX, 0)) {
+                Err(e) => e,
+                Ok(_) => return Err("expected ConversionRange error was not produced".into()),
+            }
+        }
+    }
+}
+
+/// `time::error::ComponentRange` — reproduce by triggering the named API error.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::error::ComponentRange {
+    fn to_code_literal(&self) -> TokenStream {
+        match self.name() {
+            "hour" => quote::quote! {
+                match ::time::Time::from_hms(24, 0, 0) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"hour\" was not produced".into()),
+                }
+            },
+            "minute" => quote::quote! {
+                match ::time::Time::from_hms(0, 60, 0) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"minute\" was not produced".into()),
+                }
+            },
+            "second" => quote::quote! {
+                match ::time::Time::from_hms(0, 0, 60) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"second\" was not produced".into()),
+                }
+            },
+            "nanosecond" => quote::quote! {
+                match ::time::Time::from_hms_nano(0, 0, 0, 1_000_000_000) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"nanosecond\" was not produced".into()),
+                }
+            },
+            "month" => quote::quote! {
+                match ::time::Month::try_from(13u8) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"month\" was not produced".into()),
+                }
+            },
+            "offset" => quote::quote! {
+                match ::time::UtcOffset::from_whole_seconds(86400) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"offset\" was not produced".into()),
+                }
+            },
+            "day" => quote::quote! {
+                match ::time::Date::from_calendar_date(2024, ::time::Month::February, 30) {
+                    Err(e) => e,
+                    Ok(_) => return Err("expected ComponentRange for \"day\" was not produced".into()),
+                }
+            },
+            name => {
+                let n = name.to_string();
+                quote::quote! {
+                    match ::time::Time::from_hms(24, 0, 0) {
+                        Err(e) => e,
+                        Ok(_) => return Err(::std::format!("ComponentRange for {:?} could not be reproduced", #n).into()),
+                    }
+                }
+            }
+        }
     }
 }
 
