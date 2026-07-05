@@ -246,7 +246,11 @@ pub use uuids::{UuidNonNil, UuidV4};
 pub use datetimes::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
 
 #[cfg(feature = "time")]
-pub use datetimes::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+pub use datetimes::{
+    ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap, OffsetDateTimeAfter,
+    OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
+    UtcOffsetWrap, WeekdayWrap,
+};
 
 #[cfg(feature = "jiff")]
 pub use datetimes::{TimestampAfter, TimestampBefore};

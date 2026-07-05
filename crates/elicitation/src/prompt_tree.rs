@@ -1288,11 +1288,28 @@ mod verification_impls {
     #[cfg(all(feature = "time", not(kani)))]
     mod time_impls {
         use super::*;
-        use crate::verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+        use crate::verification::types::{
+            ConversionRangeWrap, DateWrap, DurationWrap, OffsetDateTimeAfter, OffsetDateTimeBefore,
+            OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap, UtcOffsetWrap,
+        };
         leaf_impl!(time::OffsetDateTime, "time::OffsetDateTime");
         leaf_impl!(time::PrimitiveDateTime, "time::PrimitiveDateTime");
+        leaf_impl!(time::Time, "time::Time");
+        leaf_impl!(time::Date, "time::Date");
+        leaf_impl!(time::Duration, "time::Duration");
+        leaf_impl!(time::UtcDateTime, "time::UtcDateTime");
+        leaf_impl!(time::UtcOffset, "time::UtcOffset");
+        leaf_impl!(time::error::ConversionRange, "time::error::ConversionRange");
         leaf_impl!(OffsetDateTimeAfter, "OffsetDateTimeAfter");
         leaf_impl!(OffsetDateTimeBefore, "OffsetDateTimeBefore");
+        leaf_impl!(OffsetDateTimeWrap, "OffsetDateTimeWrap");
+        leaf_impl!(PrimitiveDateTimeWrap, "PrimitiveDateTimeWrap");
+        leaf_impl!(TimeWrap, "TimeWrap");
+        leaf_impl!(DateWrap, "DateWrap");
+        leaf_impl!(DurationWrap, "DurationWrap");
+        leaf_impl!(UtcDateTimeWrap, "UtcDateTimeWrap");
+        leaf_impl!(UtcOffsetWrap, "UtcOffsetWrap");
+        leaf_impl!(ConversionRangeWrap, "ConversionRangeWrap");
     }
 
     #[cfg(all(feature = "jiff", not(kani)))]

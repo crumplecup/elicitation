@@ -495,7 +495,11 @@ pub use datetime_jiff::{TimestampGenerationMode, TimestampGenerator};
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
 
 #[cfg(feature = "time")]
-pub use verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+pub use verification::types::{
+    ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap, OffsetDateTimeAfter,
+    OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
+    UtcOffsetWrap, WeekdayWrap,
+};
 
 #[cfg(feature = "jiff")]
 pub use verification::types::{TimestampAfter, TimestampBefore};

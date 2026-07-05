@@ -736,7 +736,71 @@ mod jiff_specs {
 #[cfg(feature = "time")]
 mod time_specs {
     use super::*;
-    use crate::verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+    use crate::verification::types::{
+        ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap,
+        OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap,
+        TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
+    };
+
+    impl crate::ElicitSpec for PrimitiveDateTimeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("PrimitiveDateTimeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::PrimitiveDateTime — an ISO 8601 local datetime without a timezone offset."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "PrimitiveDateTimeWrap",
+        <PrimitiveDateTimeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<PrimitiveDateTimeWrap>
+    ));
+
+    impl crate::ElicitSpec for OffsetDateTimeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("OffsetDateTimeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::OffsetDateTime — an RFC 3339 datetime with timezone offset."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "OffsetDateTimeWrap",
+        <OffsetDateTimeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<OffsetDateTimeWrap>
+    ));
+
+    impl crate::ElicitSpec for TimeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("TimeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::Time — a wall-clock time of day (HH:MM:SS)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "TimeWrap",
+        <TimeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<TimeWrap>
+    ));
 
     impl_datetime_spec!(
         type     = OffsetDateTimeAfter,
@@ -803,5 +867,310 @@ mod time_specs {
         "time::Time",
         <time::Time as crate::ElicitSpec>::type_spec,
         std::any::TypeId::of::<time::Time>
+    ));
+
+    impl crate::ElicitSpec for time::Date {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::Date".to_string())
+                .summary("An ISO 8601 calendar date (year, month, day).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::Date",
+        <time::Date as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::Date>
+    ));
+
+    impl crate::ElicitSpec for DateWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("DateWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::Date — an ISO 8601 calendar date (YYYY-MM-DD)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "DateWrap",
+        <DateWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<DateWrap>
+    ));
+
+    impl crate::ElicitSpec for time::Duration {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::Duration".to_string())
+                .summary(
+                    "A signed duration (seconds + subsecond nanoseconds), unlike std::time::Duration."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::Duration",
+        <time::Duration as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::Duration>
+    ));
+
+    impl crate::ElicitSpec for DurationWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("DurationWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::Duration — a signed duration with nanosecond precision."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "DurationWrap",
+        <DurationWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<DurationWrap>
+    ));
+
+    impl crate::ElicitSpec for time::Month {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::Month".to_string())
+                .summary("A calendar month (January through December).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::Month",
+        <time::Month as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::Month>
+    ));
+
+    impl crate::ElicitSpec for MonthWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("MonthWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::Month — a calendar month (January through December)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "MonthWrap",
+        <MonthWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<MonthWrap>
+    ));
+
+    impl crate::ElicitSpec for time::Weekday {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::Weekday".to_string())
+                .summary("A day of the week (Monday through Sunday).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::Weekday",
+        <time::Weekday as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::Weekday>
+    ));
+
+    impl crate::ElicitSpec for WeekdayWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("WeekdayWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::Weekday — a day of the week (Monday through Sunday)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "WeekdayWrap",
+        <WeekdayWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<WeekdayWrap>
+    ));
+
+    impl crate::ElicitSpec for time::UtcDateTime {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::UtcDateTime".to_string())
+                .summary("A datetime anchored to UTC (no offset stored).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::UtcDateTime",
+        <time::UtcDateTime as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::UtcDateTime>
+    ));
+
+    impl crate::ElicitSpec for UtcDateTimeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("UtcDateTimeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::UtcDateTime — a UTC datetime with ISO 8601 schema."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "UtcDateTimeWrap",
+        <UtcDateTimeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<UtcDateTimeWrap>
+    ));
+
+    impl crate::ElicitSpec for time::UtcOffset {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::UtcOffset".to_string())
+                .summary("A UTC offset stored as whole seconds (e.g., +3600 for +01:00).".to_string())
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::UtcOffset",
+        <time::UtcOffset as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::UtcOffset>
+    ));
+
+    impl crate::ElicitSpec for UtcOffsetWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("UtcOffsetWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::UtcOffset — a UTC offset as ±HH:MM:SS string."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "UtcOffsetWrap",
+        <UtcOffsetWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<UtcOffsetWrap>
+    ));
+
+    impl crate::ElicitSpec for time::error::ComponentRange {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::error::ComponentRange".to_string())
+                .summary(
+                    "A time component range error — identifies which component was out of range."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::error::ComponentRange",
+        <time::error::ComponentRange as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::error::ComponentRange>
+    ));
+
+    impl crate::ElicitSpec for ComponentRangeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("ComponentRangeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::error::ComponentRange — serializes as the component name string."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "ComponentRangeWrap",
+        <ComponentRangeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<ComponentRangeWrap>
+    ));
+
+    impl crate::ElicitSpec for time::error::ConversionRange {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::error::ConversionRange".to_string())
+                .summary(
+                    "A time conversion range error — produced when a std::time::Duration exceeds time::Duration's range (single-value type)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::error::ConversionRange",
+        <time::error::ConversionRange as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::error::ConversionRange>
+    ));
+
+    impl crate::ElicitSpec for ConversionRangeWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("ConversionRangeWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::error::ConversionRange — serializes as JSON null (single-value unit type)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "ConversionRangeWrap",
+        <ConversionRangeWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<ConversionRangeWrap>
     ));
 }
