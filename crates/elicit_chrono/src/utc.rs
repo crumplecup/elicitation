@@ -116,6 +116,44 @@ impl Utc {
     }
 }
 
+// ── chrono offset/timezone traits ─────────────────────────────────────────────
+
+impl chrono::Offset for Utc {
+    fn fix(&self) -> chrono::FixedOffset {
+        chrono::Utc.fix()
+    }
+}
+
+impl chrono::TimeZone for Utc {
+    type Offset = Utc;
+
+    fn from_offset(_offset: &Utc) -> Utc {
+        Utc
+    }
+
+    fn offset_from_local_date(
+        &self,
+        _local: &chrono::NaiveDate,
+    ) -> chrono::MappedLocalTime<Utc> {
+        chrono::MappedLocalTime::Single(Utc)
+    }
+
+    fn offset_from_local_datetime(
+        &self,
+        _local: &chrono::NaiveDateTime,
+    ) -> chrono::MappedLocalTime<Utc> {
+        chrono::MappedLocalTime::Single(Utc)
+    }
+
+    fn offset_from_utc_date(&self, _utc: &chrono::NaiveDate) -> Utc {
+        Utc
+    }
+
+    fn offset_from_utc_datetime(&self, _utc: &chrono::NaiveDateTime) -> Utc {
+        Utc
+    }
+}
+
 // ── Elicitation framework traits — delegate to `chrono::Utc` core impls ──────
 
 impl elicitation::Prompt for Utc {
