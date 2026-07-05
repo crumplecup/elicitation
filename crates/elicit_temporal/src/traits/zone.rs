@@ -13,12 +13,12 @@ use crate::{
 
 /// Resolve and attach named-zone identity without collapsing it to a bare offset.
 ///
-/// Normative source: RFC 9557 §3.1 - time-zone annotations.
+/// Normative sources: RFC 9557 §1.2, §3.4, and §4.1.
 /// Informative cross-check: BCP 175 / IANA TZDB naming.
 pub trait TemporalZoneFactory: Send + Sync {
     /// Resolve a named IANA time zone into the neutral zone descriptor.
     ///
-    /// Normative source: RFC 9557 §3.1 - named time-zone annotation syntax.
+    /// Normative sources: RFC 9557 §1.2 and §4.1.
     fn resolve_named_zone(
         &self,
         identifier: &str,
@@ -32,7 +32,7 @@ pub trait TemporalZoneFactory: Send + Sync {
     /// The authority descriptor makes repeated and skipped local times lawful
     /// input rather than backend-defined error cases.
     ///
-    /// Normative source: RFC 9557 §3.1 - named time-zone annotations and transition semantics.
+    /// Normative sources: RFC 9557 §1.1, §1.2, and §3.4.
     fn resolve_local_date_time(
         &self,
         timestamp: &LocalDateTimeDescriptor,
@@ -45,7 +45,7 @@ pub trait TemporalZoneFactory: Send + Sync {
 
     /// Attach a named zone to a fixed-instant timestamp.
     ///
-    /// Normative source: RFC 9557 §3.1 - named time-zone annotations.
+    /// Normative sources: RFC 9557 §1.2 and §4.1.
     fn attach_named_zone(
         &self,
         timestamp: &OffsetDateTimeDescriptor,
@@ -60,7 +60,7 @@ pub trait TemporalZoneFactory: Send + Sync {
 
     /// Confirm that the attached named zone is interpreted under a concrete TZDB revision.
     ///
-    /// Normative source: RFC 9557 §3.1 - current-rules interpretation semantics.
+    /// Normative sources: RFC 9557 §1.2 and §4.1.
     fn confirm_named_zone_revision(
         &self,
         timestamp: &ZonedDateTimeDescriptor,

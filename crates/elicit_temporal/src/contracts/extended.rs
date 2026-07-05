@@ -141,6 +141,46 @@ mod emit_impls {
         "OnOrAfterDateUsesTrailingDoubleDotQualifier"
     );
 
+    /// A Level 1 enhanced interval may place an uncertainty or approximation modifier at the end of a boundary date.
+    ///
+    /// Normative source: ISO 8601-2:2019, 4.5.1.
+    /// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.1.
+    pub struct EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification;
+    structural_prop!(
+        EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification,
+        "EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification"
+    );
+
+    /// A Level 2 enhanced interval may qualify portions of a boundary date as approximate or uncertain.
+    ///
+    /// Normative source: ISO 8601-2:2019, 4.5.2.
+    /// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.2.
+    pub struct EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification;
+    structural_prop!(
+        EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification,
+        "EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification"
+    );
+
+    /// A Level 2 enhanced interval may mark portions of a boundary date as unspecified.
+    ///
+    /// Normative source: ISO 8601-2:2019, 4.5.2.
+    /// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.2.
+    pub struct EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits;
+    structural_prop!(
+        EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits,
+        "EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits"
+    );
+
+    /// A Level 2 enhanced interval may tag the start boundary as before-or and the end boundary as or-after.
+    ///
+    /// Normative source: ISO 8601-2:2019, 4.5.2.
+    /// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.2.
+    pub struct EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification;
+    structural_prop!(
+        EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification,
+        "EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification"
+    );
+
     /// An interval explicitly declares an open boundary.
     ///
     /// Normative source: ISO 8601-2:2019, 10.2.
@@ -493,8 +533,12 @@ pub use emit_impls::{
     ApproximationQualificationDeclared, BeforeOrAfterQualificationIsLevelTwoOnly,
     BeforeOrOnDateUsesLeadingDoubleDotQualifier, BeforeYearOneValueUsesTrailingBSuffix,
     ComponentQualificationAppliesOnlyToMarkedComponent,
-    ComponentQualificationUsesImmediateLeftPlacement, ExponentialYearExponentIsPositiveInteger,
-    ExponentialYearUsesPowerOfTenNotation,
+    ComponentQualificationUsesImmediateLeftPlacement,
+    EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits,
+    ExponentialYearExponentIsPositiveInteger, ExponentialYearUsesPowerOfTenNotation,
     GroupQualificationAppliesToMarkedAndMoreSignificantComponents,
     GroupQualificationUsesImmediateRightPlacement,
     LetterPrefixedCalendarYearMagnitudeExceedsFourDigits,

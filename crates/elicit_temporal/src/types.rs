@@ -11,21 +11,30 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    BackendConversionSemanticsValid, CenturyValid, ConversionDropsNamedZoneIdentity,
+    BackendConversionSemanticsValid, CenturyValid, CompleteDurationEndIntervalSubstitutionEvidence,
+    CompleteIntervalSubstitutionSemanticsValid, CompleteRecurringIntervalRepresentationEvidence,
+    CompleteRecurringIntervalRepresentationSemanticsValid,
+    CompleteStartDurationIntervalSubstitutionEvidence,
+    CompleteStartEndIntervalSubstitutionEvidence, ConversionDropsNamedZoneIdentity,
     ConversionLossless, ConversionPreservesRepresentedInstant, ConversionPreservesTemporalOrdering,
     ConversionTruncatesSubseconds, DateTimeFormulaEvaluationSemanticsValid, DateTimeFormulaValid,
-    DateWithShiftValid, DecadeValid, DurationFormValid, ExplicitDurationValid,
-    ExplicitTemporalFormValid, ExtendedIntervalBoundarySemanticsValid, ExtendedYearValid,
-    GroupedTimeScaleUnitValid, IxdtfAdditionalInformationEvidence,
-    IxdtfAdditionalInformationSemanticsValid, IxdtfCalendarAwareTimestampEvidence,
-    IxdtfTimestampHasPreferredPresentationCalendar, IxdtfTimestampValid,
-    LocalDateTimeMayBeAmbiguousAtZoneTransition, LocalDateTimeMayFallInZoneTransitionGap,
-    OffsetConsistentWithNamedZone, OffsetDateTimeValid,
+    DateWithShiftValid, DecadeValid, DurationAlternativeFormEvidence,
+    DurationDesignatorRepresentationEvidence, DurationFormValid,
+    DurationRepresentationSemanticsValid, ExplicitDurationValid, ExplicitTemporalFormValid,
+    ExtendedIntervalBoundarySemanticsValid, ExtendedYearValid, GroupedTimeScaleUnitValid,
+    InheritedIntervalEndComponentsEvidence, InheritedIntervalEndComponentsSemanticsValid,
+    InheritedIntervalZoneEvidence, InheritedIntervalZoneSemanticsValid,
+    IxdtfAdditionalInformationEvidence, IxdtfAdditionalInformationSemanticsValid,
+    IxdtfCalendarAwareTimestampEvidence, IxdtfTimestampHasPreferredPresentationCalendar,
+    IxdtfTimestampValid, LocalDateTimeMayBeAmbiguousAtZoneTransition,
+    LocalDateTimeMayFallInZoneTransitionGap, OffsetConsistentWithNamedZone, OffsetDateTimeValid,
     OffsetTimeZoneAnnotationConsistentWithTimestamp, OffsetTimeZoneAnnotationEvidence,
-    QualifiedTemporalValueValid, RecurringIntervalFormValid, RecurringIntervalWithRepeatRuleValid,
-    ReducedCalendarDateValid, ReducedLocalTimeValid, RepeatRuleValid, Rfc3339TimestampValid,
-    SeasonalTemporalExpressionValid, SelectionExpressionValid, SubYearGroupingExpressionValid,
-    TemporalResult, TemporalSetExpressionValid, TemporalSetRangeSemanticsValid, TimeIntervalValid,
+    OtherThanCompleteRecurringIntervalRepresentationEvidence,
+    OtherThanCompleteRecurringIntervalRepresentationSemanticsValid, QualifiedTemporalValueValid,
+    RecurringIntervalFormValid, RecurringIntervalWithRepeatRuleValid, ReducedCalendarDateValid,
+    ReducedLocalTimeValid, RepeatRuleValid, Rfc3339TimestampValid, SeasonalTemporalExpressionValid,
+    SelectionExpressionValid, SubYearGroupingExpressionValid, TemporalResult,
+    TemporalSetExpressionValid, TemporalSetRangeSemanticsValid, TimeIntervalValid,
     TimeOfDayWithShiftValid, TimestampRepresentsFixedInstant, UnspecifiedComponentExpressionValid,
     ZoneTransitionAmbiguitySemanticsValid, ZoneTransitionGapSemanticsValid,
     ZoneTransitionResolutionAuthorityValid, ZonedDateTimeHasNamedZone, ZonedTimestampEvidence,
@@ -337,7 +346,7 @@ pub enum UtcOffsetSign {
     Negative,
 }
 
-/// Semantic interpretation of a numeric UTC offset payload.
+/// Semantic interpretation of a UTC relationship payload in an offset-aware timestamp.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Display, Default,
 )]
@@ -346,25 +355,25 @@ pub enum UtcOffsetRelationship {
     #[default]
     #[display("known")]
     Known,
-    /// RFC 3339 `-00:00` unknown-local-offset convention.
+    /// RFC 9557-updated RFC 3339 unknown-local-offset semantics.
     #[display("unknown-local-offset")]
     UnknownLocalOffset,
 }
 
-/// Numeric UTC offset descriptor.
+/// UTC-offset relationship descriptor for an offset-aware timestamp.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Builder)]
 #[builder(pattern = "owned", setter(into, strip_option))]
 pub struct UtcOffsetDescriptor {
-    /// Offset sign.
+    /// Offset sign when the UTC relationship is carried numerically.
     pub sign: UtcOffsetSign,
-    /// Absolute hour component.
+    /// Absolute hour component for numeric-offset forms.
     pub hours: u8,
     /// Absolute minute component when the offset is represented with hour-minute precision.
     ///
     /// `None` denotes the integral-hour form permitted by ISO 8601.
     #[builder(default)]
     pub minutes: Option<u8>,
-    /// Whether the offset is known or uses RFC 3339's unknown-local-offset convention.
+    /// Whether the relationship is a known local offset or the RFC 9557-updated unknown-offset case.
     #[builder(default)]
     pub relationship: UtcOffsetRelationship,
 }
@@ -1373,6 +1382,95 @@ pub enum IxdtfAdditionalInformationProofBranch {
     },
 }
 
+/// Explicit proof branch for inherited end-component interval semantics.
+pub enum IntervalEndComponentInheritanceProofBranch {
+    /// The interval does not rely on inherited higher-order end components.
+    None,
+    /// The trailing interval component inherits omitted higher-order components.
+    Inherited {
+        /// Aggregate proof that inherited end-component semantics are explicit and lawful.
+        semantics: Established<InheritedIntervalEndComponentsSemanticsValid>,
+        /// Evidence bundle for the inherited end-component branch.
+        evidence: InheritedIntervalEndComponentsEvidence,
+    },
+}
+
+/// Explicit proof branch for inherited trailing-zone interval semantics.
+pub enum IntervalZoneInheritanceProofBranch {
+    /// The interval does not rely on inherited trailing-zone semantics.
+    None,
+    /// The trailing interval component inherits omitted zone or UTC semantics.
+    Inherited {
+        /// Aggregate proof that inherited trailing-zone semantics are explicit and lawful.
+        semantics: Established<InheritedIntervalZoneSemanticsValid>,
+        /// Evidence bundle for the inherited trailing-zone branch.
+        evidence: InheritedIntervalZoneEvidence,
+    },
+}
+
+/// Explicit proof branch for duration representation family semantics.
+pub enum DurationRepresentationProofBranch {
+    /// The duration uses the designator-based representation family.
+    Designator {
+        /// Aggregate proof that duration representation-family semantics are explicit and lawful.
+        semantics: Established<DurationRepresentationSemanticsValid>,
+        /// Evidence bundle for the designator-based duration branch.
+        evidence: DurationDesignatorRepresentationEvidence,
+    },
+    /// The duration uses the alternative complete representation family.
+    Alternative {
+        /// Aggregate proof that duration representation-family semantics are explicit and lawful.
+        semantics: Established<DurationRepresentationSemanticsValid>,
+        /// Evidence bundle for the alternative duration branch.
+        evidence: DurationAlternativeFormEvidence,
+    },
+}
+
+/// Explicit proof branch for complete-interval substitution semantics.
+pub enum CompleteIntervalSubstitutionProofBranch {
+    /// The interval is not a complete `4.4.4` representation, so `4.4.4.5` substitutions do not apply.
+    NotApplicable,
+    /// The interval is a complete start/end representation with explicit time-point substitution evidence.
+    StartEnd {
+        /// Aggregate proof that complete-interval substitution semantics are explicit and lawful.
+        semantics: Established<CompleteIntervalSubstitutionSemanticsValid>,
+        /// Evidence bundle for the complete start/end branch.
+        evidence: CompleteStartEndIntervalSubstitutionEvidence,
+    },
+    /// The interval is a complete start/duration representation with explicit substitution evidence.
+    StartDuration {
+        /// Aggregate proof that complete-interval substitution semantics are explicit and lawful.
+        semantics: Established<CompleteIntervalSubstitutionSemanticsValid>,
+        /// Evidence bundle for the complete start/duration branch.
+        evidence: CompleteStartDurationIntervalSubstitutionEvidence,
+    },
+    /// The interval is a complete duration/end representation with explicit substitution evidence.
+    DurationEnd {
+        /// Aggregate proof that complete-interval substitution semantics are explicit and lawful.
+        semantics: Established<CompleteIntervalSubstitutionSemanticsValid>,
+        /// Evidence bundle for the complete duration/end branch.
+        evidence: CompleteDurationEndIntervalSubstitutionEvidence,
+    },
+}
+
+/// Explicit proof branch for recurring-interval representation family semantics.
+pub enum RecurringIntervalRepresentationProofBranch {
+    /// The recurring interval embeds a complete time-interval representation.
+    Complete {
+        /// Aggregate proof that complete recurring-interval semantics are explicit and lawful.
+        semantics: Established<CompleteRecurringIntervalRepresentationSemanticsValid>,
+        /// Evidence bundle for the complete recurring-interval branch.
+        evidence: CompleteRecurringIntervalRepresentationEvidence,
+    },
+    /// The recurring interval embeds an other-than-complete time-interval representation.
+    OtherThanComplete {
+        /// Aggregate proof that other-than-complete recurring-interval semantics are explicit and lawful.
+        semantics: Established<OtherThanCompleteRecurringIntervalRepresentationSemanticsValid>,
+        /// Evidence bundle for the other-than-complete recurring-interval branch.
+        evidence: OtherThanCompleteRecurringIntervalRepresentationEvidence,
+    },
+}
+
 /// Result shape for parsing an RFC 3339 timestamp into a fixed-instant descriptor.
 pub type ParsedRfc3339TimestampResult = TemporalResult<(
     OffsetDateTimeDescriptor,
@@ -1421,8 +1519,11 @@ pub type ParsedExtendedYearResult =
     TemporalResult<(ExtendedYearDescriptor, Established<ExtendedYearValid>)>;
 
 /// Result shape for parsing an ISO 8601 duration.
-pub type ParsedDurationResult =
-    TemporalResult<(DurationDescriptor, Established<DurationFormValid>)>;
+pub type ParsedDurationResult = TemporalResult<(
+    DurationDescriptor,
+    Established<DurationFormValid>,
+    DurationRepresentationProofBranch,
+)>;
 
 /// Result shape for parsing a CalConnect explicit duration.
 pub type ParsedExplicitDurationResult = TemporalResult<(
@@ -1434,6 +1535,7 @@ pub type ParsedExplicitDurationResult = TemporalResult<(
 pub type ParsedRecurringIntervalResult = TemporalResult<(
     RecurringIntervalDescriptor,
     Established<RecurringIntervalFormValid>,
+    RecurringIntervalRepresentationProofBranch,
 )>;
 
 /// Result shape for parsing a qualified temporal value.
@@ -1533,6 +1635,9 @@ pub type ParsedTimeIntervalResult = TemporalResult<(
     TimeIntervalDescriptor,
     Established<TimeIntervalValid>,
     Established<ExtendedIntervalBoundarySemanticsValid>,
+    IntervalEndComponentInheritanceProofBranch,
+    IntervalZoneInheritanceProofBranch,
+    CompleteIntervalSubstitutionProofBranch,
 )>;
 
 /// Result shape for normalizing an offset timestamp to UTC.
@@ -1612,7 +1717,11 @@ pub type FormattedTemporalSetResult = TemporalResult<(
 )>;
 
 /// Result shape for emitting an ISO 8601 duration.
-pub type FormattedDurationResult = TemporalResult<(String, Established<DurationFormValid>)>;
+pub type FormattedDurationResult = TemporalResult<(
+    String,
+    Established<DurationFormValid>,
+    DurationRepresentationProofBranch,
+)>;
 
 /// Result shape for emitting a CalConnect explicit duration.
 pub type FormattedExplicitDurationResult =
@@ -1645,8 +1754,11 @@ pub type FormattedSelectionExpressionResult =
 pub type FormattedRepeatRuleResult = TemporalResult<(String, Established<RepeatRuleValid>)>;
 
 /// Result shape for emitting an ISO 8601 recurring interval.
-pub type FormattedRecurringIntervalResult =
-    TemporalResult<(String, Established<RecurringIntervalFormValid>)>;
+pub type FormattedRecurringIntervalResult = TemporalResult<(
+    String,
+    Established<RecurringIntervalFormValid>,
+    RecurringIntervalRepresentationProofBranch,
+)>;
 
 /// Result shape for emitting a recurring interval with an attached repeat rule.
 pub type FormattedRecurringIntervalWithRepeatRuleResult =
@@ -1657,4 +1769,7 @@ pub type FormattedTimeIntervalResult = TemporalResult<(
     String,
     Established<TimeIntervalValid>,
     Established<ExtendedIntervalBoundarySemanticsValid>,
+    IntervalEndComponentInheritanceProofBranch,
+    IntervalZoneInheritanceProofBranch,
+    CompleteIntervalSubstitutionProofBranch,
 )>;

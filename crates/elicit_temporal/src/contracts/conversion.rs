@@ -66,7 +66,7 @@ mod emit_impls {
 
     /// A conversion drops named-zone identity.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct ConversionDropsNamedZoneIdentity;
     structural_prop!(
         ConversionDropsNamedZoneIdentity,

@@ -10,14 +10,20 @@ use elicitation::quote::quote;
 use elicitation::{Established, contracts::ProvableFrom};
 
 use crate::{
-    ApproximationQualificationDeclared, BeforeYearOneValueUsesTrailingBSuffix,
+    ApproximationQualificationDeclared, BeforeOrAfterQualificationIsLevelTwoOnly,
+    BeforeOrOnDateUsesLeadingDoubleDotQualifier, BeforeYearOneValueUsesTrailingBSuffix,
     CalendarDateHasYearMonthDay, CalendarDateUsesGregorianCalendar, CalendarDayWithinMonthBounds,
     CalendarMonthInRangeOneToTwelve, CalendarYearThrough1582RequiresMutualAgreement,
     CenturyOrdinalInRangeZeroToNinetyNine, CombinedDateTimeDateComponentMustNotUseReducedAccuracy,
     CombinedDateTimePermitsCalendarDateComponent, CombinedDateTimePermitsOrdinalDateComponent,
     CombinedDateTimePermitsWeekDateComponent,
     CombinedDateTimeUsesSingleFormatAcrossDateAndTimeComponents,
-    CombinedDateTimeUsesTimeDesignator, ComponentQualificationAppliesOnlyToMarkedComponent,
+    CombinedDateTimeUsesTimeDesignator, CompleteIntervalCalendarDateMayBeSubstitutedByOrdinalDate,
+    CompleteIntervalCalendarDateMayBeSubstitutedByWeekDate,
+    CompleteIntervalDurationMaySubstituteWeekForm,
+    CompleteIntervalLocalTimeMayBeSubstitutedByLocalTimeAndUtcDifference,
+    CompleteIntervalLocalTimeMayBeSubstitutedByUtcOfDay,
+    ComponentQualificationAppliesOnlyToMarkedComponent,
     ComponentQualificationUsesImmediateLeftPlacement, ContextDependentDurationSemanticsDeclared,
     ConversionDropsSubsecondPrecision, ConversionPreservesRepresentedInstant,
     ConversionPreservesTemporalOrdering, ConversionRequiresExplicitAuthorityWhenLossy,
@@ -30,6 +36,10 @@ use crate::{
     DurationAlternativeFormUsesDateAndTimeComponentSlots,
     DurationTimeComponentsFollowTimeDesignator, DurationUsesPeriodDesignator,
     DurationWeekFormNotMixedWithCalendarOrClockUnits, DurationWeekFormUsesSingleWeekUnit,
+    EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification,
+    EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits,
     ExactDurationSemanticsDeclared, ExpandedRepresentationRequiresAdditionalAgreement,
     ExplicitDateTimeTimePortionMayBeReducedPrecision,
     ExplicitDateTimeUsesDateThenTimeConcatenation,
@@ -57,19 +67,36 @@ use crate::{
     GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds,
     GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder, GroupedTimeScaleUnitUsesGroupingDesignators,
     GroupedTimeScaleUnitValueCarriesExplicitCoefficient, HourInRangeZeroToTwentyFour,
-    IntervalDurationIsNonNegative, IntervalStartPrecedesEnd,
+    IntervalDurationIsNonNegative, IntervalEndOmittedHigherOrderComponentsInheritFromStart,
+    IntervalStartPrecedesEnd,
+    IntervalTrailingComponentInheritsZoneOrUtcFromLeadingComponentWhenOmitted,
     IxdtfCalendarAnnotationDeclaresPreferredPresentationCalendar, IxdtfCalendarAnnotationPresent,
     IxdtfCalendarKeyUsesUCa, IxdtfCalendarValueUsesUnicodeCalendarIdentifier,
     IxdtfCriticalFlagIsLeadingExclamationWhenPresent,
     IxdtfCriticalSuffixTagsRequireProcessingOrErrorHandling,
     IxdtfExperimentalSuffixKeysAreNotForInterchange,
-    IxdtfExperimentalSuffixKeysUseLeadingUnderscore, IxdtfGeneratorsMayOmitSuffixTags,
+    IxdtfExperimentalSuffixKeysUseLeadingUnderscore,
+    IxdtfExpertReviewAscertainsBasicSpecificationExists,
+    IxdtfExpertReviewReservesConciseGenerallyApplicableKeys,
+    IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions, IxdtfGeneratorsMayOmitSuffixTags,
+    IxdtfPermanentEntriesUseSpecificationRequiredPolicy,
+    IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference,
+    IxdtfProvisionalEntriesUseExpertReviewPolicy,
+    IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime,
+    IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation,
     IxdtfRecipientsMayIgnoreElectiveSuffixTags,
     IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys,
+    IxdtfRegisteredSuffixKeyCarriesChangeController, IxdtfRegisteredSuffixKeyCarriesDescription,
+    IxdtfRegisteredSuffixKeyCarriesKeyIdentifier, IxdtfRegisteredSuffixKeyCarriesReference,
+    IxdtfRegisteredSuffixKeyCarriesRegistrationStatus,
+    IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent, IxdtfRegistryInitiallyContainsUCaEntry,
     IxdtfSuffixFollowsRfc3339Timestamp, IxdtfSuffixKeysAreLowercase,
     IxdtfSuffixTagsUseBracketedKeyValueForm,
     IxdtfSuffixValuesAreCaseSensitiveUnlessOtherwiseSpecified,
     IxdtfSuffixValuesUseHyphenDelimitedItems, IxdtfTimeZoneSuffixUsesBracketedNameOrOffset,
+    IxdtfUCaRegistryEntryIsPermanent, IxdtfUCaRegistryEntryReferencesSectionFive,
+    IxdtfUCaRegistryEntryUsesIetfChangeController,
+    IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription,
     LeapDayOccursOnlyInLeapYear, LeapSecondOccursOnlyAtUtcBoundary,
     LetterPrefixedCalendarYearMagnitudeExceedsFourDigits,
     LetterPrefixedCalendarYearUsesLeadingYDesignator,
@@ -78,17 +105,20 @@ use crate::{
     LocalDateTimeMayFallInZoneTransitionGap, LocalDateTimeRequiresZoneOrOffsetForInstant,
     LocalTimeHasHourMinuteSecond, LocalTimeScaleMayBeStandardOrNonUtcBased,
     LocalTimeUsesLocallyApplicableTimeScale, MinuteInRangeZeroToFiftyNine,
-    NamedTimeZoneAnnotationPresent, NamedTimeZoneIsNotNumericOffsetAlias,
-    NamedTimeZoneMeaningUsesCurrentTzdbRules, NamedTimeZoneRetainsCivilRuleIdentity,
-    NamedTimeZoneUsesIanaIdentifier, NegativeCalendarYearUsesLeadingMinusSign,
-    NumericOffsetDoesNotIdentifyNamedZone, OffsetDateTimeIdentifiesSingleInstant,
-    OffsetTimeZoneAnnotationPresent, OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset,
-    OffsetTimeZoneRepeatsTimestampOffset, OffsetTimeZoneUseIsStronglyDiscouraged,
+    NamedTimeZoneAnnotationPresent, NamedTimeZoneIdentifierExcludesDotSegments,
+    NamedTimeZoneIsNotNumericOffsetAlias, NamedTimeZoneMeaningUsesCurrentTzdbRules,
+    NamedTimeZoneRetainsCivilRuleIdentity, NamedTimeZoneUsesIanaIdentifier,
+    NegativeCalendarYearUsesLeadingMinusSign, NumericOffsetDoesNotIdentifyNamedZone,
+    OffsetDateTimeIdentifiesSingleInstant, OffsetTimeZoneAnnotationPresent,
+    OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset, OffsetTimeZoneRepeatsTimestampOffset,
+    OffsetTimeZoneUseIsStronglyDiscouraged, OnOrAfterDateUsesTrailingDoubleDotQualifier,
     OpenIntervalBoundaryDeclared, OrdinalDateHasYearAndDayOfYear,
     OrdinalDayInRangeOneToThreeHundredSixtySix, PrecisionReductionDeclared,
     ProlepticGregorianDatesBefore1583RequireMutualAgreement, QualificationScopeDeclared,
     RecurringIntervalCarriesIntervalComponent, RecurringIntervalCountIsNonNegativeWhenBounded,
     RecurringIntervalOmittedCountDenotesUnboundedOccurrences,
+    RecurringIntervalUsesCompleteTimeIntervalRepresentation,
+    RecurringIntervalUsesOtherThanCompleteTimeIntervalRepresentation,
     RecurringIntervalUsesRepeatDesignator,
     RecurringIntervalWithRepeatRuleUsesCompleteRepresentation,
     ReducedAccuracyLocalTimeUsesHourMinuteRepresentation,
@@ -97,15 +127,16 @@ use crate::{
     RepeatRuleDeclaresEligibleTimeIntervals,
     RepeatRuleEvaluationInheritsInitialStartComponentInformation,
     RepeatRuleSelectionAppliesWithinEligibleIntervals, RepeatRuleUsesFrequencyDesignator,
-    Rfc3339FractionUsesDotSeparator, Rfc3339FractionalSecondsAreOnlyRarelyUsedOption,
-    Rfc3339GeneratorsShouldUseUppercaseTAndZ, Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
+    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator, Rfc3339FractionUsesDotSeparator,
+    Rfc3339FractionalSecondsAreOnlyRarelyUsedOption, Rfc3339GeneratorsShouldUseUppercaseTAndZ,
+    Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
     Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits,
     Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding, Rfc3339LocalOffsetNotUnknown,
-    Rfc3339OffsetIsUtcOrNumeric, Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory,
-    Rfc3339RequiresUtcRelationship, Rfc3339UnknownLocalOffsetUsesNegativeZero,
-    Rfc3339UnqualifiedLocalTimeForbidden, Rfc3339UsesExtendedCalendarDate,
-    Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime, RoundingModeDeclared,
-    SeasonCodeDeclaresNamedSeason, SeasonCodeDeclaresSeasonScope,
+    Rfc3339OffsetIsUtcOrNumeric, Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
+    Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory, Rfc3339RequiresUtcRelationship,
+    Rfc3339UnknownLocalOffsetUsesZuluDesignator, Rfc3339UnqualifiedLocalTimeForbidden,
+    Rfc3339UsesExtendedCalendarDate, Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime,
+    RoundingModeDeclared, SeasonCodeDeclaresNamedSeason, SeasonCodeDeclaresSeasonScope,
     SeasonalExpressionUsesSeasonCodeInMonthSlot, SeasonalExpressionUsesYearAndSeasonForm,
     SecondInRangeZeroToSixty, SelectionExpressionMaySelectSingleInstance,
     SelectionExpressionUsesRecognizedSelectionRuleVocabulary,
@@ -210,7 +241,7 @@ structural_prop!(UtcOfDayValid, "UtcOfDayValid");
 pub struct UtcOffsetValid;
 structural_prop!(UtcOffsetValid, "UtcOffsetValid");
 
-/// Aggregate proof that the local offset is known rather than `-00:00`.
+/// Aggregate proof that the UTC relationship does not use unknown-local-offset semantics.
 pub struct UtcOffsetKnown;
 structural_prop!(UtcOffsetKnown, "UtcOffsetKnown");
 
@@ -310,6 +341,41 @@ structural_prop!(
 pub struct IxdtfTimestampValid;
 structural_prop!(IxdtfTimestampValid, "IxdtfTimestampValid");
 
+/// Aggregate proof that an IXDTF suffix-key registry entry carries the required field set.
+pub struct IxdtfSuffixKeyRegistryEntryValid;
+structural_prop!(
+    IxdtfSuffixKeyRegistryEntryValid,
+    "IxdtfSuffixKeyRegistryEntryValid"
+);
+
+/// Aggregate proof that a permanent IXDTF suffix-key registration satisfies its reference semantics.
+pub struct IxdtfPermanentSuffixKeyRegistrationSemanticsValid;
+structural_prop!(
+    IxdtfPermanentSuffixKeyRegistrationSemanticsValid,
+    "IxdtfPermanentSuffixKeyRegistrationSemanticsValid"
+);
+
+/// Aggregate proof that a provisional IXDTF suffix-key registration satisfies its reference semantics.
+pub struct IxdtfProvisionalSuffixKeyRegistrationSemanticsValid;
+structural_prop!(
+    IxdtfProvisionalSuffixKeyRegistrationSemanticsValid,
+    "IxdtfProvisionalSuffixKeyRegistrationSemanticsValid"
+);
+
+/// Aggregate proof that IXDTF registry-policy semantics are structurally valid.
+pub struct IxdtfSuffixKeyRegistryPolicySemanticsValid;
+structural_prop!(
+    IxdtfSuffixKeyRegistryPolicySemanticsValid,
+    "IxdtfSuffixKeyRegistryPolicySemanticsValid"
+);
+
+/// Aggregate proof that the initial `u-ca` registry entry semantics are structurally valid.
+pub struct IxdtfCalendarKeyRegistrySemanticsValid;
+structural_prop!(
+    IxdtfCalendarKeyRegistrySemanticsValid,
+    "IxdtfCalendarKeyRegistrySemanticsValid"
+);
+
 /// Aggregate proof that an IXDTF timestamp declares a preferred presentation calendar.
 pub struct IxdtfTimestampHasPreferredPresentationCalendar;
 structural_prop!(
@@ -393,17 +459,59 @@ structural_prop!(
 pub struct DurationFormValid;
 structural_prop!(DurationFormValid, "DurationFormValid");
 
+/// Aggregate proof that a duration representation family is explicit and lawful.
+pub struct DurationRepresentationSemanticsValid;
+structural_prop!(
+    DurationRepresentationSemanticsValid,
+    "DurationRepresentationSemanticsValid"
+);
+
 /// Aggregate proof that a time interval representation is structurally valid.
 pub struct TimeIntervalValid;
 structural_prop!(TimeIntervalValid, "TimeIntervalValid");
+
+/// Aggregate proof that inherited end-component semantics are structurally valid.
+pub struct InheritedIntervalEndComponentsSemanticsValid;
+structural_prop!(
+    InheritedIntervalEndComponentsSemanticsValid,
+    "InheritedIntervalEndComponentsSemanticsValid"
+);
+
+/// Aggregate proof that inherited trailing-zone semantics are structurally valid.
+pub struct InheritedIntervalZoneSemanticsValid;
+structural_prop!(
+    InheritedIntervalZoneSemanticsValid,
+    "InheritedIntervalZoneSemanticsValid"
+);
 
 /// Aggregate proof that interval endpoints are chronologically ordered.
 pub struct IntervalEndpointsOrdered;
 structural_prop!(IntervalEndpointsOrdered, "IntervalEndpointsOrdered");
 
+/// Aggregate proof that complete-interval substitution semantics are structurally valid.
+pub struct CompleteIntervalSubstitutionSemanticsValid;
+structural_prop!(
+    CompleteIntervalSubstitutionSemanticsValid,
+    "CompleteIntervalSubstitutionSemanticsValid"
+);
+
 /// Aggregate proof that a recurring interval representation is structurally valid.
 pub struct RecurringIntervalFormValid;
 structural_prop!(RecurringIntervalFormValid, "RecurringIntervalFormValid");
+
+/// Aggregate proof that complete recurring-interval representation semantics are established.
+pub struct CompleteRecurringIntervalRepresentationSemanticsValid;
+structural_prop!(
+    CompleteRecurringIntervalRepresentationSemanticsValid,
+    "CompleteRecurringIntervalRepresentationSemanticsValid"
+);
+
+/// Aggregate proof that other-than-complete recurring-interval semantics are established.
+pub struct OtherThanCompleteRecurringIntervalRepresentationSemanticsValid;
+structural_prop!(
+    OtherThanCompleteRecurringIntervalRepresentationSemanticsValid,
+    "OtherThanCompleteRecurringIntervalRepresentationSemanticsValid"
+);
 
 /// Aggregate proof that an extended temporal qualification is structurally valid.
 pub struct QualifiedTemporalExpressionValid;
@@ -448,6 +556,20 @@ pub struct ExtendedIntervalBoundarySemanticsValid;
 structural_prop!(
     ExtendedIntervalBoundarySemanticsValid,
     "ExtendedIntervalBoundarySemanticsValid"
+);
+
+/// Aggregate proof that Level 1 enhanced-interval semantics are structurally valid.
+pub struct EnhancedIntervalLevelOneSemanticsValid;
+structural_prop!(
+    EnhancedIntervalLevelOneSemanticsValid,
+    "EnhancedIntervalLevelOneSemanticsValid"
+);
+
+/// Aggregate proof that Level 2 enhanced-interval semantics are structurally valid.
+pub struct EnhancedIntervalLevelTwoSemanticsValid;
+structural_prop!(
+    EnhancedIntervalLevelTwoSemanticsValid,
+    "EnhancedIntervalLevelTwoSemanticsValid"
 );
 
 /// Aggregate proof that a grouped time scale unit expression is structurally valid.
@@ -805,11 +927,11 @@ pub struct UtcOfDayEvidence {
 
 /// Evidence bundle for a known local offset.
 ///
-/// Normative source: RFC 3339 §4.3 — Unknown Local Offset Convention
+/// Normative sources: RFC 3339 §4.3 — Unknown Local Offset Convention; RFC 9557 §2.2 — Update to RFC 3339
 pub struct KnownUtcOffsetEvidence {
     /// The timestamp already carries a valid UTC-offset representation.
     pub offset: Established<UtcOffsetValid>,
-    /// The timestamp does not use the unknown local-offset convention.
+    /// The timestamp uses a known local-offset relationship rather than updated unknown-offset semantics.
     pub known_convention: Established<Rfc3339LocalOffsetNotUnknown>,
 }
 
@@ -1118,10 +1240,12 @@ pub struct MutualAgreementAuthorityEvidence {
 
 /// Evidence bundle for explicit local-to-zone resolution authority.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.1, §1.2, and §4.1
 pub struct ZoneTransitionResolutionAuthorityEvidence {
     /// The named zone is carried by an IANA time-zone identifier.
     pub zone_identifier: Established<NamedTimeZoneUsesIanaIdentifier>,
+    /// The zone identifier excludes the forbidden `"."` and `".."` segments.
+    pub zone_segments: Established<NamedTimeZoneIdentifierExcludesDotSegments>,
     /// Ambiguous local times use explicit disambiguation authority.
     pub disambiguation: Established<ZoneTransitionDisambiguationAuthorityDeclared>,
     /// Skipped local times use explicit gap-handling authority.
@@ -1130,7 +1254,7 @@ pub struct ZoneTransitionResolutionAuthorityEvidence {
 
 /// Evidence bundle for ambiguous local-time resolution semantics.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.1, §1.2, and §3.4
 pub struct ZoneTransitionAmbiguityEvidence {
     /// The local date-time is still awaiting zone authority to identify an instant.
     pub local_semantics: Established<LocalDateTimeDoesNotIdentifyFixedInstant>,
@@ -1144,7 +1268,7 @@ pub struct ZoneTransitionAmbiguityEvidence {
 
 /// Evidence bundle for skipped local-time gap semantics.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.1, §1.2, and §3.4
 pub struct ZoneTransitionGapEvidence {
     /// The local date-time is still awaiting zone authority to identify an instant.
     pub local_semantics: Established<LocalDateTimeDoesNotIdentifyFixedInstant>,
@@ -1158,7 +1282,7 @@ pub struct ZoneTransitionGapEvidence {
 
 /// Evidence bundle for a valid RFC 3339 timestamp.
 ///
-/// Normative sources: RFC 3339 §4.3, §4.4, §5.6
+/// Normative sources: RFC 3339 §4.3, §4.4, §5.6; RFC 9557 §2.2
 pub struct Rfc3339TimestampEvidence {
     /// The timestamp rests on a valid offset date-time representation.
     pub offset_date_time: Established<OffsetDateTimeValid>,
@@ -1176,8 +1300,11 @@ pub struct Rfc3339TimestampEvidence {
     pub secfrac_separator: Established<Rfc3339FractionUsesDotSeparator>,
     /// The UTC relationship is encoded as `Z` or a numeric offset.
     pub offset_encoding: Established<Rfc3339OffsetIsUtcOrNumeric>,
-    /// The unknown local-offset convention uses `-00:00`.
-    pub unknown_offset: Established<Rfc3339UnknownLocalOffsetUsesNegativeZero>,
+    /// Unknown local-offset semantics use the `Z` designator rather than legacy `-00:00`.
+    pub unknown_offset: Established<Rfc3339UnknownLocalOffsetUsesZuluDesignator>,
+    /// A `+00:00` offset remains semantically distinct and declares UTC as the preferred reference point.
+    pub preferred_utc_reference:
+        Established<Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint>,
 }
 
 /// Evidence bundle for RFC 3339 lexical-ordering semantics.
@@ -1204,6 +1331,8 @@ pub struct Rfc3339GenerationGuidanceEvidence {
     pub secfrac_rarity: Established<Rfc3339FractionalSecondsAreOnlyRarelyUsedOption>,
     /// Generators should prefer uppercase `T` and `Z`.
     pub uppercase_tz: Established<Rfc3339GeneratorsShouldUseUppercaseTAndZ>,
+    /// Application profiles may choose to allow a readability-motivated space separator.
+    pub space_separator_option: Established<Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator>,
     /// Inserted leap-second timestamps are not generated before announcement.
     pub leap_second_announcement: Established<Rfc3339LeapSecondGenerationRequiresPriorAnnouncement>,
 }
@@ -1224,6 +1353,71 @@ pub struct IxdtfTimestampEvidence {
     pub key_case: Established<IxdtfSuffixKeysAreLowercase>,
 }
 
+/// Evidence bundle for the required IXDTF suffix-key registry-entry field set.
+///
+/// Normative sources: RFC 9557 §3.2 and §6
+pub struct IxdtfSuffixKeyRegistryEntryEvidence {
+    /// The entry carries a key identifier field.
+    pub key_identifier: Established<IxdtfRegisteredSuffixKeyCarriesKeyIdentifier>,
+    /// The entry carries a registration-status field.
+    pub registration_status: Established<IxdtfRegisteredSuffixKeyCarriesRegistrationStatus>,
+    /// The registration status is provisional or permanent.
+    pub status_domain: Established<IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent>,
+    /// The entry carries a description field.
+    pub description: Established<IxdtfRegisteredSuffixKeyCarriesDescription>,
+    /// The entry carries a change-controller field.
+    pub change_controller: Established<IxdtfRegisteredSuffixKeyCarriesChangeController>,
+    /// The entry carries a reference field.
+    pub reference: Established<IxdtfRegisteredSuffixKeyCarriesReference>,
+}
+
+/// Evidence bundle for permanent IXDTF suffix-key registration semantics.
+///
+/// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+pub struct IxdtfPermanentSuffixKeyRegistrationEvidence {
+    /// The underlying entry carries the full Section 3.2 field set.
+    pub entry: Established<IxdtfSuffixKeyRegistryEntryValid>,
+    /// Permanent registrations use the permanent/provisional status domain law.
+    pub status_domain: Established<IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent>,
+    /// Permanent registrations include a full specification in their reference material.
+    pub full_specification:
+        Established<IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference>,
+}
+
+/// Evidence bundle for provisional IXDTF suffix-key registration semantics.
+///
+/// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+pub struct IxdtfProvisionalSuffixKeyRegistrationEvidence {
+    /// The underlying entry carries the full Section 3.2 field set.
+    pub entry: Established<IxdtfSuffixKeyRegistryEntryValid>,
+    /// Provisional registrations use the permanent/provisional status domain law.
+    pub status_domain: Established<IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent>,
+    /// Provisional registrations carry at least some reference information.
+    pub reference_information:
+        Established<IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation>,
+    /// Provisional registrations are expected to improve their reference information over time.
+    pub improvement_expectation:
+        Established<IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime>,
+}
+
+/// Evidence bundle for IXDTF suffix-key registry-policy semantics.
+///
+/// Normative source: RFC 9557 §6 — IANA Considerations
+pub struct IxdtfSuffixKeyRegistryPolicyEvidence {
+    /// Permanent entries use the Specification Required registration policy.
+    pub permanent_policy: Established<IxdtfPermanentEntriesUseSpecificationRequiredPolicy>,
+    /// Provisional entries use the Expert Review registration policy.
+    pub provisional_policy: Established<IxdtfProvisionalEntriesUseExpertReviewPolicy>,
+    /// Expert review ascertains that a basic specification exists for provisional entries.
+    pub basic_specification_review:
+        Established<IxdtfExpertReviewAscertainsBasicSpecificationExists>,
+    /// Experts reserve concise generally applicable identifiers for broad use.
+    pub frugal_key_allocation: Established<IxdtfExpertReviewReservesConciseGenerallyApplicableKeys>,
+    /// Experts may initiate registration to avert future collisions.
+    pub collision_avoidance:
+        Established<IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions>,
+}
+
 /// Evidence bundle for IXDTF preferred-presentation calendar semantics.
 ///
 /// Normative source: RFC 9557 §5 — The u-ca Suffix Key: Calendar Awareness
@@ -1239,6 +1433,25 @@ pub struct IxdtfCalendarAwareTimestampEvidence {
     /// The annotation declares the preferred calendar for presentation.
     pub preferred_presentation:
         Established<IxdtfCalendarAnnotationDeclaresPreferredPresentationCalendar>,
+}
+
+/// Evidence bundle for the initial `u-ca` registry entry.
+///
+/// Normative source: RFC 9557 §6 — IANA Considerations
+pub struct IxdtfCalendarKeyRegistryEvidence {
+    /// The entry satisfies the generic Section 3.2 registry field set.
+    pub entry: Established<IxdtfSuffixKeyRegistryEntryValid>,
+    /// The initial registry contents include a `u-ca` entry.
+    pub registry_entry: Established<IxdtfRegistryInitiallyContainsUCaEntry>,
+    /// The entry is permanent.
+    pub permanent: Established<IxdtfUCaRegistryEntryIsPermanent>,
+    /// The entry description is "Preferred Calendar for Presentation".
+    pub description:
+        Established<IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription>,
+    /// The entry uses `IETF` as change controller.
+    pub change_controller: Established<IxdtfUCaRegistryEntryUsesIetfChangeController>,
+    /// The entry references Section 5 of RFC 9557.
+    pub reference: Established<IxdtfUCaRegistryEntryReferencesSectionFive>,
 }
 
 /// Evidence bundle for IXDTF additional-information field semantics.
@@ -1274,7 +1487,7 @@ pub struct IxdtfAdditionalInformationEvidence {
 
 /// Evidence bundle for named-zone identity.
 ///
-/// Normative sources: RFC 9557 §3.1, §3.3
+/// Normative sources: RFC 9557 §1.2, §3.3, and §4.1
 pub struct ZonedTimestampEvidence {
     /// The underlying timestamp is a valid IXDTF timestamp.
     pub timestamp: Established<IxdtfTimestampValid>,
@@ -1282,6 +1495,8 @@ pub struct ZonedTimestampEvidence {
     pub zone_annotation: Established<NamedTimeZoneAnnotationPresent>,
     /// The zone annotation uses an IANA zone identifier.
     pub zone_identifier: Established<NamedTimeZoneUsesIanaIdentifier>,
+    /// The identifier excludes the forbidden `"."` and `".."` segments.
+    pub zone_segments: Established<NamedTimeZoneIdentifierExcludesDotSegments>,
     /// The annotation is not merely a numeric offset alias.
     pub named_zone: Established<NamedTimeZoneIsNotNumericOffsetAlias>,
     /// The named zone preserves civil-time rule identity.
@@ -1290,7 +1505,7 @@ pub struct ZonedTimestampEvidence {
 
 /// Evidence bundle for offset time-zone annotation semantics.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.2, §3.4, and §4.1
 pub struct OffsetTimeZoneAnnotationEvidence {
     /// The underlying timestamp is a valid IXDTF timestamp.
     pub timestamp: Established<IxdtfTimestampValid>,
@@ -1306,7 +1521,7 @@ pub struct OffsetTimeZoneAnnotationEvidence {
 
 /// Evidence bundle for TZDB-revision-aware named-zone semantics.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.2 and §4.1
 pub struct NamedTimeZoneRevisionEvidence {
     /// The timestamp already carries named-zone identity.
     pub zoned: Established<ZonedDateTimeHasNamedZone>,
@@ -1318,7 +1533,7 @@ pub struct NamedTimeZoneRevisionEvidence {
 
 /// Evidence bundle for offset and named-zone consistency.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative sources: RFC 9557 §1.2 and §3.4
 pub struct OffsetConsistencyEvidence {
     /// The timestamp denotes a fixed instant.
     pub fixed_instant: Established<TimestampRepresentsFixedInstant>,
@@ -1330,7 +1545,7 @@ pub struct OffsetConsistencyEvidence {
 
 /// Evidence bundle for offset-only semantics.
 ///
-/// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+/// Normative source: RFC 9557 §1.2
 pub struct OffsetOnlySemanticsEvidence {
     /// The timestamp carries a valid numeric UTC offset.
     pub offset: Established<UtcOffsetValid>,
@@ -1427,6 +1642,19 @@ pub struct DurationWeekFormEvidence {
     pub exclusive: Established<DurationWeekFormNotMixedWithCalendarOrClockUnits>,
 }
 
+/// Evidence bundle for the designator-based duration representation.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.3.2
+/// Informative cross-checks: CalConnect CC 18011:2018 §7.3 —
+/// Representations; ISO/WD 8601-1:2016(E), 4.4.4.2.1; 4.4.4.3; 4.4.4.4;
+/// 4.4.5
+pub struct DurationDesignatorRepresentationEvidence {
+    /// Time components, when present, are placed after the `T` designator.
+    pub time_components: Established<DurationTimeComponentsFollowTimeDesignator>,
+    /// Week-form semantics when the duration is expressed as `PnnW`.
+    pub week_form: Option<DurationWeekFormEvidence>,
+}
+
 /// Evidence bundle for the alternative complete duration representation.
 ///
 /// Normative source: ISO 8601-1:2019, 4.4.3.3
@@ -1448,12 +1676,7 @@ pub struct DurationAlternativeFormEvidence {
 /// ISO/WD 8601-1:2016(E), 4.4.4.2.2; 4.4.4.3; 4.4.4.4; 4.4.5
 pub enum DurationRepresentationEvidence {
     /// The duration uses the designator-based representation.
-    Designator {
-        /// Time components, when present, are placed after the `T` designator.
-        time_components: Established<DurationTimeComponentsFollowTimeDesignator>,
-        /// Week-form semantics when the duration is expressed as `PnnW`.
-        week_form: Option<DurationWeekFormEvidence>,
-    },
+    Designator(DurationDesignatorRepresentationEvidence),
     /// The duration uses the alternative complete representation.
     Alternative(DurationAlternativeFormEvidence),
 }
@@ -1483,6 +1706,116 @@ pub struct TimeIntervalEvidence {
     pub form: Established<TimeIntervalBoundaryOrDurationFormDeclared>,
 }
 
+/// Evidence branch for the date representation family used within a complete interval time point.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.5
+pub enum CompleteTimePointDateRepresentationEvidence {
+    /// The time point uses the baseline calendar-date component shown in the standard.
+    Calendar,
+    /// The calendar-date slot is lawfully substituted by a complete ordinal date.
+    Ordinal {
+        /// The substitution from calendar date to ordinal date is explicit and lawful.
+        substitution: Established<CompleteIntervalCalendarDateMayBeSubstitutedByOrdinalDate>,
+    },
+    /// The calendar-date slot is lawfully substituted by a complete week date.
+    Week {
+        /// The substitution from calendar date to week date is explicit and lawful.
+        substitution: Established<CompleteIntervalCalendarDateMayBeSubstitutedByWeekDate>,
+    },
+}
+
+/// Evidence branch for the time representation family used within a complete interval time point.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.5
+pub enum CompleteTimePointTimeRepresentationEvidence {
+    /// The time point uses the baseline local-time component shown in the standard.
+    Local,
+    /// The local-time slot is lawfully substituted by a UTC representation.
+    Utc {
+        /// The substitution from local time to UTC is explicit and lawful.
+        substitution: Established<CompleteIntervalLocalTimeMayBeSubstitutedByUtcOfDay>,
+    },
+    /// The local-time slot is lawfully substituted by local time with a difference from UTC.
+    LocalWithUtcDifference {
+        /// The substitution from local time to local time with UTC difference is explicit and lawful.
+        substitution:
+            Established<CompleteIntervalLocalTimeMayBeSubstitutedByLocalTimeAndUtcDifference>,
+    },
+}
+
+/// Evidence bundle for one complete interval time-point representation.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.5
+pub struct CompleteTimePointRepresentationEvidence {
+    /// The date representation family used by the time point.
+    pub date: CompleteTimePointDateRepresentationEvidence,
+    /// The time representation family used by the time point.
+    pub time: CompleteTimePointTimeRepresentationEvidence,
+}
+
+/// Evidence branch for the duration representation family used inside a complete interval.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.5
+pub enum CompleteIntervalDurationRepresentationEvidence {
+    /// The duration uses the baseline calendar-and-clock designator form.
+    CalendarClockDesignator {
+        /// Time components, when present, are placed after the `T` designator.
+        time_components: Established<DurationTimeComponentsFollowTimeDesignator>,
+    },
+    /// The duration uses the complete week-form substitution permitted for complete intervals.
+    WeekSubstitution {
+        /// The substitution from calendar-and-clock duration to week form is explicit and lawful.
+        substitution: Established<CompleteIntervalDurationMaySubstituteWeekForm>,
+        /// The substituted duration obeys the week-form duration laws.
+        week_form: DurationWeekFormEvidence,
+    },
+    /// The duration uses the alternative complete representation.
+    Alternative(DurationAlternativeFormEvidence),
+}
+
+/// Evidence bundle for complete start/end interval substitution semantics.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.1; 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.1; 4.4.4.5
+pub struct CompleteStartEndIntervalSubstitutionEvidence {
+    /// The underlying interval representation is structurally valid.
+    pub interval: Established<TimeIntervalValid>,
+    /// Complete representation family used by the start time point.
+    pub start: CompleteTimePointRepresentationEvidence,
+    /// Complete representation family used by the end time point.
+    pub end: CompleteTimePointRepresentationEvidence,
+}
+
+/// Evidence bundle for complete start/duration interval substitution semantics.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.3; 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.3; 4.4.4.5
+pub struct CompleteStartDurationIntervalSubstitutionEvidence {
+    /// The underlying interval representation is structurally valid.
+    pub interval: Established<TimeIntervalValid>,
+    /// Complete representation family used by the start time point.
+    pub start: CompleteTimePointRepresentationEvidence,
+    /// Complete representation family used by the duration component.
+    pub duration: CompleteIntervalDurationRepresentationEvidence,
+}
+
+/// Evidence bundle for complete duration/end interval substitution semantics.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.4.4; 4.4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.4.4; 4.4.4.5
+pub struct CompleteDurationEndIntervalSubstitutionEvidence {
+    /// The underlying interval representation is structurally valid.
+    pub interval: Established<TimeIntervalValid>,
+    /// Complete representation family used by the duration component.
+    pub duration: CompleteIntervalDurationRepresentationEvidence,
+    /// Complete representation family used by the end time point.
+    pub end: CompleteTimePointRepresentationEvidence,
+}
+
 /// Evidence bundle for ordered interval endpoints.
 ///
 /// Normative sources: ISO 8601-1:2019, 3.1.1.6; 3.1.1.8
@@ -1495,6 +1828,29 @@ pub struct IntervalEndpointOrderingEvidence {
     pub ordering: Established<IntervalStartPrecedesEnd>,
     /// Any duration component denotes a non-negative span.
     pub duration: Established<IntervalDurationIsNonNegative>,
+}
+
+/// Evidence bundle for inherited end-component interval semantics.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.5
+pub struct InheritedIntervalEndComponentsEvidence {
+    /// The underlying interval representation is structurally valid.
+    pub interval: Established<TimeIntervalValid>,
+    /// Omitted higher-order end components inherit from the leading component.
+    pub inheritance: Established<IntervalEndOmittedHigherOrderComponentsInheritFromStart>,
+}
+
+/// Evidence bundle for inherited trailing-zone interval semantics.
+///
+/// Normative source: ISO 8601-1:2019, 4.4.5
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.4.5
+pub struct InheritedIntervalZoneEvidence {
+    /// The underlying interval representation is structurally valid.
+    pub interval: Established<TimeIntervalValid>,
+    /// Omitted trailing zone or UTC information inherits from the leading component.
+    pub inheritance:
+        Established<IntervalTrailingComponentInheritsZoneOrUtcFromLeadingComponentWhenOmitted>,
 }
 
 /// Evidence bundle for a valid recurring interval form.
@@ -1511,6 +1867,30 @@ pub struct RecurringIntervalEvidence {
     pub omitted_count: Established<RecurringIntervalOmittedCountDenotesUnboundedOccurrences>,
     /// The repetition prefix is followed by an interval component.
     pub interval_component: Established<RecurringIntervalCarriesIntervalComponent>,
+}
+
+/// Evidence bundle for complete recurring-interval representations.
+///
+/// Normative source: ISO 8601-1:2019, 4.5.3
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.5.3
+pub struct CompleteRecurringIntervalRepresentationEvidence {
+    /// The recurring-interval wrapper is structurally valid.
+    pub recurring_interval: Established<RecurringIntervalFormValid>,
+    /// The embedded interval uses a complete representation.
+    pub interval_representation:
+        Established<RecurringIntervalUsesCompleteTimeIntervalRepresentation>,
+}
+
+/// Evidence bundle for other-than-complete recurring-interval representations.
+///
+/// Normative source: ISO 8601-1:2019, 4.5.4
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.5.4
+pub struct OtherThanCompleteRecurringIntervalRepresentationEvidence {
+    /// The recurring-interval wrapper is structurally valid.
+    pub recurring_interval: Established<RecurringIntervalFormValid>,
+    /// The embedded interval uses a 4.4.5 other-than-complete representation.
+    pub interval_representation:
+        Established<RecurringIntervalUsesOtherThanCompleteTimeIntervalRepresentation>,
 }
 
 /// Evidence bundle for a qualified temporal expression.
@@ -1654,6 +2034,46 @@ pub struct ExtendedIntervalBoundaryEvidence {
     pub open_boundary: Established<OpenIntervalBoundaryDeclared>,
     /// Unknown-boundary semantics are explicitly declared.
     pub unknown_boundary: Established<UnknownIntervalBoundaryDeclared>,
+}
+
+/// Evidence bundle for Level 1 enhanced-interval semantics.
+///
+/// Normative source: ISO 8601-2:2019, 4.5.1.
+/// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.1.
+pub struct EnhancedIntervalLevelOneEvidence {
+    /// The underlying extended-interval boundary semantics are structurally valid.
+    pub boundaries: Established<ExtendedIntervalBoundarySemanticsValid>,
+    /// Boundary-date qualification semantics are available.
+    pub qualification: Established<QualifiedTemporalExpressionValid>,
+    /// A qualification modifier may appear at the end of a boundary date.
+    pub terminal_boundary_qualification:
+        Established<EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification>,
+}
+
+/// Evidence bundle for Level 2 enhanced-interval semantics.
+///
+/// Normative source: ISO 8601-2:2019, 4.5.2.
+/// Open-text cross-check: ISO/WD 8601-2:2016(E), 4.5.2.
+pub struct EnhancedIntervalLevelTwoEvidence {
+    /// Level 2 semantics extend the Level 1 enhanced-interval surface.
+    pub level_one: Established<EnhancedIntervalLevelOneSemanticsValid>,
+    /// Boundary-date portions may be qualified as approximate or uncertain.
+    pub internal_boundary_qualification:
+        Established<EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification>,
+    /// Unspecified-component semantics are available for boundary dates.
+    pub unspecified_components: Established<UnspecifiedComponentExpressionValid>,
+    /// Boundary-date portions may carry unspecified digits or components.
+    pub internal_boundary_unspecified_digits:
+        Established<EnhancedIntervalLevelTwoPermitsInternalBoundaryUnspecifiedDigits>,
+    /// Before-or-after qualification is a Level 2 feature.
+    pub before_or_after_level: Established<BeforeOrAfterQualificationIsLevelTwoOnly>,
+    /// Boundary dates may use before-or / or-after qualification.
+    pub before_or_after_boundary_qualification:
+        Established<EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification>,
+    /// The start boundary may use the leading `..` before-or-on qualifier.
+    pub before_or_on_start: Established<BeforeOrOnDateUsesLeadingDoubleDotQualifier>,
+    /// The end boundary may use the trailing `..` on-or-after qualifier.
+    pub on_or_after_end: Established<OnOrAfterDateUsesTrailingDoubleDotQualifier>,
 }
 
 /// Evidence bundle for a grouped time scale unit expression.
@@ -1880,11 +2300,25 @@ impl ProvableFrom<Rfc3339TimestampEvidence> for Rfc3339TimestampValid {}
 impl ProvableFrom<Rfc3339LexicalOrderingEvidence> for Rfc3339LexicalOrderingSemanticsValid {}
 impl ProvableFrom<Rfc3339GenerationGuidanceEvidence> for Rfc3339GenerationGuidanceValid {}
 impl ProvableFrom<IxdtfTimestampEvidence> for IxdtfTimestampValid {}
+impl ProvableFrom<IxdtfSuffixKeyRegistryEntryEvidence> for IxdtfSuffixKeyRegistryEntryValid {}
+impl ProvableFrom<IxdtfPermanentSuffixKeyRegistrationEvidence>
+    for IxdtfPermanentSuffixKeyRegistrationSemanticsValid
+{
+}
+impl ProvableFrom<IxdtfProvisionalSuffixKeyRegistrationEvidence>
+    for IxdtfProvisionalSuffixKeyRegistrationSemanticsValid
+{
+}
+impl ProvableFrom<IxdtfSuffixKeyRegistryPolicyEvidence>
+    for IxdtfSuffixKeyRegistryPolicySemanticsValid
+{
+}
 impl ProvableFrom<IxdtfAdditionalInformationEvidence> for IxdtfAdditionalInformationSemanticsValid {}
 impl ProvableFrom<IxdtfCalendarAwareTimestampEvidence>
     for IxdtfTimestampHasPreferredPresentationCalendar
 {
 }
+impl ProvableFrom<IxdtfCalendarKeyRegistryEvidence> for IxdtfCalendarKeyRegistrySemanticsValid {}
 impl ProvableFrom<ZonedTimestampEvidence> for ZonedDateTimeHasNamedZone {}
 impl ProvableFrom<OffsetTimeZoneAnnotationEvidence>
     for OffsetTimeZoneAnnotationConsistentWithTimestamp
@@ -1900,9 +2334,35 @@ impl ProvableFrom<LossyConversionAuthorityEvidence> for LossyConversionAuthority
 impl ProvableFrom<LosslessConversionEvidence> for ConversionLossless {}
 impl ProvableFrom<SubsecondTruncationEvidence> for ConversionTruncatesSubseconds {}
 impl ProvableFrom<DurationFormEvidence> for DurationFormValid {}
+impl ProvableFrom<DurationRepresentationEvidence> for DurationRepresentationSemanticsValid {}
 impl ProvableFrom<TimeIntervalEvidence> for TimeIntervalValid {}
+impl ProvableFrom<CompleteStartEndIntervalSubstitutionEvidence>
+    for CompleteIntervalSubstitutionSemanticsValid
+{
+}
+impl ProvableFrom<CompleteStartDurationIntervalSubstitutionEvidence>
+    for CompleteIntervalSubstitutionSemanticsValid
+{
+}
+impl ProvableFrom<CompleteDurationEndIntervalSubstitutionEvidence>
+    for CompleteIntervalSubstitutionSemanticsValid
+{
+}
+impl ProvableFrom<InheritedIntervalEndComponentsEvidence>
+    for InheritedIntervalEndComponentsSemanticsValid
+{
+}
+impl ProvableFrom<InheritedIntervalZoneEvidence> for InheritedIntervalZoneSemanticsValid {}
 impl ProvableFrom<IntervalEndpointOrderingEvidence> for IntervalEndpointsOrdered {}
 impl ProvableFrom<RecurringIntervalEvidence> for RecurringIntervalFormValid {}
+impl ProvableFrom<CompleteRecurringIntervalRepresentationEvidence>
+    for CompleteRecurringIntervalRepresentationSemanticsValid
+{
+}
+impl ProvableFrom<OtherThanCompleteRecurringIntervalRepresentationEvidence>
+    for OtherThanCompleteRecurringIntervalRepresentationSemanticsValid
+{
+}
 impl ProvableFrom<QualifiedTemporalExpressionEvidence> for QualifiedTemporalExpressionValid {}
 impl ProvableFrom<QualifiedTemporalValueEvidence> for QualifiedTemporalValueValid {}
 impl ProvableFrom<ExplicitTemporalFormEvidence> for ExplicitTemporalFormValid {}
@@ -1912,6 +2372,8 @@ impl ProvableFrom<ExplicitDateTimeEvidence> for ExplicitDateTimeValid {}
 impl ProvableFrom<ExplicitDateTimeWithShiftEvidence> for ExplicitDateTimeWithShiftValid {}
 impl ProvableFrom<ExplicitDurationEvidence> for ExplicitDurationValid {}
 impl ProvableFrom<ExtendedIntervalBoundaryEvidence> for ExtendedIntervalBoundarySemanticsValid {}
+impl ProvableFrom<EnhancedIntervalLevelOneEvidence> for EnhancedIntervalLevelOneSemanticsValid {}
+impl ProvableFrom<EnhancedIntervalLevelTwoEvidence> for EnhancedIntervalLevelTwoSemanticsValid {}
 impl ProvableFrom<GroupedTimeScaleUnitEvidence> for GroupedTimeScaleUnitValid {}
 impl ProvableFrom<DateTimeFormulaEvidence> for DateTimeFormulaValid {}
 impl ProvableFrom<DateTimeFormulaEvaluationSemanticsEvidence>

@@ -144,6 +144,11 @@ pub trait TemporalParser: Send + Sync {
 
     /// Parse an RFC 3339 timestamp into an offset date-time descriptor.
     ///
+    /// This seam remains strict to the `date-time = full-date "T" full-time`
+    /// profile. The Section `5.6` readability note about using a space
+    /// separator is treated as an application-level policy layer, not as part
+    /// of the core parser contract.
+    ///
     /// Normative source: RFC 3339 §5.6 - Internet timestamp profile.
     fn parse_rfc3339_timestamp(&self, input: &str) -> ParsedRfc3339TimestampResult;
 
@@ -154,7 +159,7 @@ pub trait TemporalParser: Send + Sync {
     /// additional-information semantics as separate proof branches rather than
     /// collapsing them into one aggregate suffix token.
     ///
-    /// Normative source: RFC 9557 §3.1-§3.3 - time-zone and additional-information syntax.
+    /// Normative sources: RFC 9557 §1.2, §3.3, §3.4, and §4.1.
     fn parse_ixdtf_timestamp(&self, input: &str) -> ParsedIxdtfTimestampResult;
 
     /// Parse an ISO 8601-2 seasonal temporal expression.

@@ -43,6 +43,15 @@ mod emit_impls {
         "NamedTimeZoneUsesIanaIdentifier"
     );
 
+    /// A named time-zone identifier excludes `"."` and `".."` path-like segments.
+    ///
+    /// Normative source: RFC 9557 §4.1 — ABNF
+    pub struct NamedTimeZoneIdentifierExcludesDotSegments;
+    structural_prop!(
+        NamedTimeZoneIdentifierExcludesDotSegments,
+        "NamedTimeZoneIdentifierExcludesDotSegments"
+    );
+
     /// An IXDTF timestamp may carry an offset time-zone annotation.
     ///
     /// Normative sources: RFC 9557 §1.2 — Definitions; §4.1 — ABNF
@@ -179,13 +188,13 @@ mod emit_impls {
 }
 
 pub use emit_impls::{
-    NamedTimeZoneAnnotationPresent, NamedTimeZoneIdentifierIsCaseSensitive,
-    NamedTimeZoneIsNotNumericOffsetAlias, NamedTimeZoneMeaningUsesCurrentTzdbRules,
-    NamedTimeZoneRetainsCivilRuleIdentity, NamedTimeZoneUsesIanaIdentifier,
-    NumericOffsetDoesNotIdentifyNamedZone, OffsetTimeZoneAnnotationPresent,
-    OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset, OffsetTimeZoneRepeatsTimestampOffset,
-    OffsetTimeZoneUseIsStronglyDiscouraged, UnknownNamedTimeZoneIdentifierTreatedAsInconsistency,
-    ZoneOffsetResolvedForRepresentedInstant, ZoneTransitionAmbiguityDeclared,
-    ZoneTransitionDisambiguationAuthorityDeclared, ZoneTransitionGapDeclared,
-    ZoneTransitionGapHandlingAuthorityDeclared,
+    NamedTimeZoneAnnotationPresent, NamedTimeZoneIdentifierExcludesDotSegments,
+    NamedTimeZoneIdentifierIsCaseSensitive, NamedTimeZoneIsNotNumericOffsetAlias,
+    NamedTimeZoneMeaningUsesCurrentTzdbRules, NamedTimeZoneRetainsCivilRuleIdentity,
+    NamedTimeZoneUsesIanaIdentifier, NumericOffsetDoesNotIdentifyNamedZone,
+    OffsetTimeZoneAnnotationPresent, OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset,
+    OffsetTimeZoneRepeatsTimestampOffset, OffsetTimeZoneUseIsStronglyDiscouraged,
+    UnknownNamedTimeZoneIdentifierTreatedAsInconsistency, ZoneOffsetResolvedForRepresentedInstant,
+    ZoneTransitionAmbiguityDeclared, ZoneTransitionDisambiguationAuthorityDeclared,
+    ZoneTransitionGapDeclared, ZoneTransitionGapHandlingAuthorityDeclared,
 };

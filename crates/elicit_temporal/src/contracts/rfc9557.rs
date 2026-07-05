@@ -156,6 +156,87 @@ mod emit_impls {
         "IxdtfExperimentalSuffixKeysCannotBeRegistered"
     );
 
+    /// A registered suffix key carries a key identifier field.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyCarriesKeyIdentifier;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyCarriesKeyIdentifier,
+        "IxdtfRegisteredSuffixKeyCarriesKeyIdentifier"
+    );
+
+    /// A registered suffix key carries a registration-status field.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyCarriesRegistrationStatus;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyCarriesRegistrationStatus,
+        "IxdtfRegisteredSuffixKeyCarriesRegistrationStatus"
+    );
+
+    /// A registered suffix key uses either provisional or permanent registration status.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent,
+        "IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent"
+    );
+
+    /// A registered suffix key carries a short description field.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyCarriesDescription;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyCarriesDescription,
+        "IxdtfRegisteredSuffixKeyCarriesDescription"
+    );
+
+    /// A registered suffix key carries a change-controller field.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyCarriesChangeController;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyCarriesChangeController,
+        "IxdtfRegisteredSuffixKeyCarriesChangeController"
+    );
+
+    /// A registered suffix key carries a reference field.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfRegisteredSuffixKeyCarriesReference;
+    structural_prop!(
+        IxdtfRegisteredSuffixKeyCarriesReference,
+        "IxdtfRegisteredSuffixKeyCarriesReference"
+    );
+
+    /// A permanent registered suffix key includes a full specification in its reference material.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference;
+    structural_prop!(
+        IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference,
+        "IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference"
+    );
+
+    /// A provisional registered suffix key carries at least some reference information.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation;
+    structural_prop!(
+        IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation,
+        "IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation"
+    );
+
+    /// A provisional registered suffix key is expected to improve its reference information over time.
+    ///
+    /// Normative source: RFC 9557 §3.2 — Registering Keys for Extended Information Tags
+    pub struct IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime;
+    structural_prop!(
+        IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime,
+        "IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime"
+    );
+
     /// A calendar-awareness annotation is present in the IXDTF suffix.
     ///
     /// Normative source: RFC 9557 §5 — The u-ca Suffix Key: Calendar Awareness
@@ -188,6 +269,96 @@ mod emit_impls {
         IxdtfCalendarAnnotationDeclaresPreferredPresentationCalendar,
         "IxdtfCalendarAnnotationDeclaresPreferredPresentationCalendar"
     );
+
+    /// The initial Timestamp Suffix Tag Keys registry contains a `u-ca` entry.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfRegistryInitiallyContainsUCaEntry;
+    structural_prop!(
+        IxdtfRegistryInitiallyContainsUCaEntry,
+        "IxdtfRegistryInitiallyContainsUCaEntry"
+    );
+
+    /// The initial `u-ca` registry entry is permanent.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfUCaRegistryEntryIsPermanent;
+    structural_prop!(
+        IxdtfUCaRegistryEntryIsPermanent,
+        "IxdtfUCaRegistryEntryIsPermanent"
+    );
+
+    /// The initial `u-ca` registry entry uses the description "Preferred Calendar for Presentation".
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription;
+    structural_prop!(
+        IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription,
+        "IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription"
+    );
+
+    /// The initial `u-ca` registry entry uses `IETF` as its change controller.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfUCaRegistryEntryUsesIetfChangeController;
+    structural_prop!(
+        IxdtfUCaRegistryEntryUsesIetfChangeController,
+        "IxdtfUCaRegistryEntryUsesIetfChangeController"
+    );
+
+    /// The initial `u-ca` registry entry references Section 5 of RFC 9557.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfUCaRegistryEntryReferencesSectionFive;
+    structural_prop!(
+        IxdtfUCaRegistryEntryReferencesSectionFive,
+        "IxdtfUCaRegistryEntryReferencesSectionFive"
+    );
+
+    /// Permanent Timestamp Suffix Tag Keys use the Specification Required registration policy.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfPermanentEntriesUseSpecificationRequiredPolicy;
+    structural_prop!(
+        IxdtfPermanentEntriesUseSpecificationRequiredPolicy,
+        "IxdtfPermanentEntriesUseSpecificationRequiredPolicy"
+    );
+
+    /// Provisional Timestamp Suffix Tag Keys use the Expert Review registration policy.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfProvisionalEntriesUseExpertReviewPolicy;
+    structural_prop!(
+        IxdtfProvisionalEntriesUseExpertReviewPolicy,
+        "IxdtfProvisionalEntriesUseExpertReviewPolicy"
+    );
+
+    /// Expert review for provisional Timestamp Suffix Tag Keys ascertains that a basic specification exists.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfExpertReviewAscertainsBasicSpecificationExists;
+    structural_prop!(
+        IxdtfExpertReviewAscertainsBasicSpecificationExists,
+        "IxdtfExpertReviewAscertainsBasicSpecificationExists"
+    );
+
+    /// Expert review keeps concise identifiers with generally applicable semantics in reserve.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfExpertReviewReservesConciseGenerallyApplicableKeys;
+    structural_prop!(
+        IxdtfExpertReviewReservesConciseGenerallyApplicableKeys,
+        "IxdtfExpertReviewReservesConciseGenerallyApplicableKeys"
+    );
+
+    /// Experts may initiate registration to avert future key-identifier collisions.
+    ///
+    /// Normative source: RFC 9557 §6 — IANA Considerations
+    pub struct IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions;
+    structural_prop!(
+        IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions,
+        "IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions"
+    );
 }
 
 pub use emit_impls::{
@@ -197,11 +368,26 @@ pub use emit_impls::{
     IxdtfCriticalSuffixTagsRequireProcessingOrErrorHandling,
     IxdtfDuplicateElectiveSuffixUsesFirstOccurrence,
     IxdtfExperimentalSuffixKeysAreNotForInterchange, IxdtfExperimentalSuffixKeysCannotBeRegistered,
-    IxdtfExperimentalSuffixKeysUseLeadingUnderscore, IxdtfGeneratorsMayOmitSuffixTags,
+    IxdtfExperimentalSuffixKeysUseLeadingUnderscore,
+    IxdtfExpertReviewAscertainsBasicSpecificationExists,
+    IxdtfExpertReviewReservesConciseGenerallyApplicableKeys,
+    IxdtfExpertsMayInitiateRegistrationToAvoidFutureCollisions, IxdtfGeneratorsMayOmitSuffixTags,
+    IxdtfPermanentEntriesUseSpecificationRequiredPolicy,
+    IxdtfPermanentRegisteredSuffixKeyRequiresFullSpecificationReference,
+    IxdtfProvisionalEntriesUseExpertReviewPolicy,
+    IxdtfProvisionalRegisteredSuffixKeyReferenceExpectedToImproveOverTime,
+    IxdtfProvisionalRegisteredSuffixKeyRequiresReferenceInformation,
     IxdtfRecipientsMayIgnoreElectiveSuffixTags,
     IxdtfRecipientsMustRejectUnconfiguredExperimentalSuffixKeys,
+    IxdtfRegisteredSuffixKeyCarriesChangeController, IxdtfRegisteredSuffixKeyCarriesDescription,
+    IxdtfRegisteredSuffixKeyCarriesKeyIdentifier, IxdtfRegisteredSuffixKeyCarriesReference,
+    IxdtfRegisteredSuffixKeyCarriesRegistrationStatus,
+    IxdtfRegisteredSuffixKeyStatusIsProvisionalOrPermanent, IxdtfRegistryInitiallyContainsUCaEntry,
     IxdtfSuffixFollowsRfc3339Timestamp, IxdtfSuffixKeysAreLowercase,
     IxdtfSuffixTagsUseBracketedKeyValueForm,
     IxdtfSuffixValuesAreCaseSensitiveUnlessOtherwiseSpecified,
     IxdtfSuffixValuesUseHyphenDelimitedItems, IxdtfTimeZoneSuffixUsesBracketedNameOrOffset,
+    IxdtfUCaRegistryEntryIsPermanent, IxdtfUCaRegistryEntryReferencesSectionFive,
+    IxdtfUCaRegistryEntryUsesIetfChangeController,
+    IxdtfUCaRegistryEntryUsesPreferredCalendarForPresentationDescription,
 };

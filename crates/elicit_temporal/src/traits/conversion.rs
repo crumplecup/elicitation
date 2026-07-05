@@ -28,7 +28,7 @@ pub trait TemporalConversionFactory: Send + Sync {
 
     /// Drop named-zone identity while retaining offset timestamp semantics.
     ///
-    /// Normative source: RFC 9557 §3.1 - named-zone identity is not reducible to offset alone.
+    /// Normative source: RFC 9557 §1.2 - named-zone identity is not reducible to offset alone.
     fn strip_named_zone(
         &self,
         timestamp: &ZonedDateTimeDescriptor,

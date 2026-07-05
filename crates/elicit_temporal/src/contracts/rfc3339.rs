@@ -78,20 +78,29 @@ mod emit_impls {
     pub struct Rfc3339OffsetIsUtcOrNumeric;
     structural_prop!(Rfc3339OffsetIsUtcOrNumeric, "Rfc3339OffsetIsUtcOrNumeric");
 
-    /// The unknown local-offset convention is encoded as `-00:00`.
+    /// The unknown local-offset convention is encoded using the `Z` UTC designator.
     ///
-    /// Normative source: RFC 3339 §4.3 — Unknown Local Offset Convention
-    pub struct Rfc3339UnknownLocalOffsetUsesNegativeZero;
+    /// Normative sources: RFC 3339 §4.3 — Unknown Local Offset Convention; RFC 9557 §2.2 — Update to RFC 3339
+    pub struct Rfc3339UnknownLocalOffsetUsesZuluDesignator;
     structural_prop!(
-        Rfc3339UnknownLocalOffsetUsesNegativeZero,
-        "Rfc3339UnknownLocalOffsetUsesNegativeZero"
+        Rfc3339UnknownLocalOffsetUsesZuluDesignator,
+        "Rfc3339UnknownLocalOffsetUsesZuluDesignator"
     );
 
     /// The timestamp does not use the unknown local-offset convention.
     ///
-    /// Normative source: RFC 3339 §4.3 — Unknown Local Offset Convention
+    /// Normative sources: RFC 3339 §4.3 — Unknown Local Offset Convention; RFC 9557 §2.2 — Update to RFC 3339
     pub struct Rfc3339LocalOffsetNotUnknown;
     structural_prop!(Rfc3339LocalOffsetNotUnknown, "Rfc3339LocalOffsetNotUnknown");
+
+    /// A `+00:00` offset declares UTC as the preferred reference point for the specified time.
+    ///
+    /// Normative sources: RFC 3339 §4.3 — Unknown Local Offset Convention; RFC 9557 §2.2 — Update to RFC 3339
+    pub struct Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint;
+    structural_prop!(
+        Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
+        "Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint"
+    );
 
     /// Lexical ordering requires timestamps in the compared set to use the same UTC-relationship string form.
     ///
@@ -138,6 +147,15 @@ mod emit_impls {
         "Rfc3339GeneratorsShouldUseUppercaseTAndZ"
     );
 
+    /// Applications may permit a space separator between `full-date` and `full-time` for readability.
+    ///
+    /// Normative source: RFC 3339 §5.6 — Internet Date/Time Format
+    pub struct Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator;
+    structural_prop!(
+        Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator,
+        "Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator"
+    );
+
     /// Applications should not generate inserted leap-second timestamps before the leap second is announced.
     ///
     /// Normative source: RFC 3339 §5.7 — Restrictions
@@ -149,12 +167,13 @@ mod emit_impls {
 }
 
 pub use emit_impls::{
-    Rfc3339FractionUsesDotSeparator, Rfc3339FractionalSecondsAreOnlyRarelyUsedOption,
-    Rfc3339GeneratorsShouldUseUppercaseTAndZ, Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
+    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator, Rfc3339FractionUsesDotSeparator,
+    Rfc3339FractionalSecondsAreOnlyRarelyUsedOption, Rfc3339GeneratorsShouldUseUppercaseTAndZ,
+    Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
     Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits,
     Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding, Rfc3339LocalOffsetNotUnknown,
-    Rfc3339OffsetIsUtcOrNumeric, Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory,
-    Rfc3339RequiresUtcRelationship, Rfc3339UnknownLocalOffsetUsesNegativeZero,
-    Rfc3339UnqualifiedLocalTimeForbidden, Rfc3339UsesExtendedCalendarDate,
-    Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime,
+    Rfc3339OffsetIsUtcOrNumeric, Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
+    Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory, Rfc3339RequiresUtcRelationship,
+    Rfc3339UnknownLocalOffsetUsesZuluDesignator, Rfc3339UnqualifiedLocalTimeForbidden,
+    Rfc3339UsesExtendedCalendarDate, Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime,
 };

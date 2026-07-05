@@ -3,7 +3,7 @@
 //! Sources:
 //! - ISO 8601-1:2019 — combined date-time and UTC relationship forms
 //! - RFC 3339 §4.4, §5.6
-//! - RFC 9557 §3.1
+//! - RFC 9557 §1.2
 
 mod emit_impls {
     use elicitation::contracts::Prop;
@@ -56,7 +56,7 @@ mod emit_impls {
 
     /// A local date-time may be ambiguous at a zone transition boundary.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct LocalDateTimeMayBeAmbiguousAtZoneTransition;
     structural_prop!(
         LocalDateTimeMayBeAmbiguousAtZoneTransition,
@@ -65,7 +65,7 @@ mod emit_impls {
 
     /// A local date-time may fall inside a skipped wall-clock gap at a zone transition.
     ///
-    /// Normative source: RFC 9557 §3.1 — Time Zone Identifiers
+    /// Normative source: RFC 9557 §1.2 — Definitions
     pub struct LocalDateTimeMayFallInZoneTransitionGap;
     structural_prop!(
         LocalDateTimeMayFallInZoneTransitionGap,

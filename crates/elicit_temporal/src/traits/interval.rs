@@ -16,11 +16,19 @@ use crate::{
 pub trait TemporalIntervalFactory: Send + Sync {
     /// Parse an ISO 8601 duration representation.
     ///
+    /// The returned proof sidecar keeps the designator-based and alternative
+    /// complete-duration families explicit rather than collapsing them into one
+    /// generic duration token.
+    ///
     /// Normative sources: ISO 8601-1:2019, 4.4.2 b); 4.4.3.
     /// Informative cross-check: CalConnect CC 18011:2018 §7.3 - Representations.
     fn parse_duration(&self, input: &str) -> ParsedDurationResult;
 
     /// Parse an ISO 8601 recurring interval representation.
+    ///
+    /// The returned proof sidecar keeps complete and other-than-complete
+    /// recurring families distinct rather than collapsing them into one generic
+    /// recurrence token.
     ///
     /// Normative sources: ISO 8601-1:2019, 4.5.1; 4.5.2; 4.5.3; 4.5.4.
     /// Informative cross-check: CalConnect CC 18012:2018 §6.3 - Repeat rule;
@@ -41,7 +49,9 @@ pub trait TemporalIntervalFactory: Send + Sync {
     /// Parse an ISO 8601 interval representation.
     ///
     /// The returned proof sidecars keep extended open or unknown boundary
-    /// semantics distinct from the base interval-form validity token.
+    /// semantics, inherited end-component semantics, inherited trailing-zone
+    /// semantics, and complete-interval substitution semantics distinct from
+    /// the base interval-form validity token.
     ///
     /// Normative sources: ISO 8601-1:2019, 4.4.1; 4.4.2; 4.4.4; 4.4.5;
     /// ISO 8601-2:2019, 10.2.

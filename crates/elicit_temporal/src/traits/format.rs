@@ -40,7 +40,7 @@ use crate::{
 /// 4.8.3, 5.1, 5.2, 5.3, 5.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 8.2.1, 8.2.2,
 /// 8.2.3, 8.4.4, 8.4.5, 8.4.6, 8.5, 9.2.1, 9.2.2, 9.3, 10.2, 14.1, 14.2,
 /// 14.3, and 14.4; CalConnect CC 18011:2018 §4.3, §5, and §8.
-/// Informative cross-checks: RFC 3339 §5.6; RFC 9557 §3.1.
+/// Informative cross-checks: RFC 3339 §5.6; RFC 9557 §1.2, §3.3, and §4.1.
 pub trait TemporalFormatter: Send + Sync {
     /// Emit a calendar date using ISO 8601 extended separators.
     ///
@@ -324,6 +324,11 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a fixed-instant timestamp using the RFC 3339 profile.
     ///
+    /// This seam emits the strict `T`-separated profile. The Section `5.6`
+    /// readability note about allowing a space separator is represented as a
+    /// separate standards proposition, not silently folded into the formatter
+    /// contract.
+    ///
     /// Normative source: RFC 3339 §5.6 - Internet timestamp profile.
     fn format_rfc3339_timestamp(
         &self,
@@ -337,7 +342,7 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a named-zone timestamp using an IXDTF zone annotation.
     ///
-    /// Normative source: RFC 9557 §3.1 - named time-zone annotations.
+    /// Normative sources: RFC 9557 §1.2 and §4.1.
     fn format_ixdtf_zoned_timestamp(
         &self,
         timestamp: &ZonedDateTimeDescriptor,
@@ -356,7 +361,7 @@ pub trait TemporalFormatter: Send + Sync {
     /// additional-information semantics as separate proof branches rather than
     /// collapsing them into one aggregate suffix token.
     ///
-    /// Normative source: RFC 9557 §3.1-§3.3 - time-zone and additional-information syntax.
+    /// Normative sources: RFC 9557 §1.2, §3.3, §3.4, and §4.1.
     fn format_ixdtf_timestamp(
         &self,
         timestamp: &IxdtfTimestampDescriptor,
@@ -428,6 +433,10 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601 duration representation.
     ///
+    /// The returned proof sidecar keeps the designator-based and alternative
+    /// complete-duration families explicit rather than flattening them into one
+    /// generic duration token.
+    ///
     /// Normative sources: ISO 8601-1:2019, 4.4.2 b); 4.4.3.
     fn format_duration(
         &self,
@@ -437,6 +446,10 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601 recurring interval representation.
     ///
+    /// The returned proof sidecar keeps complete and other-than-complete
+    /// recurring families explicit instead of flattening them into one generic
+    /// recurring-interval token.
+    ///
     /// Normative sources: ISO 8601-1:2019, 4.5.1; 4.5.2; 4.5.3; 4.5.4.
     fn format_recurring_interval(
         &self,
@@ -445,6 +458,10 @@ pub trait TemporalFormatter: Send + Sync {
     ) -> FormattedRecurringIntervalResult;
 
     /// Emit an ISO 8601 interval representation including extended-boundary semantics.
+    ///
+    /// The returned proof sidecars keep extended boundary semantics, inherited
+    /// `4.4.5` interval semantics, and complete-interval `4.4.4.5`
+    /// substitution semantics explicit.
     ///
     /// Normative sources: ISO 8601-1:2019, 4.4.1; 4.4.2; 4.4.4; 4.4.5;
     /// ISO 8601-2:2019, 10.2.
