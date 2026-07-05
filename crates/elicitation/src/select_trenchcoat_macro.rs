@@ -387,4 +387,26 @@ macro_rules! _select_trenchcoat_trait_flag {
             }
         }
     };
+
+    ($name:ident, $inner:path, ord) => {
+        impl ::std::cmp::PartialOrd for $name {
+            fn partial_cmp(&self, other: &Self) -> ::std::option::Option<::std::cmp::Ordering> {
+                Some(self.cmp(other))
+            }
+        }
+        impl ::std::cmp::Ord for $name {
+            fn cmp(&self, other: &Self) -> ::std::cmp::Ordering {
+                self.0.cmp(&other.0)
+            }
+        }
+    };
+
+    ($name:ident, $inner:path, from_str) => {
+        impl ::std::str::FromStr for $name {
+            type Err = <$inner as ::std::str::FromStr>::Err;
+            fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
+                s.parse::<$inner>().map(Self::from)
+            }
+        }
+    };
 }

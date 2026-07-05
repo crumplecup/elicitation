@@ -1209,7 +1209,7 @@ impl ToCodeLiteral for Month {
 }
 
 crate::select_trenchcoat!(chrono::Month, as MonthSelect, serde);
-crate::select_trenchcoat_traits!(MonthSelect, chrono::Month, [copy, eq, hash]);
+crate::select_trenchcoat_traits!(MonthSelect, chrono::Month, [copy, eq, hash, ord, from_str]);
 
 // ============================================================================
 // TimeDelta (chrono::Duration is a type alias for chrono::TimeDelta)
@@ -1761,7 +1761,9 @@ fn schema_from_object(v: serde_json::Value) -> schemars::Schema {
 }
 
 /// Trenchcoat for `chrono::Days` — serializes as a `u64` day count.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
 #[serde(transparent)]
 pub struct DaysWrap(u64);
 
@@ -1915,7 +1917,9 @@ impl ToCodeLiteral for chrono::Months {
 }
 
 /// Trenchcoat for `chrono::Months` — serializes as a `u32` month count.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
 #[serde(transparent)]
 pub struct MonthsWrap(u32);
 
@@ -2969,7 +2973,9 @@ impl ToCodeLiteral for chrono::WeekdaySet {
 }
 
 /// Trenchcoat for `chrono::WeekdaySet` — serializes as a `u8` bitmask.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
 #[serde(transparent)]
 pub struct WeekdaySetWrap(u8);
 
@@ -3964,6 +3970,14 @@ impl From<chrono::ParseError> for ParseErrorWrap {
     }
 }
 
+impl std::fmt::Display for ParseErrorWrap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::error::Error for ParseErrorWrap {}
+
 impl Prompt for ParseErrorWrap {
     fn prompt() -> Option<&'static str> {
         <chrono::ParseError as Prompt>::prompt()
@@ -4552,6 +4566,7 @@ impl ToCodeLiteral for chrono::format::InternalNumeric {
 /// of this wrapper can ever exist. Both serialization and deserialization always
 /// fail with a descriptive error. The JSON Schema is `{"not": {}}` (never/bottom
 /// type). Use `into_inner()` only if you somehow received one via `unsafe`.
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct InternalNumericWrap(chrono::format::InternalNumeric);
 
 impl std::fmt::Debug for InternalNumericWrap {
