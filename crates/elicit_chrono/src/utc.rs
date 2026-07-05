@@ -131,10 +131,7 @@ impl chrono::TimeZone for Utc {
         Utc
     }
 
-    fn offset_from_local_date(
-        &self,
-        _local: &chrono::NaiveDate,
-    ) -> chrono::MappedLocalTime<Utc> {
+    fn offset_from_local_date(&self, _local: &chrono::NaiveDate) -> chrono::MappedLocalTime<Utc> {
         chrono::MappedLocalTime::Single(Utc)
     }
 

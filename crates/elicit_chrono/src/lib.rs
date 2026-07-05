@@ -17,6 +17,7 @@ mod date_time_registry;
 mod days;
 mod duration;
 mod fixed_offset;
+mod format_fns;
 mod format_types;
 mod iso_week;
 mod local;
@@ -47,6 +48,7 @@ pub use date_time_registry::{DateTimeRegistryPlugin, UtcCreateParams};
 pub use days::Days;
 pub use duration::Duration;
 pub use fixed_offset::FixedOffset;
+pub use format_fns::{parse, parse_and_remainder};
 pub use format_types::{
     Colons, Fixed, InternalFixed, InternalNumeric, Numeric, OffsetFormat, OffsetPrecision,
     OutOfRange, OutOfRangeError, Pad, ParseError, ParseErrorKind, ParseMonthError,
