@@ -798,6 +798,21 @@ use time::{OffsetDateTime, PrimitiveDateTime};
 pub struct OffsetDateTimeWrap(pub OffsetDateTime);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<OffsetDateTime> for OffsetDateTimeWrap {
+    fn from(inner: OffsetDateTime) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl OffsetDateTimeWrap {
+    /// Extract the inner [`time::OffsetDateTime`].
+    pub fn into_inner(self) -> OffsetDateTime {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for OffsetDateTimeWrap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "OffsetDateTime".into()
@@ -882,6 +897,21 @@ impl crate::ElicitComplete for OffsetDateTimeWrap {}
 pub struct PrimitiveDateTimeWrap(pub PrimitiveDateTime);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<PrimitiveDateTime> for PrimitiveDateTimeWrap {
+    fn from(inner: PrimitiveDateTime) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl PrimitiveDateTimeWrap {
+    /// Extract the inner [`time::PrimitiveDateTime`].
+    pub fn into_inner(self) -> PrimitiveDateTime {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for PrimitiveDateTimeWrap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "PrimitiveDateTime".into()
@@ -928,9 +958,7 @@ impl Elicitation for PrimitiveDateTimeWrap {
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
-            "PrimitiveDateTimeWrap",
-        )
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("PrimitiveDateTimeWrap")
     }
 }
 
@@ -963,6 +991,21 @@ impl crate::ElicitComplete for PrimitiveDateTimeWrap {}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct TimeWrap(pub time::Time);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::Time> for TimeWrap {
+    fn from(inner: time::Time) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl TimeWrap {
+    /// Extract the inner [`time::Time`].
+    pub fn into_inner(self) -> time::Time {
+        self.0
+    }
+}
 
 #[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for TimeWrap {
@@ -1041,6 +1084,21 @@ impl crate::ElicitComplete for TimeWrap {}
 pub struct DateWrap(pub time::Date);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<time::Date> for DateWrap {
+    fn from(inner: time::Date) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl DateWrap {
+    /// Extract the inner [`time::Date`].
+    pub fn into_inner(self) -> time::Date {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for DateWrap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "Date".into()
@@ -1115,6 +1173,21 @@ impl crate::ElicitComplete for DateWrap {}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct DurationWrap(pub time::Duration);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::Duration> for DurationWrap {
+    fn from(inner: time::Duration) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl DurationWrap {
+    /// Extract the inner [`time::Duration`].
+    pub fn into_inner(self) -> time::Duration {
+        self.0
+    }
+}
 
 #[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for DurationWrap {
@@ -1194,6 +1267,21 @@ impl crate::ElicitComplete for DurationWrap {}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct MonthWrap(pub time::Month);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::Month> for MonthWrap {
+    fn from(inner: time::Month) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl MonthWrap {
+    /// Extract the inner [`time::Month`].
+    pub fn into_inner(self) -> time::Month {
+        self.0
+    }
+}
 
 #[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for MonthWrap {
@@ -1301,6 +1389,21 @@ impl crate::ElicitComplete for MonthWrap {}
 pub struct WeekdayWrap(pub time::Weekday);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<time::Weekday> for WeekdayWrap {
+    fn from(inner: time::Weekday) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl WeekdayWrap {
+    /// Extract the inner [`time::Weekday`].
+    pub fn into_inner(self) -> time::Weekday {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for WeekdayWrap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "Weekday".into()
@@ -1405,6 +1508,21 @@ impl crate::ElicitComplete for WeekdayWrap {}
 pub struct UtcDateTimeWrap(pub time::UtcDateTime);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<time::UtcDateTime> for UtcDateTimeWrap {
+    fn from(inner: time::UtcDateTime) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl UtcDateTimeWrap {
+    /// Extract the inner [`time::UtcDateTime`].
+    pub fn into_inner(self) -> time::UtcDateTime {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for UtcDateTimeWrap {
     fn schema_name() -> std::borrow::Cow<'static, str> {
         "UtcDateTime".into()
@@ -1480,6 +1598,21 @@ impl crate::ElicitComplete for UtcDateTimeWrap {}
 #[cfg(all(feature = "time", not(kani)))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ConversionRangeWrap(pub time::error::ConversionRange);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::error::ConversionRange> for ConversionRangeWrap {
+    fn from(inner: time::error::ConversionRange) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl ConversionRangeWrap {
+    /// Extract the inner [`time::error::ConversionRange`].
+    pub fn into_inner(self) -> time::error::ConversionRange {
+        self.0
+    }
+}
 
 #[cfg(all(feature = "time", not(kani)))]
 impl serde::Serialize for ConversionRangeWrap {
@@ -1582,6 +1715,21 @@ impl crate::ElicitComplete for ConversionRangeWrap {}
 pub struct ComponentRangeWrap(pub time::error::ComponentRange);
 
 #[cfg(all(feature = "time", not(kani)))]
+impl From<time::error::ComponentRange> for ComponentRangeWrap {
+    fn from(inner: time::error::ComponentRange) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl ComponentRangeWrap {
+    /// Extract the inner [`time::error::ComponentRange`].
+    pub fn into_inner(self) -> time::error::ComponentRange {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
 impl serde::Serialize for ComponentRangeWrap {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(self.0.name())
@@ -1597,7 +1745,15 @@ impl<'de> serde::Deserialize<'de> for ComponentRangeWrap {
             .ok_or_else(|| {
                 serde::de::Error::unknown_variant(
                     &name,
-                    &["hour", "minute", "second", "nanosecond", "month", "offset", "day"],
+                    &[
+                        "hour",
+                        "minute",
+                        "second",
+                        "nanosecond",
+                        "month",
+                        "offset",
+                        "day",
+                    ],
                 )
             })
     }
@@ -1706,6 +1862,21 @@ impl crate::ElicitComplete for ComponentRangeWrap {}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct UtcOffsetWrap(pub time::UtcOffset);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::UtcOffset> for UtcOffsetWrap {
+    fn from(inner: time::UtcOffset) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl UtcOffsetWrap {
+    /// Extract the inner [`time::UtcOffset`].
+    pub fn into_inner(self) -> time::UtcOffset {
+        self.0
+    }
+}
 
 #[cfg(all(feature = "time", not(kani)))]
 impl schemars::JsonSchema for UtcOffsetWrap {

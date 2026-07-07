@@ -496,9 +496,9 @@ pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTime
 
 #[cfg(feature = "time")]
 pub use verification::types::{
-    ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap, OffsetDateTimeAfter,
-    OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
-    UtcOffsetWrap, WeekdayWrap,
+    ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap,
+    OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap,
+    UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
 };
 
 #[cfg(feature = "jiff")]

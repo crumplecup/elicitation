@@ -787,8 +787,7 @@ mod time_specs {
             TypeSpecBuilder::default()
                 .type_name("TimeWrap".to_string())
                 .summary(
-                    "Trenchcoat for time::Time — a wall-clock time of day (HH:MM:SS)."
-                        .to_string(),
+                    "Trenchcoat for time::Time — a wall-clock time of day (HH:MM:SS).".to_string(),
                 )
                 .categories(vec![])
                 .build()
@@ -1061,7 +1060,9 @@ mod time_specs {
         fn type_spec() -> crate::TypeSpec {
             TypeSpecBuilder::default()
                 .type_name("time::UtcOffset".to_string())
-                .summary("A UTC offset stored as whole seconds (e.g., +3600 for +01:00).".to_string())
+                .summary(
+                    "A UTC offset stored as whole seconds (e.g., +3600 for +01:00).".to_string(),
+                )
                 .categories(vec![])
                 .build()
                 .expect("valid TypeSpec")

@@ -902,7 +902,8 @@ impl Elicitation for time::Duration {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Duration");
 
-        let seconds_params = mcp::number_params("Enter whole seconds (may be negative):", i64::MIN, i64::MAX);
+        let seconds_params =
+            mcp::number_params("Enter whole seconds (may be negative):", i64::MIN, i64::MAX);
         let seconds_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -911,7 +912,8 @@ impl Elicitation for time::Duration {
             .await?;
         let seconds = mcp::parse_integer::<i64>(mcp::extract_value(seconds_result)?)?;
 
-        let nanos_params = mcp::number_params("Enter subsecond nanoseconds (0–999999999):", 0, 999_999_999);
+        let nanos_params =
+            mcp::number_params("Enter subsecond nanoseconds (0–999999999):", 0, 999_999_999);
         let nanos_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -1225,9 +1227,7 @@ impl Elicitation for UtcDateTime {
             })?,
             components.day,
         )
-        .map_err(|e| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid date: {e}")))
-        })?;
+        .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid date: {e}"))))?;
 
         let time = time::Time::from_hms(components.hour, components.minute, components.second)
             .map_err(|e| {
@@ -1277,7 +1277,11 @@ impl Elicitation for UtcOffset {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UtcOffset");
-        let params = mcp::number_params("Enter UTC offset in whole seconds (-86399 to 86399):", -86_399, 86_399);
+        let params = mcp::number_params(
+            "Enter UTC offset in whole seconds (-86399 to 86399):",
+            -86_399,
+            86_399,
+        );
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -1286,7 +1290,9 @@ impl Elicitation for UtcOffset {
             .await?;
         let seconds = mcp::parse_integer::<i64>(mcp::extract_value(result)?)? as i32;
         UtcOffset::from_whole_seconds(seconds).map_err(|e| {
-            ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid UTC offset: {e}")))
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid UTC offset: {e}"
+            )))
         })
     }
 
@@ -1483,4 +1489,3 @@ impl ElicitIntrospect for time::error::ConversionRange {
         }
     }
 }
-
