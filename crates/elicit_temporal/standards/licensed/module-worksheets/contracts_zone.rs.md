@@ -27,6 +27,9 @@ named-zone surface in `src/contracts/zone.rs`.
 | `ZoneOffsetResolvedForRepresentedInstant` | `zone rules resolve offset for represented instant` | `RFC 9557 §1.2` | `../../public/rfc9557.txt lines 219-232` | `yes` |
 | `NamedTimeZoneMeaningUsesCurrentTzdbRules` | `named zone meaning tracks current TZDB rules` | `RFC 9557 §1.2` | `../../public/rfc9557.txt lines 241-245; ../../public/tzdb-theory.html lines 104-112` | `yes` |
 | `UnknownNamedTimeZoneIdentifierTreatedAsInconsistency` | `unknown named zone treated as inconsistency` | `RFC 9557 §4.1` | `../../public/rfc9557.txt lines 575-579` | `yes` |
+| `CriticalTimeZoneSuffixInconsistencyRequiresAction` | `critical time-zone inconsistency requires action` | `RFC 9557 §3.4` | `../../public/rfc9557.txt lines 481-487` | `yes` |
+| `ElectiveTimeZoneSuffixInconsistencyMayBeHandled` | `elective time-zone inconsistency may be handled` | `RFC 9557 §3.4` | `../../public/rfc9557.txt lines 481-487` | `yes` |
+| `ZuluTimeZoneSuffixAvoidsOffsetInconsistency` | `Z-based timestamp avoids offset inconsistency with time-zone suffix` | `RFC 9557 §2.2; §3.4` | `../../public/rfc9557.txt lines 304-316; 504-516` | `yes` |
 | `ZoneTransitionAmbiguityDeclared` | `transition ambiguity declaration` | `RFC 9557 §1.2` | `../../public/rfc9557.txt lines 221-223` | `yes` |
 | `ZoneTransitionGapDeclared` | `transition gap declaration` | `RFC 9557 §1.2` | `../../public/rfc9557.txt lines 221-223` | `yes` |
 | `ZoneTransitionDisambiguationAuthorityDeclared` | `ambiguity disambiguation authority` | `RFC 9557 §1.1; §3.4` | `../../public/rfc9557.txt lines 149-162; 483-487` | `yes` |
@@ -38,7 +41,7 @@ named-zone surface in `src/contracts/zone.rs`.
 | --- | --- | --- | --- |
 | `1.1 Scope` | `covered` | `ZoneTransitionDisambiguationAuthorityDeclared`, `ZoneTransitionGapHandlingAuthorityDeclared`, `ZoneTransitionResolutionAuthorityEvidence`, `LocalTimeZoneResolutionProofBranch` | Out-of-band resolution authority is now explicit both as first-order propositions and as exchange-carried proof composition for ambiguous and skipped local times. |
 | `1.2 Definitions` | `covered` | `NamedTimeZoneUsesIanaIdentifier`, `OffsetTimeZoneAnnotationPresent`, `NamedTimeZoneRetainsCivilRuleIdentity`, `ZoneOffsetResolvedForRepresentedInstant`, `NamedTimeZoneMeaningUsesCurrentTzdbRules`, transition gap and ambiguity contracts | This is now the primary RFC anchor for named-zone ontology and local-time ambiguity semantics. |
-| `3.4 Inconsistent time-offset and Time Zone Information` | `covered` | `OffsetTimeZoneRepeatsTimestampOffset`, `UnknownNamedTimeZoneIdentifierTreatedAsInconsistency`, `ZoneTransitionDisambiguationAuthorityDeclared`, `ZoneTransitionGapHandlingAuthorityDeclared` | Revisit if we split inconsistency handling into a dedicated contract module. |
+| `3.4 Inconsistent time-offset and Time Zone Information` | `covered` | `OffsetTimeZoneRepeatsTimestampOffset`, `CriticalTimeZoneSuffixInconsistencyRequiresAction`, `ElectiveTimeZoneSuffixInconsistencyMayBeHandled`, `ZuluTimeZoneSuffixAvoidsOffsetInconsistency`, `UnknownNamedTimeZoneIdentifierTreatedAsInconsistency`, `ZoneTransitionDisambiguationAuthorityDeclared`, `ZoneTransitionGapHandlingAuthorityDeclared` | The `MUST` versus `MAY` inconsistency split and the `Z` non-inconsistency case are now explicit rather than inferred from generic suffix rules. |
 | `4.1 ABNF` | `covered` | `NamedTimeZoneAnnotationPresent`, `NamedTimeZoneUsesIanaIdentifier`, `NamedTimeZoneIdentifierExcludesDotSegments`, `OffsetTimeZoneAnnotationPresent`, `UnknownNamedTimeZoneIdentifierTreatedAsInconsistency` | The special-case time-zone syntax now has exact published anchors, including the explicit `"."` and `".."` exclusion. |
 | `BCP 175 / TZDB operational semantics` | `covered` | `NamedTimeZoneIdentifierIsCaseSensitive`, `NamedTimeZoneRetainsCivilRuleIdentity`, `NamedTimeZoneMeaningUsesCurrentTzdbRules` | Exact public TZDB operational text is now staged locally via `../../public/tzdb-theory.html`. |
 
@@ -59,6 +62,10 @@ named-zone surface in `src/contracts/zone.rs`.
   they are intentionally mirrored across `src/contracts/instant.rs`,
   `src/contracts/proof_composition.rs`, and the `LocalTimeZoneResolutionProofBranch`
   exchange surface in `src/types.rs`.
+- RFC 9557 `§3.4` now has dedicated first-order propositions for critical
+  inconsistency handling, elective inconsistency handling, and the `Z`-based
+  non-inconsistency path, instead of relying only on the generic
+  critical/elective suffix consumption laws in `rfc9557.rs`.
 
 ## Remaining Coverage Checklist
 

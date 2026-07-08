@@ -15,6 +15,7 @@ surface in `src/contracts/rfc3339.rs`.
 | `Rfc3339UsesFourDigitYear` | `four-digit year` | `RFC 3339 §5.6` | `../../public/rfc3339.txt lines 399-452` | `yes` |
 | `Rfc3339UsesExtendedCalendarDate` | `full-date production` | `RFC 3339 §5.6` | `../../public/rfc3339.txt lines 399-452` | `yes` |
 | `Rfc3339UsesFullTime` | `full-time production` | `RFC 3339 §5.6` | `../../public/rfc3339.txt lines 399-452` | `yes` |
+| `Rfc3339TimestampExcludesRedundantWeekdayInformation` | `no redundant weekday information` | `RFC 3339 §5.4` | `../../public/rfc3339.txt lines 357-364` | `yes` |
 | `Rfc3339RequiresUtcRelationship` | `explicit relationship to UTC` | `RFC 3339 §4.4` | `../../public/rfc3339.txt lines 262-297` | `yes` |
 | `Rfc3339UnqualifiedLocalTimeForbidden` | `unqualified local time forbidden` | `RFC 3339 §4.4` | `../../public/rfc3339.txt lines 262-297` | `yes` |
 | `Rfc3339FractionUsesDotSeparator` | `fractional seconds separator` | `RFC 3339 §5.6` | `../../public/rfc3339.txt lines 399-452` | `yes` |
@@ -24,6 +25,8 @@ surface in `src/contracts/rfc3339.rs`.
 | `Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint` | `+00:00 preferred-reference semantics` | `RFC 3339 §4.3 as updated by RFC 9557 §2.2` | `../../public/rfc3339.txt lines 254-261; ../../public/rfc9557.txt lines 302-319` | `yes` |
 | `Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding` | `lexical ordering precondition for UTC-relationship encoding` | `RFC 3339 §5.1` | `../../public/rfc3339.txt lines 299-308` | `yes` |
 | `Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits` | `lexical ordering precondition for fractional-second width` | `RFC 3339 §5.1` | `../../public/rfc3339.txt lines 299-308` | `yes` |
+| `Rfc3339ClientsShouldTransformDatesForLocalityDisplay` | `client locality display transformation guidance` | `RFC 3339 §5.2` | `../../public/rfc3339.txt lines 323-325` | `yes` |
+| `Rfc3339LocalityDisplayMayTranslateUtcToLocalTime` | `UTC-to-local display translation allowance` | `RFC 3339 §5.2` | `../../public/rfc3339.txt lines 323-325` | `yes` |
 | `Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory` | `profile simplicity through mandatory structure` | `RFC 3339 §5.5; §5.6` | `../../public/rfc3339.txt lines 367-396; 399-452` | `yes` |
 | `Rfc3339FractionalSecondsAreOnlyRarelyUsedOption` | `fractional seconds as only rarely used option` | `RFC 3339 §5.3` | `../../public/rfc3339.txt lines 343-355` | `yes` |
 | `Rfc3339GeneratorsShouldUseUppercaseTAndZ` | `generator guidance for uppercase T and Z` | `RFC 3339 §5.6` | `../../public/rfc3339.txt lines 399-452` | `yes` |
@@ -39,9 +42,9 @@ surface in `src/contracts/rfc3339.rs`.
 | `4.3 Unknown Local Offset Convention` | `covered` | `Rfc3339UnknownLocalOffsetUsesZuluDesignator`, `Rfc3339LocalOffsetNotUnknown`, `Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint` | The worksheet now reflects RFC 3339 Section `4.3` as updated by RFC 9557 Section `2.2`. |
 | `4.4 Unqualified Local Time` | `covered` | `Rfc3339RequiresUtcRelationship`, `Rfc3339UnqualifiedLocalTimeForbidden` | No additional profile proposition is currently required. |
 | `5.1 Ordering` | `covered` | `Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding`, `Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits` | No additional profile proposition is currently required. |
-| `5.2 Human Readability` | `intentionally omitted` | parser and formatter policy surface | Guidance is operational and UX-oriented, not a stable proof token. |
+| `5.2 Human Readability` | `covered` | `Rfc3339ClientsShouldTransformDatesForLocalityDisplay`, `Rfc3339LocalityDisplayMayTranslateUtcToLocalTime` | The client-locality display guidance is now explicit rather than remaining implicit in formatter policy prose. |
 | `5.3 Rarely Used Options` | `covered` | `Rfc3339FractionalSecondsAreOnlyRarelyUsedOption` | No additional profile proposition is currently required. |
-| `5.4 Redundant Information` | `covered indirectly` | `Rfc3339UsesExtendedCalendarDate`, `Rfc3339UsesFullTime` | The grammar excludes redundant weekday material, but we have no first-class redundancy token. |
+| `5.4 Redundant Information` | `covered` | `Rfc3339TimestampExcludesRedundantWeekdayInformation` | The profile now carries an explicit no-redundant-weekday proposition instead of relying on indirect grammar shape alone. |
 | `5.5 Simplicity` | `covered` | `Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory` | No additional profile proposition is currently required. |
 | `5.6 Internet Date/Time Format` | `covered` | the full `Rfc3339*` grammar family above; `Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator` | The space-separator note is represented explicitly, while parser and formatter seams remain strict to the core `T`-separated profile. |
 | `5.7 Restrictions` | `covered elsewhere` | `Rfc3339LeapSecondGenerationRequiresPriorAnnouncement`, ISO range and leap-second laws | Month/day range and leap-second bounds remain intentionally shared with the ISO contract surface. |

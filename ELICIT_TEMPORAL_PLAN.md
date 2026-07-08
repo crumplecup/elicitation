@@ -35,6 +35,413 @@ Initial landed runtime slice:
 - named result aliases for the proof-carrying exchange shapes that would
   otherwise violate the workspace's type-complexity lint policy
 
+## Current Closure Checklist
+
+The current remaining work is narrow enough to close systematically rather than
+continuing with open-ended audits.
+
+- [x] Close the CalConnect CC 18011 explicit-interval surface in code.
+  Dedicated explicit-interval contracts, descriptors, proof aggregates,
+  proof branches, and parser/formatter seams now exist for duration
+  substitution, trailing higher-order component inheritance, and
+  leading-shift propagation.
+- [x] Thread the explicit-interval carrier through the CalConnect repeat-rule
+  recurrence seam without collapsing the embedded interval family.
+  `CC 18012:2018 §6.4` complete recurring representations now preserve the
+  choice between an ISO complete interval and a CalConnect explicit interval,
+  and the exchange result carries the embedded interval proof branch family.
+- [x] Extend proof-composition worksheet concordance for the CalConnect
+  interval and recurrence bundles.
+  `contracts_proof_composition.rs.md` now records the explicit temporal,
+  explicit-duration, explicit-interval, selection, repeat-rule, and recurring
+  interval-with-repeat-rule evidence families explicitly.
+- [x] Add CalConnect trait worksheet concordance for the new interval and
+  recurrence seams.
+  The staged worksheet set now includes `traits_calconnect.rs.md`, tying the
+  public doorway methods to their exact ISO 8601-2 and CalConnect clauses.
+- [x] Tighten exact ISO clause citations where the preserved local preview
+  corpus exposes authoritative numbering without guesswork.
+- [ ] Re-walk the staged worksheets and only mark a module complete after the
+  contract symbols, proof composition, trait seams, and doc comments all agree.
+
+## Trait Connectivity Checklist
+
+The contract surface is no longer the primary uncertainty. The remaining
+architectural question is trait connectivity: does every meaningful contract
+actually cross a trait seam as a proof sidecar, or are some contracts stranded
+inside `proof_composition.rs` as dormant evidence types?
+
+This checklist closes that gap methodically.
+
+### Connectivity invariants
+
+Every trait seam in `elicit_temporal` should satisfy all of the following:
+
+- [ ] Leaf parse or construct methods return neutral descriptors plus explicit
+  proof sidecars for every semantic branch established at that seam.
+- [ ] Non-leaf methods require proof sidecars for every semantic precondition
+  they rely on.
+- [ ] Non-leaf methods return fresh proof sidecars for every semantic
+  postcondition they establish.
+- [ ] Every returned postcondition has an explicit `ProvableFrom` derivation
+  path from a named evidence bundle.
+- [ ] No method collapses a meaningful branch family into a single coarse
+  `Established<...Valid>` token when downstream consumers may lawfully depend
+  on the finer distinction.
+- [ ] Every evidence bundle in `src/contracts/proof_composition.rs` is in one
+  of three states only:
+  - directly produced by a leaf seam
+  - required or re-issued by a higher-order seam
+  - explicitly staged for a future seam in this checklist
+- [ ] No evidence bundle is left architecturally orphaned.
+
+### Already-strong seams to preserve
+
+These seams already reflect the desired proof-sidecar grammar and should be
+treated as the reference shape for weaker families.
+
+- [x] Local date-time parse and format keep local non-fixed-instant semantics
+  explicit.
+- [x] Offset date-time parse and format keep fixed-instant semantics explicit.
+- [x] IXDTF parse and format keep suffix semantics split into named proof
+  branches instead of collapsing them into one aggregate token.
+- [x] ISO duration parse and format keep representation-family semantics split
+  into proof branches.
+- [x] ISO recurring interval parse and format keep complete versus
+  other-than-complete representation semantics split into proof branches.
+- [x] ISO interval parse and format keep extended-boundary, inherited
+  end-component, inherited-zone, and substitution semantics explicit.
+- [x] CalConnect explicit interval parse and format keep duration
+  substitution, end-component inheritance, and shift propagation explicit.
+- [x] Temporal set parse and format keep base expression validity separate
+  from range semantics validity.
+- [x] Date-time formula parse and format keep structural validity separate
+  from evaluation semantics validity.
+- [x] Conversion traits require argument-side proofs and emit result-side
+  conversion proofs.
+
+### Family-by-family orphan audit
+
+For each family below, completion means:
+
+1. The trait seam returns or requires the needed sidecars.
+2. The result alias names the exchange shape explicitly.
+3. The proof bundle has a visible `ProvableFrom` path.
+4. The corresponding worksheet and doc comments agree with the final shape.
+
+#### Priority A: flattened high-value families already modeled in proof composition
+
+- [x] Qualified temporal value.
+  Closed: `ParsedQualifiedTemporalValueResult` and
+  `FormattedQualifiedTemporalValueResult` now carry the qualified-value proof,
+  the qualification-expression proof, and the
+  `QualificationPlacementEvidence` branch explicitly.
+
+- [x] Explicit temporal form.
+  Closed: `ParsedExplicitTemporalFormResult` and
+  `FormattedExplicitTemporalFormResult` now carry explicit sidecars for
+  designator use, zero-omission authority, lowest-denoted-component
+  precision, and UTC-relationship syntax.
+
+- [x] Explicit duration.
+  Closed: `ParsedExplicitDurationResult` and
+  `FormattedExplicitDurationResult` now carry unit-designator usage,
+  representation family, negative-sign authority,
+  fractional-lowest-order-unit authority, and exactness-family semantics as
+  explicit sidecars.
+
+- [x] Grouped time scale unit.
+  Closed: `ParsedGroupedTimeScaleUnitResult` and
+  `FormattedGroupedTimeScaleUnitResult` now carry delimiter syntax,
+  non-empty unit carriage, continuity, coefficient declaration,
+  lower-order bounds, explicit-time-shift authority, truncation semantics,
+  and interval-conversion semantics as explicit sidecars.
+
+- [x] Selection expression.
+  Closed: `ParsedSelectionExpressionResult` and
+  `FormattedSelectionExpressionResult` now carry delimiter, vocabulary,
+  component-rule, nesting, single-instance, positional, and
+  duration-window semantics as explicit sidecars.
+
+- [x] Repeat rule.
+  Closed: `ParsedRepeatRuleResult` and `FormattedRepeatRuleResult` now carry
+  frequency, eligible-interval, embedded-selection, and
+  initial-start inheritance semantics as explicit sidecars.
+
+#### Priority B: ISO 8601-2 extension families that may still be too coarse
+
+- [x] Seasonal temporal expression.
+  Closed: `ParsedSeasonalTemporalExpressionResult` and
+  `FormattedSeasonalTemporalExpressionResult` now carry year-and-season form,
+  month-slot encoding, named-season declaration, and season-scope
+  declaration as explicit sidecars.
+
+- [x] Sub-year grouping expression.
+  Closed: `ParsedSubYearGroupingExpressionResult` and
+  `FormattedSubYearGroupingExpressionResult` now carry year-and-grouping
+  form, month-slot encoding, and the `SubYearGroupingKindEvidence` branch
+  explicitly across the seam.
+
+- [x] Unspecified-component expression.
+  Closed: `ParsedUnspecifiedComponentExpressionResult` and
+  `FormattedUnspecifiedComponentExpressionResult` now carry placeholder
+  syntax, unknown-value semantics, Level 1 right-tail masking, and Level 2
+  internal-component masking as explicit sidecars.
+
+#### Priority C: higher-order composition seams
+
+- [x] Date-time formula evaluation result provenance.
+  Closed: `EvaluatedDateTimeFormulaResult` now carries both
+  `Established<ExplicitTemporalFormValid>` and a dedicated
+  `Established<DateTimeFormulaEvaluationResultValid>` postcondition minted
+  from formula validity, declared evaluation semantics, and the produced
+  explicit-form proof.
+
+- [x] Recurring interval with repeat rule.
+  Closed: `ParsedRecurringIntervalWithRepeatRuleResult` and
+  `FormattedRecurringIntervalWithRepeatRuleResult` now preserve both embedded
+  law families: the interval-family proof branch and the attached repeat-rule
+  sidecars for frequency, eligible intervals, embedded selection, and
+  initial-start inheritance.
+
+- [x] Zone-resolution and named-zone higher abstractions.
+  Closed: `TemporalZoneFactory` now separates generic named-zone identity and
+  fixed-instant attachment evidence from IXDTF-specific suffix evidence,
+  establishes local-to-zone resolution authority through its own explicit seam,
+  and re-issues attachment, consistency, authority, and ambiguity-versus-gap
+  sidecars across the zone-resolution result family.
+
+### Audit procedure per checklist item
+
+Apply this exact sequence to each family before checking it off:
+
+- [ ] Confirm the standard clauses and worksheet entries for the family.
+- [ ] Inspect descriptor shape in `src/types.rs`.
+- [ ] Inspect evidence bundle shape in `src/contracts/proof_composition.rs`.
+- [ ] Inspect current trait parse, format, conversion, interval, zone, or
+  CalConnect seam.
+- [ ] Decide which semantics must cross the seam explicitly and which can
+  remain internal.
+- [ ] Add or refine result aliases so the exchange shape is named and stable.
+- [ ] Thread the argument-side and result-side proof sidecars through the trait
+  signatures.
+- [ ] Update worksheet notes and doc comments to match the final exchange
+  shape.
+- [ ] Re-run `markdownlint-cli2` on the touched document only.
+
+### Completion condition for the trait architecture
+
+This phase is complete only when all of the following are true:
+
+- [ ] Every meaningful evidence family has a non-orphaned exchange path.
+- [ ] Every higher-order trait method composes lower proofs instead of
+  bypassing them.
+- [ ] The strongest families in the codebase all follow the same sidecar
+  grammar, rather than mixing branch-rich and branch-poor exchange styles
+  arbitrarily.
+- [ ] Consumers can obtain complex guarantees by reading trait signatures and
+  result aliases alone, without hidden semantic assumptions.
+
+## Associated Native Trait Family Refactor Checklist
+
+The current temporal accord is strong on neutral descriptors and proof
+sidecars, but weak on native carrier integration. Parsers lawfully accept
+`&str`, and formatters lawfully emit `String`, yet too many higher-order seams
+still treat text as the unofficial type of time. That is the wrong long-term
+shape for backends such as `elicit_chrono`, `elicit_jiff`, and `elicit_time`,
+whose real working values are native temporal carriers rather than strings.
+
+The refactor target is a two-layer architecture:
+
+- the existing neutral descriptor accord remains the shared, object-safe law
+  boundary across independent crates
+- a new associated-type trait family carries backend-native temporal values at
+  compile time, with descriptor/native exchanges governed by the same proof
+  sidecar pattern
+
+### Architectural invariants
+
+- [ ] Keep the neutral descriptor accord as the canonical inter-crate contract
+  language. Descriptors and propositions remain the shared legal vocabulary.
+- [ ] Restrict `&str` and `String` to explicit wire-text seams only:
+  parse, format, stable identifiers, standards reporting, and similar textual
+  interchange boundaries.
+- [ ] Do not use `String` as a stand-in for local date-times, offset
+  date-times, durations, intervals, named zones, or other temporal values at
+  non-wire seams.
+- [x] Treat semantic native-carrier traits as the primary interface, even when
+  that means surrendering object safety.
+- [ ] Preserve object safety only for seams that are inherently textual or
+  metadata-oriented, where `dyn` remains lawful without collapsing temporal
+  semantics into ad hoc concrete wrapper types.
+- [ ] Do not invent framework-owned concrete temporal runtime types merely to
+  preserve object safety; that would turn `elicit_temporal` into a time
+  library instead of a trait accord.
+- [ ] Require every native/descriptive exchange to follow the one true
+  sidecar pattern: arguments carry explicit `Established<P>` sidecars, and
+  results return fresh `Established<P>` sidecars minted from named evidence
+  bundles through `ProvableFrom`.
+
+### Family design checklist
+
+- [x] Introduce a root associated-type family trait for temporal native
+  carriers. Working name to confirm during implementation:
+  `TemporalNativeProps`.
+- [x] Partition the native family into coherent subfamilies rather than one
+  monolithic bag of types.
+  Minimum expected partitions:
+  - [x] civil date/time carriers
+  - [x] fixed-instant and offset carriers
+  - [x] named-zone and zone-resolution carriers
+  - [x] duration, interval, and recurrence carriers
+  - [x] ISO 8601-2 / CalConnect extension carriers
+- [x] For each subfamily, define the minimum lawful associated carriers before
+  any trait refactor begins.
+  Minimum expected carrier inventory:
+  - [ ] calendar date
+  - [ ] reduced calendar date
+  - [ ] ordinal date
+  - [ ] week date
+  - [ ] local time
+  - [ ] reduced local time
+  - [ ] UTC offset
+  - [ ] local date-time
+  - [ ] offset date-time / fixed instant
+  - [ ] named time zone
+  - [ ] zoned date-time
+  - [x] duration
+  - [x] interval
+  - [x] recurring interval
+  - [x] qualified temporal value / explicit temporal form where a backend has
+    a meaningful native representation
+- [x] Decide explicitly which extension contracts remain descriptor-only
+  because no stable cross-backend native carrier exists yet, and document that
+  choice instead of leaving it implicit.
+  `NATIVE_TRAIT_FAMILIES.md` now records the currently descriptor-only
+  extension leftovers: seasonal expressions, sub-year grouping expressions,
+  unspecified-component expressions, selection expressions, repeat rules, and
+  recurring intervals with repeat rules.
+
+### Trait-family checklist
+
+- [ ] Preserve descriptor-oriented parse traits as lawful text-entry seams.
+- [ ] Preserve descriptor-oriented format traits as lawful text-exit seams.
+- [ ] Reclassify descriptor-only dynamic traits as secondary compatibility
+  doors rather than the primary temporal abstraction.
+- [x] Add a native constructor family for lawful descriptor-to-native
+  realization.
+  Each method should consume a neutral descriptor plus the full required proof
+  sidecars and return a native carrier plus fresh postcondition sidecars.
+- [x] Add a native projection family for lawful native-to-descriptor
+  reflection.
+  Each method should consume a backend-native temporal carrier and return the
+  corresponding descriptor plus proof sidecars that make the extracted
+  semantics explicit.
+- [x] Add native zone-resolution and named-zone attachment families so the
+  zone layer works on backend-native local, offset, and zoned values instead
+  of forcing callers through string round-trips.
+- [x] Add native interval, recurrence, and duration families so persistence and
+  analytics consumers can work with actual temporal carriers rather than
+  reparsed text.
+- [x] Add a first native interval-ordering seam over backend fixed-instant
+  carriers.
+- [x] Add conditional native duration, interval, and recurrence bridge traits
+  for backends whose upstream span carriers preserve enough structure to
+  re-issue the lawful descriptor-side branches.
+- [x] Split the span associated-type family so duration, interval, and
+  recurrence can be supported independently rather than as one forced bundle.
+- [x] Split the extension associated-type family so higher-order carriers can
+  be supported independently rather than as one forced bundle.
+- [x] Add a user-facing proven-carrier layer above the raw native bridges so
+  higher-order methods aggregate sidecars into named semantic bundles instead
+  of loose proof tuples.
+- [x] Add native extension bridges and a native date-time-formula evaluation
+  seam for the currently modeled higher-order carriers.
+- [ ] Keep `TemporalReporter` textual and metadata-oriented unless a concrete
+  non-textual capability contract becomes necessary.
+- [x] Re-evaluate the current `TemporalBackend` blanket supertrait: if it
+  implies a fully object-safe aggregate backend as the architectural center,
+  replace that framing with associated trait families plus narrower
+  descriptor-text compatibility seams.
+
+### Proof-sidecar checklist for native exchanges
+
+- [x] For every native constructor seam, list the exact descriptor-side proof
+  preconditions it requires.
+- [x] For every native projection seam, list the exact native-side evidence
+  bundle that authorizes re-issuing descriptor proofs.
+- [x] For every native result, define named result aliases so the exchange
+  shape stays readable and clippy-compliant.
+- [ ] For every new postcondition, define a named evidence bundle in
+  `src/contracts/proof_composition.rs`.
+- [ ] For every new evidence bundle, add the `ProvableFrom` derivation path
+  immediately rather than staging it implicitly.
+- [ ] Do not mint coarse aggregate proofs where downstream consumers may
+  lawfully depend on finer branch families.
+- [x] Ensure native zone-resolution seams preserve ambiguity versus gap
+  branches, attachment evidence, offset consistency, and revision authority as
+  separate sidecars.
+
+### Orphan-prevention checklist
+
+- [ ] Audit existing propositions and evidence bundles for contracts that are
+  currently descriptor-only but should also participate in native seams.
+- [ ] Audit each new associated carrier to ensure it is connected to at least
+  one constructor seam, one projection seam, or one higher-order composition
+  seam.
+- [ ] Reject any associated type that exists only for symmetry but carries no
+  lawful contract exchange.
+- [ ] Reject any proof proposition that becomes unreachable once native seams
+  exist.
+
+### Migration sequence
+
+Apply the refactor in this order instead of scattering associated types
+through the crate ad hoc:
+
+- [x] Step 1: write the native-family design note and finalize the root trait
+  and subfamily names.
+- [x] Step 2: inventory every current `String`-returning or string-mediated
+  non-wire seam and classify it as either lawful text boundary or refactor
+  target.
+- [x] Step 3: introduce the associated-type family traits and placeholder
+  result aliases in `elicit_temporal` without removing the descriptor accord.
+- [x] Step 4: redefine the architectural center around native associated trait
+  families rather than an all-in-one object-safe backend supertrait.
+- [x] Step 4: add descriptor-to-native and native-to-descriptor bridge traits
+  for one narrow vertical slice first.
+  Recommended first slice:
+  - [x] local date-time
+  - [x] offset date-time
+  - [x] named zone
+  - [x] zoned date-time
+- [x] Step 5: thread proof sidecars and `ProvableFrom` bundles through that
+  first slice until no string round-trips remain at the higher-order seam.
+- [x] Step 6: extend the same pattern to duration, interval, and recurrence
+  families.
+- [ ] Step 7: extend the same pattern to ISO 8601-2 / CalConnect higher-order
+  forms where a backend-native carrier is justified.
+- [ ] Step 8: implement the new families in `elicit_time`, `elicit_chrono`,
+  and `elicit_jiff`, using their real native carriers instead of strings.
+- [ ] Step 9: update downstream consumers and persistence crates to depend on
+  native seams where appropriate, while preserving the descriptor accord as
+  the stable cross-crate law boundary.
+- [ ] Step 10: remove temporary string-mediated helper seams only after the
+  native trait families fully cover the same contract guarantees.
+
+### Definition of done for this refactor
+
+- [ ] No non-wire temporal seam uses `String` as the de facto native temporal
+  value.
+- [ ] Native backend crates can expose their real carrier types through
+  associated trait families without sacrificing proof-sidecar discipline.
+- [ ] The descriptor accord remains standards-anchored, and object safety is
+  retained only where it does not force fake concrete time types.
+- [ ] The native-family layer composes with the descriptor accord through
+  explicit `ProvableFrom` exchanges only.
+- [ ] No meaningful temporal contract is left orphaned from both the
+  descriptor and native layers.
+
 ## Phase 0: Standards Corpus and Research Method
 
 ### 0.1 Establish the normative source hierarchy

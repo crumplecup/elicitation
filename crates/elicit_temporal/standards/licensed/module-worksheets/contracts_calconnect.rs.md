@@ -1,6 +1,6 @@
 # Citation Worksheet: `src/contracts/calconnect.rs`
 
-This worksheet stages exhaustive coverage review for the CalConnect contract
+This worksheet records exhaustive coverage review for the CalConnect contract
 surface in `src/contracts/calconnect.rs`.
 
 ## Source set
@@ -28,12 +28,17 @@ surface in `src/contracts/calconnect.rs`.
 | `ExplicitDateWithShiftUsesDateThenShiftConcatenation` | `date with shift` | `CC 18011:2018 §4.3.4.1` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `ExplicitTimeOfDayWithShiftUsesTimeThenShiftConcatenation` | `time of day with time shift` | `CC 18011:2018 §4.3.4.2` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `ExplicitDateTimeWithShiftUsesDateTimeThenShiftConcatenation` | `date and time with shift` | `CC 18011:2018 §4.3.4.3` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
+| `ExplicitTimeIntervalUsesDateTimeEndpointFamily` | `time interval endpoint family` | `CC 18011:2018 §6` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
+| `ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary` | `time interval duration substitution` | `CC 18011:2018 §6` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
+| `ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents` | `time interval trailing endpoint inheritance` | `CC 18011:2018 §6` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
+| `ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden` | `time interval leading shift propagation` | `CC 18011:2018 §6` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitUsesGroupingDesignators` | `unit definition` | `CC 18011:2018 §5.1` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits` | `unit definition` | `CC 18011:2018 §5.1` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitDefinitionIsContinuous` | `unit definition continuity` | `CC 18011:2018 §5.1` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitValueCarriesExplicitCoefficient` | `unit value` | `CC 18011:2018 §5.2` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds` | `group boundary adherence` | `CC 18011:2018 §5.3.2` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder` | `truncation of partial units` | `CC 18011:2018 §5.3.4` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
+| `GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift` | `representation with time shift` | `CC 18011:2018 §5.3` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `GroupedTimeScaleUnitConvertsToTimeInterval` | `conversion to basic time scale units` | `CC 18011:2018 §5.3.3` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `ExplicitDurationUsesDurationalUnitDesignators` | `durational units` | `CC 18011:2018 §7.2` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `ExplicitDurationRepresentationKindDeclared` | `duration representation kind` | `CC 18011:2018 §7.3` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
@@ -50,8 +55,17 @@ surface in `src/contracts/calconnect.rs`.
 | `DateTimeFormulaEvaluationModeDeclared` | `simple, composite, and precedence duration evaluation` | `CC 18011:2018 §8.3-§8.5` | `../../public/calconnect-cc-18011-2018.xml` | `yes` |
 | `SelectionExpressionUsesSelectionDelimiters` | `selection expression delimiters` | `CC 18012:2018 §5.1` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `SelectionExpressionUsesRecognizedSelectionRuleVocabulary` | `selection rules vocabulary` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleMonthUsesMonthExpression` | `month selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleWeekUsesWeekExpression` | `week selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleDayOfMonthUsesDayExpression` | `day-of-month selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleWeekDayUsesDayOfWeekExpression` | `weekday selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression` | `ordinal-day-of-year selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleHourUsesHourExpression` | `hour selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleMinuteUsesMinuteExpression` | `minute selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRuleSecondUsesSecondExpression` | `second selection rule family` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `SelectionRulesApplyWithinSelectedResults` | `selection rules application scope` | `CC 18012:2018 §5.3` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `SelectionExpressionMaySelectSingleInstance` | `selection expression single-instance semantics` | `CC 18012:2018 §5.1` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
+| `SelectionRulePositionUsesInstanceDesignatorSuffix` | `position rule syntax` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `SelectionRulePositionAppliesLast` | `selection rule position ordering` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `SelectionWithDurationUsesDurationSuffix` | `selection with duration syntax` | `CC 18012:2018 §5.2` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
 | `RepeatRuleUsesFrequencyDesignator` | `repeat rule frequency designator` | `CC 18012:2018 §6.3.1` | `../../public/calconnect-cc-18012-2018.xml` | `yes` |
@@ -63,8 +77,8 @@ surface in `src/contracts/calconnect.rs`.
 ## Notes
 
 - This file already carries direct public section citations in code comments.
-- The remaining task is exhaustive CalConnect coverage review, not citation
-  tightening.
+- Exhaustive CalConnect clause coverage is complete for the current public XML
+  source set staged in this workspace.
 - The `Source artifact` column points at local public XML corpora already staged
   in `standards/public`.
 - `calconnect.rs` remains the right home for primitive CalConnect
@@ -73,18 +87,17 @@ surface in `src/contracts/calconnect.rs`.
   belongs in the trait worksheets, so no proposition migration is currently
   warranted.
 
-## Remaining Coverage Checklist
-
 ## CalConnect Clause Coverage Audit
 
 | Source clause family | Coverage status | Current surface anchors | Follow-up |
 | --- | --- | --- | --- |
 | `CC 18011:2018 §4.3 explicit forms` | `covered` | `ExplicitTemporalFormUsesDesignatorSymbols`, explicit time-of-day, time-shift, date-with-shift, date-time-with-shift, omission, precision, and reduced-time contracts | Negative-value, decade, and century explicit-form details remain intentionally shared with the broader ISO and extended surfaces. |
-| `CC 18011:2018 §5 grouped time scale units` | `covered` | `GroupedTimeScaleUnitUsesGroupingDesignators`, `GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits`, `GroupedTimeScaleUnitDefinitionIsContinuous`, `GroupedTimeScaleUnitValueCarriesExplicitCoefficient`, boundary, conversion, and truncation contracts | Revisit only if grouped-unit representation-with-shift semantics need their own first-class token. |
+| `CC 18011:2018 §5 grouped time scale units` | `covered` | `GroupedTimeScaleUnitUsesGroupingDesignators`, `GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits`, `GroupedTimeScaleUnitDefinitionIsContinuous`, `GroupedTimeScaleUnitValueCarriesExplicitCoefficient`, `GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds`, `GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift`, `GroupedTimeScaleUnitConvertsToTimeInterval`, and `GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder` | Grouped-unit representation-with-shift semantics now have a first-class token. |
+| `CC 18011:2018 §6 explicit time interval` | `covered` | `ExplicitTimeIntervalUsesDateTimeEndpointFamily`, `ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary`, `ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents`, `ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden` | Subclause-level numbering still depends on a stronger public section breakdown than the XML headings expose directly. |
 | `CC 18011:2018 §7 explicit duration` | `covered` | `ExplicitDurationUsesDurationalUnitDesignators`, representation-kind, composite, precedence, negative, fractional, exact, context-dependent, and speculative duration contracts | No further clause-level proposition is currently required. |
 | `CC 18011:2018 §8 evaluation of date and time with duration` | `covered` | `DateTimeFormulaCombinesTemporalValueWithDuration`, `DateTimeFormulaUsesCarryOverSemantics`, `DateTimeFormulaTruncatesAtComponentBoundaries`, `DateTimeFormulaEvaluationModeDeclared` | Higher-detail evaluation proofs may later belong in proof-composition worksheets. |
-| `CC 18012:2018 §5 selection rules` | `covered` | `SelectionExpressionUsesSelectionDelimiters`, `SelectionExpressionUsesRecognizedSelectionRuleVocabulary`, `SelectionRulesApplyWithinSelectedResults`, `SelectionExpressionMaySelectSingleInstance`, `SelectionRulePositionAppliesLast`, `SelectionWithDurationUsesDurationSuffix` | The remaining question is whether the per-component selection vocabulary deserves finer split tokens. |
-| `CC 18012:2018 §6 recurring time intervals with repeat rules` | `covered` | `RepeatRuleUsesFrequencyDesignator`, `RepeatRuleDeclaresEligibleTimeIntervals`, `RepeatRuleSelectionAppliesWithinEligibleIntervals`, `RecurringIntervalWithRepeatRuleUsesCompleteRepresentation`, `RepeatRuleEvaluationInheritsInitialStartComponentInformation` | Repeat-rule compatibility commentary beyond the core representation remains intentionally unstaged. |
+| `CC 18012:2018 §5 selection rules` | `covered` | `SelectionExpressionUsesSelectionDelimiters`, `SelectionExpressionUsesRecognizedSelectionRuleVocabulary`, `SelectionRuleMonthUsesMonthExpression`, `SelectionRuleWeekUsesWeekExpression`, `SelectionRuleDayOfMonthUsesDayExpression`, `SelectionRuleWeekDayUsesDayOfWeekExpression`, `SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression`, `SelectionRuleHourUsesHourExpression`, `SelectionRuleMinuteUsesMinuteExpression`, `SelectionRuleSecondUsesSecondExpression`, `SelectionRulesApplyWithinSelectedResults`, `SelectionExpressionMaySelectSingleInstance`, `SelectionRulePositionUsesInstanceDesignatorSuffix`, `SelectionRulePositionAppliesLast`, `SelectionWithDurationUsesDurationSuffix` | The per-rule grammar vocabulary is now represented explicitly; RFC-compatibility notes beyond the surface grammar remain intentionally unstaged. |
+| `CC 18012:2018 §6 recurring time intervals with repeat rules` | `covered` | `RepeatRuleUsesFrequencyDesignator`, `RepeatRuleDeclaresEligibleTimeIntervals`, `RepeatRuleSelectionAppliesWithinEligibleIntervals`, `RecurringIntervalWithRepeatRuleUsesCompleteRepresentation`, `RepeatRuleEvaluationInheritsInitialStartComponentInformation` | The public seam now preserves whether the embedded interval uses the ISO complete or CalConnect explicit family; repeat-rule compatibility commentary beyond the core representation remains intentionally unstaged. |
 
 - [x] Walk CalConnect CC 18011 clause-by-clause and mark which substantive clauses are intentionally represented elsewhere in `elicit_temporal`.
 - [x] Walk CalConnect CC 18012 clause-by-clause and do the same for recurrence and selection semantics.
