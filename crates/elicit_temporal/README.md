@@ -16,9 +16,14 @@ This crate is intentionally contract-first. Its current slice focuses on:
 - proposition naming
 - proof-composition bundles
 - neutral temporal descriptors
-- object-safe parser, formatter, zone, conversion, interval, and reporter traits
+- descriptor-oriented parser, formatter, zone, conversion, interval, and
+  reporter traits
+- associated native-carrier trait families for backend-owned temporal values
 - composite IXDTF timestamp descriptors for suffix-aware interchange
 - `ProvableFrom` exchange seams for proof sidecars
+
+See [NATIVE_TRAIT_FAMILIES.md](NATIVE_TRAIT_FAMILIES.md) for the native-family
+refactor direction and the finalized associated-type family names.
 
 ## Standards
 

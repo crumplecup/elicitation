@@ -28,14 +28,16 @@ use crate::{
     ConversionDropsSubsecondPrecision, ConversionPreservesRepresentedInstant,
     ConversionPreservesTemporalOrdering, ConversionRequiresExplicitAuthorityWhenLossy,
     ConversionSourceSemanticKindDeclared, ConversionTargetSemanticKindDeclared,
-    DateIdentifiesPositionWithinCalendar, DateTimeFormulaCombinesTemporalValueWithDuration,
-    DateTimeFormulaEvaluationModeDeclared, DateTimeFormulaTruncatesAtComponentBoundaries,
-    DateTimeFormulaUsesCarryOverSemantics, DecadeOrdinalInRangeZeroToNineHundredNinetyNine,
+    CriticalTimeZoneSuffixInconsistencyRequiresAction, DateIdentifiesPositionWithinCalendar,
+    DateTimeFormulaCombinesTemporalValueWithDuration, DateTimeFormulaEvaluationModeDeclared,
+    DateTimeFormulaTruncatesAtComponentBoundaries, DateTimeFormulaUsesCarryOverSemantics,
+    DecadeOrdinalInRangeZeroToNineHundredNinetyNine,
     DurationAlternativeFormCarriesCompleteCalendarAndClockComponents,
     DurationAlternativeFormRequiresPartnerAgreement,
     DurationAlternativeFormUsesDateAndTimeComponentSlots,
     DurationTimeComponentsFollowTimeDesignator, DurationUsesPeriodDesignator,
     DurationWeekFormNotMixedWithCalendarOrClockUnits, DurationWeekFormUsesSingleWeekUnit,
+    ElectiveTimeZoneSuffixInconsistencyMayBeHandled,
     EnhancedIntervalLevelOnePermitsTerminalBoundaryQualification,
     EnhancedIntervalLevelTwoPermitsBeforeOrAfterBoundaryQualification,
     EnhancedIntervalLevelTwoPermitsInternalBoundaryQualification,
@@ -51,7 +53,10 @@ use crate::{
     ExplicitDurationRepresentationKindDeclared, ExplicitDurationUsesDurationalUnitDesignators,
     ExplicitTemporalFormMayOmitZeroValuedComponents, ExplicitTemporalFormUsesDesignatorSymbols,
     ExplicitTemporalPrecisionUsesLowestDenotedComponent,
-    ExplicitTimeOfDayForbidsEndOfDayRepresentation,
+    ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary,
+    ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden,
+    ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents,
+    ExplicitTimeIntervalUsesDateTimeEndpointFamily, ExplicitTimeOfDayForbidsEndOfDayRepresentation,
     ExplicitTimeOfDayUsesHourMinuteSecondUnitDesignators, ExplicitTimeOfDayUsesTimeDesignator,
     ExplicitTimeOfDayWithShiftUsesTimeThenShiftConcatenation,
     ExplicitTimeShiftBareZuluRepresentsUtcZero, ExplicitTimeShiftPayloadUsesExplicitTimeOfDay,
@@ -63,6 +68,7 @@ use crate::{
     GroupQualificationAppliesToMarkedAndMoreSignificantComponents,
     GroupQualificationUsesImmediateRightPlacement,
     GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits, GroupedTimeScaleUnitConvertsToTimeInterval,
+    GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift,
     GroupedTimeScaleUnitDefinitionIsContinuous,
     GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds,
     GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder, GroupedTimeScaleUnitUsesGroupingDesignators,
@@ -106,16 +112,17 @@ use crate::{
     LocalTimeHasHourMinuteSecond, LocalTimeScaleMayBeStandardOrNonUtcBased,
     LocalTimeUsesLocallyApplicableTimeScale, MinuteInRangeZeroToFiftyNine,
     NamedTimeZoneAnnotationPresent, NamedTimeZoneIdentifierExcludesDotSegments,
-    NamedTimeZoneIsNotNumericOffsetAlias, NamedTimeZoneMeaningUsesCurrentTzdbRules,
-    NamedTimeZoneRetainsCivilRuleIdentity, NamedTimeZoneUsesIanaIdentifier,
-    NegativeCalendarYearUsesLeadingMinusSign, NumericOffsetDoesNotIdentifyNamedZone,
-    OffsetDateTimeIdentifiesSingleInstant, OffsetTimeZoneAnnotationPresent,
-    OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset, OffsetTimeZoneRepeatsTimestampOffset,
-    OffsetTimeZoneUseIsStronglyDiscouraged, OnOrAfterDateUsesTrailingDoubleDotQualifier,
-    OpenIntervalBoundaryDeclared, OrdinalDateHasYearAndDayOfYear,
-    OrdinalDayInRangeOneToThreeHundredSixtySix, PrecisionReductionDeclared,
-    ProlepticGregorianDatesBefore1583RequireMutualAgreement, QualificationScopeDeclared,
-    RecurringIntervalCarriesIntervalComponent, RecurringIntervalCountIsNonNegativeWhenBounded,
+    NamedTimeZoneIdentifierIsCaseSensitive, NamedTimeZoneIsNotNumericOffsetAlias,
+    NamedTimeZoneMeaningUsesCurrentTzdbRules, NamedTimeZoneRetainsCivilRuleIdentity,
+    NamedTimeZoneUsesIanaIdentifier, NegativeCalendarYearUsesLeadingMinusSign,
+    NumericOffsetDoesNotIdentifyNamedZone, OffsetDateTimeIdentifiesSingleInstant,
+    OffsetTimeZoneAnnotationPresent, OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset,
+    OffsetTimeZoneRepeatsTimestampOffset, OffsetTimeZoneUseIsStronglyDiscouraged,
+    OnOrAfterDateUsesTrailingDoubleDotQualifier, OpenIntervalBoundaryDeclared,
+    OrdinalDateHasYearAndDayOfYear, OrdinalDayInRangeOneToThreeHundredSixtySix,
+    PrecisionReductionDeclared, ProlepticGregorianDatesBefore1583RequireMutualAgreement,
+    QualificationScopeDeclared, RecurringIntervalCarriesIntervalComponent,
+    RecurringIntervalCountIsNonNegativeWhenBounded,
     RecurringIntervalOmittedCountDenotesUnboundedOccurrences,
     RecurringIntervalUsesCompleteTimeIntervalRepresentation,
     RecurringIntervalUsesOtherThanCompleteTimeIntervalRepresentation,
@@ -127,26 +134,33 @@ use crate::{
     RepeatRuleDeclaresEligibleTimeIntervals,
     RepeatRuleEvaluationInheritsInitialStartComponentInformation,
     RepeatRuleSelectionAppliesWithinEligibleIntervals, RepeatRuleUsesFrequencyDesignator,
-    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator, Rfc3339FractionUsesDotSeparator,
+    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator,
+    Rfc3339ClientsShouldTransformDatesForLocalityDisplay, Rfc3339FractionUsesDotSeparator,
     Rfc3339FractionalSecondsAreOnlyRarelyUsedOption, Rfc3339GeneratorsShouldUseUppercaseTAndZ,
     Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
     Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits,
     Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding, Rfc3339LocalOffsetNotUnknown,
-    Rfc3339OffsetIsUtcOrNumeric, Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
+    Rfc3339LocalityDisplayMayTranslateUtcToLocalTime, Rfc3339OffsetIsUtcOrNumeric,
+    Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
     Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory, Rfc3339RequiresUtcRelationship,
+    Rfc3339TimestampExcludesRedundantWeekdayInformation,
     Rfc3339UnknownLocalOffsetUsesZuluDesignator, Rfc3339UnqualifiedLocalTimeForbidden,
     Rfc3339UsesExtendedCalendarDate, Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime,
     RoundingModeDeclared, SeasonCodeDeclaresNamedSeason, SeasonCodeDeclaresSeasonScope,
     SeasonalExpressionUsesSeasonCodeInMonthSlot, SeasonalExpressionUsesYearAndSeasonForm,
     SecondInRangeZeroToSixty, SelectionExpressionMaySelectSingleInstance,
     SelectionExpressionUsesRecognizedSelectionRuleVocabulary,
-    SelectionExpressionUsesSelectionDelimiters, SelectionRulePositionAppliesLast,
-    SelectionRulesApplyWithinSelectedResults, SelectionWithDurationUsesDurationSuffix,
-    SignificantDigitYearCountIsPositiveInteger, SignificantDigitYearUsesTrailingSSuffix,
-    SpeculativeDurationSemanticsDeclared, StandardTimeDerivedFromUtcByLocalShift,
-    StandardTimeOfDayUsesStandardTimeScale, SubYearGroupingCodeDeclaresQuadrimester,
-    SubYearGroupingCodeDeclaresQuarter, SubYearGroupingCodeDeclaresSemestral,
-    SubYearGroupingExpressionUsesGroupingCodeInMonthSlot,
+    SelectionExpressionUsesSelectionDelimiters, SelectionRuleDayOfMonthUsesDayExpression,
+    SelectionRuleHourUsesHourExpression, SelectionRuleMinuteUsesMinuteExpression,
+    SelectionRuleMonthUsesMonthExpression, SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression,
+    SelectionRulePositionAppliesLast, SelectionRulePositionUsesInstanceDesignatorSuffix,
+    SelectionRuleSecondUsesSecondExpression, SelectionRuleWeekDayUsesDayOfWeekExpression,
+    SelectionRuleWeekUsesWeekExpression, SelectionRulesApplyWithinSelectedResults,
+    SelectionWithDurationUsesDurationSuffix, SignificantDigitYearCountIsPositiveInteger,
+    SignificantDigitYearUsesTrailingSSuffix, SpeculativeDurationSemanticsDeclared,
+    StandardTimeDerivedFromUtcByLocalShift, StandardTimeOfDayUsesStandardTimeScale,
+    SubYearGroupingCodeDeclaresQuadrimester, SubYearGroupingCodeDeclaresQuarter,
+    SubYearGroupingCodeDeclaresSemestral, SubYearGroupingExpressionUsesGroupingCodeInMonthSlot,
     SubYearGroupingExpressionUsesYearAndGroupingForm, SubsecondDigitsPreserved,
     TemporalSetCarriesMultipleMembers, TemporalSetForbidsInternalWhitespace,
     TemporalSetMemberSeparatorDeclared, TemporalSetOpenRangeUsesBoundaryDoubleDot,
@@ -166,7 +180,7 @@ use crate::{
     WeekNumberInRangeOneToFiftyThree, WeekdayInRangeOneToSeven,
     ZoneOffsetResolvedForRepresentedInstant, ZoneTransitionAmbiguityDeclared,
     ZoneTransitionDisambiguationAuthorityDeclared, ZoneTransitionGapDeclared,
-    ZoneTransitionGapHandlingAuthorityDeclared,
+    ZoneTransitionGapHandlingAuthorityDeclared, ZuluTimeZoneSuffixAvoidsOffsetInconsistency,
 };
 
 macro_rules! structural_prop {
@@ -337,6 +351,10 @@ structural_prop!(
     "Rfc3339GenerationGuidanceValid"
 );
 
+/// Aggregate proof that RFC 3339 display-localization guidance is structurally valid.
+pub struct Rfc3339DisplayGuidanceValid;
+structural_prop!(Rfc3339DisplayGuidanceValid, "Rfc3339DisplayGuidanceValid");
+
 /// Aggregate proof that an RFC 9557 IXDTF timestamp is structurally valid.
 pub struct IxdtfTimestampValid;
 structural_prop!(IxdtfTimestampValid, "IxdtfTimestampValid");
@@ -390,9 +408,34 @@ structural_prop!(
     "IxdtfAdditionalInformationSemanticsValid"
 );
 
+/// Aggregate proof that a named zone carries generic named-zone identity.
+pub struct NamedTimeZoneIdentityValid;
+structural_prop!(NamedTimeZoneIdentityValid, "NamedTimeZoneIdentityValid");
+
 /// Aggregate proof that a timestamp carries named-zone identity.
 pub struct ZonedDateTimeHasNamedZone;
 structural_prop!(ZonedDateTimeHasNamedZone, "ZonedDateTimeHasNamedZone");
+
+/// Aggregate proof that a critical time-zone suffix inconsistency is handled lawfully.
+pub struct CriticalTimeZoneInconsistencyHandlingValid;
+structural_prop!(
+    CriticalTimeZoneInconsistencyHandlingValid,
+    "CriticalTimeZoneInconsistencyHandlingValid"
+);
+
+/// Aggregate proof that an elective time-zone suffix inconsistency is handled lawfully.
+pub struct ElectiveTimeZoneInconsistencyHandlingValid;
+structural_prop!(
+    ElectiveTimeZoneInconsistencyHandlingValid,
+    "ElectiveTimeZoneInconsistencyHandlingValid"
+);
+
+/// Aggregate proof that a `Z`-based time-zone timestamp avoids offset inconsistency.
+pub struct ZuluTimeZoneInconsistencyAvoidanceValid;
+structural_prop!(
+    ZuluTimeZoneInconsistencyAvoidanceValid,
+    "ZuluTimeZoneInconsistencyAvoidanceValid"
+);
 
 /// Aggregate proof that the timestamp offset agrees with the named-zone rules.
 pub struct OffsetConsistentWithNamedZone;
@@ -551,6 +594,31 @@ structural_prop!(
 pub struct ExplicitDurationValid;
 structural_prop!(ExplicitDurationValid, "ExplicitDurationValid");
 
+/// Aggregate proof that a CalConnect explicit time-interval form is structurally valid.
+pub struct ExplicitTimeIntervalValid;
+structural_prop!(ExplicitTimeIntervalValid, "ExplicitTimeIntervalValid");
+
+/// Aggregate proof that explicit-interval duration-substitution semantics are structurally valid.
+pub struct ExplicitIntervalDurationSubstitutionSemanticsValid;
+structural_prop!(
+    ExplicitIntervalDurationSubstitutionSemanticsValid,
+    "ExplicitIntervalDurationSubstitutionSemanticsValid"
+);
+
+/// Aggregate proof that explicit-interval trailing-end inheritance semantics are structurally valid.
+pub struct ExplicitIntervalEndComponentInheritanceSemanticsValid;
+structural_prop!(
+    ExplicitIntervalEndComponentInheritanceSemanticsValid,
+    "ExplicitIntervalEndComponentInheritanceSemanticsValid"
+);
+
+/// Aggregate proof that explicit-interval leading-shift propagation semantics are structurally valid.
+pub struct ExplicitIntervalShiftPropagationSemanticsValid;
+structural_prop!(
+    ExplicitIntervalShiftPropagationSemanticsValid,
+    "ExplicitIntervalShiftPropagationSemanticsValid"
+);
+
 /// Aggregate proof that extended interval boundary semantics are structurally valid.
 pub struct ExtendedIntervalBoundarySemanticsValid;
 structural_prop!(
@@ -585,6 +653,13 @@ pub struct DateTimeFormulaEvaluationSemanticsValid;
 structural_prop!(
     DateTimeFormulaEvaluationSemanticsValid,
     "DateTimeFormulaEvaluationSemanticsValid"
+);
+
+/// Aggregate proof that an explicit temporal result was lawfully produced by date-time formula evaluation.
+pub struct DateTimeFormulaEvaluationResultValid;
+structural_prop!(
+    DateTimeFormulaEvaluationResultValid,
+    "DateTimeFormulaEvaluationResultValid"
 );
 
 /// Aggregate proof that a temporal set expression is structurally valid.
@@ -652,7 +727,8 @@ pub struct CalendarDateEvidence {
 
 /// Evidence branch for the declared reduced calendar-date precision.
 ///
-/// Normative source: ISO 8601-1:2019 — reduced precision calendar date representation
+/// Normative source: ISO 8601-1:2019, 5.2.2.
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.1.2.3.
 pub enum ReducedCalendarDatePrecisionEvidence {
     /// The reduced calendar date uses the year-only form.
     YearOnly {
@@ -674,7 +750,8 @@ pub enum ReducedCalendarDatePrecisionEvidence {
 
 /// Evidence bundle for a valid reduced-precision calendar date.
 ///
-/// Normative source: ISO 8601-1:2019 — reduced precision calendar date representation
+/// Normative source: ISO 8601-1:2019, 5.2.2.
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.1.2.3.
 pub struct ReducedCalendarDateEvidence {
     /// The representation is a Gregorian calendar date.
     pub calendar: Established<CalendarDateUsesGregorianCalendar>,
@@ -706,7 +783,7 @@ pub struct CenturyEvidence {
 
 /// Evidence branch for the significant-digits suffix on an ISO 8601-2 year form.
 ///
-/// Normative source: ISO 8601-2:2019 — significant digits
+/// Normative sources: ISO 8601-2:2019, 4.4.3 and 4.7.4.
 /// Informative cross-check: public LOC EDTF Level 2 — Significant digits
 pub struct ExtendedYearSignificantDigitsEvidence {
     /// The year form uses a trailing uppercase `S` suffix.
@@ -717,7 +794,7 @@ pub struct ExtendedYearSignificantDigitsEvidence {
 
 /// Evidence branch for the base lexical form of an ISO 8601-2 year extension.
 ///
-/// Normative source: ISO 8601-2:2019 — letter-prefixed, negative, and exponential year forms
+/// Normative sources: ISO 8601-2:2019, 4.4.1, 4.4.2, 4.7.2, and 4.7.3.
 /// Informative cross-check: public LOC EDTF Level 1 — Letter-prefixed calendar year;
 /// Negative calendar year. Level 2 — Exponential year
 pub enum ExtendedYearBaseEvidence {
@@ -750,7 +827,8 @@ pub enum ExtendedYearBaseEvidence {
 
 /// Evidence bundle for a valid ISO 8601-2 extended year form.
 ///
-/// Normative source: ISO 8601-2:2019 — letter-prefixed, negative, exponential, and significant-digit year forms
+/// Normative sources: ISO 8601-2:2019, 4.4.1, 4.4.2, 4.4.3, 4.7.2, 4.7.3,
+/// and 4.7.4.
 /// Informative cross-check: public LOC EDTF Level 1 — Letter-prefixed calendar year;
 /// Negative calendar year. Level 2 — Exponential year; Significant digits
 pub struct ExtendedYearEvidence {
@@ -784,7 +862,7 @@ pub struct WeekDateEvidence {
 
 /// Evidence branch for an ISO 8601 date representation.
 ///
-/// Normative source: ISO 8601-1:2019 — date
+/// Normative source: ISO 8601-1:2019, 5.2.1, 5.2.2, 5.2.3, and 5.2.4.
 pub enum DateEvidence {
     /// Gregorian calendar-date representation.
     Calendar {
@@ -836,7 +914,8 @@ pub struct LocalTimeEvidence {
 
 /// Evidence branch for the declared reduced local-time precision.
 ///
-/// Normative source: ISO 8601-1:2019 — reduced accuracy local time representation
+/// Normative source: ISO 8601-1:2019, 5.3.1.
+/// Open-text cross-check: ISO/WD 8601-1:2016(E), 4.2.2.3.
 pub enum ReducedLocalTimePrecisionEvidence {
     /// The reduced local time uses the hour-only form.
     HourOnly {
@@ -854,8 +933,9 @@ pub enum ReducedLocalTimePrecisionEvidence {
 
 /// Evidence bundle for a valid reduced-accuracy local time.
 ///
-/// Normative sources: ISO 8601-1:2019 — reduced-accuracy and decimal-fraction local time representations;
-/// ISO 8601-1:2019/Amd 1:2022 — end-of-day technical correction
+/// Normative sources: ISO 8601-1:2019, 5.3.1 and 5.3.2;
+/// ISO 8601-1:2019/Amd 1:2022, 5.3.1.4.
+/// Open-text cross-checks: ISO/WD 8601-1:2016(E), 4.2.2.3 and 4.2.2.4.
 pub struct ReducedLocalTimeEvidence {
     /// The hour value is in range.
     pub hour: Established<HourInRangeZeroToTwentyFour>,
@@ -1211,7 +1291,8 @@ pub struct LocalTimestampSemanticsEvidence {
 
 /// Evidence branch for a standards-governed mutual-agreement authority scope.
 ///
-/// Normative source: ISO 8601-1:2019 — agreement-governed temporal representations
+/// Normative source: ISO 8601-1:2019, 5.2.2.
+/// Open-text cross-checks: ISO/WD 8601-1:2016(E), 3.2.1, 4.1.2.1, and 4.1.2.4.
 pub enum MutualAgreementAuthorityScopeEvidence {
     /// Mutual agreement explicitly covers non-expanded calendar years through 1582.
     CalendarYearThrough1582 {
@@ -1232,7 +1313,8 @@ pub enum MutualAgreementAuthorityScopeEvidence {
 
 /// Evidence bundle for explicit mutual-agreement authority.
 ///
-/// Normative source: ISO 8601-1:2019 — agreement-governed temporal representations
+/// Normative source: ISO 8601-1:2019, 5.2.2.
+/// Open-text cross-checks: ISO/WD 8601-1:2016(E), 3.2.1, 4.1.2.1, and 4.1.2.4.
 pub struct MutualAgreementAuthorityEvidence {
     /// The agreement-governed scope carried by the authority sidecar.
     pub scope: MutualAgreementAuthorityScopeEvidence,
@@ -1252,6 +1334,23 @@ pub struct ZoneTransitionResolutionAuthorityEvidence {
     pub gap_handling: Established<ZoneTransitionGapHandlingAuthorityDeclared>,
 }
 
+/// Evidence bundle for generic named-zone identity.
+///
+/// Normative sources: RFC 9557 §1.2 and §4.1.
+/// Informative cross-check: BCP 175 / IANA TZDB naming semantics.
+pub struct NamedTimeZoneIdentityEvidence {
+    /// The zone uses an IANA time-zone identifier.
+    pub zone_identifier: Established<NamedTimeZoneUsesIanaIdentifier>,
+    /// The identifier excludes the forbidden `"."` and `".."` path segments.
+    pub zone_segments: Established<NamedTimeZoneIdentifierExcludesDotSegments>,
+    /// The identifier is interpreted case-sensitively.
+    pub case_sensitivity: Established<NamedTimeZoneIdentifierIsCaseSensitive>,
+    /// The zone is not merely a numeric-offset alias.
+    pub named_zone: Established<NamedTimeZoneIsNotNumericOffsetAlias>,
+    /// The zone preserves civil-time rule identity beyond the current offset.
+    pub civil_rules: Established<NamedTimeZoneRetainsCivilRuleIdentity>,
+}
+
 /// Evidence bundle for ambiguous local-time resolution semantics.
 ///
 /// Normative sources: RFC 9557 §1.1, §1.2, and §3.4
@@ -1264,6 +1363,16 @@ pub struct ZoneTransitionAmbiguityEvidence {
     pub ambiguity_declared: Established<ZoneTransitionAmbiguityDeclared>,
     /// The selected disambiguation and gap-handling policy is explicit.
     pub resolution_authority: Established<ZoneTransitionResolutionAuthorityValid>,
+}
+
+/// Evidence bundle for generic named-zone attachment to a fixed instant.
+///
+/// Normative sources: RFC 9557 §1.2 and §4.1.
+pub struct NamedZoneAttachmentEvidence {
+    /// The attached timestamp denotes a fixed instant.
+    pub fixed_instant: Established<TimestampRepresentsFixedInstant>,
+    /// The attached zone carries generic named-zone identity semantics.
+    pub zone_identity: Established<NamedTimeZoneIdentityValid>,
 }
 
 /// Evidence bundle for skipped local-time gap semantics.
@@ -1282,7 +1391,7 @@ pub struct ZoneTransitionGapEvidence {
 
 /// Evidence bundle for a valid RFC 3339 timestamp.
 ///
-/// Normative sources: RFC 3339 §4.3, §4.4, §5.6; RFC 9557 §2.2
+/// Normative sources: RFC 3339 §4.3, §4.4, §5.4, §5.6; RFC 9557 §2.2
 pub struct Rfc3339TimestampEvidence {
     /// The timestamp rests on a valid offset date-time representation.
     pub offset_date_time: Established<OffsetDateTimeValid>,
@@ -1292,6 +1401,8 @@ pub struct Rfc3339TimestampEvidence {
     pub full_date: Established<Rfc3339UsesExtendedCalendarDate>,
     /// The time uses the RFC 3339 `full-time` profile.
     pub full_time: Established<Rfc3339UsesFullTime>,
+    /// The timestamp does not carry redundant weekday information.
+    pub no_redundant_weekday: Established<Rfc3339TimestampExcludesRedundantWeekdayInformation>,
     /// The timestamp carries an explicit relationship to UTC.
     pub utc_relationship: Established<Rfc3339RequiresUtcRelationship>,
     /// Local time without an offset or `Z` is forbidden.
@@ -1335,6 +1446,17 @@ pub struct Rfc3339GenerationGuidanceEvidence {
     pub space_separator_option: Established<Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator>,
     /// Inserted leap-second timestamps are not generated before announcement.
     pub leap_second_announcement: Established<Rfc3339LeapSecondGenerationRequiresPriorAnnouncement>,
+}
+
+/// Evidence bundle for RFC 3339 display-localization guidance.
+///
+/// Normative sources: RFC 3339 §5.2
+pub struct Rfc3339DisplayGuidanceEvidence {
+    /// Clients should be prepared to transform dates into a locality-suitable display form.
+    pub locality_display_transform:
+        Established<Rfc3339ClientsShouldTransformDatesForLocalityDisplay>,
+    /// Locality-oriented display transformation may translate UTC timestamps into local time.
+    pub utc_to_local_translation: Established<Rfc3339LocalityDisplayMayTranslateUtcToLocalTime>,
 }
 
 /// Evidence bundle for a valid RFC 9557 IXDTF timestamp.
@@ -1503,6 +1625,36 @@ pub struct ZonedTimestampEvidence {
     pub civil_rules: Established<NamedTimeZoneRetainsCivilRuleIdentity>,
 }
 
+/// Evidence bundle for critical time-zone suffix inconsistency handling.
+///
+/// Normative source: RFC 9557 §3.4 — Inconsistent time-offset and Time Zone Information
+pub struct CriticalTimeZoneInconsistencyEvidence {
+    /// The underlying timestamp is a valid IXDTF timestamp.
+    pub timestamp: Established<IxdtfTimestampValid>,
+    /// The time-zone annotation uses the RFC 9557 bracketed time-zone syntax.
+    pub time_zone: Established<IxdtfTimeZoneSuffixUsesBracketedNameOrOffset>,
+    /// Criticality is expressed with a leading `!` when present.
+    pub critical_flag: Established<IxdtfCriticalFlagIsLeadingExclamationWhenPresent>,
+    /// Critical suffixes require processing or explicit error handling.
+    pub critical_consumption: Established<IxdtfCriticalSuffixTagsRequireProcessingOrErrorHandling>,
+    /// A critical time-zone inconsistency requires the application to act.
+    pub must_act: Established<CriticalTimeZoneSuffixInconsistencyRequiresAction>,
+}
+
+/// Evidence bundle for elective time-zone suffix inconsistency handling.
+///
+/// Normative source: RFC 9557 §3.4 — Inconsistent time-offset and Time Zone Information
+pub struct ElectiveTimeZoneInconsistencyEvidence {
+    /// The underlying timestamp is a valid IXDTF timestamp.
+    pub timestamp: Established<IxdtfTimestampValid>,
+    /// The time-zone annotation uses the RFC 9557 bracketed time-zone syntax.
+    pub time_zone: Established<IxdtfTimeZoneSuffixUsesBracketedNameOrOffset>,
+    /// Elective time-zone suffixes may be ignored by recipients.
+    pub elective_consumption: Established<IxdtfRecipientsMayIgnoreElectiveSuffixTags>,
+    /// An elective time-zone inconsistency permits, but does not require, action.
+    pub may_act: Established<ElectiveTimeZoneSuffixInconsistencyMayBeHandled>,
+}
+
 /// Evidence bundle for offset time-zone annotation semantics.
 ///
 /// Normative sources: RFC 9557 §1.2, §3.4, and §4.1
@@ -1540,6 +1692,22 @@ pub struct OffsetConsistencyEvidence {
     /// The timestamp carries named-zone identity.
     pub zoned: Established<ZonedDateTimeHasNamedZone>,
     /// The named-zone rules resolve the represented offset.
+    pub resolved_offset: Established<ZoneOffsetResolvedForRepresentedInstant>,
+}
+
+/// Evidence bundle for `Z`-based time-zone timestamps that avoid inconsistency.
+///
+/// Normative sources: RFC 9557 §2.2 and §3.4
+pub struct ZuluTimeZoneInconsistencyAvoidanceEvidence {
+    /// The underlying timestamp is a valid IXDTF timestamp.
+    pub timestamp: Established<IxdtfTimestampValid>,
+    /// The RFC 3339 portion uses `Z` to express that local offset information is unknown.
+    pub unknown_local_offset: Established<Rfc3339UnknownLocalOffsetUsesZuluDesignator>,
+    /// The time-zone annotation uses the RFC 9557 bracketed time-zone syntax.
+    pub time_zone: Established<IxdtfTimeZoneSuffixUsesBracketedNameOrOffset>,
+    /// The timestamp therefore avoids asserting a conflicting local offset.
+    pub no_inconsistency: Established<ZuluTimeZoneSuffixAvoidsOffsetInconsistency>,
+    /// The named-zone rules resolve the represented offset for the instant.
     pub resolved_offset: Established<ZoneOffsetResolvedForRepresentedInstant>,
 }
 
@@ -1937,7 +2105,8 @@ pub struct QualifiedTemporalExpressionEvidence {
 
 /// Evidence bundle for a qualified temporal value exchange.
 ///
-/// Normative source: ISO 8601-2:2019 — qualification of temporal expressions
+/// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
+/// 8.4.6, and 8.5.
 /// Informative cross-check: public LOC EDTF Level 1 — Qualification of a date (complete);
 /// Level 2 — Qualification
 pub struct QualifiedTemporalValueEvidence {
@@ -2023,6 +2192,47 @@ pub struct ExplicitDurationEvidence {
     pub semantics: ExplicitDurationSemanticEvidence,
 }
 
+/// Evidence bundle for a valid CalConnect explicit time interval.
+///
+/// Normative source: CalConnect CC 18011:2018 §6 — Time interval, General
+pub struct ExplicitTimeIntervalEvidence {
+    /// The explicit interval still satisfies the shared two-component interval skeleton.
+    pub interval: Established<TimeIntervalValid>,
+    /// Both interval boundaries use the CalConnect `[datetimeE]` endpoint family.
+    pub endpoints: Established<ExplicitTimeIntervalUsesDateTimeEndpointFamily>,
+}
+
+/// Evidence bundle for explicit-interval duration substitution semantics.
+///
+/// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Duration substitution
+pub struct ExplicitIntervalDurationSubstitutionEvidence {
+    /// The underlying explicit interval representation is structurally valid.
+    pub interval: Established<ExplicitTimeIntervalValid>,
+    /// A missing boundary is inferable from the substituted explicit duration.
+    pub substitution: Established<ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary>,
+}
+
+/// Evidence bundle for explicit-interval trailing-end inheritance semantics.
+///
+/// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Time scale component order
+pub struct ExplicitIntervalEndComponentInheritanceEvidence {
+    /// The underlying explicit interval representation is structurally valid.
+    pub interval: Established<ExplicitTimeIntervalValid>,
+    /// Omitted higher-order trailing-end components inherit from the leading endpoint.
+    pub inheritance: Established<ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents>,
+}
+
+/// Evidence bundle for explicit-interval leading-shift propagation semantics.
+///
+/// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Time shift indication
+pub struct ExplicitIntervalShiftPropagationEvidence {
+    /// The underlying explicit interval representation is structurally valid.
+    pub interval: Established<ExplicitTimeIntervalValid>,
+    /// A leading explicit time shift applies to the trailing endpoint unless replaced explicitly.
+    pub propagation:
+        Established<ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden>,
+}
+
 /// Evidence bundle for extended interval boundary semantics.
 ///
 /// Normative source: ISO 8601-2:2019, 10.2.
@@ -2090,6 +2300,8 @@ pub struct GroupedTimeScaleUnitEvidence {
     pub coefficient: Established<GroupedTimeScaleUnitValueCarriesExplicitCoefficient>,
     /// Lower-order units remain within the grouped-unit bounds.
     pub bounds: Established<GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds>,
+    /// Grouped-unit date-time forms may append an explicit time shift.
+    pub explicit_time_shift: Established<GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift>,
     /// Out-of-bounds remainder truncates at the original boundary.
     pub truncation: Established<GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder>,
     /// Grouped-unit expressions convert into time-interval semantics.
@@ -2116,6 +2328,18 @@ pub struct DateTimeFormulaEvaluationSemanticsEvidence {
     pub formula: Established<DateTimeFormulaValid>,
     /// The formula declares its evaluation family.
     pub evaluation_mode: Established<DateTimeFormulaEvaluationModeDeclared>,
+}
+
+/// Evidence bundle for a date-time formula evaluation result.
+///
+/// Normative source: CalConnect CC 18011:2018 §8 — Evaluation of date and time with duration
+pub struct DateTimeFormulaEvaluationResultEvidence {
+    /// The originating formula is structurally valid.
+    pub formula: Established<DateTimeFormulaValid>,
+    /// The originating formula declares a lawful evaluation family.
+    pub semantics: Established<DateTimeFormulaEvaluationSemanticsValid>,
+    /// The produced explicit temporal value is structurally valid.
+    pub result: Established<ExplicitTemporalFormValid>,
 }
 
 /// Evidence bundle for a seasonal temporal expression.
@@ -2227,10 +2451,29 @@ pub struct SelectionExpressionEvidence {
     pub delimiters: Established<SelectionExpressionUsesSelectionDelimiters>,
     /// Selection expressions use the standard rule vocabulary.
     pub vocabulary: Established<SelectionExpressionUsesRecognizedSelectionRuleVocabulary>,
+    /// Month-selection rules use the month expression family.
+    pub month_rule: Established<SelectionRuleMonthUsesMonthExpression>,
+    /// Week-selection rules use the week expression family.
+    pub week_rule: Established<SelectionRuleWeekUsesWeekExpression>,
+    /// Day-of-month selection rules use the day expression family.
+    pub day_of_month_rule: Established<SelectionRuleDayOfMonthUsesDayExpression>,
+    /// Weekday selection rules use the day-of-week expression family.
+    pub weekday_rule: Established<SelectionRuleWeekDayUsesDayOfWeekExpression>,
+    /// Ordinal-day-of-year selection rules use the ordinal-day expression family.
+    pub ordinal_day_of_year_rule:
+        Established<SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression>,
+    /// Hour-selection rules use the hour expression family.
+    pub hour_rule: Established<SelectionRuleHourUsesHourExpression>,
+    /// Minute-selection rules use the minute expression family.
+    pub minute_rule: Established<SelectionRuleMinuteUsesMinuteExpression>,
+    /// Second-selection rules use the second expression family.
+    pub second_rule: Established<SelectionRuleSecondUsesSecondExpression>,
     /// Subsequent components apply within previously selected results.
     pub nesting: Established<SelectionRulesApplyWithinSelectedResults>,
     /// Single-instance selection is explicitly modeled.
     pub single_instance: Established<SelectionExpressionMaySelectSingleInstance>,
+    /// Position rules use an integer followed by the instance designator.
+    pub position_syntax: Established<SelectionRulePositionUsesInstanceDesignatorSuffix>,
     /// Position rules apply after earlier selection rules.
     pub position: Established<SelectionRulePositionAppliesLast>,
     /// Selection-with-duration uses an explicit duration suffix.
@@ -2257,8 +2500,8 @@ pub struct RepeatRuleEvidence {
 pub struct RecurringIntervalWithRepeatRuleEvidence {
     /// The recurring-interval prefix and interval component are structurally valid.
     pub recurring_interval: Established<RecurringIntervalFormValid>,
-    /// The attached repeat rule is structurally valid.
-    pub repeat_rule: Established<RepeatRuleValid>,
+    /// The attached repeat rule carries its full repeat-law sidecars.
+    pub repeat_rule: RepeatRuleEvidence,
     /// The combined representation uses the complete recurring form.
     pub complete_representation:
         Established<RecurringIntervalWithRepeatRuleUsesCompleteRepresentation>,
@@ -2294,11 +2537,14 @@ impl ProvableFrom<ZoneTransitionResolutionAuthorityEvidence>
     for ZoneTransitionResolutionAuthorityValid
 {
 }
+impl ProvableFrom<NamedTimeZoneIdentityEvidence> for NamedTimeZoneIdentityValid {}
 impl ProvableFrom<ZoneTransitionAmbiguityEvidence> for ZoneTransitionAmbiguitySemanticsValid {}
+impl ProvableFrom<NamedZoneAttachmentEvidence> for ZonedDateTimeHasNamedZone {}
 impl ProvableFrom<ZoneTransitionGapEvidence> for ZoneTransitionGapSemanticsValid {}
 impl ProvableFrom<Rfc3339TimestampEvidence> for Rfc3339TimestampValid {}
 impl ProvableFrom<Rfc3339LexicalOrderingEvidence> for Rfc3339LexicalOrderingSemanticsValid {}
 impl ProvableFrom<Rfc3339GenerationGuidanceEvidence> for Rfc3339GenerationGuidanceValid {}
+impl ProvableFrom<Rfc3339DisplayGuidanceEvidence> for Rfc3339DisplayGuidanceValid {}
 impl ProvableFrom<IxdtfTimestampEvidence> for IxdtfTimestampValid {}
 impl ProvableFrom<IxdtfSuffixKeyRegistryEntryEvidence> for IxdtfSuffixKeyRegistryEntryValid {}
 impl ProvableFrom<IxdtfPermanentSuffixKeyRegistrationEvidence>
@@ -2320,12 +2566,24 @@ impl ProvableFrom<IxdtfCalendarAwareTimestampEvidence>
 }
 impl ProvableFrom<IxdtfCalendarKeyRegistryEvidence> for IxdtfCalendarKeyRegistrySemanticsValid {}
 impl ProvableFrom<ZonedTimestampEvidence> for ZonedDateTimeHasNamedZone {}
+impl ProvableFrom<CriticalTimeZoneInconsistencyEvidence>
+    for CriticalTimeZoneInconsistencyHandlingValid
+{
+}
+impl ProvableFrom<ElectiveTimeZoneInconsistencyEvidence>
+    for ElectiveTimeZoneInconsistencyHandlingValid
+{
+}
 impl ProvableFrom<OffsetTimeZoneAnnotationEvidence>
     for OffsetTimeZoneAnnotationConsistentWithTimestamp
 {
 }
 impl ProvableFrom<NamedTimeZoneRevisionEvidence> for NamedTimeZoneInterpretationTracksTzdbRevision {}
 impl ProvableFrom<OffsetConsistencyEvidence> for OffsetConsistentWithNamedZone {}
+impl ProvableFrom<ZuluTimeZoneInconsistencyAvoidanceEvidence>
+    for ZuluTimeZoneInconsistencyAvoidanceValid
+{
+}
 impl ProvableFrom<OffsetOnlySemanticsEvidence> for OffsetOnlyZoneSemanticsLimited {}
 impl ProvableFrom<PrecisionPreservationEvidence> for PrecisionPreserved {}
 impl ProvableFrom<TemporalOrderingEvidence> for TemporalOrderingPreserved {}
@@ -2371,6 +2629,19 @@ impl ProvableFrom<ExplicitTimeShiftEvidence> for ExplicitTimeShiftValid {}
 impl ProvableFrom<ExplicitDateTimeEvidence> for ExplicitDateTimeValid {}
 impl ProvableFrom<ExplicitDateTimeWithShiftEvidence> for ExplicitDateTimeWithShiftValid {}
 impl ProvableFrom<ExplicitDurationEvidence> for ExplicitDurationValid {}
+impl ProvableFrom<ExplicitTimeIntervalEvidence> for ExplicitTimeIntervalValid {}
+impl ProvableFrom<ExplicitIntervalDurationSubstitutionEvidence>
+    for ExplicitIntervalDurationSubstitutionSemanticsValid
+{
+}
+impl ProvableFrom<ExplicitIntervalEndComponentInheritanceEvidence>
+    for ExplicitIntervalEndComponentInheritanceSemanticsValid
+{
+}
+impl ProvableFrom<ExplicitIntervalShiftPropagationEvidence>
+    for ExplicitIntervalShiftPropagationSemanticsValid
+{
+}
 impl ProvableFrom<ExtendedIntervalBoundaryEvidence> for ExtendedIntervalBoundarySemanticsValid {}
 impl ProvableFrom<EnhancedIntervalLevelOneEvidence> for EnhancedIntervalLevelOneSemanticsValid {}
 impl ProvableFrom<EnhancedIntervalLevelTwoEvidence> for EnhancedIntervalLevelTwoSemanticsValid {}
@@ -2378,6 +2649,10 @@ impl ProvableFrom<GroupedTimeScaleUnitEvidence> for GroupedTimeScaleUnitValid {}
 impl ProvableFrom<DateTimeFormulaEvidence> for DateTimeFormulaValid {}
 impl ProvableFrom<DateTimeFormulaEvaluationSemanticsEvidence>
     for DateTimeFormulaEvaluationSemanticsValid
+{
+}
+impl ProvableFrom<DateTimeFormulaEvaluationResultEvidence>
+    for DateTimeFormulaEvaluationResultValid
 {
 }
 impl ProvableFrom<SeasonalTemporalExpressionEvidence> for SeasonalTemporalExpressionValid {}

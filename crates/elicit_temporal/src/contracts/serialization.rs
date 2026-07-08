@@ -1,7 +1,7 @@
 //! Serialization-profile propositions.
 //!
 //! Sources:
-//! - ISO 8601-1:2019 — basic and extended forms
+//! - ISO 8601-1:2019, 3.1.3 and 5.1
 //! - RFC 3339 §5.6
 //! - RFC 9557 §3.3
 

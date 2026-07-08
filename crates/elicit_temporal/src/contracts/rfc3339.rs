@@ -45,6 +45,15 @@ mod emit_impls {
     pub struct Rfc3339UsesFullTime;
     structural_prop!(Rfc3339UsesFullTime, "Rfc3339UsesFullTime");
 
+    /// An RFC 3339 timestamp excludes redundant weekday information.
+    ///
+    /// Normative source: RFC 3339 §5.4 — Redundant Information
+    pub struct Rfc3339TimestampExcludesRedundantWeekdayInformation;
+    structural_prop!(
+        Rfc3339TimestampExcludesRedundantWeekdayInformation,
+        "Rfc3339TimestampExcludesRedundantWeekdayInformation"
+    );
+
     /// An RFC 3339 timestamp includes an explicit relationship to UTC.
     ///
     /// Normative source: RFC 3339 §4.4 — Unqualified Local Time
@@ -138,6 +147,24 @@ mod emit_impls {
         "Rfc3339FractionalSecondsAreOnlyRarelyUsedOption"
     );
 
+    /// Internet clients should be prepared to transform dates into a display format suitable for the locality.
+    ///
+    /// Normative source: RFC 3339 §5.2 — Human Readability
+    pub struct Rfc3339ClientsShouldTransformDatesForLocalityDisplay;
+    structural_prop!(
+        Rfc3339ClientsShouldTransformDatesForLocalityDisplay,
+        "Rfc3339ClientsShouldTransformDatesForLocalityDisplay"
+    );
+
+    /// Locality-oriented display transformation may translate UTC timestamps into local time.
+    ///
+    /// Normative source: RFC 3339 §5.2 — Human Readability
+    pub struct Rfc3339LocalityDisplayMayTranslateUtcToLocalTime;
+    structural_prop!(
+        Rfc3339LocalityDisplayMayTranslateUtcToLocalTime,
+        "Rfc3339LocalityDisplayMayTranslateUtcToLocalTime"
+    );
+
     /// Generators should use uppercase `T` and `Z`.
     ///
     /// Normative source: RFC 3339 §5.6 — Internet Date/Time Format
@@ -167,13 +194,16 @@ mod emit_impls {
 }
 
 pub use emit_impls::{
-    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator, Rfc3339FractionUsesDotSeparator,
+    Rfc3339ApplicationsMayAllowSpaceDateTimeSeparator,
+    Rfc3339ClientsShouldTransformDatesForLocalityDisplay, Rfc3339FractionUsesDotSeparator,
     Rfc3339FractionalSecondsAreOnlyRarelyUsedOption, Rfc3339GeneratorsShouldUseUppercaseTAndZ,
     Rfc3339LeapSecondGenerationRequiresPriorAnnouncement,
     Rfc3339LexicalOrderingRequiresUniformFractionalSecondDigits,
     Rfc3339LexicalOrderingRequiresUniformUtcRelationshipEncoding, Rfc3339LocalOffsetNotUnknown,
-    Rfc3339OffsetIsUtcOrNumeric, Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
+    Rfc3339LocalityDisplayMayTranslateUtcToLocalTime, Rfc3339OffsetIsUtcOrNumeric,
+    Rfc3339PositiveZeroOffsetDeclaresPreferredUtcReferencePoint,
     Rfc3339ProfileMakesMostFieldsAndPunctuationMandatory, Rfc3339RequiresUtcRelationship,
+    Rfc3339TimestampExcludesRedundantWeekdayInformation,
     Rfc3339UnknownLocalOffsetUsesZuluDesignator, Rfc3339UnqualifiedLocalTimeForbidden,
     Rfc3339UsesExtendedCalendarDate, Rfc3339UsesFourDigitYear, Rfc3339UsesFullTime,
 };

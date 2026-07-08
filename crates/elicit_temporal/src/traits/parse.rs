@@ -61,6 +61,12 @@ pub trait TemporalParser: Send + Sync {
 
     /// Parse a qualified temporal value carrying explicit uncertainty and/or approximation semantics.
     ///
+    /// The returned exchange shape keeps the qualification law explicit rather
+    /// than collapsing it into one coarse validity token: downstream consumers
+    /// receive the qualified-value proof, the qualification-expression proof,
+    /// and the placement branch that distinguishes right-propagating group
+    /// qualification from left-applied component qualification.
+    ///
     /// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
     /// 8.4.6, and 8.5.
     fn parse_qualified_temporal_value(&self, input: &str) -> ParsedQualifiedTemporalValueResult;
@@ -164,6 +170,10 @@ pub trait TemporalParser: Send + Sync {
 
     /// Parse an ISO 8601-2 seasonal temporal expression.
     ///
+    /// The returned exchange shape keeps season-law explicit: year-and-season
+    /// form, month-slot encoding, named-season declaration, and season-scope
+    /// declaration all cross the seam as proof sidecars.
+    ///
     /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Seasons.
     fn parse_seasonal_temporal_expression(
@@ -173,6 +183,10 @@ pub trait TemporalParser: Send + Sync {
 
     /// Parse an ISO 8601-2 Level 2 sub-year grouping expression.
     ///
+    /// The returned exchange shape keeps grouping-law explicit: year-and-
+    /// grouping form, month-slot encoding, and the declared grouping-family
+    /// branch all cross the seam as proof sidecars.
+    ///
     /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 2 - Sub-year groupings.
     fn parse_sub_year_grouping_expression(
@@ -181,6 +195,11 @@ pub trait TemporalParser: Send + Sync {
     ) -> ParsedSubYearGroupingExpressionResult;
 
     /// Parse an ISO 8601-2 unspecified-component temporal expression.
+    ///
+    /// The returned exchange shape keeps masking-law explicit: placeholder
+    /// syntax, unknown-value semantics, Level 1 right-tail masking, and
+    /// Level 2 internal-component masking all cross the seam as proof
+    /// sidecars.
     ///
     /// Normative source: ISO 8601-2:2019, 9.2.1, 9.2.2, and 9.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Unspecified digit(s) from the right; Level 2 - Unspecified Digit.
@@ -196,6 +215,12 @@ pub trait TemporalParser: Send + Sync {
     fn parse_temporal_set(&self, input: &str) -> ParsedTemporalSetResult;
 
     /// Parse a grouped time scale unit expression into its neutral grouped-unit descriptor.
+    ///
+    /// The returned exchange shape keeps grouped-unit law explicit: delimiter
+    /// syntax, non-empty unit carriage, continuity, coefficient declaration,
+    /// lower-order bounds, explicit time-shift authority, truncation
+    /// semantics, and interval-conversion semantics all cross the seam as
+    /// sidecars.
     ///
     /// Normative source: ISO 8601-2:2019, 5.1, 5.2, 5.3, 5.4, and 5.4.2.
     /// Informative cross-check: CalConnect CC 18011:2018 §5 - Grouped time scale units.

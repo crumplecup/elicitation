@@ -13,22 +13,34 @@ use crate::{
     FormattedRecurringIntervalResult, FormattedSeasonalTemporalExpressionResult,
     FormattedSubYearGroupingExpressionResult, FormattedTemporalSetResult,
     FormattedTimeIntervalResult, FormattedTimeOfDayWithShiftResult,
-    FormattedUnspecifiedComponentExpressionResult, GroupedTimeScaleUnitDescriptor,
-    GroupedTimeScaleUnitValid, Iso8601BasicFormUsesCompactRepresentation,
-    Iso8601ExtendedFormUsesSeparators, IxdtfSerializationCarriesNamedZoneAnnotation,
-    IxdtfTimestampDescriptor, IxdtfTimestampValid, LocalDateTimeDescriptor,
+    FormattedUnspecifiedComponentExpressionResult,
+    GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits, GroupedTimeScaleUnitConvertsToTimeInterval,
+    GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift,
+    GroupedTimeScaleUnitDefinitionIsContinuous, GroupedTimeScaleUnitDescriptor,
+    GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds,
+    GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder, GroupedTimeScaleUnitUsesGroupingDesignators,
+    GroupedTimeScaleUnitValid, GroupedTimeScaleUnitValueCarriesExplicitCoefficient,
+    Iso8601BasicFormUsesCompactRepresentation, Iso8601ExtendedFormUsesSeparators,
+    IxdtfSerializationCarriesNamedZoneAnnotation, IxdtfTimestampDescriptor, IxdtfTimestampValid,
+    LevelOneUnspecifiedDigitsOccupyRightmostPositions,
+    LevelTwoUnspecifiedDigitsMayAppearWithinComponent, LocalDateTimeDescriptor,
     LocalDateTimeDoesNotIdentifyFixedInstant, LocalDateTimeValid, LocalTimeDescriptor,
     LocalTimeValid, OffsetConsistentWithNamedZone, OffsetDateTimeDescriptor, OffsetDateTimeValid,
-    OrdinalDateDescriptor, OrdinalDateValid, QualifiedTemporalValueDescriptor,
+    OrdinalDateDescriptor, OrdinalDateValid, QualificationPlacementEvidence,
+    QualifiedTemporalExpressionValid, QualifiedTemporalValueDescriptor,
     QualifiedTemporalValueValid, RecurringIntervalDescriptor, RecurringIntervalFormValid,
     ReducedCalendarDateDescriptor, ReducedCalendarDateValid, ReducedLocalTimeDescriptor,
-    ReducedLocalTimeValid, Rfc3339TimestampValid, SeasonalTemporalExpressionDescriptor,
+    ReducedLocalTimeValid, Rfc3339TimestampValid, SeasonCodeDeclaresNamedSeason,
+    SeasonCodeDeclaresSeasonScope, SeasonalExpressionUsesSeasonCodeInMonthSlot,
+    SeasonalExpressionUsesYearAndSeasonForm, SeasonalTemporalExpressionDescriptor,
     SeasonalTemporalExpressionValid, SerializationCarriesExplicitUtcRelationship,
-    SubYearGroupingExpressionDescriptor, SubYearGroupingExpressionValid, TemporalResult,
-    TemporalSetDescriptor, TemporalSetExpressionValid, TemporalSetRangeSemanticsValid,
-    TimeIntervalDescriptor, TimeIntervalValid, TimeOfDayWithShiftDescriptor,
-    TimeOfDayWithShiftValid, TimestampRepresentsFixedInstant,
+    SubYearGroupingExpressionDescriptor, SubYearGroupingExpressionUsesGroupingCodeInMonthSlot,
+    SubYearGroupingExpressionUsesYearAndGroupingForm, SubYearGroupingExpressionValid,
+    SubYearGroupingKindEvidence, TemporalResult, TemporalSetDescriptor, TemporalSetExpressionValid,
+    TemporalSetRangeSemanticsValid, TimeIntervalDescriptor, TimeIntervalValid,
+    TimeOfDayWithShiftDescriptor, TimeOfDayWithShiftValid, TimestampRepresentsFixedInstant,
     UnspecifiedComponentExpressionDescriptor, UnspecifiedComponentExpressionValid,
+    UnspecifiedDigitUsesUppercaseXPlaceholder, UnspecifiedDigitsDeclareUnknownValue,
     UtcOffsetDescriptor, UtcOffsetValid, WeekDateDescriptor, WeekDateValid,
     ZonedDateTimeDescriptor, ZonedDateTimeHasNamedZone,
 };
@@ -314,12 +326,19 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a qualified temporal value with explicit uncertainty and/or approximation semantics.
     ///
+    /// The formatter seam preserves the qualification proof family explicitly:
+    /// callers must supply the qualified-value proof, the qualification-law
+    /// proof, and the placement branch that distinguishes right-propagating
+    /// group qualification from left-applied component qualification.
+    ///
     /// Normative source: ISO 8601-2:2019, 8.2.1, 8.2.2, 8.2.3, 8.4.4, 8.4.5,
     /// 8.4.6, and 8.5.
     fn format_qualified_temporal_value(
         &self,
         value: &QualifiedTemporalValueDescriptor,
         value_proof: Established<QualifiedTemporalValueValid>,
+        qualification_proof: Established<QualifiedTemporalExpressionValid>,
+        placement_proof: QualificationPlacementEvidence,
     ) -> FormattedQualifiedTemporalValueResult;
 
     /// Emit a fixed-instant timestamp using the RFC 3339 profile.
@@ -371,15 +390,27 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit an ISO 8601-2 seasonal temporal expression.
     ///
+    /// The caller must supply the season-law sidecars explicitly:
+    /// year-and-season form, month-slot encoding, named-season declaration,
+    /// and season-scope declaration.
+    ///
     /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Seasons.
     fn format_seasonal_temporal_expression(
         &self,
         expression: &SeasonalTemporalExpressionDescriptor,
         expression_proof: Established<SeasonalTemporalExpressionValid>,
+        form: Established<SeasonalExpressionUsesYearAndSeasonForm>,
+        month_slot: Established<SeasonalExpressionUsesSeasonCodeInMonthSlot>,
+        named_season: Established<SeasonCodeDeclaresNamedSeason>,
+        season_scope: Established<SeasonCodeDeclaresSeasonScope>,
     ) -> FormattedSeasonalTemporalExpressionResult;
 
     /// Emit an ISO 8601-2 Level 2 sub-year grouping expression.
+    ///
+    /// The caller must supply the grouping-law sidecars explicitly:
+    /// year-and-grouping form, month-slot encoding, and the declared
+    /// grouping-family branch.
     ///
     /// Normative source: ISO 8601-2:2019, 4.8.1, 4.8.2, and 4.8.3.
     /// Informative cross-check: public LOC EDTF Level 2 - Sub-year groupings.
@@ -387,9 +418,16 @@ pub trait TemporalFormatter: Send + Sync {
         &self,
         expression: &SubYearGroupingExpressionDescriptor,
         expression_proof: Established<SubYearGroupingExpressionValid>,
+        form: Established<SubYearGroupingExpressionUsesYearAndGroupingForm>,
+        month_slot: Established<SubYearGroupingExpressionUsesGroupingCodeInMonthSlot>,
+        grouping: SubYearGroupingKindEvidence,
     ) -> FormattedSubYearGroupingExpressionResult;
 
     /// Emit an ISO 8601-2 unspecified-component temporal expression.
+    ///
+    /// The caller must supply the masking-law sidecars explicitly:
+    /// placeholder syntax, unknown-value semantics, Level 1 right-tail
+    /// masking, and Level 2 internal-component masking.
     ///
     /// Normative source: ISO 8601-2:2019, 9.2.1, 9.2.2, and 9.3.
     /// Informative cross-check: public LOC EDTF Level 1 - Unspecified digit(s) from the right; Level 2 - Unspecified Digit.
@@ -397,6 +435,10 @@ pub trait TemporalFormatter: Send + Sync {
         &self,
         expression: &UnspecifiedComponentExpressionDescriptor,
         expression_proof: Established<UnspecifiedComponentExpressionValid>,
+        placeholder: Established<UnspecifiedDigitUsesUppercaseXPlaceholder>,
+        unspecified_value: Established<UnspecifiedDigitsDeclareUnknownValue>,
+        level_one_tail_masking: Established<LevelOneUnspecifiedDigitsOccupyRightmostPositions>,
+        level_two_component_masking: Established<LevelTwoUnspecifiedDigitsMayAppearWithinComponent>,
     ) -> FormattedUnspecifiedComponentExpressionResult;
 
     /// Emit an ISO 8601-2 temporal set expression including range refinements.
@@ -412,12 +454,25 @@ pub trait TemporalFormatter: Send + Sync {
 
     /// Emit a grouped time scale unit expression through the neutral ISO 8601-2 seam.
     ///
+    /// The caller must supply the grouped-unit law sidecars explicitly:
+    /// delimiter syntax, non-empty unit carriage, continuity, coefficient
+    /// declaration, lower-order bounds, explicit time-shift authority,
+    /// truncation semantics, and interval-conversion semantics.
+    ///
     /// Normative source: ISO 8601-2:2019, 5.1, 5.2, 5.3, 5.4, and 5.4.2.
     /// Informative cross-check: CalConnect CC 18011:2018 §5 - Grouped time scale units.
     fn format_grouped_time_scale_unit(
         &self,
         grouped: &GroupedTimeScaleUnitDescriptor,
         grouped_proof: Established<GroupedTimeScaleUnitValid>,
+        designators: Established<GroupedTimeScaleUnitUsesGroupingDesignators>,
+        units: Established<GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits>,
+        continuity: Established<GroupedTimeScaleUnitDefinitionIsContinuous>,
+        coefficient: Established<GroupedTimeScaleUnitValueCarriesExplicitCoefficient>,
+        bounds: Established<GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds>,
+        explicit_time_shift: Established<GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift>,
+        truncation: Established<GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder>,
+        interval_semantics: Established<GroupedTimeScaleUnitConvertsToTimeInterval>,
     ) -> FormattedGroupedTimeScaleUnitResult;
 
     /// Emit a date-time formula through the neutral ISO 8601-2 seam.

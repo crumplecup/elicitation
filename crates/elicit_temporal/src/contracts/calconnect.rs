@@ -172,6 +172,42 @@ mod emit_impls {
         "ExplicitDateTimeWithShiftUsesDateTimeThenShiftConcatenation"
     );
 
+    /// A complete explicit time interval uses the CalConnect `[datetimeE]/[datetimeE]` endpoint family.
+    ///
+    /// Normative source: CalConnect CC 18011:2018 §6 — Time interval, General
+    pub struct ExplicitTimeIntervalUsesDateTimeEndpointFamily;
+    structural_prop!(
+        ExplicitTimeIntervalUsesDateTimeEndpointFamily,
+        "ExplicitTimeIntervalUsesDateTimeEndpointFamily"
+    );
+
+    /// An explicit time interval may substitute an explicit duration for either boundary when the missing endpoint remains inferable.
+    ///
+    /// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Duration substitution
+    pub struct ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary;
+    structural_prop!(
+        ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary,
+        "ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary"
+    );
+
+    /// An explicit time interval may omit higher-order trailing-end components when inheritance from the start stays unambiguous.
+    ///
+    /// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Time scale component order
+    pub struct ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents;
+    structural_prop!(
+        ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents,
+        "ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents"
+    );
+
+    /// A leading explicit time shift propagates across the interval separator unless the trailing component supplies an alternative.
+    ///
+    /// Normative source: CalConnect CC 18011:2018 §6 — Time interval, Time shift indication
+    pub struct ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden;
+    structural_prop!(
+        ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden,
+        "ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden"
+    );
+
     /// A grouped time scale unit uses the `G...U` grouping delimiters.
     ///
     /// Normative source: CalConnect CC 18011:2018 §5.1 — Unit definition
@@ -224,6 +260,15 @@ mod emit_impls {
     structural_prop!(
         GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder,
         "GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder"
+    );
+
+    /// A grouped-unit date-time may append an explicit time shift.
+    ///
+    /// Normative source: CalConnect CC 18011:2018 §5.3 — Use of grouped units, Representation with time shift
+    pub struct GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift;
+    structural_prop!(
+        GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift,
+        "GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift"
     );
 
     /// Grouped-unit expressions can be converted into time-interval semantics.
@@ -370,6 +415,87 @@ mod emit_impls {
         "SelectionExpressionUsesRecognizedSelectionRuleVocabulary"
     );
 
+    /// A month-selection rule uses the `[monthE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of calendar month of year
+    pub struct SelectionRuleMonthUsesMonthExpression;
+    structural_prop!(
+        SelectionRuleMonthUsesMonthExpression,
+        "SelectionRuleMonthUsesMonthExpression"
+    );
+
+    /// A week-selection rule uses the `[weekE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of calendar week of year
+    pub struct SelectionRuleWeekUsesWeekExpression;
+    structural_prop!(
+        SelectionRuleWeekUsesWeekExpression,
+        "SelectionRuleWeekUsesWeekExpression"
+    );
+
+    /// A day-of-month selection rule uses the `[dayE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of calendar day of month
+    pub struct SelectionRuleDayOfMonthUsesDayExpression;
+    structural_prop!(
+        SelectionRuleDayOfMonthUsesDayExpression,
+        "SelectionRuleDayOfMonthUsesDayExpression"
+    );
+
+    /// A weekday selection rule uses the `[daykE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of week days
+    pub struct SelectionRuleWeekDayUsesDayOfWeekExpression;
+    structural_prop!(
+        SelectionRuleWeekDayUsesDayOfWeekExpression,
+        "SelectionRuleWeekDayUsesDayOfWeekExpression"
+    );
+
+    /// An ordinal-day-of-year selection rule uses the `[dayoE(m)]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of ordinal days in calendar year
+    pub struct SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression;
+    structural_prop!(
+        SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression,
+        "SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression"
+    );
+
+    /// An hour-selection rule uses the `[hourE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of hours
+    pub struct SelectionRuleHourUsesHourExpression;
+    structural_prop!(
+        SelectionRuleHourUsesHourExpression,
+        "SelectionRuleHourUsesHourExpression"
+    );
+
+    /// A minute-selection rule uses the `[minE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of minutes
+    pub struct SelectionRuleMinuteUsesMinuteExpression;
+    structural_prop!(
+        SelectionRuleMinuteUsesMinuteExpression,
+        "SelectionRuleMinuteUsesMinuteExpression"
+    );
+
+    /// A second-selection rule uses the `[secE]` rule family.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of seconds
+    pub struct SelectionRuleSecondUsesSecondExpression;
+    structural_prop!(
+        SelectionRuleSecondUsesSecondExpression,
+        "SelectionRuleSecondUsesSecondExpression"
+    );
+
+    /// A position-selection rule uses an integer followed by the instance designator.
+    ///
+    /// Normative source: CalConnect CC 18012:2018 §5.2 — Selection of position
+    pub struct SelectionRulePositionUsesInstanceDesignatorSuffix;
+    structural_prop!(
+        SelectionRulePositionUsesInstanceDesignatorSuffix,
+        "SelectionRulePositionUsesInstanceDesignatorSuffix"
+    );
+
     /// Selection rules apply within the results selected by prior components.
     ///
     /// Normative source: CalConnect CC 18012:2018 §5.3 — Application within representations
@@ -466,13 +592,17 @@ pub use emit_impls::{
     ExplicitDurationRepresentationKindDeclared, ExplicitDurationUsesDurationalUnitDesignators,
     ExplicitTemporalFormMayOmitZeroValuedComponents, ExplicitTemporalFormUsesDesignatorSymbols,
     ExplicitTemporalPrecisionUsesLowestDenotedComponent,
-    ExplicitTimeOfDayForbidsEndOfDayRepresentation,
+    ExplicitTimeIntervalDurationSubstitutionInfersMissingBoundary,
+    ExplicitTimeIntervalLeadingShiftAppliesToTrailingComponentUnlessOverridden,
+    ExplicitTimeIntervalTrailingEndMayInheritHigherOrderComponents,
+    ExplicitTimeIntervalUsesDateTimeEndpointFamily, ExplicitTimeOfDayForbidsEndOfDayRepresentation,
     ExplicitTimeOfDayUsesHourMinuteSecondUnitDesignators, ExplicitTimeOfDayUsesTimeDesignator,
     ExplicitTimeOfDayWithShiftUsesTimeThenShiftConcatenation,
     ExplicitTimeShiftBareZuluRepresentsUtcZero, ExplicitTimeShiftPayloadUsesExplicitTimeOfDay,
     ExplicitTimeShiftUsesLeadingMinusOnlyWhenBehindUtc, ExplicitTimeShiftUsesZuluDesignator,
     ExplicitUtcRelationshipUsesZuluOrSignedShift,
     GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits, GroupedTimeScaleUnitConvertsToTimeInterval,
+    GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift,
     GroupedTimeScaleUnitDefinitionIsContinuous,
     GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds,
     GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder, GroupedTimeScaleUnitUsesGroupingDesignators,
@@ -483,7 +613,11 @@ pub use emit_impls::{
     RepeatRuleSelectionAppliesWithinEligibleIntervals, RepeatRuleUsesFrequencyDesignator,
     SelectionExpressionMaySelectSingleInstance,
     SelectionExpressionUsesRecognizedSelectionRuleVocabulary,
-    SelectionExpressionUsesSelectionDelimiters, SelectionRulePositionAppliesLast,
-    SelectionRulesApplyWithinSelectedResults, SelectionWithDurationUsesDurationSuffix,
-    SpeculativeDurationSemanticsDeclared,
+    SelectionExpressionUsesSelectionDelimiters, SelectionRuleDayOfMonthUsesDayExpression,
+    SelectionRuleHourUsesHourExpression, SelectionRuleMinuteUsesMinuteExpression,
+    SelectionRuleMonthUsesMonthExpression, SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression,
+    SelectionRulePositionAppliesLast, SelectionRulePositionUsesInstanceDesignatorSuffix,
+    SelectionRuleSecondUsesSecondExpression, SelectionRuleWeekDayUsesDayOfWeekExpression,
+    SelectionRuleWeekUsesWeekExpression, SelectionRulesApplyWithinSelectedResults,
+    SelectionWithDurationUsesDurationSuffix, SpeculativeDurationSemanticsDeclared,
 };

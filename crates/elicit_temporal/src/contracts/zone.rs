@@ -153,6 +153,33 @@ mod emit_impls {
         "UnknownNamedTimeZoneIdentifierTreatedAsInconsistency"
     );
 
+    /// A critical time-zone suffix inconsistency requires the application to act.
+    ///
+    /// Normative source: RFC 9557 §3.4 — Inconsistent time-offset and Time Zone Information
+    pub struct CriticalTimeZoneSuffixInconsistencyRequiresAction;
+    structural_prop!(
+        CriticalTimeZoneSuffixInconsistencyRequiresAction,
+        "CriticalTimeZoneSuffixInconsistencyRequiresAction"
+    );
+
+    /// An elective time-zone suffix inconsistency permits, but does not require, application action.
+    ///
+    /// Normative source: RFC 9557 §3.4 — Inconsistent time-offset and Time Zone Information
+    pub struct ElectiveTimeZoneSuffixInconsistencyMayBeHandled;
+    structural_prop!(
+        ElectiveTimeZoneSuffixInconsistencyMayBeHandled,
+        "ElectiveTimeZoneSuffixInconsistencyMayBeHandled"
+    );
+
+    /// A `Z`-based IXDTF timestamp with a time-zone suffix does not assert a local offset and therefore avoids inconsistency.
+    ///
+    /// Normative sources: RFC 9557 §2.2 — Update to RFC 3339; §3.4 — Inconsistent time-offset and Time Zone Information
+    pub struct ZuluTimeZoneSuffixAvoidsOffsetInconsistency;
+    structural_prop!(
+        ZuluTimeZoneSuffixAvoidsOffsetInconsistency,
+        "ZuluTimeZoneSuffixAvoidsOffsetInconsistency"
+    );
+
     /// A local timestamp explicitly declares when a zone transition introduces ambiguity.
     ///
     /// Normative source: RFC 9557 §1.2 — Definitions
@@ -188,13 +215,15 @@ mod emit_impls {
 }
 
 pub use emit_impls::{
-    NamedTimeZoneAnnotationPresent, NamedTimeZoneIdentifierExcludesDotSegments,
-    NamedTimeZoneIdentifierIsCaseSensitive, NamedTimeZoneIsNotNumericOffsetAlias,
-    NamedTimeZoneMeaningUsesCurrentTzdbRules, NamedTimeZoneRetainsCivilRuleIdentity,
-    NamedTimeZoneUsesIanaIdentifier, NumericOffsetDoesNotIdentifyNamedZone,
-    OffsetTimeZoneAnnotationPresent, OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset,
-    OffsetTimeZoneRepeatsTimestampOffset, OffsetTimeZoneUseIsStronglyDiscouraged,
-    UnknownNamedTimeZoneIdentifierTreatedAsInconsistency, ZoneOffsetResolvedForRepresentedInstant,
-    ZoneTransitionAmbiguityDeclared, ZoneTransitionDisambiguationAuthorityDeclared,
-    ZoneTransitionGapDeclared, ZoneTransitionGapHandlingAuthorityDeclared,
+    CriticalTimeZoneSuffixInconsistencyRequiresAction,
+    ElectiveTimeZoneSuffixInconsistencyMayBeHandled, NamedTimeZoneAnnotationPresent,
+    NamedTimeZoneIdentifierExcludesDotSegments, NamedTimeZoneIdentifierIsCaseSensitive,
+    NamedTimeZoneIsNotNumericOffsetAlias, NamedTimeZoneMeaningUsesCurrentTzdbRules,
+    NamedTimeZoneRetainsCivilRuleIdentity, NamedTimeZoneUsesIanaIdentifier,
+    NumericOffsetDoesNotIdentifyNamedZone, OffsetTimeZoneAnnotationPresent,
+    OffsetTimeZoneMustNotBeSynthesizedFromTimestampOffset, OffsetTimeZoneRepeatsTimestampOffset,
+    OffsetTimeZoneUseIsStronglyDiscouraged, UnknownNamedTimeZoneIdentifierTreatedAsInconsistency,
+    ZoneOffsetResolvedForRepresentedInstant, ZoneTransitionAmbiguityDeclared,
+    ZoneTransitionDisambiguationAuthorityDeclared, ZoneTransitionGapDeclared,
+    ZoneTransitionGapHandlingAuthorityDeclared, ZuluTimeZoneSuffixAvoidsOffsetInconsistency,
 };

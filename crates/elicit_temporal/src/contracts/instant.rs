@@ -1,8 +1,8 @@
 //! Instant-semantics propositions.
 //!
 //! Sources:
-//! - ISO 8601-1:2019 — combined date-time and UTC relationship forms
-//! - RFC 3339 §4.4, §5.6
+//! - ISO 8601-1:2019, 5.4.2 and 5.4.3
+//! - RFC 3339 §4.4, §5.1, and §5.6
 //! - RFC 9557 §1.2
 
 mod emit_impls {
@@ -28,7 +28,8 @@ mod emit_impls {
 
     /// A timestamp carries an explicit UTC relationship.
     ///
-    /// Normative source: RFC 3339 §4.4, §5.6
+    /// Normative sources: RFC 3339 §4.4 — Unqualified Local Time;
+    /// §5.6 — Internet Date/Time Format
     pub struct TimestampHasExplicitUtcOffset;
     structural_prop!(
         TimestampHasExplicitUtcOffset,
@@ -37,8 +38,8 @@ mod emit_impls {
 
     /// An offset date-time identifies a single fixed instant on the UTC timeline.
     ///
-    /// Normative basis: ISO 8601-1:2019, 5.4.2 and 5.4.3.
-    /// Informative cross-check: RFC 3339 §5.6.
+    /// Normative sources: ISO 8601-1:2019, 5.4.2 and 5.4.3.
+    /// Informative cross-check: RFC 3339 §5.6 — Internet Date/Time Format.
     pub struct OffsetDateTimeIdentifiesSingleInstant;
     structural_prop!(
         OffsetDateTimeIdentifiesSingleInstant,

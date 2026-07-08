@@ -178,13 +178,19 @@ own clause family structure instead of guessing from memory.
   exact/context-dependent/speculative classification. The CalConnect trait seam
   exposes dedicated parse/format exchanges for this family, and date-time
   formulas now consume the explicit-duration carrier directly.
-- [ ] Add explicit-only interval descriptors and proof seams for the remaining
+- [x] Add explicit-only interval descriptors and proof seams for the remaining
   CalConnect §6 interval semantics.
-  The surface still needs dedicated carriers and propositions for duration
-  substitution, omitted higher-order end-component inheritance, and time-shift
-  propagation across interval boundaries rather than relying only on the
-  narrower ISO interval representation family.
-- [ ] Tighten exact ISO clause numbers in module worksheets and doc comments for
+  `ExplicitTimeIntervalDescriptor`, the dedicated CalConnect endpoint family,
+  explicit interval proof aggregates, explicit interval proof branches, and
+  parse/format exchange seams now carry duration substitution, omitted
+  higher-order end-component inheritance, and time-shift propagation directly
+  rather than collapsing them into the narrower ISO interval family.
+- [x] Thread the CalConnect explicit-interval family through recurring
+  interval-with-repeat-rule seams.
+  `CC 18012:2018 §6.4` complete recurring representations now keep the ISO
+  complete versus CalConnect explicit interval family visible at the interface
+  boundary, together with the embedded interval proof branches.
+- [x] Tighten exact ISO clause numbers in module worksheets and doc comments for
   the contracts already covered by the preserved preview corpus.
 
 ### Extraction workflow artifacts

@@ -11,32 +11,83 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    BackendConversionSemanticsValid, CenturyValid, CompleteDurationEndIntervalSubstitutionEvidence,
-    CompleteIntervalSubstitutionSemanticsValid, CompleteRecurringIntervalRepresentationEvidence,
+    BackendConversionEvidence, BackendConversionSemanticsValid, CenturyValid,
+    CompleteDurationEndIntervalSubstitutionEvidence, CompleteIntervalSubstitutionSemanticsValid,
+    CompleteRecurringIntervalRepresentationEvidence,
     CompleteRecurringIntervalRepresentationSemanticsValid,
     CompleteStartDurationIntervalSubstitutionEvidence,
     CompleteStartEndIntervalSubstitutionEvidence, ConversionDropsNamedZoneIdentity,
     ConversionLossless, ConversionPreservesRepresentedInstant, ConversionPreservesTemporalOrdering,
-    ConversionTruncatesSubseconds, DateTimeFormulaEvaluationSemanticsValid, DateTimeFormulaValid,
-    DateWithShiftValid, DecadeValid, DurationAlternativeFormEvidence,
-    DurationDesignatorRepresentationEvidence, DurationFormValid,
-    DurationRepresentationSemanticsValid, ExplicitDurationValid, ExplicitTemporalFormValid,
-    ExtendedIntervalBoundarySemanticsValid, ExtendedYearValid, GroupedTimeScaleUnitValid,
+    ConversionTruncatesSubseconds, DateTimeFormulaEvaluationResultEvidence,
+    DateTimeFormulaEvaluationResultValid, DateTimeFormulaEvaluationSemanticsEvidence,
+    DateTimeFormulaEvaluationSemanticsValid, DateTimeFormulaEvidence, DateTimeFormulaValid,
+    DateWithShiftValid, DecadeValid,
+    DurationAlternativeFormEvidence, DurationDesignatorRepresentationEvidence, DurationFormEvidence,
+    DurationFormValid, DurationRepresentationSemanticsValid, ExplicitDurationMayBeNegative,
+    ExplicitDurationMayUseFractionalLowestOrderUnit, ExplicitDurationEvidence,
+    ExplicitDurationRepresentationEvidence, ExplicitDurationSemanticEvidence,
+    ExplicitDurationUsesDurationalUnitDesignators, ExplicitDurationValid,
+    ExplicitIntervalDurationSubstitutionEvidence,
+    ExplicitIntervalDurationSubstitutionSemanticsValid,
+    ExplicitIntervalEndComponentInheritanceEvidence,
+    ExplicitIntervalEndComponentInheritanceSemanticsValid,
+    ExplicitIntervalShiftPropagationEvidence, ExplicitIntervalShiftPropagationSemanticsValid,
+    ExplicitTemporalFormEvidence, ExplicitTemporalFormMayOmitZeroValuedComponents,
+    ExplicitTemporalFormUsesDesignatorSymbols, ExplicitTemporalFormValid,
+    ExplicitTemporalPrecisionUsesLowestDenotedComponent, ExplicitTimeIntervalEvidence,
+    ExplicitTimeIntervalValid, ExplicitUtcRelationshipUsesZuluOrSignedShift,
+    ExtendedIntervalBoundarySemanticsValid, ExtendedYearValid, FixedInstantEvidence,
+    GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits, GroupedTimeScaleUnitConvertsToTimeInterval,
+    GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift,
+    GroupedTimeScaleUnitDefinitionIsContinuous, GroupedTimeScaleUnitEvidence,
+    GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds,
+    GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder, GroupedTimeScaleUnitUsesGroupingDesignators,
+    GroupedTimeScaleUnitValid, GroupedTimeScaleUnitValueCarriesExplicitCoefficient,
     InheritedIntervalEndComponentsEvidence, InheritedIntervalEndComponentsSemanticsValid,
     InheritedIntervalZoneEvidence, InheritedIntervalZoneSemanticsValid,
+    IntervalEndpointOrderingEvidence, IntervalEndpointsOrdered,
     IxdtfAdditionalInformationEvidence, IxdtfAdditionalInformationSemanticsValid,
     IxdtfCalendarAwareTimestampEvidence, IxdtfTimestampHasPreferredPresentationCalendar,
-    IxdtfTimestampValid, LocalDateTimeMayBeAmbiguousAtZoneTransition,
-    LocalDateTimeMayFallInZoneTransitionGap, OffsetConsistentWithNamedZone, OffsetDateTimeValid,
-    OffsetTimeZoneAnnotationConsistentWithTimestamp, OffsetTimeZoneAnnotationEvidence,
-    OtherThanCompleteRecurringIntervalRepresentationEvidence,
-    OtherThanCompleteRecurringIntervalRepresentationSemanticsValid, QualifiedTemporalValueValid,
+    IxdtfTimestampValid, LevelOneUnspecifiedDigitsOccupyRightmostPositions,
+    LevelTwoUnspecifiedDigitsMayAppearWithinComponent, LocalDateTimeDoesNotIdentifyFixedInstant,
+    LocalDateTimeEvidence, LocalDateTimeMayBeAmbiguousAtZoneTransition,
+    LocalDateTimeMayFallInZoneTransitionGap, LocalDateTimeValid, LocalTimestampSemanticsEvidence,
+    LosslessConversionEvidence, LossyConversionAuthorityEvidence,
+    LossyConversionAuthorityValid, NamedTimeZoneIdentityEvidence, NamedTimeZoneIdentityValid,
+    NamedTimeZoneInterpretationTracksTzdbRevision, NamedTimeZoneRevisionEvidence,
+    NamedZoneAttachmentEvidence, OffsetConsistencyEvidence, OffsetConsistentWithNamedZone,
+    OffsetDateTimeEvidence, OffsetDateTimeValid, OffsetTimeZoneAnnotationConsistentWithTimestamp,
+    OffsetTimeZoneAnnotationEvidence, OtherThanCompleteRecurringIntervalRepresentationEvidence,
+    OtherThanCompleteRecurringIntervalRepresentationSemanticsValid, QualificationPlacementEvidence,
+    QualifiedTemporalExpressionEvidence, QualifiedTemporalExpressionValid,
+    QualifiedTemporalValueEvidence, QualifiedTemporalValueValid, RecurringIntervalEvidence,
     RecurringIntervalFormValid, RecurringIntervalWithRepeatRuleValid, ReducedCalendarDateValid,
-    ReducedLocalTimeValid, RepeatRuleValid, Rfc3339TimestampValid, SeasonalTemporalExpressionValid,
-    SelectionExpressionValid, SubYearGroupingExpressionValid, TemporalResult,
-    TemporalSetExpressionValid, TemporalSetRangeSemanticsValid, TimeIntervalValid,
+    ReducedLocalTimeValid,
+    RepeatRuleDeclaresEligibleTimeIntervals,
+    RepeatRuleEvaluationInheritsInitialStartComponentInformation,
+    RepeatRuleSelectionAppliesWithinEligibleIntervals, RepeatRuleUsesFrequencyDesignator,
+    RepeatRuleValid, Rfc3339TimestampValid, SeasonCodeDeclaresNamedSeason,
+    SeasonCodeDeclaresSeasonScope, SeasonalExpressionUsesSeasonCodeInMonthSlot,
+    SeasonalExpressionUsesYearAndSeasonForm, SeasonalTemporalExpressionValid,
+    SelectionExpressionMaySelectSingleInstance,
+    SelectionExpressionUsesRecognizedSelectionRuleVocabulary,
+    SelectionExpressionUsesSelectionDelimiters, SelectionExpressionValid,
+    SelectionRuleDayOfMonthUsesDayExpression, SelectionRuleHourUsesHourExpression,
+    SelectionRuleMinuteUsesMinuteExpression, SelectionRuleMonthUsesMonthExpression,
+    SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression, SelectionRulePositionAppliesLast,
+    SelectionRulePositionUsesInstanceDesignatorSuffix, SelectionRuleSecondUsesSecondExpression,
+    SelectionRuleWeekDayUsesDayOfWeekExpression, SelectionRuleWeekUsesWeekExpression,
+    SelectionRulesApplyWithinSelectedResults, SelectionWithDurationUsesDurationSuffix,
+    SubYearGroupingExpressionUsesGroupingCodeInMonthSlot,
+    SubYearGroupingExpressionUsesYearAndGroupingForm, SubYearGroupingExpressionValid,
+    SubYearGroupingKindEvidence, SubsecondTruncationEvidence, TemporalResult,
+    TemporalSetExpressionEvidence, TemporalSetExpressionValid, TemporalSetRangeSemanticsEvidence,
+    TemporalSetRangeSemanticsValid, TimeIntervalValid,
     TimeOfDayWithShiftValid, TimestampRepresentsFixedInstant, UnspecifiedComponentExpressionValid,
-    ZoneTransitionAmbiguitySemanticsValid, ZoneTransitionGapSemanticsValid,
+    UnspecifiedDigitUsesUppercaseXPlaceholder, UnspecifiedDigitsDeclareUnknownValue,
+    TimeIntervalEvidence, ZoneTransitionAmbiguityEvidence,
+    ZoneTransitionAmbiguitySemanticsValid, ZoneTransitionGapEvidence,
+    ZoneTransitionGapSemanticsValid, ZoneTransitionResolutionAuthorityEvidence,
     ZoneTransitionResolutionAuthorityValid, ZonedDateTimeHasNamedZone, ZonedTimestampEvidence,
 };
 
@@ -510,6 +561,53 @@ pub struct TimeOfDayWithShiftDescriptor {
     pub time: ExplicitTimeOfDayDescriptor,
     /// Explicit time shift carried alongside the time of day.
     pub shift: ExplicitTimeShiftDescriptor,
+}
+
+/// CalConnect `[datetimeE]` endpoint family admitted at explicit-interval boundaries.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+pub enum ExplicitTimeIntervalEndpointDescriptor {
+    /// Explicit local date and time.
+    DateTime(ExplicitDateTimeDescriptor),
+    /// Explicit local date and time with time shift.
+    DateTimeWithShift(ExplicitDateTimeWithShiftDescriptor),
+    /// Explicit date with time shift.
+    DateWithShift(DateWithShiftDescriptor),
+    /// Explicit time of day with time shift.
+    TimeOfDayWithShift(TimeOfDayWithShiftDescriptor),
+}
+
+/// Top-level CalConnect explicit time-interval representation form.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+pub enum ExplicitTimeIntervalRepresentation {
+    /// Explicit start and end boundaries.
+    StartEnd {
+        /// Interval start boundary.
+        start: ExplicitTimeIntervalEndpointDescriptor,
+        /// Interval end boundary.
+        end: ExplicitTimeIntervalEndpointDescriptor,
+    },
+    /// Explicit start boundary and an explicit duration.
+    StartDuration {
+        /// Interval start boundary.
+        start: ExplicitTimeIntervalEndpointDescriptor,
+        /// Interval duration.
+        duration: ExplicitDurationDescriptor,
+    },
+    /// Explicit duration followed by an explicit end boundary.
+    DurationEnd {
+        /// Interval duration.
+        duration: ExplicitDurationDescriptor,
+        /// Interval end boundary.
+        end: ExplicitTimeIntervalEndpointDescriptor,
+    },
+}
+
+/// Neutral CalConnect explicit time-interval descriptor.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Builder)]
+#[builder(pattern = "owned", setter(into))]
+pub struct ExplicitTimeIntervalDescriptor {
+    /// One of the legal CalConnect explicit interval top-level forms.
+    pub representation: ExplicitTimeIntervalRepresentation,
 }
 
 /// Named time-zone identity.
@@ -1102,6 +1200,15 @@ pub struct RepeatRuleDescriptor {
     pub selection: SelectionExpressionDescriptor,
 }
 
+/// Interval family admitted by a complete recurring interval with repeat rule.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+pub enum RecurringIntervalWithRepeatRuleIntervalDescriptor {
+    /// A complete ISO 8601 interval representation.
+    IsoComplete(TimeIntervalDescriptor),
+    /// A CalConnect explicit interval representation.
+    Explicit(ExplicitTimeIntervalDescriptor),
+}
+
 /// Complete recurring-interval representation extended with a repeat rule.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Builder)]
 #[builder(pattern = "owned", setter(into, strip_option))]
@@ -1109,8 +1216,8 @@ pub struct RecurringIntervalWithRepeatRuleDescriptor {
     /// Optional bounded repetition count; `None` denotes unbounded recurrence.
     #[builder(default)]
     pub repetitions: Option<u32>,
-    /// Base time interval being repeated.
-    pub interval: TimeIntervalDescriptor,
+    /// Base complete interval being repeated.
+    pub interval: RecurringIntervalWithRepeatRuleIntervalDescriptor,
     /// Repeat-rule refinement applied to the recurrence.
     pub repeat_rule: RepeatRuleDescriptor,
 }
@@ -1346,6 +1453,8 @@ pub enum LocalTimeZoneResolutionProofBranch {
         possibility: Established<LocalDateTimeMayBeAmbiguousAtZoneTransition>,
         /// Aggregate proof that ambiguity semantics were handled explicitly and lawfully.
         semantics: Established<ZoneTransitionAmbiguitySemanticsValid>,
+        /// Evidence bundle for the ambiguity-resolution branch.
+        evidence: ZoneTransitionAmbiguityEvidence,
     },
     /// The local wall-clock time fell inside a skipped transition gap.
     Gap {
@@ -1353,6 +1462,8 @@ pub enum LocalTimeZoneResolutionProofBranch {
         possibility: Established<LocalDateTimeMayFallInZoneTransitionGap>,
         /// Aggregate proof that gap semantics were handled explicitly and lawfully.
         semantics: Established<ZoneTransitionGapSemanticsValid>,
+        /// Evidence bundle for the gap-resolution branch.
+        evidence: ZoneTransitionGapEvidence,
     },
 }
 
@@ -1405,6 +1516,52 @@ pub enum IntervalZoneInheritanceProofBranch {
         semantics: Established<InheritedIntervalZoneSemanticsValid>,
         /// Evidence bundle for the inherited trailing-zone branch.
         evidence: InheritedIntervalZoneEvidence,
+    },
+}
+
+/// Explicit proof branch for CalConnect explicit-interval duration substitution semantics.
+pub enum ExplicitIntervalDurationSubstitutionProofBranch {
+    /// The explicit interval uses concrete start/end boundaries, so duration substitution does not apply.
+    NotApplicable,
+    /// The explicit interval uses a start boundary plus an explicit duration.
+    StartDuration {
+        /// Aggregate proof that duration-substitution semantics are explicit and lawful.
+        semantics: Established<ExplicitIntervalDurationSubstitutionSemanticsValid>,
+        /// Evidence bundle for the start/duration substitution branch.
+        evidence: ExplicitIntervalDurationSubstitutionEvidence,
+    },
+    /// The explicit interval uses an explicit duration plus an end boundary.
+    DurationEnd {
+        /// Aggregate proof that duration-substitution semantics are explicit and lawful.
+        semantics: Established<ExplicitIntervalDurationSubstitutionSemanticsValid>,
+        /// Evidence bundle for the duration/end substitution branch.
+        evidence: ExplicitIntervalDurationSubstitutionEvidence,
+    },
+}
+
+/// Explicit proof branch for CalConnect explicit-interval trailing-end inheritance semantics.
+pub enum ExplicitIntervalEndComponentInheritanceProofBranch {
+    /// The explicit interval does not rely on trailing-end higher-order inheritance.
+    None,
+    /// The trailing explicit endpoint inherits omitted higher-order components from the start.
+    Inherited {
+        /// Aggregate proof that trailing-end inheritance semantics are explicit and lawful.
+        semantics: Established<ExplicitIntervalEndComponentInheritanceSemanticsValid>,
+        /// Evidence bundle for the trailing-end inheritance branch.
+        evidence: ExplicitIntervalEndComponentInheritanceEvidence,
+    },
+}
+
+/// Explicit proof branch for CalConnect explicit-interval leading-shift propagation semantics.
+pub enum ExplicitIntervalShiftPropagationProofBranch {
+    /// The explicit interval does not rely on leading-shift propagation.
+    None,
+    /// The leading explicit time shift applies to the trailing endpoint absent an explicit override.
+    Propagated {
+        /// Aggregate proof that leading-shift propagation semantics are explicit and lawful.
+        semantics: Established<ExplicitIntervalShiftPropagationSemanticsValid>,
+        /// Evidence bundle for the leading-shift propagation branch.
+        evidence: ExplicitIntervalShiftPropagationEvidence,
     },
 }
 
@@ -1471,6 +1628,421 @@ pub enum RecurringIntervalRepresentationProofBranch {
     },
 }
 
+/// Explicit proof branch for the embedded interval family of a recurring interval with repeat rule.
+pub enum RecurringIntervalWithRepeatRuleIntervalProofBranch {
+    /// The recurring representation embeds a complete ISO 8601 interval.
+    IsoComplete {
+        /// The embedded ISO interval is structurally valid.
+        interval: Established<TimeIntervalValid>,
+        /// The embedded complete ISO interval carries explicit substitution-law sidecars.
+        substitution: CompleteIntervalSubstitutionProofBranch,
+    },
+    /// The recurring representation embeds a CalConnect explicit interval.
+    Explicit {
+        /// The embedded CalConnect explicit interval is structurally valid.
+        interval: Established<ExplicitTimeIntervalValid>,
+        /// The embedded explicit interval carries duration-substitution semantics.
+        duration_substitution: ExplicitIntervalDurationSubstitutionProofBranch,
+        /// The embedded explicit interval carries trailing-end inheritance semantics.
+        end_component_inheritance: ExplicitIntervalEndComponentInheritanceProofBranch,
+        /// The embedded explicit interval carries leading-shift propagation semantics.
+        shift_propagation: ExplicitIntervalShiftPropagationProofBranch,
+    },
+}
+
+/// Aggregate semantic bundle for one backend conversion exchange.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct BackendConversionSemanticBundle {
+    /// Aggregate proof that the backend conversion semantics are valid.
+    pub semantics: Established<BackendConversionSemanticsValid>,
+    /// Evidence bundle backing the aggregate backend-conversion proof.
+    pub evidence: BackendConversionEvidence,
+}
+
+/// Aggregate semantic bundle for one local date-time carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct LocalDateTimeSemanticBundle {
+    /// Aggregate proof that the local date-time descriptor is structurally valid.
+    pub validity: Established<LocalDateTimeValid>,
+    /// Evidence bundle for the valid local date-time structure.
+    pub validity_evidence: LocalDateTimeEvidence,
+    /// Aggregate proof that the local date-time remains civil and does not yet identify a fixed instant.
+    pub local_semantics: Established<LocalDateTimeDoesNotIdentifyFixedInstant>,
+    /// Evidence bundle for the local non-fixed-instant semantics.
+    pub local_semantics_evidence: LocalTimestampSemanticsEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one fixed-instant offset date-time carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct OffsetDateTimeSemanticBundle {
+    /// Aggregate proof that the offset date-time descriptor is structurally valid.
+    pub validity: Established<OffsetDateTimeValid>,
+    /// Evidence bundle for the valid offset date-time structure.
+    pub validity_evidence: OffsetDateTimeEvidence,
+    /// Aggregate proof that the timestamp identifies one fixed instant.
+    pub fixed_instant: Established<TimestampRepresentsFixedInstant>,
+    /// Evidence bundle for the fixed-instant semantics.
+    pub fixed_instant_evidence: FixedInstantEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one named time-zone carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct NamedTimeZoneSemanticBundle {
+    /// Aggregate proof that the named zone carries lawful IANA identity semantics.
+    pub identity: Established<NamedTimeZoneIdentityValid>,
+    /// Evidence bundle for the named-zone identity semantics.
+    pub identity_evidence: NamedTimeZoneIdentityEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one named-zone-attached fixed-instant carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ZonedDateTimeSemanticBundle {
+    /// Aggregate proof that the timestamp identifies one fixed instant.
+    pub fixed_instant: Established<TimestampRepresentsFixedInstant>,
+    /// Evidence bundle for the fixed-instant semantics.
+    pub fixed_instant_evidence: FixedInstantEvidence,
+    /// Aggregate proof that the attached zone carries lawful IANA identity semantics.
+    pub zone_identity: Established<NamedTimeZoneIdentityValid>,
+    /// Evidence bundle for the named-zone identity semantics.
+    pub zone_identity_evidence: NamedTimeZoneIdentityEvidence,
+    /// Aggregate proof that the timestamp carries named-zone attachment semantics.
+    pub zone_attachment: Established<ZonedDateTimeHasNamedZone>,
+    /// Evidence bundle for the named-zone attachment semantics.
+    pub zone_attachment_evidence: NamedZoneAttachmentEvidence,
+    /// Aggregate proof that the carried offset is consistent with the named-zone rules for the instant.
+    pub offset_consistency: Established<OffsetConsistentWithNamedZone>,
+    /// Evidence bundle for the offset-versus-zone consistency semantics.
+    pub offset_consistency_evidence: OffsetConsistencyEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one duration carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct DurationSemanticBundle {
+    /// Aggregate proof that the duration form is structurally valid.
+    pub validity: Established<DurationFormValid>,
+    /// Evidence bundle for the valid duration form.
+    pub validity_evidence: DurationFormEvidence,
+    /// Explicit proof branch for the chosen duration representation family.
+    pub representation: DurationRepresentationProofBranch,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one time-interval carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct TimeIntervalSemanticBundle {
+    /// Aggregate proof that the interval form is structurally valid.
+    pub validity: Established<TimeIntervalValid>,
+    /// Evidence bundle for the valid interval form.
+    pub validity_evidence: TimeIntervalEvidence,
+    /// Aggregate proof that any enhanced interval-boundary semantics are explicit and lawful.
+    pub extended_boundaries: Established<ExtendedIntervalBoundarySemanticsValid>,
+    /// Explicit proof branch for inherited higher-order trailing-end components.
+    pub end_component_inheritance: IntervalEndComponentInheritanceProofBranch,
+    /// Explicit proof branch for inherited trailing-zone semantics.
+    pub zone_inheritance: IntervalZoneInheritanceProofBranch,
+    /// Explicit proof branch for complete-interval substitution semantics.
+    pub substitution: CompleteIntervalSubstitutionProofBranch,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one recurring-interval carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct RecurringIntervalSemanticBundle {
+    /// Aggregate proof that the recurring-interval wrapper is structurally valid.
+    pub validity: Established<RecurringIntervalFormValid>,
+    /// Evidence bundle for the valid recurring-interval wrapper.
+    pub validity_evidence: RecurringIntervalEvidence,
+    /// Explicit proof branch for the embedded interval representation family.
+    pub representation: RecurringIntervalRepresentationProofBranch,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one qualified temporal value carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct QualifiedTemporalValueSemanticBundle {
+    /// Aggregate proof that the qualified temporal value is structurally valid.
+    pub validity: Established<QualifiedTemporalValueValid>,
+    /// Evidence bundle for the valid qualified temporal value structure.
+    pub validity_evidence: QualifiedTemporalValueEvidence,
+    /// Aggregate proof that the attached qualification expression is lawful.
+    pub qualification: Established<QualifiedTemporalExpressionValid>,
+    /// Evidence bundle for the qualification-expression semantics.
+    pub qualification_evidence: QualifiedTemporalExpressionEvidence,
+    /// Explicit proof branch for qualification placement semantics.
+    pub placement: QualificationPlacementEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one explicit temporal form carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ExplicitTemporalFormSemanticBundle {
+    /// Aggregate proof that the explicit temporal form is structurally valid.
+    pub validity: Established<ExplicitTemporalFormValid>,
+    /// Evidence bundle for the valid explicit temporal form structure.
+    pub validity_evidence: ExplicitTemporalFormEvidence,
+    /// Aggregate proof that the explicit form uses designator symbols lawfully.
+    pub designators: Established<ExplicitTemporalFormUsesDesignatorSymbols>,
+    /// Aggregate proof that omitted zero-valued components remain explicitly lawful.
+    pub zero_omission: Established<ExplicitTemporalFormMayOmitZeroValuedComponents>,
+    /// Aggregate proof that the declared precision uses the lowest denoted component.
+    pub precision: Established<ExplicitTemporalPrecisionUsesLowestDenotedComponent>,
+    /// Aggregate proof that UTC relationship syntax uses Zulu or signed shift semantics.
+    pub utc_relationship: Established<ExplicitUtcRelationshipUsesZuluOrSignedShift>,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one explicit duration carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ExplicitDurationSemanticBundle {
+    /// Aggregate proof that the explicit duration is structurally valid.
+    pub validity: Established<ExplicitDurationValid>,
+    /// Evidence bundle for the valid explicit-duration structure.
+    pub validity_evidence: ExplicitDurationEvidence,
+    /// Aggregate proof that explicit durational unit designators are used lawfully.
+    pub units: Established<ExplicitDurationUsesDurationalUnitDesignators>,
+    /// Explicit proof branch for the declared explicit-duration representation family.
+    pub representation: ExplicitDurationRepresentationEvidence,
+    /// Aggregate proof that any negative sign usage is lawful.
+    pub sign: Established<ExplicitDurationMayBeNegative>,
+    /// Aggregate proof that any fractional lowest-order unit usage is lawful.
+    pub fractional: Established<ExplicitDurationMayUseFractionalLowestOrderUnit>,
+    /// Explicit proof branch for the declared exactness or context semantics family.
+    pub semantics: ExplicitDurationSemanticEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one explicit time-interval carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ExplicitTimeIntervalSemanticBundle {
+    /// Aggregate proof that the explicit time interval is structurally valid.
+    pub validity: Established<ExplicitTimeIntervalValid>,
+    /// Evidence bundle for the valid explicit time-interval structure.
+    pub validity_evidence: ExplicitTimeIntervalEvidence,
+    /// Explicit proof branch for duration-substitution semantics.
+    pub duration_substitution: ExplicitIntervalDurationSubstitutionProofBranch,
+    /// Explicit proof branch for trailing-end component inheritance semantics.
+    pub end_component_inheritance: ExplicitIntervalEndComponentInheritanceProofBranch,
+    /// Explicit proof branch for leading-shift propagation semantics.
+    pub shift_propagation: ExplicitIntervalShiftPropagationProofBranch,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one grouped time-scale-unit carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct GroupedTimeScaleUnitSemanticBundle {
+    /// Aggregate proof that the grouped time-scale-unit expression is structurally valid.
+    pub validity: Established<GroupedTimeScaleUnitValid>,
+    /// Evidence bundle for the valid grouped-unit structure.
+    pub validity_evidence: GroupedTimeScaleUnitEvidence,
+    /// Aggregate proof that grouping designators are used lawfully.
+    pub designators: Established<GroupedTimeScaleUnitUsesGroupingDesignators>,
+    /// Aggregate proof that one or more duration units are carried lawfully.
+    pub units: Established<GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits>,
+    /// Aggregate proof that the grouped-unit definition is continuous.
+    pub continuity: Established<GroupedTimeScaleUnitDefinitionIsContinuous>,
+    /// Aggregate proof that the grouped value carries an explicit coefficient.
+    pub coefficient: Established<GroupedTimeScaleUnitValueCarriesExplicitCoefficient>,
+    /// Aggregate proof that lower-order units remain within lawful group bounds.
+    pub bounds: Established<GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds>,
+    /// Aggregate proof that explicit time-shift carriage is lawful when present.
+    pub explicit_time_shift: Established<GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift>,
+    /// Aggregate proof that out-of-bounds remainder truncation semantics are explicit.
+    pub truncation: Established<GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder>,
+    /// Aggregate proof that the grouped unit converts to an interval lawfully.
+    pub interval_semantics: Established<GroupedTimeScaleUnitConvertsToTimeInterval>,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one temporal set carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct TemporalSetSemanticBundle {
+    /// Aggregate proof that the temporal set expression is structurally valid.
+    pub expression: Established<TemporalSetExpressionValid>,
+    /// Evidence bundle for the valid temporal-set expression structure.
+    pub expression_evidence: TemporalSetExpressionEvidence,
+    /// Aggregate proof that the temporal set carries lawful range semantics.
+    pub range_semantics: Established<TemporalSetRangeSemanticsValid>,
+    /// Evidence bundle for the temporal-set range semantics.
+    pub range_semantics_evidence: TemporalSetRangeSemanticsEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one date-time formula carrier.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct DateTimeFormulaSemanticBundle {
+    /// Aggregate proof that the date-time formula is structurally valid.
+    pub validity: Established<DateTimeFormulaValid>,
+    /// Evidence bundle for the valid date-time-formula structure.
+    pub validity_evidence: DateTimeFormulaEvidence,
+    /// Aggregate proof that the declared evaluation semantics are lawful.
+    pub evaluation_semantics: Established<DateTimeFormulaEvaluationSemanticsValid>,
+    /// Evidence bundle for the declared formula-evaluation semantics.
+    pub evaluation_semantics_evidence: DateTimeFormulaEvaluationSemanticsEvidence,
+    /// Shared backend-conversion semantics for the descriptor/native exchange.
+    pub backend_conversion: BackendConversionSemanticBundle,
+}
+
+/// Aggregate semantic bundle for one date-time-formula evaluation result.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct DateTimeFormulaEvaluationResultBundle {
+    /// Aggregate proof that the explicit temporal form was lawfully produced by formula evaluation.
+    pub semantics: Established<DateTimeFormulaEvaluationResultValid>,
+    /// Evidence bundle for the formula-evaluation result provenance.
+    pub evidence: DateTimeFormulaEvaluationResultEvidence,
+}
+
+/// Aggregate semantic bundle for explicit local-to-zone resolution authority.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ZoneTransitionResolutionAuthorityBundle {
+    /// Aggregate proof that the carried local-to-zone resolution authority is lawful.
+    pub semantics: Established<ZoneTransitionResolutionAuthorityValid>,
+    /// Evidence bundle describing the explicit resolution authority.
+    pub evidence: ZoneTransitionResolutionAuthorityEvidence,
+}
+
+/// Aggregate semantic bundle for explicit lossy-conversion authority.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct LossyConversionAuthorityBundle {
+    /// Aggregate proof that lossy conversion was lawfully authorized.
+    pub semantics: Established<LossyConversionAuthorityValid>,
+    /// Evidence bundle describing the lossiness authority and rounding regime.
+    pub evidence: LossyConversionAuthorityEvidence,
+}
+
+/// Aggregate semantic bundle for one lossless conversion result.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct LosslessConversionBundle {
+    /// Aggregate proof that the conversion was lossless.
+    pub semantics: Established<ConversionLossless>,
+    /// Evidence bundle for the lossless-conversion semantics.
+    pub evidence: LosslessConversionEvidence,
+}
+
+/// Aggregate semantic bundle for one subsecond truncation result.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct SubsecondTruncationBundle {
+    /// Aggregate proof that subsecond truncation occurred.
+    pub semantics: Established<ConversionTruncatesSubseconds>,
+    /// Evidence bundle for the truncation semantics.
+    pub evidence: SubsecondTruncationEvidence,
+}
+
+/// Aggregate semantic bundle for one named-zone revision interpretation result.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct NamedTimeZoneRevisionBundle {
+    /// Aggregate proof that named-zone interpretation tracks the applicable TZDB revision.
+    pub semantics: Established<NamedTimeZoneInterpretationTracksTzdbRevision>,
+    /// Evidence bundle for the revision-sensitive named-zone semantics.
+    pub evidence: NamedTimeZoneRevisionEvidence,
+}
+
+/// Aggregate semantic bundle for one ordered fixed-instant interval result.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct IntervalEndpointOrderingBundle {
+    /// Aggregate proof that the endpoints are ordered lawfully.
+    pub semantics: Established<IntervalEndpointsOrdered>,
+    /// Evidence bundle for the endpoint-ordering semantics.
+    pub evidence: IntervalEndpointOrderingEvidence,
+}
+
+/// Generic user-facing wrapper pairing a native backend carrier with its aggregate semantic bundle.
+#[derive(Builder)]
+#[builder(pattern = "owned")]
+pub struct ProvenTemporalCarrier<T, S> {
+    /// The backend-owned runtime carrier.
+    pub carrier: T,
+    /// Aggregate semantics carried alongside the runtime value.
+    pub semantics: S,
+}
+
+/// User-facing proven local date-time carrier.
+pub type ProvenLocalDateTimeCarrier<T> = ProvenTemporalCarrier<T, LocalDateTimeSemanticBundle>;
+
+/// User-facing proven fixed-instant offset date-time carrier.
+pub type ProvenOffsetDateTimeCarrier<T> = ProvenTemporalCarrier<T, OffsetDateTimeSemanticBundle>;
+
+/// User-facing proven named time-zone carrier.
+pub type ProvenNamedTimeZoneCarrier<T> = ProvenTemporalCarrier<T, NamedTimeZoneSemanticBundle>;
+
+/// User-facing proven named-zone-attached fixed-instant carrier.
+pub type ProvenZonedDateTimeCarrier<T> = ProvenTemporalCarrier<T, ZonedDateTimeSemanticBundle>;
+
+/// User-facing proven duration carrier.
+pub type ProvenDurationCarrier<T> = ProvenTemporalCarrier<T, DurationSemanticBundle>;
+
+/// User-facing proven time-interval carrier.
+pub type ProvenTimeIntervalCarrier<T> = ProvenTemporalCarrier<T, TimeIntervalSemanticBundle>;
+
+/// User-facing proven recurring-interval carrier.
+pub type ProvenRecurringIntervalCarrier<T> =
+    ProvenTemporalCarrier<T, RecurringIntervalSemanticBundle>;
+
+/// User-facing proven qualified temporal value carrier.
+pub type ProvenQualifiedTemporalValueCarrier<T> =
+    ProvenTemporalCarrier<T, QualifiedTemporalValueSemanticBundle>;
+
+/// User-facing proven explicit temporal form carrier.
+pub type ProvenExplicitTemporalFormCarrier<T> =
+    ProvenTemporalCarrier<T, ExplicitTemporalFormSemanticBundle>;
+
+/// User-facing proven explicit duration carrier.
+pub type ProvenExplicitDurationCarrier<T> =
+    ProvenTemporalCarrier<T, ExplicitDurationSemanticBundle>;
+
+/// User-facing proven explicit time-interval carrier.
+pub type ProvenExplicitTimeIntervalCarrier<T> =
+    ProvenTemporalCarrier<T, ExplicitTimeIntervalSemanticBundle>;
+
+/// User-facing proven grouped time-scale-unit carrier.
+pub type ProvenGroupedTimeScaleUnitCarrier<T> =
+    ProvenTemporalCarrier<T, GroupedTimeScaleUnitSemanticBundle>;
+
+/// User-facing proven temporal set carrier.
+pub type ProvenTemporalSetCarrier<T> = ProvenTemporalCarrier<T, TemporalSetSemanticBundle>;
+
+/// User-facing proven date-time formula carrier.
+pub type ProvenDateTimeFormulaCarrier<T> =
+    ProvenTemporalCarrier<T, DateTimeFormulaSemanticBundle>;
+
 /// Result shape for parsing an RFC 3339 timestamp into a fixed-instant descriptor.
 pub type ParsedRfc3339TimestampResult = TemporalResult<(
     OffsetDateTimeDescriptor,
@@ -1529,6 +2101,20 @@ pub type ParsedDurationResult = TemporalResult<(
 pub type ParsedExplicitDurationResult = TemporalResult<(
     ExplicitDurationDescriptor,
     Established<ExplicitDurationValid>,
+    Established<ExplicitDurationUsesDurationalUnitDesignators>,
+    ExplicitDurationRepresentationEvidence,
+    Established<ExplicitDurationMayBeNegative>,
+    Established<ExplicitDurationMayUseFractionalLowestOrderUnit>,
+    ExplicitDurationSemanticEvidence,
+)>;
+
+/// Result shape for parsing a CalConnect explicit time interval.
+pub type ParsedExplicitTimeIntervalResult = TemporalResult<(
+    ExplicitTimeIntervalDescriptor,
+    Established<ExplicitTimeIntervalValid>,
+    ExplicitIntervalDurationSubstitutionProofBranch,
+    ExplicitIntervalEndComponentInheritanceProofBranch,
+    ExplicitIntervalShiftPropagationProofBranch,
 )>;
 
 /// Result shape for parsing an ISO 8601 recurring interval.
@@ -1542,18 +2128,32 @@ pub type ParsedRecurringIntervalResult = TemporalResult<(
 pub type ParsedQualifiedTemporalValueResult = TemporalResult<(
     QualifiedTemporalValueDescriptor,
     Established<QualifiedTemporalValueValid>,
+    Established<QualifiedTemporalExpressionValid>,
+    QualificationPlacementEvidence,
 )>;
 
 /// Result shape for parsing an explicit temporal form.
 pub type ParsedExplicitTemporalFormResult = TemporalResult<(
     ExplicitTemporalFormDescriptor,
     Established<ExplicitTemporalFormValid>,
+    Established<ExplicitTemporalFormUsesDesignatorSymbols>,
+    Established<ExplicitTemporalFormMayOmitZeroValuedComponents>,
+    Established<ExplicitTemporalPrecisionUsesLowestDenotedComponent>,
+    Established<ExplicitUtcRelationshipUsesZuluOrSignedShift>,
 )>;
 
 /// Result shape for parsing a grouped time scale unit expression.
 pub type ParsedGroupedTimeScaleUnitResult = TemporalResult<(
     GroupedTimeScaleUnitDescriptor,
     Established<GroupedTimeScaleUnitValid>,
+    Established<GroupedTimeScaleUnitUsesGroupingDesignators>,
+    Established<GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits>,
+    Established<GroupedTimeScaleUnitDefinitionIsContinuous>,
+    Established<GroupedTimeScaleUnitValueCarriesExplicitCoefficient>,
+    Established<GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds>,
+    Established<GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift>,
+    Established<GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder>,
+    Established<GroupedTimeScaleUnitConvertsToTimeInterval>,
 )>;
 
 /// Result shape for parsing a date-time formula and its evaluation semantics.
@@ -1564,35 +2164,468 @@ pub type ParsedDateTimeFormulaResult = TemporalResult<(
 )>;
 
 /// Result shape for evaluating a date-time formula into an explicit temporal value.
+///
+/// The returned provenance token distinguishes "valid explicit form" from
+/// "valid explicit form lawfully produced by the declared formula-evaluation
+/// semantics."
 pub type EvaluatedDateTimeFormulaResult = TemporalResult<(
     ExplicitTemporalValueDescriptor,
     Established<ExplicitTemporalFormValid>,
+    Established<DateTimeFormulaEvaluationResultValid>,
 )>;
 
 /// Result shape for parsing a selection expression.
 pub type ParsedSelectionExpressionResult = TemporalResult<(
     SelectionExpressionDescriptor,
     Established<SelectionExpressionValid>,
+    Established<SelectionExpressionUsesSelectionDelimiters>,
+    Established<SelectionExpressionUsesRecognizedSelectionRuleVocabulary>,
+    Established<SelectionRuleMonthUsesMonthExpression>,
+    Established<SelectionRuleWeekUsesWeekExpression>,
+    Established<SelectionRuleDayOfMonthUsesDayExpression>,
+    Established<SelectionRuleWeekDayUsesDayOfWeekExpression>,
+    Established<SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression>,
+    Established<SelectionRuleHourUsesHourExpression>,
+    Established<SelectionRuleMinuteUsesMinuteExpression>,
+    Established<SelectionRuleSecondUsesSecondExpression>,
+    Established<SelectionRulesApplyWithinSelectedResults>,
+    Established<SelectionExpressionMaySelectSingleInstance>,
+    Established<SelectionRulePositionUsesInstanceDesignatorSuffix>,
+    Established<SelectionRulePositionAppliesLast>,
+    Established<SelectionWithDurationUsesDurationSuffix>,
 )>;
 
 /// Result shape for parsing a repeat rule.
-pub type ParsedRepeatRuleResult =
-    TemporalResult<(RepeatRuleDescriptor, Established<RepeatRuleValid>)>;
+pub type ParsedRepeatRuleResult = TemporalResult<(
+    RepeatRuleDescriptor,
+    Established<RepeatRuleValid>,
+    Established<RepeatRuleUsesFrequencyDesignator>,
+    Established<RepeatRuleDeclaresEligibleTimeIntervals>,
+    Established<RepeatRuleSelectionAppliesWithinEligibleIntervals>,
+    Established<RepeatRuleEvaluationInheritsInitialStartComponentInformation>,
+)>;
 
 /// Result shape for parsing a recurring interval with an attached repeat rule.
 pub type ParsedRecurringIntervalWithRepeatRuleResult = TemporalResult<(
     RecurringIntervalWithRepeatRuleDescriptor,
     Established<RecurringIntervalWithRepeatRuleValid>,
+    RecurringIntervalWithRepeatRuleIntervalProofBranch,
+    Established<RepeatRuleUsesFrequencyDesignator>,
+    Established<RepeatRuleDeclaresEligibleTimeIntervals>,
+    Established<RepeatRuleSelectionAppliesWithinEligibleIntervals>,
+    Established<RepeatRuleEvaluationInheritsInitialStartComponentInformation>,
 )>;
+
+/// Result shape for resolving a named zone into the neutral descriptor plus identity sidecars.
+pub type ResolvedNamedTimeZoneResult = TemporalResult<(
+    NamedTimeZoneDescriptor,
+    Established<NamedTimeZoneIdentityValid>,
+    NamedTimeZoneIdentityEvidence,
+)>;
+
+/// Result shape for confirming explicit local-to-zone resolution authority.
+pub type ConfirmedZoneTransitionResolutionAuthorityResult = TemporalResult<(
+    Established<ZoneTransitionResolutionAuthorityValid>,
+    ZoneTransitionResolutionAuthorityEvidence,
+)>;
+
+/// Result shape for realizing a validated local date-time descriptor as a proven native carrier.
+pub type RealizedProvenLocalDateTimeResult<T> = TemporalResult<ProvenLocalDateTimeCarrier<T>>;
+
+/// Result shape for reflecting a proven native local date-time carrier back into the descriptor accord.
+pub type ReflectedProvenLocalDateTimeResult =
+    TemporalResult<(LocalDateTimeDescriptor, LocalDateTimeSemanticBundle)>;
+
+/// Result shape for realizing a validated offset date-time descriptor as a proven native carrier.
+pub type RealizedProvenOffsetDateTimeResult<T> = TemporalResult<ProvenOffsetDateTimeCarrier<T>>;
+
+/// Result shape for reflecting a proven native offset date-time carrier back into the descriptor accord.
+pub type ReflectedProvenOffsetDateTimeResult =
+    TemporalResult<(OffsetDateTimeDescriptor, OffsetDateTimeSemanticBundle)>;
+
+/// Result shape for realizing a validated named-zone descriptor as a proven native carrier.
+pub type RealizedProvenNamedTimeZoneResult<T> = TemporalResult<ProvenNamedTimeZoneCarrier<T>>;
+
+/// Result shape for reflecting a proven native named-zone carrier back into the descriptor accord.
+pub type ReflectedProvenNamedTimeZoneResult =
+    TemporalResult<(NamedTimeZoneDescriptor, NamedTimeZoneSemanticBundle)>;
+
+/// Result shape for realizing a validated zoned date-time descriptor as a proven native carrier.
+pub type RealizedProvenZonedDateTimeResult<T> = TemporalResult<ProvenZonedDateTimeCarrier<T>>;
+
+/// Result shape for reflecting a proven native zoned date-time carrier back into the descriptor accord.
+pub type ReflectedProvenZonedDateTimeResult =
+    TemporalResult<(ZonedDateTimeDescriptor, ZonedDateTimeSemanticBundle)>;
+
+/// Result shape for realizing a validated duration descriptor as a proven native carrier.
+pub type RealizedProvenDurationResult<T> = TemporalResult<ProvenDurationCarrier<T>>;
+
+/// Result shape for reflecting a proven native duration carrier back into the descriptor accord.
+pub type ReflectedProvenDurationResult =
+    TemporalResult<(DurationDescriptor, DurationSemanticBundle)>;
+
+/// Result shape for realizing a validated interval descriptor as a proven native carrier.
+pub type RealizedProvenTimeIntervalResult<T> = TemporalResult<ProvenTimeIntervalCarrier<T>>;
+
+/// Result shape for reflecting a proven native interval carrier back into the descriptor accord.
+pub type ReflectedProvenTimeIntervalResult =
+    TemporalResult<(TimeIntervalDescriptor, TimeIntervalSemanticBundle)>;
+
+/// Result shape for realizing a validated recurring-interval descriptor as a proven native carrier.
+pub type RealizedProvenRecurringIntervalResult<T> =
+    TemporalResult<ProvenRecurringIntervalCarrier<T>>;
+
+/// Result shape for reflecting a proven native recurring-interval carrier back into the descriptor accord.
+pub type ReflectedProvenRecurringIntervalResult =
+    TemporalResult<(RecurringIntervalDescriptor, RecurringIntervalSemanticBundle)>;
+
+/// Result shape for realizing a validated qualified temporal value descriptor as a proven native carrier.
+pub type RealizedProvenQualifiedTemporalValueResult<T> =
+    TemporalResult<ProvenQualifiedTemporalValueCarrier<T>>;
+
+/// Result shape for reflecting a proven native qualified temporal value carrier back into the descriptor accord.
+pub type ReflectedProvenQualifiedTemporalValueResult =
+    TemporalResult<(QualifiedTemporalValueDescriptor, QualifiedTemporalValueSemanticBundle)>;
+
+/// Result shape for realizing a validated explicit temporal form descriptor as a proven native carrier.
+pub type RealizedProvenExplicitTemporalFormResult<T> =
+    TemporalResult<ProvenExplicitTemporalFormCarrier<T>>;
+
+/// Result shape for reflecting a proven native explicit temporal form carrier back into the descriptor accord.
+pub type ReflectedProvenExplicitTemporalFormResult =
+    TemporalResult<(ExplicitTemporalFormDescriptor, ExplicitTemporalFormSemanticBundle)>;
+
+/// Result shape for realizing a validated explicit duration descriptor as a proven native carrier.
+pub type RealizedProvenExplicitDurationResult<T> =
+    TemporalResult<ProvenExplicitDurationCarrier<T>>;
+
+/// Result shape for reflecting a proven native explicit duration carrier back into the descriptor accord.
+pub type ReflectedProvenExplicitDurationResult =
+    TemporalResult<(ExplicitDurationDescriptor, ExplicitDurationSemanticBundle)>;
+
+/// Result shape for realizing a validated explicit time-interval descriptor as a proven native carrier.
+pub type RealizedProvenExplicitTimeIntervalResult<T> =
+    TemporalResult<ProvenExplicitTimeIntervalCarrier<T>>;
+
+/// Result shape for reflecting a proven native explicit time-interval carrier back into the descriptor accord.
+pub type ReflectedProvenExplicitTimeIntervalResult =
+    TemporalResult<(ExplicitTimeIntervalDescriptor, ExplicitTimeIntervalSemanticBundle)>;
+
+/// Result shape for realizing a validated grouped time-scale-unit descriptor as a proven native carrier.
+pub type RealizedProvenGroupedTimeScaleUnitResult<T> =
+    TemporalResult<ProvenGroupedTimeScaleUnitCarrier<T>>;
+
+/// Result shape for reflecting a proven native grouped time-scale-unit carrier back into the descriptor accord.
+pub type ReflectedProvenGroupedTimeScaleUnitResult =
+    TemporalResult<(GroupedTimeScaleUnitDescriptor, GroupedTimeScaleUnitSemanticBundle)>;
+
+/// Result shape for realizing a validated temporal-set descriptor as a proven native carrier.
+pub type RealizedProvenTemporalSetResult<T> = TemporalResult<ProvenTemporalSetCarrier<T>>;
+
+/// Result shape for reflecting a proven native temporal-set carrier back into the descriptor accord.
+pub type ReflectedProvenTemporalSetResult =
+    TemporalResult<(TemporalSetDescriptor, TemporalSetSemanticBundle)>;
+
+/// Result shape for realizing a validated date-time formula descriptor as a proven native carrier.
+pub type RealizedProvenDateTimeFormulaResult<T> =
+    TemporalResult<ProvenDateTimeFormulaCarrier<T>>;
+
+/// Result shape for reflecting a proven native date-time formula carrier back into the descriptor accord.
+pub type ReflectedProvenDateTimeFormulaResult =
+    TemporalResult<(DateTimeFormulaDescriptor, DateTimeFormulaSemanticBundle)>;
+
+/// Result shape for evaluating a proven native date-time formula into a proven explicit temporal form.
+pub type NativeEvaluatedProvenDateTimeFormulaResult<T> = TemporalResult<(
+    ProvenExplicitTemporalFormCarrier<T>,
+    DateTimeFormulaEvaluationResultBundle,
+)>;
+
+/// Result shape for resolving a proven native local date-time against a proven named zone.
+pub type NativeResolvedProvenLocalDateTimeAtNamedZoneResult<T> = TemporalResult<(
+    ProvenZonedDateTimeCarrier<T>,
+    ZoneTransitionResolutionAuthorityBundle,
+    LocalTimeZoneResolutionProofBranch,
+)>;
+
+/// Result shape for attaching a proven named zone to a proven fixed-instant timestamp.
+pub type NativeAttachedProvenNamedZoneResult<T> = TemporalResult<ProvenZonedDateTimeCarrier<T>>;
+
+/// Result shape for normalizing a proven native offset timestamp to UTC.
+pub type NativeNormalizedProvenUtcTimestampResult<T> = TemporalResult<(
+    ProvenOffsetDateTimeCarrier<T>,
+    LosslessConversionBundle,
+)>;
+
+/// Result shape for dropping named-zone identity from a proven native zoned timestamp.
+pub type NativeStrippedProvenNamedZoneTimestampResult<T> =
+    TemporalResult<ProvenOffsetDateTimeCarrier<T>>;
+
+/// Result shape for reducing proven native timestamp subsecond precision under explicit authority.
+pub type NativeTruncatedProvenSubsecondsTimestampResult<T> = TemporalResult<(
+    ProvenOffsetDateTimeCarrier<T>,
+    SubsecondTruncationBundle,
+)>;
+
+/// Result shape for adjusting proven native timestamp precision without losing information.
+pub type NativeLosslessPrecisionAdjustedProvenTimestampResult<T> = TemporalResult<(
+    ProvenOffsetDateTimeCarrier<T>,
+    LosslessConversionBundle,
+)>;
+
+/// Result shape for confirming chronological ordering between two proven native fixed-instant endpoints.
+pub type NativeOrderedProvenOffsetEndpointsResult =
+    TemporalResult<IntervalEndpointOrderingBundle>;
+
+/// Result shape for confirming that a proven zoned timestamp is interpreted under a concrete TZDB revision.
+pub type ConfirmedProvenNamedZoneRevisionResult =
+    TemporalResult<NamedTimeZoneRevisionBundle>;
+
+/// Result shape for realizing a validated local date-time descriptor as a native carrier.
+pub type RealizedLocalDateTimeResult<T> = TemporalResult<(
+    T,
+    Established<LocalDateTimeDoesNotIdentifyFixedInstant>,
+    LocalTimestampSemanticsEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native local date-time carrier into the neutral descriptor accord.
+pub type ReflectedLocalDateTimeResult = TemporalResult<(
+    LocalDateTimeDescriptor,
+    Established<LocalDateTimeValid>,
+    LocalDateTimeEvidence,
+    Established<LocalDateTimeDoesNotIdentifyFixedInstant>,
+    LocalTimestampSemanticsEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated offset date-time descriptor as a native carrier.
+pub type RealizedOffsetDateTimeResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native offset date-time carrier into the neutral descriptor accord.
+pub type ReflectedOffsetDateTimeResult = TemporalResult<(
+    OffsetDateTimeDescriptor,
+    Established<OffsetDateTimeValid>,
+    OffsetDateTimeEvidence,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated named-zone descriptor as a native carrier.
+pub type RealizedNamedTimeZoneResult<T> = TemporalResult<(
+    T,
+    Established<NamedTimeZoneIdentityValid>,
+    NamedTimeZoneIdentityEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native named-zone carrier into the neutral descriptor accord.
+pub type ReflectedNamedTimeZoneResult = TemporalResult<(
+    NamedTimeZoneDescriptor,
+    Established<NamedTimeZoneIdentityValid>,
+    NamedTimeZoneIdentityEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated zoned date-time descriptor as a native carrier.
+pub type RealizedZonedDateTimeResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<NamedTimeZoneIdentityValid>,
+    Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
+    Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native zoned date-time carrier into the neutral descriptor accord.
+pub type ReflectedZonedDateTimeResult = TemporalResult<(
+    ZonedDateTimeDescriptor,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<NamedTimeZoneIdentityValid>,
+    Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
+    Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for resolving a native local date-time against a native named zone.
+pub type NativeResolvedLocalDateTimeAtNamedZoneResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<NamedTimeZoneIdentityValid>,
+    Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
+    Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
+    Established<ZoneTransitionResolutionAuthorityValid>,
+    ZoneTransitionResolutionAuthorityEvidence,
+    LocalTimeZoneResolutionProofBranch,
+)>;
+
+/// Result shape for attaching a native named zone to a native fixed-instant timestamp.
+pub type NativeAttachedNamedZoneResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<NamedTimeZoneIdentityValid>,
+    Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
+    Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
+)>;
+
+/// Result shape for normalizing a native offset timestamp to UTC.
+pub type NativeNormalizedUtcTimestampResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<ConversionPreservesRepresentedInstant>,
+    Established<ConversionPreservesTemporalOrdering>,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+    Established<ConversionLossless>,
+    LosslessConversionEvidence,
+)>;
+
+/// Result shape for dropping named-zone identity from a native zoned timestamp.
+pub type NativeStrippedNamedZoneTimestampResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<ConversionDropsNamedZoneIdentity>,
+    Established<ConversionPreservesRepresentedInstant>,
+    Established<ConversionPreservesTemporalOrdering>,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reducing native timestamp subsecond precision under explicit authority.
+pub type NativeTruncatedSubsecondsTimestampResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+    Established<ConversionTruncatesSubseconds>,
+    SubsecondTruncationEvidence,
+)>;
+
+/// Result shape for adjusting native timestamp precision without losing information.
+pub type NativeLosslessPrecisionAdjustedTimestampResult<T> = TemporalResult<(
+    T,
+    Established<TimestampRepresentsFixedInstant>,
+    FixedInstantEvidence,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+    Established<ConversionLossless>,
+    LosslessConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated duration descriptor as a native carrier.
+pub type RealizedDurationResult<T> = TemporalResult<(
+    T,
+    DurationRepresentationProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native duration carrier into the neutral descriptor accord.
+pub type ReflectedDurationResult = TemporalResult<(
+    DurationDescriptor,
+    Established<DurationFormValid>,
+    DurationRepresentationProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated interval descriptor as a native carrier.
+pub type RealizedTimeIntervalResult<T> = TemporalResult<(
+    T,
+    Established<ExtendedIntervalBoundarySemanticsValid>,
+    IntervalEndComponentInheritanceProofBranch,
+    IntervalZoneInheritanceProofBranch,
+    CompleteIntervalSubstitutionProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native interval carrier into the neutral descriptor accord.
+pub type ReflectedTimeIntervalResult = TemporalResult<(
+    TimeIntervalDescriptor,
+    Established<TimeIntervalValid>,
+    Established<ExtendedIntervalBoundarySemanticsValid>,
+    IntervalEndComponentInheritanceProofBranch,
+    IntervalZoneInheritanceProofBranch,
+    CompleteIntervalSubstitutionProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for realizing a validated recurring-interval descriptor as a native carrier.
+pub type RealizedRecurringIntervalResult<T> = TemporalResult<(
+    T,
+    RecurringIntervalRepresentationProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for reflecting a native recurring-interval carrier into the neutral descriptor accord.
+pub type ReflectedRecurringIntervalResult = TemporalResult<(
+    RecurringIntervalDescriptor,
+    Established<RecurringIntervalFormValid>,
+    RecurringIntervalRepresentationProofBranch,
+    Established<BackendConversionSemanticsValid>,
+    BackendConversionEvidence,
+)>;
+
+/// Result shape for ordering two native fixed-instant endpoints chronologically.
+pub type NativeOrderedOffsetEndpointsResult = TemporalResult<Established<IntervalEndpointsOrdered>>;
 
 /// Result shape for resolving a local wall-clock timestamp against a named zone.
 pub type ResolvedLocalDateTimeAtNamedZoneResult = TemporalResult<(
     ZonedDateTimeDescriptor,
     Established<TimestampRepresentsFixedInstant>,
     Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
     Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
     Established<ZoneTransitionResolutionAuthorityValid>,
+    ZoneTransitionResolutionAuthorityEvidence,
     LocalTimeZoneResolutionProofBranch,
+)>;
+
+/// Result shape for attaching named-zone identity to a fixed-instant timestamp.
+pub type AttachedNamedZoneResult = TemporalResult<(
+    ZonedDateTimeDescriptor,
+    Established<ZonedDateTimeHasNamedZone>,
+    NamedZoneAttachmentEvidence,
+    Established<OffsetConsistentWithNamedZone>,
+    OffsetConsistencyEvidence,
+)>;
+
+/// Result shape for confirming revision-aware named-zone interpretation semantics.
+pub type ConfirmedNamedZoneRevisionResult = TemporalResult<(
+    Established<NamedTimeZoneInterpretationTracksTzdbRevision>,
+    NamedTimeZoneRevisionEvidence,
 )>;
 
 /// Result shape for parsing an RFC 9557 IXDTF timestamp and its suffix semantics.
@@ -1609,18 +2642,29 @@ pub type ParsedIxdtfTimestampResult = TemporalResult<(
 pub type ParsedSeasonalTemporalExpressionResult = TemporalResult<(
     SeasonalTemporalExpressionDescriptor,
     Established<SeasonalTemporalExpressionValid>,
+    Established<SeasonalExpressionUsesYearAndSeasonForm>,
+    Established<SeasonalExpressionUsesSeasonCodeInMonthSlot>,
+    Established<SeasonCodeDeclaresNamedSeason>,
+    Established<SeasonCodeDeclaresSeasonScope>,
 )>;
 
 /// Result shape for parsing an ISO 8601-2 Level 2 sub-year grouping expression.
 pub type ParsedSubYearGroupingExpressionResult = TemporalResult<(
     SubYearGroupingExpressionDescriptor,
     Established<SubYearGroupingExpressionValid>,
+    Established<SubYearGroupingExpressionUsesYearAndGroupingForm>,
+    Established<SubYearGroupingExpressionUsesGroupingCodeInMonthSlot>,
+    SubYearGroupingKindEvidence,
 )>;
 
 /// Result shape for parsing an ISO 8601-2 unspecified-component expression.
 pub type ParsedUnspecifiedComponentExpressionResult = TemporalResult<(
     UnspecifiedComponentExpressionDescriptor,
     Established<UnspecifiedComponentExpressionValid>,
+    Established<UnspecifiedDigitUsesUppercaseXPlaceholder>,
+    Established<UnspecifiedDigitsDeclareUnknownValue>,
+    Established<LevelOneUnspecifiedDigitsOccupyRightmostPositions>,
+    Established<LevelTwoUnspecifiedDigitsMayAppearWithinComponent>,
 )>;
 
 /// Result shape for parsing an ISO 8601-2 temporal set expression.
@@ -1698,16 +2742,33 @@ pub type FormattedTimeOfDayWithShiftResult =
     TemporalResult<(String, Established<TimeOfDayWithShiftValid>)>;
 
 /// Result shape for emitting an ISO 8601-2 seasonal temporal expression.
-pub type FormattedSeasonalTemporalExpressionResult =
-    TemporalResult<(String, Established<SeasonalTemporalExpressionValid>)>;
+pub type FormattedSeasonalTemporalExpressionResult = TemporalResult<(
+    String,
+    Established<SeasonalTemporalExpressionValid>,
+    Established<SeasonalExpressionUsesYearAndSeasonForm>,
+    Established<SeasonalExpressionUsesSeasonCodeInMonthSlot>,
+    Established<SeasonCodeDeclaresNamedSeason>,
+    Established<SeasonCodeDeclaresSeasonScope>,
+)>;
 
 /// Result shape for emitting an ISO 8601-2 Level 2 sub-year grouping expression.
-pub type FormattedSubYearGroupingExpressionResult =
-    TemporalResult<(String, Established<SubYearGroupingExpressionValid>)>;
+pub type FormattedSubYearGroupingExpressionResult = TemporalResult<(
+    String,
+    Established<SubYearGroupingExpressionValid>,
+    Established<SubYearGroupingExpressionUsesYearAndGroupingForm>,
+    Established<SubYearGroupingExpressionUsesGroupingCodeInMonthSlot>,
+    SubYearGroupingKindEvidence,
+)>;
 
 /// Result shape for emitting an ISO 8601-2 unspecified-component expression.
-pub type FormattedUnspecifiedComponentExpressionResult =
-    TemporalResult<(String, Established<UnspecifiedComponentExpressionValid>)>;
+pub type FormattedUnspecifiedComponentExpressionResult = TemporalResult<(
+    String,
+    Established<UnspecifiedComponentExpressionValid>,
+    Established<UnspecifiedDigitUsesUppercaseXPlaceholder>,
+    Established<UnspecifiedDigitsDeclareUnknownValue>,
+    Established<LevelOneUnspecifiedDigitsOccupyRightmostPositions>,
+    Established<LevelTwoUnspecifiedDigitsMayAppearWithinComponent>,
+)>;
 
 /// Result shape for emitting an ISO 8601-2 temporal set expression.
 pub type FormattedTemporalSetResult = TemporalResult<(
@@ -1724,20 +2785,56 @@ pub type FormattedDurationResult = TemporalResult<(
 )>;
 
 /// Result shape for emitting a CalConnect explicit duration.
-pub type FormattedExplicitDurationResult =
-    TemporalResult<(String, Established<ExplicitDurationValid>)>;
+pub type FormattedExplicitDurationResult = TemporalResult<(
+    String,
+    Established<ExplicitDurationValid>,
+    Established<ExplicitDurationUsesDurationalUnitDesignators>,
+    ExplicitDurationRepresentationEvidence,
+    Established<ExplicitDurationMayBeNegative>,
+    Established<ExplicitDurationMayUseFractionalLowestOrderUnit>,
+    ExplicitDurationSemanticEvidence,
+)>;
+
+/// Result shape for emitting a CalConnect explicit time interval.
+pub type FormattedExplicitTimeIntervalResult = TemporalResult<(
+    String,
+    Established<ExplicitTimeIntervalValid>,
+    ExplicitIntervalDurationSubstitutionProofBranch,
+    ExplicitIntervalEndComponentInheritanceProofBranch,
+    ExplicitIntervalShiftPropagationProofBranch,
+)>;
 
 /// Result shape for emitting a qualified temporal value.
-pub type FormattedQualifiedTemporalValueResult =
-    TemporalResult<(String, Established<QualifiedTemporalValueValid>)>;
+pub type FormattedQualifiedTemporalValueResult = TemporalResult<(
+    String,
+    Established<QualifiedTemporalValueValid>,
+    Established<QualifiedTemporalExpressionValid>,
+    QualificationPlacementEvidence,
+)>;
 
 /// Result shape for emitting an explicit temporal form.
-pub type FormattedExplicitTemporalFormResult =
-    TemporalResult<(String, Established<ExplicitTemporalFormValid>)>;
+pub type FormattedExplicitTemporalFormResult = TemporalResult<(
+    String,
+    Established<ExplicitTemporalFormValid>,
+    Established<ExplicitTemporalFormUsesDesignatorSymbols>,
+    Established<ExplicitTemporalFormMayOmitZeroValuedComponents>,
+    Established<ExplicitTemporalPrecisionUsesLowestDenotedComponent>,
+    Established<ExplicitUtcRelationshipUsesZuluOrSignedShift>,
+)>;
 
 /// Result shape for emitting a grouped time scale unit expression.
-pub type FormattedGroupedTimeScaleUnitResult =
-    TemporalResult<(String, Established<GroupedTimeScaleUnitValid>)>;
+pub type FormattedGroupedTimeScaleUnitResult = TemporalResult<(
+    String,
+    Established<GroupedTimeScaleUnitValid>,
+    Established<GroupedTimeScaleUnitUsesGroupingDesignators>,
+    Established<GroupedTimeScaleUnitCarriesOneOrMoreDurationUnits>,
+    Established<GroupedTimeScaleUnitDefinitionIsContinuous>,
+    Established<GroupedTimeScaleUnitValueCarriesExplicitCoefficient>,
+    Established<GroupedTimeScaleUnitLowerOrderUnitsRemainWithinGroupBounds>,
+    Established<GroupedTimeScaleUnitDateTimeMayCarryExplicitTimeShift>,
+    Established<GroupedTimeScaleUnitTruncatesOutOfBoundsRemainder>,
+    Established<GroupedTimeScaleUnitConvertsToTimeInterval>,
+)>;
 
 /// Result shape for emitting a date-time formula and its evaluation semantics.
 pub type FormattedDateTimeFormulaResult = TemporalResult<(
@@ -1747,11 +2844,35 @@ pub type FormattedDateTimeFormulaResult = TemporalResult<(
 )>;
 
 /// Result shape for emitting a selection expression.
-pub type FormattedSelectionExpressionResult =
-    TemporalResult<(String, Established<SelectionExpressionValid>)>;
+pub type FormattedSelectionExpressionResult = TemporalResult<(
+    String,
+    Established<SelectionExpressionValid>,
+    Established<SelectionExpressionUsesSelectionDelimiters>,
+    Established<SelectionExpressionUsesRecognizedSelectionRuleVocabulary>,
+    Established<SelectionRuleMonthUsesMonthExpression>,
+    Established<SelectionRuleWeekUsesWeekExpression>,
+    Established<SelectionRuleDayOfMonthUsesDayExpression>,
+    Established<SelectionRuleWeekDayUsesDayOfWeekExpression>,
+    Established<SelectionRuleOrdinalDayOfYearUsesOrdinalDayExpression>,
+    Established<SelectionRuleHourUsesHourExpression>,
+    Established<SelectionRuleMinuteUsesMinuteExpression>,
+    Established<SelectionRuleSecondUsesSecondExpression>,
+    Established<SelectionRulesApplyWithinSelectedResults>,
+    Established<SelectionExpressionMaySelectSingleInstance>,
+    Established<SelectionRulePositionUsesInstanceDesignatorSuffix>,
+    Established<SelectionRulePositionAppliesLast>,
+    Established<SelectionWithDurationUsesDurationSuffix>,
+)>;
 
 /// Result shape for emitting a repeat rule.
-pub type FormattedRepeatRuleResult = TemporalResult<(String, Established<RepeatRuleValid>)>;
+pub type FormattedRepeatRuleResult = TemporalResult<(
+    String,
+    Established<RepeatRuleValid>,
+    Established<RepeatRuleUsesFrequencyDesignator>,
+    Established<RepeatRuleDeclaresEligibleTimeIntervals>,
+    Established<RepeatRuleSelectionAppliesWithinEligibleIntervals>,
+    Established<RepeatRuleEvaluationInheritsInitialStartComponentInformation>,
+)>;
 
 /// Result shape for emitting an ISO 8601 recurring interval.
 pub type FormattedRecurringIntervalResult = TemporalResult<(
@@ -1761,8 +2882,15 @@ pub type FormattedRecurringIntervalResult = TemporalResult<(
 )>;
 
 /// Result shape for emitting a recurring interval with an attached repeat rule.
-pub type FormattedRecurringIntervalWithRepeatRuleResult =
-    TemporalResult<(String, Established<RecurringIntervalWithRepeatRuleValid>)>;
+pub type FormattedRecurringIntervalWithRepeatRuleResult = TemporalResult<(
+    String,
+    Established<RecurringIntervalWithRepeatRuleValid>,
+    RecurringIntervalWithRepeatRuleIntervalProofBranch,
+    Established<RepeatRuleUsesFrequencyDesignator>,
+    Established<RepeatRuleDeclaresEligibleTimeIntervals>,
+    Established<RepeatRuleSelectionAppliesWithinEligibleIntervals>,
+    Established<RepeatRuleEvaluationInheritsInitialStartComponentInformation>,
+)>;
 
 /// Result shape for emitting an ISO 8601 interval including extended-boundary semantics.
 pub type FormattedTimeIntervalResult = TemporalResult<(
