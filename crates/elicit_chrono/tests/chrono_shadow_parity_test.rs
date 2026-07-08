@@ -63,8 +63,12 @@ fn naive_date_add_signed_parity() -> Result<(), Box<dyn std::error::Error>> {
     // checked_add_signed takes Duration (shadow for chrono::Duration ≡ chrono::TimeDelta)
     let shadow_delta = elicit_chrono::Duration::try_days(days).ok_or("invalid delta")?;
 
-    let cn = chrono_base.checked_add_signed(chrono_delta).ok_or("overflow")?;
-    let sn = shadow_base.checked_add_signed(shadow_delta).ok_or("overflow")?;
+    let cn = chrono_base
+        .checked_add_signed(chrono_delta)
+        .ok_or("overflow")?;
+    let sn = shadow_base
+        .checked_add_signed(shadow_delta)
+        .ok_or("overflow")?;
     assert_eq!(sn.year(), cn.year());
     assert_eq!(sn.month(), cn.month());
     assert_eq!(sn.day(), cn.day());
@@ -87,8 +91,7 @@ fn naive_date_round_trip() -> Result<(), Box<dyn std::error::Error>> {
 fn naive_datetime_parse_parity() -> Result<(), Box<dyn std::error::Error>> {
     let s = "2024-06-15 14:30:45";
     let fmt = "%Y-%m-%d %H:%M:%S";
-    let chrono_dt =
-        chrono::NaiveDateTime::parse_from_str(s, fmt).map_err(|e| e.to_string())?;
+    let chrono_dt = chrono::NaiveDateTime::parse_from_str(s, fmt).map_err(|e| e.to_string())?;
     let shadow_dt =
         elicit_chrono::NaiveDateTime::parse_from_str(s, fmt).ok_or("shadow parse failed")?;
 
@@ -135,8 +138,7 @@ fn naive_datetime_round_trip() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn naive_time_construction_parity() -> Result<(), Box<dyn std::error::Error>> {
     let chrono_t = chrono::NaiveTime::from_hms_opt(14, 30, 45).ok_or("invalid time")?;
-    let shadow_t =
-        elicit_chrono::NaiveTime::from_hms_opt(14, 30, 45).ok_or("invalid time")?;
+    let shadow_t = elicit_chrono::NaiveTime::from_hms_opt(14, 30, 45).ok_or("invalid time")?;
 
     assert_eq!(shadow_t.hour(), chrono_t.hour());
     assert_eq!(shadow_t.minute(), chrono_t.minute());
@@ -265,8 +267,7 @@ fn datetime_utc_add_delta_parity() -> Result<(), Box<dyn std::error::Error>> {
     let delta_secs: i64 = 86400 + 3600 + 60; // 1 day, 1 hour, 1 minute
     let chrono_result = chrono_dt + chrono::TimeDelta::seconds(delta_secs);
     // checked_add_signed takes Duration (shadow for chrono::Duration ≡ chrono::TimeDelta)
-    let shadow_delta =
-        elicit_chrono::Duration::try_seconds(delta_secs).ok_or("invalid delta")?;
+    let shadow_delta = elicit_chrono::Duration::try_seconds(delta_secs).ok_or("invalid delta")?;
     let shadow_result = shadow_dt
         .checked_add_signed(shadow_delta)
         .ok_or("shadow add overflow")?;
@@ -293,10 +294,8 @@ fn datetime_utc_round_trip() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn datetime_fixed_parse_parity() -> Result<(), Box<dyn std::error::Error>> {
     let s = "2024-01-15T12:30:00+09:00";
-    let chrono_dt =
-        chrono::DateTime::parse_from_rfc3339(s).map_err(|e| e.to_string())?;
-    let shadow_dt =
-        elicit_chrono::DateTimeFixed::parse(s).ok_or("shadow parse failed")?;
+    let chrono_dt = chrono::DateTime::parse_from_rfc3339(s).map_err(|e| e.to_string())?;
+    let shadow_dt = elicit_chrono::DateTimeFixed::parse(s).ok_or("shadow parse failed")?;
 
     assert_eq!(shadow_dt.timestamp(), chrono_dt.timestamp());
     assert_eq!(shadow_dt.year(), chrono_dt.year());
@@ -306,9 +305,8 @@ fn datetime_fixed_parse_parity() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn datetime_fixed_round_trip() -> Result<(), Box<dyn std::error::Error>> {
-    let original =
-        chrono::DateTime::parse_from_rfc3339("2024-03-15T08:00:00+05:30")
-            .map_err(|e| e.to_string())?;
+    let original = chrono::DateTime::parse_from_rfc3339("2024-03-15T08:00:00+05:30")
+        .map_err(|e| e.to_string())?;
     let shadow = elicit_chrono::DateTimeFixed::from(original);
     let restored: chrono::DateTime<chrono::FixedOffset> = (*shadow).clone();
     assert_eq!(restored, original);
@@ -324,8 +322,8 @@ fn weekday_successor_cycle_parity() -> Result<(), Box<dyn std::error::Error>> {
     let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (i, name) in days.iter().enumerate() {
         let next_name = days[(i + 1) % 7];
-        let shadow_day = elicit_chrono::Weekday::from_str(name)
-            .map_err(|e| format!("parse {name}: {e}"))?;
+        let shadow_day =
+            elicit_chrono::Weekday::from_str(name).map_err(|e| format!("parse {name}: {e}"))?;
         let shadow_next = shadow_day.succ();
         assert_eq!(
             shadow_next.to_string(),
@@ -340,8 +338,9 @@ fn weekday_successor_cycle_parity() -> Result<(), Box<dyn std::error::Error>> {
 fn weekday_successor_matches_chrono() -> Result<(), Box<dyn std::error::Error>> {
     use std::str::FromStr;
     let name = "Wed";
-    let chrono_day: chrono::Weekday =
-        name.parse().map_err(|e: chrono::ParseWeekdayError| e.to_string())?;
+    let chrono_day: chrono::Weekday = name
+        .parse()
+        .map_err(|e: chrono::ParseWeekdayError| e.to_string())?;
     let shadow_day = elicit_chrono::Weekday::from_str(name).map_err(|e| e)?;
 
     assert_eq!(shadow_day.succ().to_string(), chrono_day.succ().to_string());
@@ -362,8 +361,7 @@ fn weekday_set_build_and_query() -> Result<(), Box<dyn std::error::Error>> {
     let wed = elicit_chrono::Weekday::from_str("Wed").map_err(|e| e)?;
     let fri = elicit_chrono::Weekday::from_str("Fri").map_err(|e| e)?;
 
-    let set =
-        elicit_chrono::WeekdaySet::from_array(vec![mon.clone(), wed.clone(), fri.clone()]);
+    let set = elicit_chrono::WeekdaySet::from_array(vec![mon.clone(), wed.clone(), fri.clone()]);
 
     assert_eq!(set.len(), 3);
     assert!(set.contains(mon.clone()));
@@ -416,8 +414,7 @@ fn format_parse_parity() -> Result<(), Box<dyn std::error::Error>> {
 
     let chrono_items = chrono::format::StrftimeItems::new(fmt);
     let mut chrono_parsed = chrono::format::Parsed::new();
-    chrono::format::parse(&mut chrono_parsed, input, chrono_items)
-        .map_err(|e| e.to_string())?;
+    chrono::format::parse(&mut chrono_parsed, input, chrono_items).map_err(|e| e.to_string())?;
 
     assert_eq!(parsed.year(), chrono_parsed.year);
     assert_eq!(parsed.month(), chrono_parsed.month);
@@ -433,8 +430,7 @@ fn format_parse_and_remainder_parity() -> Result<(), Box<dyn std::error::Error>>
     let items = elicit_chrono::StrftimeItems::new(fmt.to_string());
     let mut parsed = elicit_chrono::Parsed::new();
     let remainder =
-        elicit_chrono::parse_and_remainder(&mut parsed, input, items)
-            .map_err(|e| e.to_string())?;
+        elicit_chrono::parse_and_remainder(&mut parsed, input, items).map_err(|e| e.to_string())?;
 
     let chrono_items = chrono::format::StrftimeItems::new(fmt);
     let mut chrono_parsed = chrono::format::Parsed::new();
@@ -456,8 +452,7 @@ fn utc_timezone_with_ymd_and_hms_parity() -> Result<(), Box<dyn std::error::Erro
         .single()
         .ok_or("chrono ymd failed")?;
     let shadow_dt =
-        elicit_chrono::Utc::with_ymd_and_hms(2024, 6, 15, 12, 0, 0)
-            .ok_or("shadow ymd failed")?;
+        elicit_chrono::Utc::with_ymd_and_hms(2024, 6, 15, 12, 0, 0).ok_or("shadow ymd failed")?;
 
     assert_eq!(shadow_dt.timestamp(), chrono_dt.timestamp());
     Ok(())
