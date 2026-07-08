@@ -99,10 +99,11 @@ impl Elicitation for DateTimeUtcGenerationMode {
     type Style = DateTimeUtcGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "DateTimeUtcGenerationMode", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose DateTime<Utc> generation mode:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
             .call_tool(
@@ -273,10 +274,11 @@ impl Elicitation for NaiveDateTimeGenerationMode {
     type Style = NaiveDateTimeGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "NaiveDateTimeGenerationMode", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose NaiveDateTime generation mode:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
             .call_tool(
@@ -418,9 +420,11 @@ impl Elicitation for DateTime<Utc> {
 
         match method {
             DateTimeInputMethod::Iso8601String => {
-                // Elicit ISO 8601 string
-                let prompt = "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):";
-                let params = mcp::text_params(prompt);
+                let prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 1))?
+                    .unwrap_or_else(|| "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):".to_string());
+                let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -517,10 +521,11 @@ impl Elicitation for DateTime<FixedOffset> {
 
         match method {
             DateTimeInputMethod::Iso8601String => {
-                // Elicit ISO 8601 string
-                let prompt =
-                    "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
-                let params = mcp::text_params(prompt);
+                let prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 2))?
+                    .unwrap_or_else(|| "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):".to_string());
+                let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -543,9 +548,11 @@ impl Elicitation for DateTime<FixedOffset> {
                 // Elicit components
                 let components = DateTimeComponents::elicit(communicator).await?;
 
-                // Elicit offset
-                let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
-                let offset_params = mcp::number_params(offset_prompt, -12, 14);
+                let offset_prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("offset_hours", "i32", &crate::style::PromptContext::new(1, 2))?
+                    .unwrap_or_else(|| "Enter timezone offset in hours (e.g., +5 or -8):".to_string());
+                let offset_params = mcp::number_params(&offset_prompt, -12, 14);
                 let offset_result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -636,9 +643,11 @@ impl Elicitation for NaiveDateTime {
 
         match method {
             DateTimeInputMethod::Iso8601String => {
-                // Elicit ISO 8601 string (no timezone)
-                let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
-                let params = mcp::text_params(prompt);
+                let prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 1))?
+                    .unwrap_or_else(|| "Enter datetime (e.g., \"2024-07-11T15:30:00\"):".to_string());
+                let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -773,10 +782,11 @@ impl Elicitation for Weekday {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Weekday");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose a day of the week:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::Weekday", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a day of the week:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -878,7 +888,11 @@ impl Elicitation for NaiveDate {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDate");
-        let params = mcp::text_params("Enter a date (e.g., \"2024-07-11\"):");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::NaiveDate", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter a date (e.g., \"2024-07-11\"):").to_string());
+        let params = mcp::text_params(&prompt);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -964,7 +978,11 @@ impl Elicitation for NaiveTime {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveTime");
-        let params = mcp::text_params("Enter a time (e.g., \"15:30:00\"):");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::NaiveTime", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter a time (e.g., \"15:30:00\"):").to_string());
+        let params = mcp::text_params(&prompt);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -1118,8 +1136,11 @@ impl Elicitation for Month {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Month");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose a month:"), &Self::labels());
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::Month", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a month:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -1229,11 +1250,11 @@ impl Elicitation for chrono::TimeDelta {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting TimeDelta");
-        let params = mcp::number_params(
-            Self::prompt().unwrap_or("Enter duration in seconds:"),
-            i64::MIN,
-            i64::MAX,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("seconds", "i64", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter duration in seconds:").to_string());
+        let params = mcp::number_params(&prompt, i64::MIN, i64::MAX);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -1685,11 +1706,11 @@ impl Elicitation for chrono::Days {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Days");
-        let params = mcp::number_params(
-            Self::prompt().unwrap_or("Enter number of days:"),
-            0i64,
-            i64::MAX,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("days", "u64", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter number of days:").to_string());
+        let params = mcp::number_params(&prompt, 0i64, i64::MAX);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -1857,11 +1878,11 @@ impl Elicitation for chrono::Months {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Months");
-        let params = mcp::number_params(
-            Self::prompt().unwrap_or("Enter number of months:"),
-            0i64,
-            u32::MAX as i64,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("months", "u32", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter number of months:").to_string());
+        let params = mcp::number_params(&prompt, 0i64, u32::MAX as i64);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -2008,13 +2029,8 @@ impl Prompt for chrono::Utc {
 impl Elicitation for chrono::Utc {
     type Style = UtcStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting Utc (unit struct, only value is chrono::Utc)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(chrono::Utc)
     }
 
@@ -2146,13 +2162,8 @@ impl Prompt for chrono::Local {
 impl Elicitation for chrono::Local {
     type Style = LocalStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting Local (unit struct, only value is chrono::Local)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(chrono::Local)
     }
 
@@ -2289,11 +2300,11 @@ impl Elicitation for FixedOffset {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting FixedOffset");
-        let params = mcp::number_params(
-            Self::prompt().unwrap_or("Enter UTC offset in seconds:"),
-            -(86400i64 - 1),
-            86400i64 - 1,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("offset_seconds", "i32", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter UTC offset in seconds:").to_string());
+        let params = mcp::number_params(&prompt, -(86400i64 - 1), 86400i64 - 1);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -2472,7 +2483,11 @@ impl Elicitation for chrono::IsoWeek {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IsoWeek");
-        let params = mcp::text_params(Self::prompt().unwrap_or("Enter ISO week (YYYY-Www):"));
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::IsoWeek", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter ISO week (YYYY-Www):").to_string());
+        let params = mcp::text_params(&prompt);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -2872,7 +2887,11 @@ impl Elicitation for chrono::WeekdaySet {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting WeekdaySet");
-        let params = mcp::text_params(Self::prompt().unwrap_or("Enter weekdays (Mon,Tue,...):"));
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::WeekdaySet", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter weekdays (Mon,Tue,...):").to_string());
+        let params = mcp::text_params(&prompt);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -3087,8 +3106,12 @@ impl Elicitation for chrono::format::OffsetFormat {
         let precision = chrono::format::OffsetPrecision::elicit(communicator).await?;
         let colons = chrono::format::Colons::elicit(communicator).await?;
         let allow_zulu_str = {
+            let allow_zulu_prompt = communicator
+                .style_context()
+                .prompt_for_type::<Self>("allow_zulu", "bool", &crate::style::PromptContext::new(2, 4))?
+                .unwrap_or_else(|| "Allow 'Z' for UTC offset zero?".to_string());
             let params = mcp::select_params(
-                "Allow 'Z' for UTC offset zero?",
+                &allow_zulu_prompt,
                 &["Yes".to_string(), "No".to_string()],
             );
             let result = communicator
@@ -3314,13 +3337,8 @@ impl Prompt for chrono::OutOfRange {
 impl Elicitation for chrono::OutOfRange {
     type Style = OutOfRangeStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting OutOfRange (single value; triggered via invalid month)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         match Month::try_from(13u8) {
             Err(e) => Ok(e),
             Ok(_) => Err(ElicitError::new(ElicitErrorKind::ParseError(
@@ -3514,13 +3532,8 @@ impl Prompt for chrono::OutOfRangeError {
 impl Elicitation for chrono::OutOfRangeError {
     type Style = OutOfRangeErrorStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting OutOfRangeError (single value; triggered via negative TimeDelta)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         let neg = Duration::try_seconds(-1).ok_or_else(|| {
             ElicitError::new(ElicitErrorKind::ParseError(
                 "try_seconds(-1) out of range".to_string(),
@@ -4067,13 +4080,8 @@ impl Prompt for chrono::ParseMonthError {
 impl Elicitation for chrono::ParseMonthError {
     type Style = ParseMonthErrorStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting ParseMonthError (single value; triggered via invalid month string)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         match "__invalid__".parse::<Month>() {
             Err(e) => Ok(e),
             Ok(_) => Err(ElicitError::new(ElicitErrorKind::ParseError(
@@ -4276,13 +4284,8 @@ impl Prompt for chrono::ParseWeekdayError {
 impl Elicitation for chrono::ParseWeekdayError {
     type Style = ParseWeekdayErrorStyle;
 
-    #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let style = communicator.style_or_default::<Self>()?;
-        tracing::debug!(
-            ?style,
-            "Eliciting ParseWeekdayError (single value; triggered via invalid weekday string)"
-        );
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         match "__invalid__".parse::<Weekday>() {
             Err(e) => Ok(e),
             Ok(_) => Err(ElicitError::new(ElicitErrorKind::ParseError(
@@ -4495,11 +4498,10 @@ impl Elicitation for chrono::format::InternalNumeric {
     type Style = InternalNumericStyle;
 
     #[tracing::instrument(
-        skip(communicator),
+        skip_all,
         fields(type_name = "chrono::format::InternalNumeric")
     )]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::warn!("InternalNumeric is uninhabited — elicit() always fails");
         Err(ElicitErrorKind::ParseError(
             "chrono::format::InternalNumeric is uninhabited; no value can be externally constructed"
@@ -4763,12 +4765,12 @@ impl Elicitation for chrono::format::InternalFixed {
         fields(type_name = "chrono::format::InternalFixed")
     )]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting InternalFixed via 4-variant select");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an internal fixed-format item:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "chrono::format::InternalFixed", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Select an internal fixed-format item:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -4919,7 +4921,6 @@ impl Elicitation for chrono::format::Parsed {
 
     #[tracing::instrument(skip(communicator), fields(type_name = "chrono::format::Parsed"))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting chrono::format::Parsed via 21-field survey");
         let year = Option::<i32>::elicit(communicator).await?;
         let year_div_100 = Option::<i32>::elicit(communicator).await?;
@@ -5572,7 +5573,6 @@ impl Elicitation for NaiveDateDaysIterator {
         fields(type_name = "chrono::NaiveDateDaysIterator")
     )]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting NaiveDateDaysIterator via starting NaiveDate");
         let start = NaiveDate::elicit(communicator).await?;
         Ok(start.iter_days())
@@ -5812,7 +5812,6 @@ impl Elicitation for NaiveDateWeeksIterator {
         fields(type_name = "chrono::NaiveDateWeeksIterator")
     )]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting NaiveDateWeeksIterator via starting NaiveDate");
         let start = NaiveDate::elicit(communicator).await?;
         Ok(start.iter_weeks())
@@ -6118,13 +6117,13 @@ impl<T: Elicitation + Clone + Send> Elicitation for chrono::LocalResult<T> {
         )
     )]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting LocalResult: choosing variant");
         const LABELS: &[&str] = &["None", "Single", "Ambiguous"];
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select a local time mapping result:"),
-            LABELS,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("variant", "chrono::LocalResult", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Select a local time mapping result:").to_string());
+        let params = mcp::select_params(&prompt, LABELS);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -6528,10 +6527,13 @@ impl Elicitation for OwnedItem {
 
     #[tracing::instrument(skip(communicator), fields(type_name = "OwnedItem"))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting OwnedItem variant");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("variant", "OwnedItem", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Select a format item kind:").to_string());
         let params = mcp::select_params(
-            "Select a format item kind:",
+            &prompt,
             &[
                 "Literal".to_string(),
                 "Space".to_string(),
@@ -6802,7 +6804,6 @@ impl Elicitation for OwnedStrftimeItems {
 
     #[tracing::instrument(skip(communicator), fields(type_name = "OwnedStrftimeItems"))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let _style = communicator.style_or_default::<Self>()?;
         tracing::debug!("Eliciting OwnedStrftimeItems as Vec<OwnedItem>");
         let items = Vec::<OwnedItem>::elicit(communicator).await?;
         Ok(OwnedStrftimeItems(items))
