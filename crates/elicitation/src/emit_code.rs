@@ -1344,6 +1344,14 @@ impl ToCodeLiteral for time::error::ConversionRange {
     }
 }
 
+/// `time::error::DifferentVariant` — unit struct; construct directly.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::error::DifferentVariant {
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! { ::time::error::DifferentVariant }
+    }
+}
+
 /// `time::error::ComponentRange` — reproduce by triggering the named API error.
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::error::ComponentRange {

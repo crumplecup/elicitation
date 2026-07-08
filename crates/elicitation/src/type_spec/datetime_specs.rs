@@ -737,9 +737,9 @@ mod jiff_specs {
 mod time_specs {
     use super::*;
     use crate::verification::types::{
-        ComponentRangeWrap, ConversionRangeWrap, DateWrap, DurationWrap, MonthWrap,
-        OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap,
-        TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
+        ComponentRangeWrap, ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap,
+        MonthWrap, OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap,
+        PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
     };
 
     impl crate::ElicitSpec for PrimitiveDateTimeWrap {
@@ -1173,5 +1173,45 @@ mod time_specs {
         "ConversionRangeWrap",
         <ConversionRangeWrap as crate::ElicitSpec>::type_spec,
         std::any::TypeId::of::<ConversionRangeWrap>
+    ));
+
+    impl crate::ElicitSpec for time::error::DifferentVariant {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("time::error::DifferentVariant".to_string())
+                .summary(
+                    "A format-description variant mismatch error — produced when a FormatDescription method requires a specific variant but finds a different one (single-value type)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::error::DifferentVariant",
+        <time::error::DifferentVariant as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::error::DifferentVariant>
+    ));
+
+    impl crate::ElicitSpec for DifferentVariantWrap {
+        fn type_spec() -> crate::TypeSpec {
+            TypeSpecBuilder::default()
+                .type_name("DifferentVariantWrap".to_string())
+                .summary(
+                    "Trenchcoat for time::error::DifferentVariant — serializes as JSON null (single-value unit type)."
+                        .to_string(),
+                )
+                .categories(vec![])
+                .build()
+                .expect("valid TypeSpec")
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "DifferentVariantWrap",
+        <DifferentVariantWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<DifferentVariantWrap>
     ));
 }

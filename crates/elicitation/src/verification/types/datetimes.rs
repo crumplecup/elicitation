@@ -1701,6 +1701,116 @@ impl crate::ElicitIntrospect for ConversionRangeWrap {
 #[cfg(all(feature = "time", not(kani)))]
 impl crate::ElicitComplete for ConversionRangeWrap {}
 
+// ── DifferentVariantWrap — trenchcoat for time::error::DifferentVariant ──────
+/// Trenchcoat wrapper for [`time::error::DifferentVariant`] that satisfies
+/// `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as JSON `null` (single-value unit type, no data to encode).
+/// Deserializes by ignoring the JSON input and constructing the one possible
+/// value directly.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DifferentVariantWrap(pub time::error::DifferentVariant);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::error::DifferentVariant> for DifferentVariantWrap {
+    fn from(inner: time::error::DifferentVariant) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl DifferentVariantWrap {
+    /// Extract the inner [`time::error::DifferentVariant`].
+    pub fn into_inner(self) -> time::error::DifferentVariant {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for DifferentVariantWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_none()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for DifferentVariantWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let _: serde::de::IgnoredAny = serde::de::Deserialize::deserialize(deserializer)?;
+        Ok(Self(time::error::DifferentVariant))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for DifferentVariantWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "DifferentVariant".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "null",
+            "description": "A format-description variant mismatch error (single-value unit type, pass null)"
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for DifferentVariantWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("time::error::DifferentVariant (wrong format-description variant — single value)")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for DifferentVariantWrap {
+    type Style = <time::error::DifferentVariant as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting DifferentVariantWrap");
+        let e = time::error::DifferentVariant::elicit(communicator).await?;
+        Ok(Self(e))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("DifferentVariantWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("DifferentVariantWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("DifferentVariantWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for DifferentVariantWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "DifferentVariantWrap",
+            description: <DifferentVariantWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for DifferentVariantWrap {}
+
 // ── ComponentRangeWrap — trenchcoat for time::error::ComponentRange ──────────
 /// Trenchcoat wrapper for [`time::error::ComponentRange`] that satisfies
 /// `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
@@ -2494,6 +2604,12 @@ mod time_emit_impls {
         fn to_code_literal(&self) -> TokenStream {
             let inner = self.0.to_code_literal();
             quote::quote! { elicitation::ConversionRangeWrap(#inner) }
+        }
+    }
+
+    impl ToCodeLiteral for DifferentVariantWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { elicitation::DifferentVariantWrap(::time::error::DifferentVariant) }
         }
     }
 

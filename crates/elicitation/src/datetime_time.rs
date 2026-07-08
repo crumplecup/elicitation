@@ -61,6 +61,7 @@ crate::default_style!(UtcDateTime => UtcDateTimeStyle);
 crate::default_style!(UtcOffset => UtcOffsetStyle);
 crate::default_style!(time::error::ComponentRange => ComponentRangeStyle);
 crate::default_style!(time::error::ConversionRange => ConversionRangeStyle);
+crate::default_style!(time::error::DifferentVariant => DifferentVariantStyle);
 crate::default_style!(OffsetDateTimeGenerationMode => OffsetDateTimeGenerationModeStyle);
 crate::default_style!(PrimitiveDateTimeGenerationMode => PrimitiveDateTimeGenerationModeStyle);
 
@@ -1484,6 +1485,51 @@ impl ElicitIntrospect for time::error::ConversionRange {
     fn metadata() -> TypeMetadata {
         TypeMetadata {
             type_name: "time::error::ConversionRange",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+// time::error::DifferentVariant implementation
+impl Prompt for time::error::DifferentVariant {
+    fn prompt() -> Option<&'static str> {
+        Some("time::error::DifferentVariant (wrong format-description variant — single value)")
+    }
+}
+
+impl Elicitation for time::error::DifferentVariant {
+    type Style = DifferentVariantStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::error::DifferentVariant");
+        let _ = communicator;
+        // Single-value unit struct: construct directly.
+        Ok(time::error::DifferentVariant)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("time::error::DifferentVariant")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("time::error::DifferentVariant")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("time::error::DifferentVariant")
+    }
+}
+
+impl ElicitIntrospect for time::error::DifferentVariant {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::error::DifferentVariant",
             description: Self::prompt(),
             details: PatternDetails::Primitive,
         }
