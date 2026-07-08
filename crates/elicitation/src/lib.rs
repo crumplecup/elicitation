@@ -497,6 +497,18 @@ pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTime
 #[cfg(feature = "time")]
 pub use verification::types::{
     ComponentRangeWrap, ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap,
+    FmtCalendarYearCenturyExtendedRangeWrap, FmtCalendarYearCenturyStandardRangeWrap,
+    FmtCalendarYearFullExtendedRangeWrap, FmtCalendarYearFullStandardRangeWrap,
+    FmtCalendarYearLastTwoWrap, FmtDayWrap, FmtEndWrap, FmtHour12Wrap, FmtHour24Wrap,
+    FmtIgnoreWrap, FmtIsoYearCenturyExtendedRangeWrap, FmtIsoYearCenturyStandardRangeWrap,
+    FmtIsoYearFullExtendedRangeWrap, FmtIsoYearFullStandardRangeWrap, FmtIsoYearLastTwoWrap,
+    FmtMinuteWrap, FmtMonthLongWrap, FmtMonthNumericalWrap, FmtMonthShortWrap,
+    FmtOffsetHourWrap, FmtOffsetMinuteWrap, FmtOffsetSecondWrap, FmtOrdinalWrap, FmtPaddingWrap,
+    FmtPeriodWrap, FmtSecondWrap, FmtSubsecondDigitsWrap, FmtSubsecondWrap, FmtTrailingInputWrap,
+    FmtUnixTimestampMicrosecondWrap, FmtUnixTimestampMillisecondWrap,
+    FmtUnixTimestampNanosecondWrap, FmtUnixTimestampSecondWrap, FmtWeekNumberIsoWrap,
+    FmtWeekNumberMondayWrap, FmtWeekNumberSundayWrap, FmtWeekdayLongWrap, FmtWeekdayMondayWrap,
+    FmtWeekdayShortWrap, FmtWeekdaySundayWrap, WellKnownRfc2822Wrap,
     MonthWrap, OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap,
     PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
 };

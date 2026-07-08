@@ -40,8 +40,8 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
-    ElicitResult, Elicitation, ElicitationPattern, Generator, PatternDetails, Prompt, PromptTree,
-    Select, TypeMetadata, VariantMetadata,
+    ElicitResult, Elicitation, ElicitationPattern, FieldInfo, Generator, PatternDetails, Prompt,
+    PromptTree, Select, TypeMetadata, VariantMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
@@ -62,6 +62,13 @@ crate::default_style!(UtcOffset => UtcOffsetStyle);
 crate::default_style!(time::error::ComponentRange => ComponentRangeStyle);
 crate::default_style!(time::error::ConversionRange => ConversionRangeStyle);
 crate::default_style!(time::error::DifferentVariant => DifferentVariantStyle);
+crate::default_style!(time::format_description::Component => FmtComponentStyle);
+crate::default_style!(time::format_description::modifier::Padding => FmtPaddingStyle);
+crate::default_style!(time::format_description::modifier::Day => FmtDayStyle);
+crate::default_style!(time::format_description::modifier::End => FmtEndStyle);
+crate::default_style!(time::format_description::modifier::Ignore => FmtIgnoreStyle);
+crate::default_style!(time::format_description::modifier::Minute => FmtMinuteStyle);
+crate::default_style!(time::format_description::modifier::TrailingInput => FmtTrailingInputStyle);
 crate::default_style!(OffsetDateTimeGenerationMode => OffsetDateTimeGenerationModeStyle);
 crate::default_style!(PrimitiveDateTimeGenerationMode => PrimitiveDateTimeGenerationModeStyle);
 
@@ -136,11 +143,11 @@ impl Elicitation for InstantGenerationMode {
     type Style = InstantGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        // Use standard Select elicit pattern
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "InstantGenerationMode", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose instant generation mode:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
             .call_tool(
@@ -286,8 +293,6 @@ impl Elicitation for Instant {
 
     #[tracing::instrument(skip(communicator), fields(type_name = "Instant"))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting time::Instant");
-
         // Elicit the generation mode
         let mode = InstantGenerationMode::elicit(communicator).await?;
 
@@ -391,10 +396,11 @@ impl Elicitation for OffsetDateTimeGenerationMode {
     type Style = OffsetDateTimeGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "OffsetDateTimeGenerationMode", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose OffsetDateTime generation mode:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
             .call_tool(
@@ -532,10 +538,11 @@ impl Elicitation for OffsetDateTime {
 
         match method {
             DateTimeInputMethod::Iso8601String => {
-                // Elicit ISO 8601 string
-                let prompt =
-                    "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
-                let params = mcp::text_params(prompt);
+                let prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 2))?
+                    .unwrap_or_else(|| "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):".to_string());
+                let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -559,9 +566,11 @@ impl Elicitation for OffsetDateTime {
                 // Elicit components
                 let components = DateTimeComponents::elicit(communicator).await?;
 
-                // Elicit offset
-                let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
-                let offset_params = mcp::number_params(offset_prompt, -12, 14);
+                let offset_prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("offset_hours", "i32", &crate::style::PromptContext::new(1, 2))?
+                    .unwrap_or_else(|| "Enter timezone offset in hours (e.g., +5 or -8):".to_string());
+                let offset_params = mcp::number_params(&offset_prompt, -12, 14);
                 let offset_result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -655,9 +664,11 @@ impl Elicitation for PrimitiveDateTime {
 
         match method {
             DateTimeInputMethod::Iso8601String => {
-                // Elicit ISO 8601 string (no timezone)
-                let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
-                let params = mcp::text_params(prompt);
+                let prompt = communicator
+                    .style_context()
+                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 1))?
+                    .unwrap_or_else(|| "Enter datetime (e.g., \"2024-07-11T15:30:00\"):".to_string());
+                let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -754,29 +765,38 @@ impl Elicitation for Time {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Time");
 
-        let hour_params = mcp::number_params("Enter hour (0-23):", 0, 23);
+        let hour_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("hour", "u8", &crate::style::PromptContext::new(0, 3))?
+            .unwrap_or_else(|| "Enter hour (0-23):".to_string());
         let hour_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(hour_params),
+                    .with_arguments(mcp::number_params(&hour_prompt, 0, 23)),
             )
             .await?;
         let hour = mcp::parse_integer::<i64>(mcp::extract_value(hour_result)?)? as u8;
 
-        let minute_params = mcp::number_params("Enter minute (0-59):", 0, 59);
+        let minute_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("minute", "u8", &crate::style::PromptContext::new(1, 3))?
+            .unwrap_or_else(|| "Enter minute (0-59):".to_string());
         let minute_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(minute_params),
+                    .with_arguments(mcp::number_params(&minute_prompt, 0, 59)),
             )
             .await?;
         let minute = mcp::parse_integer::<i64>(mcp::extract_value(minute_result)?)? as u8;
 
-        let second_params = mcp::number_params("Enter second (0-59):", 0, 59);
+        let second_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("second", "u8", &crate::style::PromptContext::new(2, 3))?
+            .unwrap_or_else(|| "Enter second (0-59):".to_string());
         let second_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(second_params),
+                    .with_arguments(mcp::number_params(&second_prompt, 0, 59)),
             )
             .await?;
         let second = mcp::parse_integer::<i64>(mcp::extract_value(second_result)?)? as u8;
@@ -827,20 +847,26 @@ impl Elicitation for Date {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Date");
 
-        let year_params = mcp::number_params("Enter year:", -9999, 9999);
+        let year_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("year", "i32", &crate::style::PromptContext::new(0, 3))?
+            .unwrap_or_else(|| "Enter year:".to_string());
         let year_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(year_params),
+                    .with_arguments(mcp::number_params(&year_prompt, -9999, 9999)),
             )
             .await?;
         let year = mcp::parse_integer::<i64>(mcp::extract_value(year_result)?)? as i32;
 
-        let month_params = mcp::number_params("Enter month (1-12):", 1, 12);
+        let month_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("month", "u8", &crate::style::PromptContext::new(1, 3))?
+            .unwrap_or_else(|| "Enter month (1-12):".to_string());
         let month_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(month_params),
+                    .with_arguments(mcp::number_params(&month_prompt, 1, 12)),
             )
             .await?;
         let month_num = mcp::parse_integer::<i64>(mcp::extract_value(month_result)?)? as u8;
@@ -848,11 +874,14 @@ impl Elicitation for Date {
             ElicitError::new(ElicitErrorKind::ParseError(format!("Invalid month: {e}")))
         })?;
 
-        let day_params = mcp::number_params("Enter day (1-31):", 1, 31);
+        let day_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("day", "u8", &crate::style::PromptContext::new(2, 3))?
+            .unwrap_or_else(|| "Enter day (1-31):".to_string());
         let day_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(day_params),
+                    .with_arguments(mcp::number_params(&day_prompt, 1, 31)),
             )
             .await?;
         let day = mcp::parse_integer::<i64>(mcp::extract_value(day_result)?)? as u8;
@@ -903,22 +932,26 @@ impl Elicitation for time::Duration {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Duration");
 
-        let seconds_params =
-            mcp::number_params("Enter whole seconds (may be negative):", i64::MIN, i64::MAX);
+        let seconds_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("seconds", "i64", &crate::style::PromptContext::new(0, 2))?
+            .unwrap_or_else(|| "Enter whole seconds (may be negative):".to_string());
         let seconds_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(seconds_params),
+                    .with_arguments(mcp::number_params(&seconds_prompt, i64::MIN, i64::MAX)),
             )
             .await?;
         let seconds = mcp::parse_integer::<i64>(mcp::extract_value(seconds_result)?)?;
 
-        let nanos_params =
-            mcp::number_params("Enter subsecond nanoseconds (0–999999999):", 0, 999_999_999);
+        let nanos_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("nanoseconds", "i32", &crate::style::PromptContext::new(1, 2))?
+            .unwrap_or_else(|| "Enter subsecond nanoseconds (0–999999999):".to_string());
         let nanos_result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                    .with_arguments(nanos_params),
+                    .with_arguments(mcp::number_params(&nanos_prompt, 0, 999_999_999)),
             )
             .await?;
         let nanoseconds = mcp::parse_integer::<i64>(mcp::extract_value(nanos_result)?)? as i32;
@@ -1020,8 +1053,11 @@ impl Elicitation for time::Month {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Month");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose a month:"), &Self::labels());
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::Month", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a month:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -1137,10 +1173,11 @@ impl Elicitation for time::Weekday {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Weekday");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose a day of the week:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::Weekday", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a day of the week:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -1218,7 +1255,6 @@ impl Elicitation for UtcDateTime {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting UtcDateTime");
         let components = DateTimeComponents::elicit(communicator).await?;
 
         let date = time::Date::from_calendar_date(
@@ -1278,11 +1314,11 @@ impl Elicitation for UtcOffset {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UtcOffset");
-        let params = mcp::number_params(
-            "Enter UTC offset in whole seconds (-86399 to 86399):",
-            -86_399,
-            86_399,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("seconds", "i32", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| "Enter UTC offset in whole seconds (-86399 to 86399):".to_string());
+        let params = mcp::number_params(&prompt, -86_399, 86_399);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -1371,10 +1407,11 @@ impl Elicitation for time::error::ComponentRange {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::error::ComponentRange");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose a time component range error:"),
-            &Self::labels(),
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::error::ComponentRange", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a time component range error:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -1451,9 +1488,7 @@ impl Elicitation for time::error::ConversionRange {
     type Style = ConversionRangeStyle;
 
     #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting time::error::ConversionRange");
-        let _ = communicator;
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         // Single-value type: trigger the one possible error state.
         time::Duration::try_from(std::time::Duration::new(u64::MAX, 0))
             .err()
@@ -1502,9 +1537,7 @@ impl Elicitation for time::error::DifferentVariant {
     type Style = DifferentVariantStyle;
 
     #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting time::error::DifferentVariant");
-        let _ = communicator;
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         // Single-value unit struct: construct directly.
         Ok(time::error::DifferentVariant)
     }
@@ -1532,6 +1565,1514 @@ impl ElicitIntrospect for time::error::DifferentVariant {
             type_name: "time::error::DifferentVariant",
             description: Self::prompt(),
             details: PatternDetails::Primitive,
+        }
+    }
+}
+
+// time::format_description::Component implementation
+impl Prompt for time::format_description::Component {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose a format description component:")
+    }
+}
+
+impl Select for time::format_description::Component {
+    fn options() -> Vec<Self> {
+        use time::format_description::{Component, modifier};
+        vec![
+            Component::Day(modifier::Day::default()),
+            Component::Ordinal(modifier::Ordinal::default()),
+            Component::Hour12(modifier::Hour12::default()),
+            Component::Hour24(modifier::Hour24::default()),
+            Component::Minute(modifier::Minute::default()),
+            Component::Period(modifier::Period::default()),
+            Component::Second(modifier::Second::default()),
+            Component::Subsecond(modifier::Subsecond::default()),
+            Component::OffsetHour(modifier::OffsetHour::default()),
+            Component::OffsetMinute(modifier::OffsetMinute::default()),
+            Component::OffsetSecond(modifier::OffsetSecond::default()),
+            Component::Ignore(modifier::Ignore::count(core::num::NonZero::<u16>::MIN)),
+            Component::End(modifier::End::default()),
+        ]
+    }
+
+    fn labels() -> Vec<String> {
+        vec![
+            "Day".to_string(),
+            "Ordinal".to_string(),
+            "Hour12".to_string(),
+            "Hour24".to_string(),
+            "Minute".to_string(),
+            "Period".to_string(),
+            "Second".to_string(),
+            "Subsecond".to_string(),
+            "OffsetHour".to_string(),
+            "OffsetMinute".to_string(),
+            "OffsetSecond".to_string(),
+            "Ignore".to_string(),
+            "End".to_string(),
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        use time::format_description::{Component, modifier};
+        match label {
+            "Day" => Some(Component::Day(modifier::Day::default())),
+            "Ordinal" => Some(Component::Ordinal(modifier::Ordinal::default())),
+            "Hour12" => Some(Component::Hour12(modifier::Hour12::default())),
+            "Hour24" => Some(Component::Hour24(modifier::Hour24::default())),
+            "Minute" => Some(Component::Minute(modifier::Minute::default())),
+            "Period" => Some(Component::Period(modifier::Period::default())),
+            "Second" => Some(Component::Second(modifier::Second::default())),
+            "Subsecond" => Some(Component::Subsecond(modifier::Subsecond::default())),
+            "OffsetHour" => Some(Component::OffsetHour(modifier::OffsetHour::default())),
+            "OffsetMinute" => Some(Component::OffsetMinute(modifier::OffsetMinute::default())),
+            "OffsetSecond" => Some(Component::OffsetSecond(modifier::OffsetSecond::default())),
+            "Ignore" => Some(Component::Ignore(modifier::Ignore::count(
+                core::num::NonZero::<u16>::MIN,
+            ))),
+            "End" => Some(Component::End(modifier::End::default())),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for time::format_description::Component {
+    type Style = FmtComponentStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::Component");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::format_description::Component", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a format description component:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid Component variant: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "time::format_description::Component",
+            "Day",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "time::format_description::Component",
+            "Day",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "time::format_description::Component",
+            "Day",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::Component {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::Component",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::Component {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a format description component:")
+                .to_string(),
+            type_name: "time::format_description::Component".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+// time::format_description::modifier::Padding implementation
+impl Prompt for time::format_description::modifier::Padding {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose a padding type:")
+    }
+}
+
+impl Select for time::format_description::modifier::Padding {
+    fn options() -> Vec<Self> {
+        use time::format_description::modifier::Padding;
+        vec![Padding::Space, Padding::Zero, Padding::None]
+    }
+
+    fn labels() -> Vec<String> {
+        vec!["Space".to_string(), "Zero".to_string(), "None".to_string()]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        use time::format_description::modifier::Padding;
+        match label {
+            "Space" => Some(Padding::Space),
+            "Zero" => Some(Padding::Zero),
+            "None" => Some(Padding::None),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Padding {
+    type Style = FmtPaddingStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Padding");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::format_description::modifier::Padding", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a padding type:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid Padding: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "time::format_description::modifier::Padding",
+            "Space",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "time::format_description::modifier::Padding",
+            "Space",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "time::format_description::modifier::Padding",
+            "Space",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Padding {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Padding",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Padding {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a padding type:")
+                .to_string(),
+            type_name: "time::format_description::modifier::Padding".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+// time::format_description::modifier::Day implementation
+impl Prompt for time::format_description::modifier::Day {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure day-of-month formatting:")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Day {
+    type Style = FmtDayStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Day");
+        let padding = time::format_description::modifier::Padding::elicit(communicator).await?;
+        Ok(time::format_description::modifier::Day::default().with_padding(padding))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trivial_prop(
+            "time::format_description::modifier::Day",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trivial_prop(
+            "time::format_description::modifier::Day",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trivial_prop(
+            "time::format_description::modifier::Day",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Day {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Day",
+            description: Self::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![FieldInfo {
+                    name: "padding",
+                    type_name: "time::format_description::modifier::Padding",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Day {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "time::format_description::modifier::Day".to_string(),
+            fields: vec![(
+                "padding".to_string(),
+                Box::new(time::format_description::modifier::Padding::prompt_tree()),
+            )],
+        }
+    }
+}
+
+// time::format_description::modifier::End implementation (single-value — trailing_input is pub(crate))
+impl Prompt for time::format_description::modifier::End {
+    fn prompt() -> Option<&'static str> {
+        Some("End-of-input component (single value)")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::End {
+    type Style = FmtEndStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(time::format_description::modifier::End::default())
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque(
+            "time::format_description::modifier::End",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque(
+            "time::format_description::modifier::End",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque(
+            "time::format_description::modifier::End",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::End {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::End",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+// time::format_description::modifier::TrailingInput implementation
+impl Prompt for time::format_description::modifier::TrailingInput {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose how to handle trailing input:")
+    }
+}
+
+impl Select for time::format_description::modifier::TrailingInput {
+    fn options() -> Vec<Self> {
+        use time::format_description::modifier::TrailingInput;
+        vec![TrailingInput::Prohibit, TrailingInput::Discard]
+    }
+
+    fn labels() -> Vec<String> {
+        vec!["Prohibit".to_string(), "Discard".to_string()]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        use time::format_description::modifier::TrailingInput;
+        match label {
+            "Prohibit" => Some(TrailingInput::Prohibit),
+            "Discard" => Some(TrailingInput::Discard),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for time::format_description::modifier::TrailingInput {
+    type Style = FmtTrailingInputStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::TrailingInput");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::format_description::modifier::TrailingInput", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose how to handle trailing input:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid TrailingInput: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "time::format_description::modifier::TrailingInput",
+            "Prohibit",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "time::format_description::modifier::TrailingInput",
+            "Prohibit",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "time::format_description::modifier::TrailingInput",
+            "Prohibit",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::TrailingInput {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::TrailingInput",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::TrailingInput {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose how to handle trailing input:")
+                .to_string(),
+            type_name: "time::format_description::modifier::TrailingInput".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+// time::format_description::modifier::Ignore (count: NonZero<u16>, no Default)
+impl Prompt for time::format_description::modifier::Ignore {
+    fn prompt() -> Option<&'static str> {
+        Some("Number of bytes to ignore (non-zero):")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Ignore {
+    type Style = FmtIgnoreStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Ignore");
+        let raw = u16::elicit(communicator).await?;
+        let count = core::num::NonZero::<u16>::new(raw).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                "Ignore count must be non-zero".to_string(),
+            ))
+        })?;
+        Ok(time::format_description::modifier::Ignore::count(count))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trivial_prop(
+            "time::format_description::modifier::Ignore",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trivial_prop(
+            "time::format_description::modifier::Ignore",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trivial_prop(
+            "time::format_description::modifier::Ignore",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Ignore {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Ignore",
+            description: Self::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![FieldInfo {
+                    name: "count",
+                    type_name: "u16",
+                    prompt: Some("Number of bytes to ignore (non-zero):"),
+                }],
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Ignore {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "time::format_description::modifier::Ignore".to_string(),
+            fields: vec![("count".to_string(), Box::new(u16::prompt_tree()))],
+        }
+    }
+}
+
+// time::format_description::modifier::Minute (padding only, like Day)
+impl Prompt for time::format_description::modifier::Minute {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure minute formatting:")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Minute {
+    type Style = FmtMinuteStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Minute");
+        let padding = time::format_description::modifier::Padding::elicit(communicator).await?;
+        Ok(time::format_description::modifier::Minute::default().with_padding(padding))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trivial_prop(
+            "time::format_description::modifier::Minute",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trivial_prop(
+            "time::format_description::modifier::Minute",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trivial_prop(
+            "time::format_description::modifier::Minute",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Minute {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Minute",
+            description: Self::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![FieldInfo {
+                    name: "padding",
+                    type_name: "time::format_description::modifier::Padding",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Minute {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "time::format_description::modifier::Minute".to_string(),
+            fields: vec![(
+                "padding".to_string(),
+                Box::new(time::format_description::modifier::Padding::prompt_tree()),
+            )],
+        }
+    }
+}
+
+// ── padding-only modifiers (pub padding field) ────────────────────────────────
+// Ordinal, Second, OffsetMinute, OffsetSecond, WeekNumberIso/Sunday/Monday
+// share an identical shape: one `pub padding: Padding` field.
+
+macro_rules! impl_padding_modifier {
+    ($ty:ty, $style:ty, $name:literal, $prompt:literal, $kani_fn:ident) => {
+        impl Prompt for $ty {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        impl Elicitation for $ty {
+            type Style = $style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", $name));
+                let padding =
+                    time::format_description::modifier::Padding::elicit(communicator).await?;
+                Ok(Self::default().with_padding(padding))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::$kani_fn($name)
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_trivial_prop($name)
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_trivial_prop($name)
+            }
+        }
+
+        impl ElicitIntrospect for $ty {
+            fn pattern() -> ElicitationPattern {
+                ElicitationPattern::Survey
+            }
+
+            fn metadata() -> TypeMetadata {
+                TypeMetadata {
+                    type_name: $name,
+                    description: <$ty as Prompt>::prompt(),
+                    details: PatternDetails::Survey {
+                        fields: vec![FieldInfo {
+                            name: "padding",
+                            type_name: "time::format_description::modifier::Padding",
+                            prompt: None,
+                        }],
+                    },
+                }
+            }
+        }
+
+        impl ElicitPromptTree for $ty {
+            fn prompt_tree() -> PromptTree {
+                PromptTree::Survey {
+                    prompt: <$ty as Prompt>::prompt().map(str::to_string),
+                    type_name: $name.to_string(),
+                    fields: vec![(
+                        "padding".to_string(),
+                        Box::new(time::format_description::modifier::Padding::prompt_tree()),
+                    )],
+                }
+            }
+        }
+    };
+}
+
+crate::default_style!(time::format_description::modifier::Ordinal => FmtOrdinalStyle);
+crate::default_style!(time::format_description::modifier::Second => FmtSecondStyle);
+crate::default_style!(time::format_description::modifier::OffsetMinute => FmtOffsetMinuteStyle);
+crate::default_style!(time::format_description::modifier::OffsetSecond => FmtOffsetSecondStyle);
+crate::default_style!(time::format_description::modifier::WeekNumberIso => FmtWeekNumberIsoStyle);
+crate::default_style!(time::format_description::modifier::WeekNumberSunday => FmtWeekNumberSundayStyle);
+crate::default_style!(time::format_description::modifier::WeekNumberMonday => FmtWeekNumberMondayStyle);
+
+impl_padding_modifier!(
+    time::format_description::modifier::Ordinal,
+    FmtOrdinalStyle,
+    "time::format_description::modifier::Ordinal",
+    "Configure ordinal day-of-year formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::Second,
+    FmtSecondStyle,
+    "time::format_description::modifier::Second",
+    "Configure second formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::OffsetMinute,
+    FmtOffsetMinuteStyle,
+    "time::format_description::modifier::OffsetMinute",
+    "Configure UTC offset minute formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::OffsetSecond,
+    FmtOffsetSecondStyle,
+    "time::format_description::modifier::OffsetSecond",
+    "Configure UTC offset second formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::WeekNumberIso,
+    FmtWeekNumberIsoStyle,
+    "time::format_description::modifier::WeekNumberIso",
+    "Configure ISO week number formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::WeekNumberSunday,
+    FmtWeekNumberSundayStyle,
+    "time::format_description::modifier::WeekNumberSunday",
+    "Configure Sunday-based week number formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::WeekNumberMonday,
+    FmtWeekNumberMondayStyle,
+    "time::format_description::modifier::WeekNumberMonday",
+    "Configure Monday-based week number formatting:",
+    kani_trivial_prop
+);
+
+// ── Opaque-padding modifier types ─────────────────────────────────────────────
+// Fields are pub(crate) in time; elicitation works via with_padding(), but
+// ToCodeLiteral on the raw type can only emit Type::default() — use the
+// FmtXxxWrap trenchcoat for faithful code generation.
+
+crate::default_style!(time::format_description::modifier::Hour12 => FmtHour12Style);
+crate::default_style!(time::format_description::modifier::Hour24 => FmtHour24Style);
+crate::default_style!(time::format_description::modifier::MonthNumerical => FmtMonthNumericalStyle);
+crate::default_style!(time::format_description::modifier::CalendarYearLastTwo => FmtCalendarYearLastTwoStyle);
+crate::default_style!(time::format_description::modifier::IsoYearLastTwo => FmtIsoYearLastTwoStyle);
+
+impl_padding_modifier!(
+    time::format_description::modifier::Hour12,
+    FmtHour12Style,
+    "time::format_description::modifier::Hour12",
+    "Configure 12-hour clock hour formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::Hour24,
+    FmtHour24Style,
+    "time::format_description::modifier::Hour24",
+    "Configure 24-hour clock hour formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::MonthNumerical,
+    FmtMonthNumericalStyle,
+    "time::format_description::modifier::MonthNumerical",
+    "Configure numerical month formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::CalendarYearLastTwo,
+    FmtCalendarYearLastTwoStyle,
+    "time::format_description::modifier::CalendarYearLastTwo",
+    "Configure calendar year last-two-digits formatting:",
+    kani_trivial_prop
+);
+impl_padding_modifier!(
+    time::format_description::modifier::IsoYearLastTwo,
+    FmtIsoYearLastTwoStyle,
+    "time::format_description::modifier::IsoYearLastTwo",
+    "Configure ISO year last-two-digits formatting:",
+    kani_trivial_prop
+);
+
+// ── Bool-field modifier types ──────────────────────────────────────────────────
+// $field_name: the literal field name for metadata/prompt-tree (e.g. "case_sensitive")
+// $with_method: the ident of the builder method (e.g. with_case_sensitive)
+
+macro_rules! impl_bool_modifier {
+    ($ty:ty, $style:ty, $name:literal, $prompt:literal, $field_name:literal, $with_method:ident, $kani_fn:ident) => {
+        impl Prompt for $ty {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        impl Elicitation for $ty {
+            type Style = $style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", $name));
+                let value = bool::elicit(communicator).await?;
+                Ok(Self::default().$with_method(value))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::$kani_fn($name)
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_trivial_prop($name)
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_trivial_prop($name)
+            }
+        }
+
+        impl ElicitIntrospect for $ty {
+            fn pattern() -> ElicitationPattern {
+                ElicitationPattern::Survey
+            }
+
+            fn metadata() -> TypeMetadata {
+                TypeMetadata {
+                    type_name: $name,
+                    description: <$ty as Prompt>::prompt(),
+                    details: PatternDetails::Survey {
+                        fields: vec![FieldInfo {
+                            name: $field_name,
+                            type_name: "bool",
+                            prompt: None,
+                        }],
+                    },
+                }
+            }
+        }
+
+        impl ElicitPromptTree for $ty {
+            fn prompt_tree() -> PromptTree {
+                PromptTree::Survey {
+                    prompt: <$ty as Prompt>::prompt().map(str::to_string),
+                    type_name: $name.to_string(),
+                    fields: vec![($field_name.to_string(), Box::new(bool::prompt_tree()))],
+                }
+            }
+        }
+    };
+}
+
+crate::default_style!(time::format_description::modifier::MonthShort => FmtMonthShortStyle);
+crate::default_style!(time::format_description::modifier::MonthLong => FmtMonthLongStyle);
+crate::default_style!(time::format_description::modifier::WeekdayShort => FmtWeekdayShortStyle);
+crate::default_style!(time::format_description::modifier::WeekdayLong => FmtWeekdayLongStyle);
+crate::default_style!(time::format_description::modifier::WeekdaySunday => FmtWeekdaySundayStyle);
+crate::default_style!(time::format_description::modifier::WeekdayMonday => FmtWeekdayMondayStyle);
+crate::default_style!(time::format_description::modifier::UnixTimestampSecond => FmtUnixTimestampSecondStyle);
+crate::default_style!(time::format_description::modifier::UnixTimestampMillisecond => FmtUnixTimestampMillisecondStyle);
+crate::default_style!(time::format_description::modifier::UnixTimestampMicrosecond => FmtUnixTimestampMicrosecondStyle);
+crate::default_style!(time::format_description::modifier::UnixTimestampNanosecond => FmtUnixTimestampNanosecondStyle);
+
+impl_bool_modifier!(
+    time::format_description::modifier::MonthShort,
+    FmtMonthShortStyle,
+    "time::format_description::modifier::MonthShort",
+    "Configure abbreviated month name formatting:",
+    "case_sensitive",
+    with_case_sensitive,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::MonthLong,
+    FmtMonthLongStyle,
+    "time::format_description::modifier::MonthLong",
+    "Configure full month name formatting:",
+    "case_sensitive",
+    with_case_sensitive,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::WeekdayShort,
+    FmtWeekdayShortStyle,
+    "time::format_description::modifier::WeekdayShort",
+    "Configure abbreviated weekday name formatting:",
+    "case_sensitive",
+    with_case_sensitive,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::WeekdayLong,
+    FmtWeekdayLongStyle,
+    "time::format_description::modifier::WeekdayLong",
+    "Configure full weekday name formatting:",
+    "case_sensitive",
+    with_case_sensitive,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::WeekdaySunday,
+    FmtWeekdaySundayStyle,
+    "time::format_description::modifier::WeekdaySunday",
+    "Configure Sunday-based weekday index formatting:",
+    "one_indexed",
+    with_one_indexed,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::WeekdayMonday,
+    FmtWeekdayMondayStyle,
+    "time::format_description::modifier::WeekdayMonday",
+    "Configure Monday-based weekday index formatting:",
+    "one_indexed",
+    with_one_indexed,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::UnixTimestampSecond,
+    FmtUnixTimestampSecondStyle,
+    "time::format_description::modifier::UnixTimestampSecond",
+    "Configure Unix timestamp (second precision) formatting:",
+    "sign_is_mandatory",
+    with_sign_is_mandatory,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::UnixTimestampMillisecond,
+    FmtUnixTimestampMillisecondStyle,
+    "time::format_description::modifier::UnixTimestampMillisecond",
+    "Configure Unix timestamp (millisecond precision) formatting:",
+    "sign_is_mandatory",
+    with_sign_is_mandatory,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::UnixTimestampMicrosecond,
+    FmtUnixTimestampMicrosecondStyle,
+    "time::format_description::modifier::UnixTimestampMicrosecond",
+    "Configure Unix timestamp (microsecond precision) formatting:",
+    "sign_is_mandatory",
+    with_sign_is_mandatory,
+    kani_trivial_prop
+);
+impl_bool_modifier!(
+    time::format_description::modifier::UnixTimestampNanosecond,
+    FmtUnixTimestampNanosecondStyle,
+    "time::format_description::modifier::UnixTimestampNanosecond",
+    "Configure Unix timestamp (nanosecond precision) formatting:",
+    "sign_is_mandatory",
+    with_sign_is_mandatory,
+    kani_trivial_prop
+);
+
+// ── Padding + sign_is_mandatory modifier types ────────────────────────────────
+
+macro_rules! impl_padding_sign_modifier {
+    ($ty:ty, $style:ty, $name:literal, $prompt:literal, $kani_fn:ident) => {
+        impl Prompt for $ty {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        impl Elicitation for $ty {
+            type Style = $style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", $name));
+                let padding =
+                    time::format_description::modifier::Padding::elicit(communicator).await?;
+                let sign_is_mandatory = bool::elicit(communicator).await?;
+                Ok(Self::default()
+                    .with_padding(padding)
+                    .with_sign_is_mandatory(sign_is_mandatory))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::$kani_fn($name)
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_trivial_prop($name)
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_trivial_prop($name)
+            }
+        }
+
+        impl ElicitIntrospect for $ty {
+            fn pattern() -> ElicitationPattern {
+                ElicitationPattern::Survey
+            }
+
+            fn metadata() -> TypeMetadata {
+                TypeMetadata {
+                    type_name: $name,
+                    description: <$ty as Prompt>::prompt(),
+                    details: PatternDetails::Survey {
+                        fields: vec![
+                            FieldInfo {
+                                name: "padding",
+                                type_name: "time::format_description::modifier::Padding",
+                                prompt: None,
+                            },
+                            FieldInfo {
+                                name: "sign_is_mandatory",
+                                type_name: "bool",
+                                prompt: None,
+                            },
+                        ],
+                    },
+                }
+            }
+        }
+
+        impl ElicitPromptTree for $ty {
+            fn prompt_tree() -> PromptTree {
+                PromptTree::Survey {
+                    prompt: <$ty as Prompt>::prompt().map(str::to_string),
+                    type_name: $name.to_string(),
+                    fields: vec![
+                        (
+                            "padding".to_string(),
+                            Box::new(time::format_description::modifier::Padding::prompt_tree()),
+                        ),
+                        (
+                            "sign_is_mandatory".to_string(),
+                            Box::new(bool::prompt_tree()),
+                        ),
+                    ],
+                }
+            }
+        }
+    };
+}
+
+crate::default_style!(time::format_description::modifier::CalendarYearFullExtendedRange => FmtCalendarYearFullExtendedRangeStyle);
+crate::default_style!(time::format_description::modifier::CalendarYearFullStandardRange => FmtCalendarYearFullStandardRangeStyle);
+crate::default_style!(time::format_description::modifier::CalendarYearCenturyExtendedRange => FmtCalendarYearCenturyExtendedRangeStyle);
+crate::default_style!(time::format_description::modifier::CalendarYearCenturyStandardRange => FmtCalendarYearCenturyStandardRangeStyle);
+crate::default_style!(time::format_description::modifier::IsoYearFullExtendedRange => FmtIsoYearFullExtendedRangeStyle);
+crate::default_style!(time::format_description::modifier::IsoYearFullStandardRange => FmtIsoYearFullStandardRangeStyle);
+crate::default_style!(time::format_description::modifier::IsoYearCenturyExtendedRange => FmtIsoYearCenturyExtendedRangeStyle);
+crate::default_style!(time::format_description::modifier::IsoYearCenturyStandardRange => FmtIsoYearCenturyStandardRangeStyle);
+
+impl_padding_sign_modifier!(
+    time::format_description::modifier::CalendarYearFullExtendedRange,
+    FmtCalendarYearFullExtendedRangeStyle,
+    "time::format_description::modifier::CalendarYearFullExtendedRange",
+    "Configure calendar year (full, extended range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::CalendarYearFullStandardRange,
+    FmtCalendarYearFullStandardRangeStyle,
+    "time::format_description::modifier::CalendarYearFullStandardRange",
+    "Configure calendar year (full, standard range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::CalendarYearCenturyExtendedRange,
+    FmtCalendarYearCenturyExtendedRangeStyle,
+    "time::format_description::modifier::CalendarYearCenturyExtendedRange",
+    "Configure calendar year century (extended range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::CalendarYearCenturyStandardRange,
+    FmtCalendarYearCenturyStandardRangeStyle,
+    "time::format_description::modifier::CalendarYearCenturyStandardRange",
+    "Configure calendar year century (standard range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::IsoYearFullExtendedRange,
+    FmtIsoYearFullExtendedRangeStyle,
+    "time::format_description::modifier::IsoYearFullExtendedRange",
+    "Configure ISO year (full, extended range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::IsoYearFullStandardRange,
+    FmtIsoYearFullStandardRangeStyle,
+    "time::format_description::modifier::IsoYearFullStandardRange",
+    "Configure ISO year (full, standard range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::IsoYearCenturyExtendedRange,
+    FmtIsoYearCenturyExtendedRangeStyle,
+    "time::format_description::modifier::IsoYearCenturyExtendedRange",
+    "Configure ISO year century (extended range) formatting:",
+    kani_trivial_prop
+);
+impl_padding_sign_modifier!(
+    time::format_description::modifier::IsoYearCenturyStandardRange,
+    FmtIsoYearCenturyStandardRangeStyle,
+    "time::format_description::modifier::IsoYearCenturyStandardRange",
+    "Configure ISO year century (standard range) formatting:",
+    kani_trivial_prop
+);
+
+// ── OffsetHour (pub padding + pub sign_is_mandatory) ──────────────────────────
+
+crate::default_style!(time::format_description::modifier::OffsetHour => FmtOffsetHourStyle);
+
+impl_padding_sign_modifier!(
+    time::format_description::modifier::OffsetHour,
+    FmtOffsetHourStyle,
+    "time::format_description::modifier::OffsetHour",
+    "Configure UTC offset hour formatting:",
+    kani_trivial_prop
+);
+
+// ── Period (pub is_uppercase + pub case_sensitive) ────────────────────────────
+
+crate::default_style!(time::format_description::modifier::Period => FmtPeriodStyle);
+
+impl Prompt for time::format_description::modifier::Period {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure AM/PM period formatting:")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Period {
+    type Style = FmtPeriodStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Period");
+        let is_uppercase = bool::elicit(communicator).await?;
+        let case_sensitive = bool::elicit(communicator).await?;
+        Ok(Self::default()
+            .with_is_uppercase(is_uppercase)
+            .with_case_sensitive(case_sensitive))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trivial_prop(
+            "time::format_description::modifier::Period",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trivial_prop(
+            "time::format_description::modifier::Period",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trivial_prop(
+            "time::format_description::modifier::Period",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Period {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Period",
+            description: <time::format_description::modifier::Period as Prompt>::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![
+                    FieldInfo {
+                        name: "is_uppercase",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    FieldInfo {
+                        name: "case_sensitive",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                ],
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Period {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Survey {
+            prompt: <time::format_description::modifier::Period as Prompt>::prompt()
+                .map(str::to_string),
+            type_name: "time::format_description::modifier::Period".to_string(),
+            fields: vec![
+                ("is_uppercase".to_string(), Box::new(bool::prompt_tree())),
+                ("case_sensitive".to_string(), Box::new(bool::prompt_tree())),
+            ],
+        }
+    }
+}
+
+// ── SubsecondDigits (Select enum) ─────────────────────────────────────────────
+
+crate::default_style!(time::format_description::modifier::SubsecondDigits => FmtSubsecondDigitsStyle);
+
+impl Prompt for time::format_description::modifier::SubsecondDigits {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose subsecond digit count:")
+    }
+}
+
+impl Select for time::format_description::modifier::SubsecondDigits {
+    fn options() -> Vec<Self> {
+        use time::format_description::modifier::SubsecondDigits;
+        vec![
+            SubsecondDigits::OneOrMore,
+            SubsecondDigits::One,
+            SubsecondDigits::Two,
+            SubsecondDigits::Three,
+            SubsecondDigits::Four,
+            SubsecondDigits::Five,
+            SubsecondDigits::Six,
+            SubsecondDigits::Seven,
+            SubsecondDigits::Eight,
+            SubsecondDigits::Nine,
+        ]
+    }
+
+    fn labels() -> Vec<String> {
+        vec![
+            "OneOrMore".to_string(),
+            "One".to_string(),
+            "Two".to_string(),
+            "Three".to_string(),
+            "Four".to_string(),
+            "Five".to_string(),
+            "Six".to_string(),
+            "Seven".to_string(),
+            "Eight".to_string(),
+            "Nine".to_string(),
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        use time::format_description::modifier::SubsecondDigits;
+        match label {
+            "OneOrMore" => Some(SubsecondDigits::OneOrMore),
+            "One" => Some(SubsecondDigits::One),
+            "Two" => Some(SubsecondDigits::Two),
+            "Three" => Some(SubsecondDigits::Three),
+            "Four" => Some(SubsecondDigits::Four),
+            "Five" => Some(SubsecondDigits::Five),
+            "Six" => Some(SubsecondDigits::Six),
+            "Seven" => Some(SubsecondDigits::Seven),
+            "Eight" => Some(SubsecondDigits::Eight),
+            "Nine" => Some(SubsecondDigits::Nine),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for time::format_description::modifier::SubsecondDigits {
+    type Style = FmtSubsecondDigitsStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::SubsecondDigits");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "time::format_description::modifier::SubsecondDigits", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose subsecond digit count:").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid SubsecondDigits: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "time::format_description::modifier::SubsecondDigits",
+            "OneOrMore",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "time::format_description::modifier::SubsecondDigits",
+            "OneOrMore",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "time::format_description::modifier::SubsecondDigits",
+            "OneOrMore",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::SubsecondDigits {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::SubsecondDigits",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::SubsecondDigits {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose subsecond digit count:")
+                .to_string(),
+            type_name: "time::format_description::modifier::SubsecondDigits".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+// ── Subsecond (pub digits: SubsecondDigits) ───────────────────────────────────
+
+crate::default_style!(time::format_description::modifier::Subsecond => FmtSubsecondStyle);
+
+impl Prompt for time::format_description::modifier::Subsecond {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure subsecond formatting:")
+    }
+}
+
+impl Elicitation for time::format_description::modifier::Subsecond {
+    type Style = FmtSubsecondStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::format_description::modifier::Subsecond");
+        let digits =
+            time::format_description::modifier::SubsecondDigits::elicit(communicator).await?;
+        Ok(Self::default().with_digits(digits))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trivial_prop(
+            "time::format_description::modifier::Subsecond",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trivial_prop(
+            "time::format_description::modifier::Subsecond",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trivial_prop(
+            "time::format_description::modifier::Subsecond",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::modifier::Subsecond {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::modifier::Subsecond",
+            description: <time::format_description::modifier::Subsecond as Prompt>::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![FieldInfo {
+                    name: "digits",
+                    type_name: "time::format_description::modifier::SubsecondDigits",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::modifier::Subsecond {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Survey {
+            prompt: <time::format_description::modifier::Subsecond as Prompt>::prompt()
+                .map(str::to_string),
+            type_name: "time::format_description::modifier::Subsecond".to_string(),
+            fields: vec![(
+                "digits".to_string(),
+                Box::new(
+                    time::format_description::modifier::SubsecondDigits::prompt_tree(),
+                ),
+            )],
+        }
+    }
+}
+
+// ── well_known::Rfc2822 (unit struct) ─────────────────────────────────────────
+
+crate::default_style!(time::format_description::well_known::Rfc2822 => WellKnownRfc2822Style);
+
+impl Prompt for time::format_description::well_known::Rfc2822 {
+    fn prompt() -> Option<&'static str> {
+        Some("RFC 2822 date-time format (e.g. Fri, 21 Nov 1997 09:55:06 -0600) — no options.")
+    }
+}
+
+impl Elicitation for time::format_description::well_known::Rfc2822 {
+    type Style = WellKnownRfc2822Style;
+
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(Self)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque(
+            "time::format_description::well_known::Rfc2822",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque(
+            "time::format_description::well_known::Rfc2822",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque(
+            "time::format_description::well_known::Rfc2822",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::well_known::Rfc2822 {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::well_known::Rfc2822",
+            description: <time::format_description::well_known::Rfc2822 as Prompt>::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::well_known::Rfc2822 {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("time::format_description::well_known::Rfc2822")
+                .to_string(),
+            type_name: "time::format_description::well_known::Rfc2822".to_string(),
         }
     }
 }

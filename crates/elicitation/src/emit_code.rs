@@ -1352,6 +1352,472 @@ impl ToCodeLiteral for time::error::DifferentVariant {
     }
 }
 
+/// `time::format_description::modifier::Ignore` — reconstructs via Ignore::count.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Ignore {
+    fn to_code_literal(&self) -> TokenStream {
+        let count: u16 = self.count.get();
+        quote::quote! {
+            ::time::format_description::modifier::Ignore::count(
+                match ::core::num::NonZero::<u16>::new(#count) {
+                    Some(n) => n,
+                    None => ::core::num::NonZero::<u16>::MIN,
+                }
+            )
+        }
+    }
+}
+
+/// `time::format_description::modifier::Minute` — reconstructs via default + with_padding.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Minute {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::Minute::default().with_padding(#padding)
+        }
+    }
+}
+
+/// `time::format_description::modifier::End` — single-value; trailing_input is pub(crate).
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::End {
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! { ::time::format_description::modifier::End::default() }
+    }
+}
+
+/// `time::format_description::modifier::TrailingInput` — emits the matching variant path.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::TrailingInput {
+    fn to_code_literal(&self) -> TokenStream {
+        use time::format_description::modifier::TrailingInput;
+        match self {
+            TrailingInput::Prohibit => {
+                quote::quote! {
+                    ::time::format_description::modifier::TrailingInput::Prohibit
+                }
+            }
+            TrailingInput::Discard => {
+                quote::quote! {
+                    ::time::format_description::modifier::TrailingInput::Discard
+                }
+            }
+        }
+    }
+}
+
+/// `time::format_description::modifier::Day` — reconstructs via default + with_padding.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Day {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::Day::default().with_padding(#padding)
+        }
+    }
+}
+
+/// `time::format_description::modifier::Padding` — emits the matching variant path.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Padding {
+    fn to_code_literal(&self) -> TokenStream {
+        use time::format_description::modifier::Padding;
+        match self {
+            Padding::Space => {
+                quote::quote! { ::time::format_description::modifier::Padding::Space }
+            }
+            Padding::Zero => {
+                quote::quote! { ::time::format_description::modifier::Padding::Zero }
+            }
+            Padding::None => {
+                quote::quote! { ::time::format_description::modifier::Padding::None }
+            }
+            _ => {
+                quote::quote! { ::time::format_description::modifier::Padding::None }
+            }
+        }
+    }
+}
+
+/// padding-only modifier impls — all have `pub padding: Padding` and `with_padding` builder.
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Ordinal {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::Ordinal::default().with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Second {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::Second::default().with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::OffsetMinute {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::OffsetMinute::default().with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::OffsetSecond {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::OffsetSecond::default().with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::WeekNumberIso {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::WeekNumberIso::default().with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::WeekNumberSunday {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::WeekNumberSunday::default()
+                .with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::WeekNumberMonday {
+    fn to_code_literal(&self) -> TokenStream {
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::WeekNumberMonday::default()
+                .with_padding(#padding)
+        }
+    }
+}
+
+// Opaque-padding types: fields are pub(crate) so we recover via exhaustive
+// PartialEq comparison against all 3 Padding variants.
+
+#[cfg(feature = "time")]
+macro_rules! opaque_padding_to_code_literal {
+    ($ty:path, $path:path) => {
+        impl ToCodeLiteral for $ty {
+            fn to_code_literal(&self) -> TokenStream {
+                use time::format_description::modifier::Padding;
+                if *self == <$ty>::default().with_padding(Padding::Space) {
+                    quote::quote! { <$path>::default().with_padding(::time::format_description::modifier::Padding::Space) }
+                } else if *self == <$ty>::default().with_padding(Padding::Zero) {
+                    quote::quote! { <$path>::default().with_padding(::time::format_description::modifier::Padding::Zero) }
+                } else {
+                    quote::quote! { <$path>::default().with_padding(::time::format_description::modifier::Padding::None) }
+                }
+            }
+        }
+    };
+}
+
+#[cfg(feature = "time")]
+opaque_padding_to_code_literal!(
+    time::format_description::modifier::Hour12,
+    ::time::format_description::modifier::Hour12
+);
+#[cfg(feature = "time")]
+opaque_padding_to_code_literal!(
+    time::format_description::modifier::Hour24,
+    ::time::format_description::modifier::Hour24
+);
+#[cfg(feature = "time")]
+opaque_padding_to_code_literal!(
+    time::format_description::modifier::MonthNumerical,
+    ::time::format_description::modifier::MonthNumerical
+);
+#[cfg(feature = "time")]
+opaque_padding_to_code_literal!(
+    time::format_description::modifier::CalendarYearLastTwo,
+    ::time::format_description::modifier::CalendarYearLastTwo
+);
+#[cfg(feature = "time")]
+opaque_padding_to_code_literal!(
+    time::format_description::modifier::IsoYearLastTwo,
+    ::time::format_description::modifier::IsoYearLastTwo
+);
+
+// Opaque bool-field types: recover via comparison against true/false variants.
+
+#[cfg(feature = "time")]
+macro_rules! opaque_bool_to_code_literal {
+    ($ty:path, $path:path, $with_method:ident) => {
+        impl ToCodeLiteral for $ty {
+            fn to_code_literal(&self) -> TokenStream {
+                if *self == <$ty>::default().$with_method(true) {
+                    quote::quote! { <$path>::default().$with_method(true) }
+                } else {
+                    quote::quote! { <$path>::default().$with_method(false) }
+                }
+            }
+        }
+    };
+}
+
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::MonthShort,
+    ::time::format_description::modifier::MonthShort,
+    with_case_sensitive
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::MonthLong,
+    ::time::format_description::modifier::MonthLong,
+    with_case_sensitive
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::WeekdayShort,
+    ::time::format_description::modifier::WeekdayShort,
+    with_case_sensitive
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::WeekdayLong,
+    ::time::format_description::modifier::WeekdayLong,
+    with_case_sensitive
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::WeekdaySunday,
+    ::time::format_description::modifier::WeekdaySunday,
+    with_one_indexed
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::WeekdayMonday,
+    ::time::format_description::modifier::WeekdayMonday,
+    with_one_indexed
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::UnixTimestampSecond,
+    ::time::format_description::modifier::UnixTimestampSecond,
+    with_sign_is_mandatory
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::UnixTimestampMillisecond,
+    ::time::format_description::modifier::UnixTimestampMillisecond,
+    with_sign_is_mandatory
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::UnixTimestampMicrosecond,
+    ::time::format_description::modifier::UnixTimestampMicrosecond,
+    with_sign_is_mandatory
+);
+#[cfg(feature = "time")]
+opaque_bool_to_code_literal!(
+    time::format_description::modifier::UnixTimestampNanosecond,
+    ::time::format_description::modifier::UnixTimestampNanosecond,
+    with_sign_is_mandatory
+);
+
+// Opaque padding+sign types: recover padding and sign independently by
+// exhaustive PartialEq comparison (3 × 2 = 6 total combinations).
+
+#[cfg(feature = "time")]
+macro_rules! opaque_padding_sign_to_code_literal {
+    ($ty:path, $path:path) => {
+        impl ToCodeLiteral for $ty {
+            fn to_code_literal(&self) -> TokenStream {
+                use time::format_description::modifier::Padding;
+                let sign = *self
+                    == <$ty>::default()
+                        .with_padding(Padding::Space)
+                        .with_sign_is_mandatory(true)
+                    || *self
+                        == <$ty>::default()
+                            .with_padding(Padding::Zero)
+                            .with_sign_is_mandatory(true)
+                    || *self
+                        == <$ty>::default()
+                            .with_padding(Padding::None)
+                            .with_sign_is_mandatory(true);
+                let padding_tokens = if *self
+                    == <$ty>::default()
+                        .with_padding(Padding::Space)
+                        .with_sign_is_mandatory(true)
+                    || *self
+                        == <$ty>::default()
+                            .with_padding(Padding::Space)
+                            .with_sign_is_mandatory(false)
+                {
+                    quote::quote! { ::time::format_description::modifier::Padding::Space }
+                } else if *self
+                    == <$ty>::default()
+                        .with_padding(Padding::Zero)
+                        .with_sign_is_mandatory(true)
+                    || *self
+                        == <$ty>::default()
+                            .with_padding(Padding::Zero)
+                            .with_sign_is_mandatory(false)
+                {
+                    quote::quote! { ::time::format_description::modifier::Padding::Zero }
+                } else {
+                    quote::quote! { ::time::format_description::modifier::Padding::None }
+                };
+                quote::quote! {
+                    <$path>::default()
+                        .with_padding(#padding_tokens)
+                        .with_sign_is_mandatory(#sign)
+                }
+            }
+        }
+    };
+}
+
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::CalendarYearFullExtendedRange,
+    ::time::format_description::modifier::CalendarYearFullExtendedRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::CalendarYearFullStandardRange,
+    ::time::format_description::modifier::CalendarYearFullStandardRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::CalendarYearCenturyExtendedRange,
+    ::time::format_description::modifier::CalendarYearCenturyExtendedRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::CalendarYearCenturyStandardRange,
+    ::time::format_description::modifier::CalendarYearCenturyStandardRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::IsoYearFullExtendedRange,
+    ::time::format_description::modifier::IsoYearFullExtendedRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::IsoYearFullStandardRange,
+    ::time::format_description::modifier::IsoYearFullStandardRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::IsoYearCenturyExtendedRange,
+    ::time::format_description::modifier::IsoYearCenturyExtendedRange
+);
+#[cfg(feature = "time")]
+opaque_padding_sign_to_code_literal!(
+    time::format_description::modifier::IsoYearCenturyStandardRange,
+    ::time::format_description::modifier::IsoYearCenturyStandardRange
+);
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::SubsecondDigits {
+    fn to_code_literal(&self) -> TokenStream {
+        use time::format_description::modifier::SubsecondDigits;
+        match self {
+            SubsecondDigits::OneOrMore => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::OneOrMore
+            },
+            SubsecondDigits::One => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::One
+            },
+            SubsecondDigits::Two => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Two
+            },
+            SubsecondDigits::Three => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Three
+            },
+            SubsecondDigits::Four => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Four
+            },
+            SubsecondDigits::Five => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Five
+            },
+            SubsecondDigits::Six => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Six
+            },
+            SubsecondDigits::Seven => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Seven
+            },
+            SubsecondDigits::Eight => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Eight
+            },
+            SubsecondDigits::Nine => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::Nine
+            },
+            _ => quote::quote! {
+                ::time::format_description::modifier::SubsecondDigits::OneOrMore
+            },
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Subsecond {
+    fn to_code_literal(&self) -> TokenStream {
+        let digits = self.digits.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::Subsecond::default().with_digits(#digits)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::Period {
+    fn to_code_literal(&self) -> TokenStream {
+        let is_uppercase = self.is_uppercase;
+        let case_sensitive = self.case_sensitive;
+        quote::quote! {
+            ::time::format_description::modifier::Period::default()
+                .with_is_uppercase(#is_uppercase)
+                .with_case_sensitive(#case_sensitive)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::modifier::OffsetHour {
+    fn to_code_literal(&self) -> TokenStream {
+        let sign = self.sign_is_mandatory;
+        let padding = self.padding.to_code_literal();
+        quote::quote! {
+            ::time::format_description::modifier::OffsetHour::default()
+                .with_sign_is_mandatory(#sign)
+                .with_padding(#padding)
+        }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::well_known::Rfc2822 {
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! { ::time::format_description::well_known::Rfc2822 }
+    }
+}
+
 /// `time::error::ComponentRange` — reproduce by triggering the named API error.
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::error::ComponentRange {

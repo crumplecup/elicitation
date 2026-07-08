@@ -738,8 +738,21 @@ mod time_specs {
     use super::*;
     use crate::verification::types::{
         ComponentRangeWrap, ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap,
-        MonthWrap, OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap,
-        PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
+        FmtCalendarYearCenturyExtendedRangeWrap, FmtCalendarYearCenturyStandardRangeWrap,
+        FmtCalendarYearFullExtendedRangeWrap, FmtCalendarYearFullStandardRangeWrap,
+        FmtCalendarYearLastTwoWrap, FmtDayWrap, FmtEndWrap, FmtHour12Wrap, FmtHour24Wrap,
+        FmtIgnoreWrap, FmtIsoYearCenturyExtendedRangeWrap, FmtIsoYearCenturyStandardRangeWrap,
+        FmtIsoYearFullExtendedRangeWrap, FmtIsoYearFullStandardRangeWrap, FmtIsoYearLastTwoWrap,
+        FmtMinuteWrap, FmtMonthLongWrap, FmtMonthNumericalWrap, FmtMonthShortWrap,
+        FmtOffsetHourWrap, FmtOffsetMinuteWrap, FmtOffsetSecondWrap, FmtOrdinalWrap,
+        FmtPaddingWrap, FmtPeriodWrap, FmtSecondWrap, FmtSubsecondDigitsWrap, FmtSubsecondWrap,
+        FmtTrailingInputWrap, FmtUnixTimestampMicrosecondWrap, FmtUnixTimestampMillisecondWrap,
+        FmtUnixTimestampNanosecondWrap, FmtUnixTimestampSecondWrap, FmtWeekNumberIsoWrap,
+        FmtWeekNumberMondayWrap, FmtWeekNumberSundayWrap, FmtWeekdayLongWrap, FmtWeekdayMondayWrap,
+        FmtWeekdayShortWrap, FmtWeekdaySundayWrap, MonthWrap, OffsetDateTimeAfter,
+        WellKnownRfc2822Wrap,
+        OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
+        UtcOffsetWrap, WeekdayWrap,
     };
 
     impl crate::ElicitSpec for PrimitiveDateTimeWrap {
@@ -1213,5 +1226,652 @@ mod time_specs {
         "DifferentVariantWrap",
         <DifferentVariantWrap as crate::ElicitSpec>::type_spec,
         std::any::TypeId::of::<DifferentVariantWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::End {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::End",
+                "End-of-input component — single value (trailing_input field is pub(crate)).",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::End",
+        <time::format_description::modifier::End as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::End>
+    ));
+
+    impl crate::ElicitSpec for FmtEndWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtEndWrap",
+                "Trenchcoat for time::format_description::modifier::End — serializes as JSON null.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtEndWrap",
+        <FmtEndWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtEndWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::TrailingInput {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::TrailingInput",
+                "Whether trailing input after the declared end is permitted.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::TrailingInput",
+        <time::format_description::modifier::TrailingInput as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::TrailingInput>
+    ));
+
+    impl crate::ElicitSpec for FmtTrailingInputWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtTrailingInputWrap",
+                "Trenchcoat for time::format_description::modifier::TrailingInput — serializes as \"Prohibit\" or \"Discard\".",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtTrailingInputWrap",
+        <FmtTrailingInputWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtTrailingInputWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::Day {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Day",
+                "Day-of-month component modifier — controls the padding type.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Day",
+        <time::format_description::modifier::Day as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Day>
+    ));
+
+    impl crate::ElicitSpec for FmtDayWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtDayWrap",
+                "Trenchcoat for time::format_description::modifier::Day — serializes as {\"padding\": \"Space\"|\"Zero\"|\"None\"}.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtDayWrap",
+        <FmtDayWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtDayWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::Padding {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Padding",
+                "Padding strategy for a format description field — Space, Zero, or None.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Padding",
+        <time::format_description::modifier::Padding as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Padding>
+    ));
+
+    impl crate::ElicitSpec for FmtPaddingWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtPaddingWrap",
+                "Trenchcoat for time::format_description::modifier::Padding — serializes as a JSON string (\"Space\", \"Zero\", or \"None\").",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtPaddingWrap",
+        <FmtPaddingWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtPaddingWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::Ignore {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Ignore",
+                "Ignore a non-zero count of bytes in format descriptions.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Ignore",
+        <time::format_description::modifier::Ignore as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Ignore>
+    ));
+
+    impl crate::ElicitSpec for FmtIgnoreWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtIgnoreWrap",
+                "Trenchcoat for time::format_description::modifier::Ignore — serializes as {\"count\": u16} (non-zero).",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtIgnoreWrap",
+        <FmtIgnoreWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtIgnoreWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::Minute {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Minute",
+                "Minute modifier with padding configuration.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Minute",
+        <time::format_description::modifier::Minute as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Minute>
+    ));
+
+    impl crate::ElicitSpec for FmtMinuteWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtMinuteWrap",
+                "Trenchcoat for time::format_description::modifier::Minute — serializes as {\"padding\": \"Space\"|\"Zero\"|\"None\"}.",
+                vec![],
+            )
+        }
+    }
+
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtMinuteWrap",
+        <FmtMinuteWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtMinuteWrap>
+    ));
+
+    // ── padding-only modifiers (Ordinal, Second, OffsetMinute, OffsetSecond,
+    //    WeekNumberIso, WeekNumberSunday, WeekNumberMonday) ──────────────────
+
+    macro_rules! impl_padding_modifier_spec {
+        ($ty:ty, $name:literal, $summary:literal, $wrap:ty, $wrap_name:literal, $wrap_summary:literal) => {
+            impl crate::ElicitSpec for $ty {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($name, $summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+            impl crate::ElicitSpec for $wrap {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($wrap_name, $wrap_summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $wrap_name,
+                <$wrap as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrap>
+            ));
+        };
+    }
+
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::Ordinal,
+        "time::format_description::modifier::Ordinal",
+        "Ordinal day-of-year (1–366) with padding.",
+        FmtOrdinalWrap,
+        "FmtOrdinalWrap",
+        "Trenchcoat for modifier::Ordinal — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::Second,
+        "time::format_description::modifier::Second",
+        "Second within the minute (0–59) with padding.",
+        FmtSecondWrap,
+        "FmtSecondWrap",
+        "Trenchcoat for modifier::Second — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::OffsetMinute,
+        "time::format_description::modifier::OffsetMinute",
+        "UTC offset minute component with padding.",
+        FmtOffsetMinuteWrap,
+        "FmtOffsetMinuteWrap",
+        "Trenchcoat for modifier::OffsetMinute — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::OffsetSecond,
+        "time::format_description::modifier::OffsetSecond",
+        "UTC offset second component with padding.",
+        FmtOffsetSecondWrap,
+        "FmtOffsetSecondWrap",
+        "Trenchcoat for modifier::OffsetSecond — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::WeekNumberIso,
+        "time::format_description::modifier::WeekNumberIso",
+        "ISO week number with padding.",
+        FmtWeekNumberIsoWrap,
+        "FmtWeekNumberIsoWrap",
+        "Trenchcoat for modifier::WeekNumberIso — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::WeekNumberSunday,
+        "time::format_description::modifier::WeekNumberSunday",
+        "Sunday-based week number with padding.",
+        FmtWeekNumberSundayWrap,
+        "FmtWeekNumberSundayWrap",
+        "Trenchcoat for modifier::WeekNumberSunday — serializes as {\"padding\": ...}."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::WeekNumberMonday,
+        "time::format_description::modifier::WeekNumberMonday",
+        "Monday-based week number with padding.",
+        FmtWeekNumberMondayWrap,
+        "FmtWeekNumberMondayWrap",
+        "Trenchcoat for modifier::WeekNumberMonday — serializes as {\"padding\": ...}."
+    );
+
+    // ── Opaque-padding modifier specs ─────────────────────────────────────────
+    // Raw types emit default() in ToCodeLiteral; wrappers emit faithfully.
+
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::Hour12,
+        "time::format_description::modifier::Hour12",
+        "12-hour clock hour with padding.",
+        FmtHour12Wrap,
+        "FmtHour12Wrap",
+        "Trenchcoat for modifier::Hour12 — stores Padding for faithful code generation."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::Hour24,
+        "time::format_description::modifier::Hour24",
+        "24-hour clock hour with padding.",
+        FmtHour24Wrap,
+        "FmtHour24Wrap",
+        "Trenchcoat for modifier::Hour24 — stores Padding for faithful code generation."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::MonthNumerical,
+        "time::format_description::modifier::MonthNumerical",
+        "Numerical month with padding.",
+        FmtMonthNumericalWrap,
+        "FmtMonthNumericalWrap",
+        "Trenchcoat for modifier::MonthNumerical — stores Padding for faithful code generation."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::CalendarYearLastTwo,
+        "time::format_description::modifier::CalendarYearLastTwo",
+        "Calendar year last two digits with padding.",
+        FmtCalendarYearLastTwoWrap,
+        "FmtCalendarYearLastTwoWrap",
+        "Trenchcoat for modifier::CalendarYearLastTwo — stores Padding for faithful code generation."
+    );
+    impl_padding_modifier_spec!(
+        time::format_description::modifier::IsoYearLastTwo,
+        "time::format_description::modifier::IsoYearLastTwo",
+        "ISO year last two digits with padding.",
+        FmtIsoYearLastTwoWrap,
+        "FmtIsoYearLastTwoWrap",
+        "Trenchcoat for modifier::IsoYearLastTwo — stores Padding for faithful code generation."
+    );
+
+    // ── Bool-field modifier specs ─────────────────────────────────────────────
+
+    macro_rules! impl_bool_modifier_spec {
+        ($ty:ty, $name:literal, $summary:literal, $wrap:ty, $wrap_name:literal, $wrap_summary:literal) => {
+            impl crate::ElicitSpec for $ty {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($name, $summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+            impl crate::ElicitSpec for $wrap {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($wrap_name, $wrap_summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $wrap_name,
+                <$wrap as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrap>
+            ));
+        };
+    }
+
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::MonthShort,
+        "time::format_description::modifier::MonthShort",
+        "Abbreviated month name; case_sensitive controls parsing.",
+        FmtMonthShortWrap,
+        "FmtMonthShortWrap",
+        "Trenchcoat for modifier::MonthShort — stores case_sensitive bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::MonthLong,
+        "time::format_description::modifier::MonthLong",
+        "Full month name; case_sensitive controls parsing.",
+        FmtMonthLongWrap,
+        "FmtMonthLongWrap",
+        "Trenchcoat for modifier::MonthLong — stores case_sensitive bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::WeekdayShort,
+        "time::format_description::modifier::WeekdayShort",
+        "Abbreviated weekday name; case_sensitive controls parsing.",
+        FmtWeekdayShortWrap,
+        "FmtWeekdayShortWrap",
+        "Trenchcoat for modifier::WeekdayShort — stores case_sensitive bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::WeekdayLong,
+        "time::format_description::modifier::WeekdayLong",
+        "Full weekday name; case_sensitive controls parsing.",
+        FmtWeekdayLongWrap,
+        "FmtWeekdayLongWrap",
+        "Trenchcoat for modifier::WeekdayLong — stores case_sensitive bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::WeekdaySunday,
+        "time::format_description::modifier::WeekdaySunday",
+        "Sunday-based weekday index; one_indexed controls 0- vs 1-based output.",
+        FmtWeekdaySundayWrap,
+        "FmtWeekdaySundayWrap",
+        "Trenchcoat for modifier::WeekdaySunday — stores one_indexed bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::WeekdayMonday,
+        "time::format_description::modifier::WeekdayMonday",
+        "Monday-based weekday index; one_indexed controls 0- vs 1-based output.",
+        FmtWeekdayMondayWrap,
+        "FmtWeekdayMondayWrap",
+        "Trenchcoat for modifier::WeekdayMonday — stores one_indexed bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::UnixTimestampSecond,
+        "time::format_description::modifier::UnixTimestampSecond",
+        "Unix timestamp at second precision; sign_is_mandatory controls + sign.",
+        FmtUnixTimestampSecondWrap,
+        "FmtUnixTimestampSecondWrap",
+        "Trenchcoat for modifier::UnixTimestampSecond — stores sign_is_mandatory bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::UnixTimestampMillisecond,
+        "time::format_description::modifier::UnixTimestampMillisecond",
+        "Unix timestamp at millisecond precision; sign_is_mandatory controls + sign.",
+        FmtUnixTimestampMillisecondWrap,
+        "FmtUnixTimestampMillisecondWrap",
+        "Trenchcoat for modifier::UnixTimestampMillisecond — stores sign_is_mandatory bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::UnixTimestampMicrosecond,
+        "time::format_description::modifier::UnixTimestampMicrosecond",
+        "Unix timestamp at microsecond precision; sign_is_mandatory controls + sign.",
+        FmtUnixTimestampMicrosecondWrap,
+        "FmtUnixTimestampMicrosecondWrap",
+        "Trenchcoat for modifier::UnixTimestampMicrosecond — stores sign_is_mandatory bool."
+    );
+    impl_bool_modifier_spec!(
+        time::format_description::modifier::UnixTimestampNanosecond,
+        "time::format_description::modifier::UnixTimestampNanosecond",
+        "Unix timestamp at nanosecond precision; sign_is_mandatory controls + sign.",
+        FmtUnixTimestampNanosecondWrap,
+        "FmtUnixTimestampNanosecondWrap",
+        "Trenchcoat for modifier::UnixTimestampNanosecond — stores sign_is_mandatory bool."
+    );
+
+    // ── Padding+sign modifier specs ───────────────────────────────────────────
+
+    macro_rules! impl_padding_sign_modifier_spec {
+        ($ty:ty, $name:literal, $summary:literal, $wrap:ty, $wrap_name:literal, $wrap_summary:literal) => {
+            impl crate::ElicitSpec for $ty {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($name, $summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+            impl crate::ElicitSpec for $wrap {
+                fn type_spec() -> crate::TypeSpec {
+                    crate::TypeSpec::new($wrap_name, $wrap_summary, vec![])
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $wrap_name,
+                <$wrap as crate::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrap>
+            ));
+        };
+    }
+
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::CalendarYearFullExtendedRange,
+        "time::format_description::modifier::CalendarYearFullExtendedRange",
+        "Calendar year (full digits, extended range) with padding and sign.",
+        FmtCalendarYearFullExtendedRangeWrap,
+        "FmtCalendarYearFullExtendedRangeWrap",
+        "Trenchcoat for modifier::CalendarYearFullExtendedRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::CalendarYearFullStandardRange,
+        "time::format_description::modifier::CalendarYearFullStandardRange",
+        "Calendar year (full digits, standard range) with padding and sign.",
+        FmtCalendarYearFullStandardRangeWrap,
+        "FmtCalendarYearFullStandardRangeWrap",
+        "Trenchcoat for modifier::CalendarYearFullStandardRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::CalendarYearCenturyExtendedRange,
+        "time::format_description::modifier::CalendarYearCenturyExtendedRange",
+        "Calendar year century (extended range) with padding and sign.",
+        FmtCalendarYearCenturyExtendedRangeWrap,
+        "FmtCalendarYearCenturyExtendedRangeWrap",
+        "Trenchcoat for modifier::CalendarYearCenturyExtendedRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::CalendarYearCenturyStandardRange,
+        "time::format_description::modifier::CalendarYearCenturyStandardRange",
+        "Calendar year century (standard range) with padding and sign.",
+        FmtCalendarYearCenturyStandardRangeWrap,
+        "FmtCalendarYearCenturyStandardRangeWrap",
+        "Trenchcoat for modifier::CalendarYearCenturyStandardRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::IsoYearFullExtendedRange,
+        "time::format_description::modifier::IsoYearFullExtendedRange",
+        "ISO year (full digits, extended range) with padding and sign.",
+        FmtIsoYearFullExtendedRangeWrap,
+        "FmtIsoYearFullExtendedRangeWrap",
+        "Trenchcoat for modifier::IsoYearFullExtendedRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::IsoYearFullStandardRange,
+        "time::format_description::modifier::IsoYearFullStandardRange",
+        "ISO year (full digits, standard range) with padding and sign.",
+        FmtIsoYearFullStandardRangeWrap,
+        "FmtIsoYearFullStandardRangeWrap",
+        "Trenchcoat for modifier::IsoYearFullStandardRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::IsoYearCenturyExtendedRange,
+        "time::format_description::modifier::IsoYearCenturyExtendedRange",
+        "ISO year century (extended range) with padding and sign.",
+        FmtIsoYearCenturyExtendedRangeWrap,
+        "FmtIsoYearCenturyExtendedRangeWrap",
+        "Trenchcoat for modifier::IsoYearCenturyExtendedRange."
+    );
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::IsoYearCenturyStandardRange,
+        "time::format_description::modifier::IsoYearCenturyStandardRange",
+        "ISO year century (standard range) with padding and sign.",
+        FmtIsoYearCenturyStandardRangeWrap,
+        "FmtIsoYearCenturyStandardRangeWrap",
+        "Trenchcoat for modifier::IsoYearCenturyStandardRange."
+    );
+
+    // ── OffsetHour, Period, Subsecond(Digits) specs ───────────────────────────
+
+    impl_padding_sign_modifier_spec!(
+        time::format_description::modifier::OffsetHour,
+        "time::format_description::modifier::OffsetHour",
+        "UTC offset hour with padding and mandatory-sign flag.",
+        FmtOffsetHourWrap,
+        "FmtOffsetHourWrap",
+        "Trenchcoat for modifier::OffsetHour."
+    );
+
+    impl crate::ElicitSpec for time::format_description::modifier::Period {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Period",
+                "AM/PM period with is_uppercase and case_sensitive flags.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Period",
+        <time::format_description::modifier::Period as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Period>
+    ));
+    impl crate::ElicitSpec for FmtPeriodWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new("FmtPeriodWrap", "Trenchcoat for modifier::Period.", vec![])
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtPeriodWrap",
+        <FmtPeriodWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtPeriodWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::SubsecondDigits {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::SubsecondDigits",
+                "Number of subsecond digits to display (OneOrMore, One…Nine).",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::SubsecondDigits",
+        <time::format_description::modifier::SubsecondDigits as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::SubsecondDigits>
+    ));
+    impl crate::ElicitSpec for FmtSubsecondDigitsWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtSubsecondDigitsWrap",
+                "Trenchcoat for modifier::SubsecondDigits.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtSubsecondDigitsWrap",
+        <FmtSubsecondDigitsWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtSubsecondDigitsWrap>
+    ));
+
+    impl crate::ElicitSpec for time::format_description::modifier::Subsecond {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::modifier::Subsecond",
+                "Subsecond component with configurable digit count.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::modifier::Subsecond",
+        <time::format_description::modifier::Subsecond as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::modifier::Subsecond>
+    ));
+    impl crate::ElicitSpec for FmtSubsecondWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "FmtSubsecondWrap",
+                "Trenchcoat for modifier::Subsecond.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "FmtSubsecondWrap",
+        <FmtSubsecondWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<FmtSubsecondWrap>
+    ));
+
+    // ── well_known::Rfc2822 ───────────────────────────────────────────────────
+
+    impl crate::ElicitSpec for time::format_description::well_known::Rfc2822 {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::well_known::Rfc2822",
+                "RFC 2822 email date-time format — unit struct, no configuration.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::well_known::Rfc2822",
+        <time::format_description::well_known::Rfc2822 as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::well_known::Rfc2822>
+    ));
+
+    impl crate::ElicitSpec for WellKnownRfc2822Wrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "WellKnownRfc2822Wrap",
+                "Trenchcoat for well_known::Rfc2822 — serializes as {}.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "WellKnownRfc2822Wrap",
+        <WellKnownRfc2822Wrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<WellKnownRfc2822Wrap>
     ));
 }

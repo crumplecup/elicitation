@@ -1811,6 +1811,2562 @@ impl crate::ElicitIntrospect for DifferentVariantWrap {
 #[cfg(all(feature = "time", not(kani)))]
 impl crate::ElicitComplete for DifferentVariantWrap {}
 
+// ── FmtPaddingWrap — trenchcoat for time::format_description::modifier::Padding
+/// Trenchcoat wrapper for [`time::format_description::modifier::Padding`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as a JSON string: `"Space"`, `"Zero"`, or `"None"`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtPaddingWrap(pub time::format_description::modifier::Padding);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Padding> for FmtPaddingWrap {
+    fn from(inner: time::format_description::modifier::Padding) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtPaddingWrap {
+    /// Extract the inner [`time::format_description::modifier::Padding`].
+    pub fn into_inner(self) -> time::format_description::modifier::Padding {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtPaddingWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use time::format_description::modifier::Padding;
+        let s = match self.0 {
+            Padding::Space => "Space",
+            Padding::Zero => "Zero",
+            Padding::None => "None",
+            _ => "None",
+        };
+        serializer.serialize_str(s)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtPaddingWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::Padding;
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Space" => Ok(Self(Padding::Space)),
+            "Zero" => Ok(Self(Padding::Zero)),
+            "None" => Ok(Self(Padding::None)),
+            other => Err(D::Error::unknown_variant(other, &["Space", "Zero", "None"])),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtPaddingWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtPadding".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "string",
+            "enum": ["Space", "Zero", "None"],
+            "description": "Padding type for a format description component field"
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtPaddingWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose a padding type:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtPaddingWrap {
+    type Style = <time::format_description::modifier::Padding as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtPaddingWrap");
+        let inner = time::format_description::modifier::Padding::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtPaddingWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtPaddingWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtPaddingWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtPaddingWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Select
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtPaddingWrap",
+            description: <FmtPaddingWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Select {
+                variants: <time::format_description::modifier::Padding as crate::Select>::labels()
+                    .into_iter()
+                    .map(|label| crate::VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtPaddingWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        let labels = <time::format_description::modifier::Padding as crate::Select>::labels();
+        let count = labels.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose a padding type:")
+                .to_string(),
+            type_name: "FmtPaddingWrap".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtPaddingWrap {}
+
+// ── FmtDayWrap — trenchcoat for time::format_description::modifier::Day ──────
+/// Trenchcoat wrapper for [`time::format_description::modifier::Day`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as a JSON object: `{"padding": "Space"|"Zero"|"None"}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtDayWrap(pub time::format_description::modifier::Day);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Day> for FmtDayWrap {
+    fn from(inner: time::format_description::modifier::Day) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtDayWrap {
+    /// Extract the inner [`time::format_description::modifier::Day`].
+    pub fn into_inner(self) -> time::format_description::modifier::Day {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtDayWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        use time::format_description::modifier::Padding;
+        let padding_str = match self.0.padding {
+            Padding::Space => "Space",
+            Padding::Zero => "Zero",
+            Padding::None => "None",
+            _ => "None",
+        };
+        let mut map = serializer.serialize_map(Some(1))?;
+        map.serialize_entry("padding", padding_str)?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtDayWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::Padding;
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            padding: String,
+        }
+        let helper = Helper::deserialize(deserializer)?;
+        let padding = match helper.padding.as_str() {
+            "Space" => Padding::Space,
+            "Zero" => Padding::Zero,
+            "None" => Padding::None,
+            other => {
+                return Err(D::Error::unknown_variant(other, &["Space", "Zero", "None"]));
+            }
+        };
+        Ok(Self(
+            time::format_description::modifier::Day::default().with_padding(padding),
+        ))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtDayWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtDay".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "padding": { "type": "string", "enum": ["Space", "Zero", "None"] }
+            },
+            "required": ["padding"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtDayWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure day-of-month formatting:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtDayWrap {
+    type Style = <time::format_description::modifier::Day as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtDayWrap");
+        let inner = time::format_description::modifier::Day::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtDayWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtDayWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtDayWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtDayWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtDayWrap",
+            description: <FmtDayWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![crate::FieldInfo {
+                    name: "padding",
+                    type_name: "time::format_description::modifier::Padding",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtDayWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "FmtDayWrap".to_string(),
+            fields: vec![(
+                "padding".to_string(),
+                Box::new(time::format_description::modifier::Padding::prompt_tree()),
+            )],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtDayWrap {}
+
+// ── FmtEndWrap — trenchcoat for time::format_description::modifier::End ──────
+/// Trenchcoat wrapper for [`time::format_description::modifier::End`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as JSON `null` (single-value — `trailing_input` is `pub(crate)`).
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtEndWrap(pub time::format_description::modifier::End);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::End> for FmtEndWrap {
+    fn from(inner: time::format_description::modifier::End) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtEndWrap {
+    /// Extract the inner [`time::format_description::modifier::End`].
+    pub fn into_inner(self) -> time::format_description::modifier::End {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtEndWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_none()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtEndWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let _: serde::de::IgnoredAny = serde::de::Deserialize::deserialize(deserializer)?;
+        Ok(Self(time::format_description::modifier::End::default()))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtEndWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtEnd".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "null",
+            "description": "End-of-input component (single value — pass null)"
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtEndWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("End-of-input component (single value)")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtEndWrap {
+    type Style = <time::format_description::modifier::End as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtEndWrap");
+        let inner = time::format_description::modifier::End::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtEndWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtEndWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtEndWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtEndWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtEndWrap",
+            description: <FmtEndWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtEndWrap {}
+
+// ── FmtTrailingInputWrap — trenchcoat for time::format_description::modifier::TrailingInput
+/// Trenchcoat wrapper for [`time::format_description::modifier::TrailingInput`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as a JSON string: `"Prohibit"` or `"Discard"`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtTrailingInputWrap(pub time::format_description::modifier::TrailingInput);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::TrailingInput> for FmtTrailingInputWrap {
+    fn from(inner: time::format_description::modifier::TrailingInput) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtTrailingInputWrap {
+    /// Extract the inner [`time::format_description::modifier::TrailingInput`].
+    pub fn into_inner(self) -> time::format_description::modifier::TrailingInput {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtTrailingInputWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use time::format_description::modifier::TrailingInput;
+        let s = match self.0 {
+            TrailingInput::Prohibit => "Prohibit",
+            TrailingInput::Discard => "Discard",
+        };
+        serializer.serialize_str(s)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtTrailingInputWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::TrailingInput;
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Prohibit" => Ok(Self(TrailingInput::Prohibit)),
+            "Discard" => Ok(Self(TrailingInput::Discard)),
+            other => Err(D::Error::unknown_variant(other, &["Prohibit", "Discard"])),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtTrailingInputWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtTrailingInput".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "string",
+            "enum": ["Prohibit", "Discard"],
+            "description": "How to handle trailing input after the declared end component"
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtTrailingInputWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose how to handle trailing input:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtTrailingInputWrap {
+    type Style = <time::format_description::modifier::TrailingInput as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtTrailingInputWrap");
+        let inner = time::format_description::modifier::TrailingInput::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtTrailingInputWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtTrailingInputWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtTrailingInputWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtTrailingInputWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Select
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtTrailingInputWrap",
+            description: <FmtTrailingInputWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Select {
+                variants:
+                    <time::format_description::modifier::TrailingInput as crate::Select>::labels()
+                        .into_iter()
+                        .map(|label| crate::VariantMetadata {
+                            label,
+                            fields: vec![],
+                        })
+                        .collect(),
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtTrailingInputWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        let labels = <time::format_description::modifier::TrailingInput as crate::Select>::labels();
+        let count = labels.len();
+        crate::PromptTree::Select {
+            prompt: Self::prompt()
+                .unwrap_or("Choose how to handle trailing input:")
+                .to_string(),
+            type_name: "FmtTrailingInputWrap".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtTrailingInputWrap {}
+
+// ── Padding-only trenchcoats ──────────────────────────────────────────────────
+// Ordinal, Second, OffsetMinute, OffsetSecond, WeekNumberIso/Sunday/Monday
+// all serialize as {"padding": "Space"|"Zero"|"None"} and share identical impls.
+
+macro_rules! fmt_padding_wrap {
+    (
+        $wrap:ident,
+        $inner:ty,
+        $mod_path:literal,
+        $schema_name:literal,
+        $prompt:literal
+    ) => {
+        /// Trenchcoat wrapper satisfying `JsonSchema + Serialize + Deserialize`.
+        ///
+        /// Serializes as `{"padding": "Space"|"Zero"|"None"}`.
+        ///
+        /// Available with the `time` feature.
+        #[cfg(all(feature = "time", not(kani)))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct $wrap(pub $inner);
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl From<$inner> for $wrap {
+            fn from(inner: $inner) -> Self {
+                Self(inner)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl $wrap {
+            /// Extract the inner value.
+            pub fn into_inner(self) -> $inner {
+                self.0
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl serde::Serialize for $wrap {
+            fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap as _;
+                use time::format_description::modifier::Padding;
+                let padding_str = match self.0.padding {
+                    Padding::Space => "Space",
+                    Padding::Zero => "Zero",
+                    Padding::None => "None",
+                    _ => "None",
+                };
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("padding", padding_str)?;
+                map.end()
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl<'de> serde::Deserialize<'de> for $wrap {
+            fn deserialize<D: serde::Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                use serde::de::Error as _;
+                use time::format_description::modifier::Padding;
+                #[derive(serde::Deserialize)]
+                struct Helper {
+                    padding: String,
+                }
+                let helper = Helper::deserialize(deserializer)?;
+                let padding = match helper.padding.as_str() {
+                    "Space" => Padding::Space,
+                    "Zero" => Padding::Zero,
+                    "None" => Padding::None,
+                    other => {
+                        return Err(D::Error::unknown_variant(
+                            other,
+                            &["Space", "Zero", "None"],
+                        ));
+                    }
+                };
+                Ok(Self(<$inner>::default().with_padding(padding)))
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl schemars::JsonSchema for $wrap {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                $schema_name.into()
+            }
+
+            fn json_schema(
+                _generator: &mut schemars::SchemaGenerator,
+            ) -> schemars::Schema {
+                let map = serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "padding": { "type": "string", "enum": ["Space", "Zero", "None"] }
+                    },
+                    "required": ["padding"]
+                })
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+                schemars::Schema::from(map)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Prompt for $wrap {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Elicitation for $wrap {
+            type Style = <$inner as Elicitation>::Style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($wrap)));
+                let inner = <$inner>::elicit(communicator).await?;
+                Ok(Self(inner))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::kani_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitIntrospect for $wrap {
+            fn pattern() -> crate::ElicitationPattern {
+                crate::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> crate::TypeMetadata {
+                crate::TypeMetadata {
+                    type_name: stringify!($wrap),
+                    description: <$wrap as Prompt>::prompt(),
+                    details: crate::PatternDetails::Survey {
+                        fields: vec![crate::FieldInfo {
+                            name: "padding",
+                            type_name: "time::format_description::modifier::Padding",
+                            prompt: None,
+                        }],
+                    },
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitPromptTree for $wrap {
+            fn prompt_tree() -> crate::PromptTree {
+                crate::PromptTree::Survey {
+                    prompt: <$wrap as Prompt>::prompt().map(str::to_string),
+                    type_name: stringify!($wrap).to_string(),
+                    fields: vec![(
+                        "padding".to_string(),
+                        Box::new(
+                            time::format_description::modifier::Padding::prompt_tree(),
+                        ),
+                    )],
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitComplete for $wrap {}
+    };
+}
+
+fmt_padding_wrap!(
+    FmtOrdinalWrap,
+    time::format_description::modifier::Ordinal,
+    "time::format_description::modifier::Ordinal",
+    "FmtOrdinal",
+    "Configure ordinal day-of-year formatting:"
+);
+fmt_padding_wrap!(
+    FmtSecondWrap,
+    time::format_description::modifier::Second,
+    "time::format_description::modifier::Second",
+    "FmtSecond",
+    "Configure second formatting:"
+);
+fmt_padding_wrap!(
+    FmtOffsetMinuteWrap,
+    time::format_description::modifier::OffsetMinute,
+    "time::format_description::modifier::OffsetMinute",
+    "FmtOffsetMinute",
+    "Configure UTC offset minute formatting:"
+);
+fmt_padding_wrap!(
+    FmtOffsetSecondWrap,
+    time::format_description::modifier::OffsetSecond,
+    "time::format_description::modifier::OffsetSecond",
+    "FmtOffsetSecond",
+    "Configure UTC offset second formatting:"
+);
+fmt_padding_wrap!(
+    FmtWeekNumberIsoWrap,
+    time::format_description::modifier::WeekNumberIso,
+    "time::format_description::modifier::WeekNumberIso",
+    "FmtWeekNumberIso",
+    "Configure ISO week number formatting:"
+);
+fmt_padding_wrap!(
+    FmtWeekNumberSundayWrap,
+    time::format_description::modifier::WeekNumberSunday,
+    "time::format_description::modifier::WeekNumberSunday",
+    "FmtWeekNumberSunday",
+    "Configure Sunday-based week number formatting:"
+);
+fmt_padding_wrap!(
+    FmtWeekNumberMondayWrap,
+    time::format_description::modifier::WeekNumberMonday,
+    "time::format_description::modifier::WeekNumberMonday",
+    "FmtWeekNumberMonday",
+    "Configure Monday-based week number formatting:"
+);
+
+// ── Opaque-padding wrappers (store Padding directly) ─────────────────────────
+// For types where the padding field is pub(crate): the wrapper owns the
+// Padding so ToCodeLiteral can emit default().with_padding() faithfully.
+
+macro_rules! fmt_opaque_padding_wrap {
+    (
+        $wrap:ident,
+        $inner:ty,
+        $mod_path:literal,
+        $schema_name:literal,
+        $prompt:literal
+    ) => {
+        /// Trenchcoat wrapper storing `Padding` directly for faithful code generation.
+        ///
+        /// Available with the `time` feature.
+        #[cfg(all(feature = "time", not(kani)))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct $wrap(pub time::format_description::modifier::Padding);
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl $wrap {
+            /// Reconstruct the inner value from the stored padding.
+            pub fn into_inner(self) -> $inner {
+                <$inner>::default().with_padding(self.0)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl serde::Serialize for $wrap {
+            fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap as _;
+                use time::format_description::modifier::Padding;
+                let padding_str = match self.0 {
+                    Padding::Space => "Space",
+                    Padding::Zero => "Zero",
+                    Padding::None => "None",
+                    _ => "None",
+                };
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("padding", padding_str)?;
+                map.end()
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl<'de> serde::Deserialize<'de> for $wrap {
+            fn deserialize<D: serde::Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                use serde::de::Error as _;
+                use time::format_description::modifier::Padding;
+                #[derive(serde::Deserialize)]
+                struct Helper {
+                    padding: String,
+                }
+                let helper = Helper::deserialize(deserializer)?;
+                let padding = match helper.padding.as_str() {
+                    "Space" => Padding::Space,
+                    "Zero" => Padding::Zero,
+                    "None" => Padding::None,
+                    other => {
+                        return Err(D::Error::unknown_variant(
+                            other,
+                            &["Space", "Zero", "None"],
+                        ));
+                    }
+                };
+                Ok(Self(padding))
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl schemars::JsonSchema for $wrap {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                $schema_name.into()
+            }
+
+            fn json_schema(
+                _generator: &mut schemars::SchemaGenerator,
+            ) -> schemars::Schema {
+                let map = serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "padding": { "type": "string", "enum": ["Space", "Zero", "None"] }
+                    },
+                    "required": ["padding"]
+                })
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+                schemars::Schema::from(map)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Prompt for $wrap {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Elicitation for $wrap {
+            type Style = <$inner as Elicitation>::Style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($wrap)));
+                let padding =
+                    time::format_description::modifier::Padding::elicit(communicator).await?;
+                Ok(Self(padding))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::kani_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitIntrospect for $wrap {
+            fn pattern() -> crate::ElicitationPattern {
+                crate::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> crate::TypeMetadata {
+                crate::TypeMetadata {
+                    type_name: stringify!($wrap),
+                    description: <$wrap as Prompt>::prompt(),
+                    details: crate::PatternDetails::Survey {
+                        fields: vec![crate::FieldInfo {
+                            name: "padding",
+                            type_name: "time::format_description::modifier::Padding",
+                            prompt: None,
+                        }],
+                    },
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitPromptTree for $wrap {
+            fn prompt_tree() -> crate::PromptTree {
+                crate::PromptTree::Survey {
+                    prompt: <$wrap as Prompt>::prompt().map(str::to_string),
+                    type_name: stringify!($wrap).to_string(),
+                    fields: vec![(
+                        "padding".to_string(),
+                        Box::new(
+                            time::format_description::modifier::Padding::prompt_tree(),
+                        ),
+                    )],
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitComplete for $wrap {}
+    };
+}
+
+fmt_opaque_padding_wrap!(
+    FmtHour12Wrap,
+    time::format_description::modifier::Hour12,
+    "time::format_description::modifier::Hour12",
+    "FmtHour12",
+    "Configure 12-hour clock hour formatting:"
+);
+fmt_opaque_padding_wrap!(
+    FmtHour24Wrap,
+    time::format_description::modifier::Hour24,
+    "time::format_description::modifier::Hour24",
+    "FmtHour24",
+    "Configure 24-hour clock hour formatting:"
+);
+fmt_opaque_padding_wrap!(
+    FmtMonthNumericalWrap,
+    time::format_description::modifier::MonthNumerical,
+    "time::format_description::modifier::MonthNumerical",
+    "FmtMonthNumerical",
+    "Configure numerical month formatting:"
+);
+fmt_opaque_padding_wrap!(
+    FmtCalendarYearLastTwoWrap,
+    time::format_description::modifier::CalendarYearLastTwo,
+    "time::format_description::modifier::CalendarYearLastTwo",
+    "FmtCalendarYearLastTwo",
+    "Configure calendar year last-two-digits formatting:"
+);
+fmt_opaque_padding_wrap!(
+    FmtIsoYearLastTwoWrap,
+    time::format_description::modifier::IsoYearLastTwo,
+    "time::format_description::modifier::IsoYearLastTwo",
+    "FmtIsoYearLastTwo",
+    "Configure ISO year last-two-digits formatting:"
+);
+
+// ── Opaque bool-field wrappers ────────────────────────────────────────────────
+// $field_name_str: serde/schema key (e.g. "case_sensitive")
+// $field_name: ident used in the Helper struct field
+// $with_method: builder method on the inner type
+
+macro_rules! fmt_opaque_bool_wrap {
+    (
+        $wrap:ident,
+        $inner:ty,
+        $schema_name:literal,
+        $prompt:literal,
+        $field_name_str:literal,
+        $field_name:ident,
+        $with_method:ident
+    ) => {
+        /// Trenchcoat wrapper storing the bool field directly for faithful code generation.
+        ///
+        /// Available with the `time` feature.
+        #[cfg(all(feature = "time", not(kani)))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct $wrap(pub bool);
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl $wrap {
+            /// Reconstruct the inner value from the stored field.
+            pub fn into_inner(self) -> $inner {
+                <$inner>::default().$with_method(self.0)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl serde::Serialize for $wrap {
+            fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap as _;
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry($field_name_str, &self.0)?;
+                map.end()
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl<'de> serde::Deserialize<'de> for $wrap {
+            fn deserialize<D: serde::Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                #[derive(serde::Deserialize)]
+                struct Helper {
+                    $field_name: bool,
+                }
+                let helper = Helper::deserialize(deserializer)?;
+                Ok(Self(helper.$field_name))
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl schemars::JsonSchema for $wrap {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                $schema_name.into()
+            }
+
+            fn json_schema(
+                _generator: &mut schemars::SchemaGenerator,
+            ) -> schemars::Schema {
+                let map = serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        $field_name_str: { "type": "boolean" }
+                    },
+                    "required": [$field_name_str]
+                })
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+                schemars::Schema::from(map)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Prompt for $wrap {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Elicitation for $wrap {
+            type Style = <$inner as Elicitation>::Style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($wrap)));
+                let value = bool::elicit(communicator).await?;
+                Ok(Self(value))
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::kani_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitIntrospect for $wrap {
+            fn pattern() -> crate::ElicitationPattern {
+                crate::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> crate::TypeMetadata {
+                crate::TypeMetadata {
+                    type_name: stringify!($wrap),
+                    description: <$wrap as Prompt>::prompt(),
+                    details: crate::PatternDetails::Survey {
+                        fields: vec![crate::FieldInfo {
+                            name: $field_name_str,
+                            type_name: "bool",
+                            prompt: None,
+                        }],
+                    },
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitPromptTree for $wrap {
+            fn prompt_tree() -> crate::PromptTree {
+                crate::PromptTree::Survey {
+                    prompt: <$wrap as Prompt>::prompt().map(str::to_string),
+                    type_name: stringify!($wrap).to_string(),
+                    fields: vec![(
+                        $field_name_str.to_string(),
+                        Box::new(bool::prompt_tree()),
+                    )],
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitComplete for $wrap {}
+    };
+}
+
+fmt_opaque_bool_wrap!(
+    FmtMonthShortWrap,
+    time::format_description::modifier::MonthShort,
+    "FmtMonthShort",
+    "Configure abbreviated month name formatting:",
+    "case_sensitive",
+    case_sensitive,
+    with_case_sensitive
+);
+fmt_opaque_bool_wrap!(
+    FmtMonthLongWrap,
+    time::format_description::modifier::MonthLong,
+    "FmtMonthLong",
+    "Configure full month name formatting:",
+    "case_sensitive",
+    case_sensitive,
+    with_case_sensitive
+);
+fmt_opaque_bool_wrap!(
+    FmtWeekdayShortWrap,
+    time::format_description::modifier::WeekdayShort,
+    "FmtWeekdayShort",
+    "Configure abbreviated weekday name formatting:",
+    "case_sensitive",
+    case_sensitive,
+    with_case_sensitive
+);
+fmt_opaque_bool_wrap!(
+    FmtWeekdayLongWrap,
+    time::format_description::modifier::WeekdayLong,
+    "FmtWeekdayLong",
+    "Configure full weekday name formatting:",
+    "case_sensitive",
+    case_sensitive,
+    with_case_sensitive
+);
+fmt_opaque_bool_wrap!(
+    FmtWeekdaySundayWrap,
+    time::format_description::modifier::WeekdaySunday,
+    "FmtWeekdaySunday",
+    "Configure Sunday-based weekday index formatting:",
+    "one_indexed",
+    one_indexed,
+    with_one_indexed
+);
+fmt_opaque_bool_wrap!(
+    FmtWeekdayMondayWrap,
+    time::format_description::modifier::WeekdayMonday,
+    "FmtWeekdayMonday",
+    "Configure Monday-based weekday index formatting:",
+    "one_indexed",
+    one_indexed,
+    with_one_indexed
+);
+fmt_opaque_bool_wrap!(
+    FmtUnixTimestampSecondWrap,
+    time::format_description::modifier::UnixTimestampSecond,
+    "FmtUnixTimestampSecond",
+    "Configure Unix timestamp (second precision) formatting:",
+    "sign_is_mandatory",
+    sign_is_mandatory,
+    with_sign_is_mandatory
+);
+fmt_opaque_bool_wrap!(
+    FmtUnixTimestampMillisecondWrap,
+    time::format_description::modifier::UnixTimestampMillisecond,
+    "FmtUnixTimestampMillisecond",
+    "Configure Unix timestamp (millisecond precision) formatting:",
+    "sign_is_mandatory",
+    sign_is_mandatory,
+    with_sign_is_mandatory
+);
+fmt_opaque_bool_wrap!(
+    FmtUnixTimestampMicrosecondWrap,
+    time::format_description::modifier::UnixTimestampMicrosecond,
+    "FmtUnixTimestampMicrosecond",
+    "Configure Unix timestamp (microsecond precision) formatting:",
+    "sign_is_mandatory",
+    sign_is_mandatory,
+    with_sign_is_mandatory
+);
+fmt_opaque_bool_wrap!(
+    FmtUnixTimestampNanosecondWrap,
+    time::format_description::modifier::UnixTimestampNanosecond,
+    "FmtUnixTimestampNanosecond",
+    "Configure Unix timestamp (nanosecond precision) formatting:",
+    "sign_is_mandatory",
+    sign_is_mandatory,
+    with_sign_is_mandatory
+);
+
+// ── Opaque padding+sign wrappers ──────────────────────────────────────────────
+
+macro_rules! fmt_opaque_padding_sign_wrap {
+    (
+        $wrap:ident,
+        $inner:ty,
+        $schema_name:literal,
+        $prompt:literal
+    ) => {
+        /// Trenchcoat wrapper storing `(Padding, sign_is_mandatory)` for faithful code
+        /// generation.
+        ///
+        /// Available with the `time` feature.
+        #[cfg(all(feature = "time", not(kani)))]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+        pub struct $wrap {
+            /// The padding type.
+            pub padding: time::format_description::modifier::Padding,
+            /// Whether the sign is mandatory for non-negative values.
+            pub sign_is_mandatory: bool,
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl $wrap {
+            /// Reconstruct the inner value from stored fields.
+            pub fn into_inner(self) -> $inner {
+                <$inner>::default()
+                    .with_padding(self.padding)
+                    .with_sign_is_mandatory(self.sign_is_mandatory)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl serde::Serialize for $wrap {
+            fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                use serde::ser::SerializeMap as _;
+                use time::format_description::modifier::Padding;
+                let padding_str = match self.padding {
+                    Padding::Space => "Space",
+                    Padding::Zero => "Zero",
+                    Padding::None => "None",
+                    _ => "None",
+                };
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("padding", padding_str)?;
+                map.serialize_entry("sign_is_mandatory", &self.sign_is_mandatory)?;
+                map.end()
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl<'de> serde::Deserialize<'de> for $wrap {
+            fn deserialize<D: serde::Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                use serde::de::Error as _;
+                use time::format_description::modifier::Padding;
+                #[derive(serde::Deserialize)]
+                struct Helper {
+                    padding: String,
+                    sign_is_mandatory: bool,
+                }
+                let helper = Helper::deserialize(deserializer)?;
+                let padding = match helper.padding.as_str() {
+                    "Space" => Padding::Space,
+                    "Zero" => Padding::Zero,
+                    "None" => Padding::None,
+                    other => {
+                        return Err(D::Error::unknown_variant(
+                            other,
+                            &["Space", "Zero", "None"],
+                        ));
+                    }
+                };
+                Ok(Self {
+                    padding,
+                    sign_is_mandatory: helper.sign_is_mandatory,
+                })
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl schemars::JsonSchema for $wrap {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                $schema_name.into()
+            }
+
+            fn json_schema(
+                _generator: &mut schemars::SchemaGenerator,
+            ) -> schemars::Schema {
+                let map = serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "padding": { "type": "string", "enum": ["Space", "Zero", "None"] },
+                        "sign_is_mandatory": { "type": "boolean" }
+                    },
+                    "required": ["padding", "sign_is_mandatory"]
+                })
+                .as_object()
+                .cloned()
+                .unwrap_or_default();
+                schemars::Schema::from(map)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Prompt for $wrap {
+            fn prompt() -> Option<&'static str> {
+                Some($prompt)
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl Elicitation for $wrap {
+            type Style = <$inner as Elicitation>::Style;
+
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($wrap)));
+                let padding =
+                    time::format_description::modifier::Padding::elicit(communicator).await?;
+                let sign_is_mandatory = bool::elicit(communicator).await?;
+                Ok(Self {
+                    padding,
+                    sign_is_mandatory,
+                })
+            }
+
+            fn kani_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::kani_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn verus_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::verus_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
+                    stringify!($wrap),
+                )
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitIntrospect for $wrap {
+            fn pattern() -> crate::ElicitationPattern {
+                crate::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> crate::TypeMetadata {
+                crate::TypeMetadata {
+                    type_name: stringify!($wrap),
+                    description: <$wrap as Prompt>::prompt(),
+                    details: crate::PatternDetails::Survey {
+                        fields: vec![
+                            crate::FieldInfo {
+                                name: "padding",
+                                type_name: "time::format_description::modifier::Padding",
+                                prompt: None,
+                            },
+                            crate::FieldInfo {
+                                name: "sign_is_mandatory",
+                                type_name: "bool",
+                                prompt: None,
+                            },
+                        ],
+                    },
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitPromptTree for $wrap {
+            fn prompt_tree() -> crate::PromptTree {
+                crate::PromptTree::Survey {
+                    prompt: <$wrap as Prompt>::prompt().map(str::to_string),
+                    type_name: stringify!($wrap).to_string(),
+                    fields: vec![
+                        (
+                            "padding".to_string(),
+                            Box::new(
+                                time::format_description::modifier::Padding::prompt_tree(),
+                            ),
+                        ),
+                        (
+                            "sign_is_mandatory".to_string(),
+                            Box::new(bool::prompt_tree()),
+                        ),
+                    ],
+                }
+            }
+        }
+
+        #[cfg(all(feature = "time", not(kani)))]
+        impl crate::ElicitComplete for $wrap {}
+    };
+}
+
+fmt_opaque_padding_sign_wrap!(
+    FmtCalendarYearFullExtendedRangeWrap,
+    time::format_description::modifier::CalendarYearFullExtendedRange,
+    "FmtCalendarYearFullExtendedRange",
+    "Configure calendar year (full, extended range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtCalendarYearFullStandardRangeWrap,
+    time::format_description::modifier::CalendarYearFullStandardRange,
+    "FmtCalendarYearFullStandardRange",
+    "Configure calendar year (full, standard range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtCalendarYearCenturyExtendedRangeWrap,
+    time::format_description::modifier::CalendarYearCenturyExtendedRange,
+    "FmtCalendarYearCenturyExtendedRange",
+    "Configure calendar year century (extended range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtCalendarYearCenturyStandardRangeWrap,
+    time::format_description::modifier::CalendarYearCenturyStandardRange,
+    "FmtCalendarYearCenturyStandardRange",
+    "Configure calendar year century (standard range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtIsoYearFullExtendedRangeWrap,
+    time::format_description::modifier::IsoYearFullExtendedRange,
+    "FmtIsoYearFullExtendedRange",
+    "Configure ISO year (full, extended range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtIsoYearFullStandardRangeWrap,
+    time::format_description::modifier::IsoYearFullStandardRange,
+    "FmtIsoYearFullStandardRange",
+    "Configure ISO year (full, standard range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtIsoYearCenturyExtendedRangeWrap,
+    time::format_description::modifier::IsoYearCenturyExtendedRange,
+    "FmtIsoYearCenturyExtendedRange",
+    "Configure ISO year century (extended range) formatting:"
+);
+fmt_opaque_padding_sign_wrap!(
+    FmtIsoYearCenturyStandardRangeWrap,
+    time::format_description::modifier::IsoYearCenturyStandardRange,
+    "FmtIsoYearCenturyStandardRange",
+    "Configure ISO year century (standard range) formatting:"
+);
+
+// ── FmtSubsecondDigitsWrap ────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::modifier::SubsecondDigits`].
+///
+/// Serializes as a string: `"OneOrMore"`, `"One"` … `"Nine"`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtSubsecondDigitsWrap(pub time::format_description::modifier::SubsecondDigits);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::SubsecondDigits> for FmtSubsecondDigitsWrap {
+    fn from(inner: time::format_description::modifier::SubsecondDigits) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtSubsecondDigitsWrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::modifier::SubsecondDigits {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtSubsecondDigitsWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use time::format_description::modifier::SubsecondDigits;
+        let s = match self.0 {
+            SubsecondDigits::OneOrMore => "OneOrMore",
+            SubsecondDigits::One => "One",
+            SubsecondDigits::Two => "Two",
+            SubsecondDigits::Three => "Three",
+            SubsecondDigits::Four => "Four",
+            SubsecondDigits::Five => "Five",
+            SubsecondDigits::Six => "Six",
+            SubsecondDigits::Seven => "Seven",
+            SubsecondDigits::Eight => "Eight",
+            SubsecondDigits::Nine => "Nine",
+            _ => "OneOrMore",
+        };
+        serializer.serialize_str(s)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtSubsecondDigitsWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::SubsecondDigits;
+        let s = String::deserialize(deserializer)?;
+        let inner = match s.as_str() {
+            "OneOrMore" => SubsecondDigits::OneOrMore,
+            "One" => SubsecondDigits::One,
+            "Two" => SubsecondDigits::Two,
+            "Three" => SubsecondDigits::Three,
+            "Four" => SubsecondDigits::Four,
+            "Five" => SubsecondDigits::Five,
+            "Six" => SubsecondDigits::Six,
+            "Seven" => SubsecondDigits::Seven,
+            "Eight" => SubsecondDigits::Eight,
+            "Nine" => SubsecondDigits::Nine,
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+                ));
+            }
+        };
+        Ok(Self(inner))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtSubsecondDigitsWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtSubsecondDigits".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "string",
+            "enum": ["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtSubsecondDigitsWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose subsecond digit count:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtSubsecondDigitsWrap {
+    type Style = <time::format_description::modifier::SubsecondDigits as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtSubsecondDigitsWrap");
+        let inner =
+            time::format_description::modifier::SubsecondDigits::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtSubsecondDigitsWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtSubsecondDigitsWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness(
+            "FmtSubsecondDigitsWrap",
+        )
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtSubsecondDigitsWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Select
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtSubsecondDigitsWrap",
+            description: <FmtSubsecondDigitsWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Select {
+                variants: <time::format_description::modifier::SubsecondDigits as crate::Select>::labels()
+                    .into_iter()
+                    .map(|label| crate::VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtSubsecondDigitsWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        time::format_description::modifier::SubsecondDigits::prompt_tree()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtSubsecondDigitsWrap {}
+
+// ── FmtSubsecondWrap ──────────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::modifier::Subsecond`].
+///
+/// Serializes as `{"digits": "OneOrMore"|"One"|…|"Nine"}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtSubsecondWrap(pub time::format_description::modifier::Subsecond);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Subsecond> for FmtSubsecondWrap {
+    fn from(inner: time::format_description::modifier::Subsecond) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtSubsecondWrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::modifier::Subsecond {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtSubsecondWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        FmtSubsecondDigitsWrap(self.0.digits).serialize(serializer)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtSubsecondWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::SubsecondDigits;
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            digits: String,
+        }
+        let h = Helper::deserialize(deserializer)?;
+        let digits = match h.digits.as_str() {
+            "OneOrMore" => SubsecondDigits::OneOrMore,
+            "One" => SubsecondDigits::One,
+            "Two" => SubsecondDigits::Two,
+            "Three" => SubsecondDigits::Three,
+            "Four" => SubsecondDigits::Four,
+            "Five" => SubsecondDigits::Five,
+            "Six" => SubsecondDigits::Six,
+            "Seven" => SubsecondDigits::Seven,
+            "Eight" => SubsecondDigits::Eight,
+            "Nine" => SubsecondDigits::Nine,
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+                ));
+            }
+        };
+        Ok(Self(
+            time::format_description::modifier::Subsecond::default().with_digits(digits),
+        ))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtSubsecondWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtSubsecond".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "digits": {
+                    "type": "string",
+                    "enum": ["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+                }
+            },
+            "required": ["digits"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtSubsecondWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure subsecond formatting:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtSubsecondWrap {
+    type Style = <time::format_description::modifier::Subsecond as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtSubsecondWrap");
+        let inner = time::format_description::modifier::Subsecond::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtSubsecondWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtSubsecondWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtSubsecondWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtSubsecondWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtSubsecondWrap",
+            description: <FmtSubsecondWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![crate::FieldInfo {
+                    name: "digits",
+                    type_name: "time::format_description::modifier::SubsecondDigits",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtSubsecondWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: <FmtSubsecondWrap as Prompt>::prompt().map(str::to_string),
+            type_name: "FmtSubsecondWrap".to_string(),
+            fields: vec![(
+                "digits".to_string(),
+                Box::new(
+                    time::format_description::modifier::SubsecondDigits::prompt_tree(),
+                ),
+            )],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtSubsecondWrap {}
+
+// ── FmtPeriodWrap ─────────────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::modifier::Period`].
+///
+/// Serializes as `{"is_uppercase": bool, "case_sensitive": bool}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtPeriodWrap(pub time::format_description::modifier::Period);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Period> for FmtPeriodWrap {
+    fn from(inner: time::format_description::modifier::Period) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtPeriodWrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::modifier::Period {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtPeriodWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("is_uppercase", &self.0.is_uppercase)?;
+        map.serialize_entry("case_sensitive", &self.0.case_sensitive)?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtPeriodWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            is_uppercase: bool,
+            case_sensitive: bool,
+        }
+        let h = Helper::deserialize(deserializer)?;
+        Ok(Self(
+            time::format_description::modifier::Period::default()
+                .with_is_uppercase(h.is_uppercase)
+                .with_case_sensitive(h.case_sensitive),
+        ))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtPeriodWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtPeriod".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "is_uppercase": { "type": "boolean" },
+                "case_sensitive": { "type": "boolean" }
+            },
+            "required": ["is_uppercase", "case_sensitive"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtPeriodWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure AM/PM period formatting:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtPeriodWrap {
+    type Style = <time::format_description::modifier::Period as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtPeriodWrap");
+        let inner = time::format_description::modifier::Period::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtPeriodWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtPeriodWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtPeriodWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtPeriodWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtPeriodWrap",
+            description: <FmtPeriodWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![
+                    crate::FieldInfo {
+                        name: "is_uppercase",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    crate::FieldInfo {
+                        name: "case_sensitive",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                ],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtPeriodWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: <FmtPeriodWrap as Prompt>::prompt().map(str::to_string),
+            type_name: "FmtPeriodWrap".to_string(),
+            fields: vec![
+                ("is_uppercase".to_string(), Box::new(bool::prompt_tree())),
+                ("case_sensitive".to_string(), Box::new(bool::prompt_tree())),
+            ],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtPeriodWrap {}
+
+// ── FmtOffsetHourWrap ─────────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::modifier::OffsetHour`].
+///
+/// Serializes as `{"sign_is_mandatory": bool, "padding": "Space"|"Zero"|"None"}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtOffsetHourWrap(pub time::format_description::modifier::OffsetHour);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::OffsetHour> for FmtOffsetHourWrap {
+    fn from(inner: time::format_description::modifier::OffsetHour) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtOffsetHourWrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::modifier::OffsetHour {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtOffsetHourWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        use time::format_description::modifier::Padding;
+        let padding_str = match self.0.padding {
+            Padding::Space => "Space",
+            Padding::Zero => "Zero",
+            Padding::None => "None",
+            _ => "None",
+        };
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("sign_is_mandatory", &self.0.sign_is_mandatory)?;
+        map.serialize_entry("padding", padding_str)?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtOffsetHourWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::Padding;
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            sign_is_mandatory: bool,
+            padding: String,
+        }
+        let h = Helper::deserialize(deserializer)?;
+        let padding = match h.padding.as_str() {
+            "Space" => Padding::Space,
+            "Zero" => Padding::Zero,
+            "None" => Padding::None,
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &["Space", "Zero", "None"],
+                ));
+            }
+        };
+        Ok(Self(
+            time::format_description::modifier::OffsetHour::default()
+                .with_sign_is_mandatory(h.sign_is_mandatory)
+                .with_padding(padding),
+        ))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtOffsetHourWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtOffsetHour".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "sign_is_mandatory": { "type": "boolean" },
+                "padding": { "type": "string", "enum": ["Space", "Zero", "None"] }
+            },
+            "required": ["sign_is_mandatory", "padding"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtOffsetHourWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure UTC offset hour formatting:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtOffsetHourWrap {
+    type Style = <time::format_description::modifier::OffsetHour as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtOffsetHourWrap");
+        let inner = time::format_description::modifier::OffsetHour::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtOffsetHourWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtOffsetHourWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtOffsetHourWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtOffsetHourWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtOffsetHourWrap",
+            description: <FmtOffsetHourWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![
+                    crate::FieldInfo {
+                        name: "sign_is_mandatory",
+                        type_name: "bool",
+                        prompt: None,
+                    },
+                    crate::FieldInfo {
+                        name: "padding",
+                        type_name: "time::format_description::modifier::Padding",
+                        prompt: None,
+                    },
+                ],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtOffsetHourWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: <FmtOffsetHourWrap as Prompt>::prompt().map(str::to_string),
+            type_name: "FmtOffsetHourWrap".to_string(),
+            fields: vec![
+                (
+                    "sign_is_mandatory".to_string(),
+                    Box::new(bool::prompt_tree()),
+                ),
+                (
+                    "padding".to_string(),
+                    Box::new(
+                        time::format_description::modifier::Padding::prompt_tree(),
+                    ),
+                ),
+            ],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtOffsetHourWrap {}
+
+// ── WellKnownRfc2822Wrap ──────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::well_known::Rfc2822`].
+///
+/// Unit struct — serializes as `{}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WellKnownRfc2822Wrap;
+
+#[cfg(all(feature = "time", not(kani)))]
+impl WellKnownRfc2822Wrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::well_known::Rfc2822 {
+        time::format_description::well_known::Rfc2822
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for WellKnownRfc2822Wrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        serializer.serialize_map(Some(0))?.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for WellKnownRfc2822Wrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        struct Helper {}
+        Helper::deserialize(deserializer)?;
+        Ok(Self)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for WellKnownRfc2822Wrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "WellKnownRfc2822".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({ "type": "object", "properties": {} })
+            .as_object()
+            .cloned()
+            .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for WellKnownRfc2822Wrap {
+    fn prompt() -> Option<&'static str> {
+        Some("RFC 2822 format (e.g. Fri, 21 Nov 1997 09:55:06 -0600) — no options to configure.")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for WellKnownRfc2822Wrap {
+    type Style = <time::format_description::well_known::Rfc2822 as Elicitation>::Style;
+
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(Self)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("WellKnownRfc2822Wrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("WellKnownRfc2822Wrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("WellKnownRfc2822Wrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for WellKnownRfc2822Wrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "WellKnownRfc2822Wrap",
+            description: <WellKnownRfc2822Wrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for WellKnownRfc2822Wrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: <WellKnownRfc2822Wrap as Prompt>::prompt()
+                .unwrap_or("WellKnownRfc2822Wrap")
+                .to_string(),
+            type_name: "WellKnownRfc2822Wrap".to_string(),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for WellKnownRfc2822Wrap {}
+
+// ── FmtIgnoreWrap — trenchcoat for time::format_description::modifier::Ignore ─
+/// Trenchcoat wrapper for [`time::format_description::modifier::Ignore`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as `{"count": u16}` where count is non-zero.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtIgnoreWrap(pub time::format_description::modifier::Ignore);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Ignore> for FmtIgnoreWrap {
+    fn from(inner: time::format_description::modifier::Ignore) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtIgnoreWrap {
+    /// Extract the inner [`time::format_description::modifier::Ignore`].
+    pub fn into_inner(self) -> time::format_description::modifier::Ignore {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtIgnoreWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        let mut map = serializer.serialize_map(Some(1))?;
+        map.serialize_entry("count", &self.0.count.get())?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtIgnoreWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            count: u16,
+        }
+        let helper = Helper::deserialize(deserializer)?;
+        let count = core::num::NonZero::<u16>::new(helper.count)
+            .ok_or_else(|| D::Error::custom("Ignore count must be non-zero"))?;
+        Ok(Self(time::format_description::modifier::Ignore::count(
+            count,
+        )))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtIgnoreWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtIgnore".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "count": { "type": "integer", "minimum": 1, "maximum": 65535 }
+            },
+            "required": ["count"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtIgnoreWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Number of bytes to ignore (non-zero):")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtIgnoreWrap {
+    type Style = <time::format_description::modifier::Ignore as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtIgnoreWrap");
+        let inner = time::format_description::modifier::Ignore::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtIgnoreWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtIgnoreWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtIgnoreWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtIgnoreWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtIgnoreWrap",
+            description: <FmtIgnoreWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![crate::FieldInfo {
+                    name: "count",
+                    type_name: "u16",
+                    prompt: Some("Number of bytes to ignore (non-zero):"),
+                }],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtIgnoreWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "FmtIgnoreWrap".to_string(),
+            fields: vec![("count".to_string(), Box::new(u16::prompt_tree()))],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtIgnoreWrap {}
+
+// ── FmtMinuteWrap — trenchcoat for time::format_description::modifier::Minute ─
+/// Trenchcoat wrapper for [`time::format_description::modifier::Minute`] that
+/// satisfies `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
+///
+/// Serializes as `{"padding": "Space"|"Zero"|"None"}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FmtMinuteWrap(pub time::format_description::modifier::Minute);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::modifier::Minute> for FmtMinuteWrap {
+    fn from(inner: time::format_description::modifier::Minute) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl FmtMinuteWrap {
+    /// Extract the inner [`time::format_description::modifier::Minute`].
+    pub fn into_inner(self) -> time::format_description::modifier::Minute {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for FmtMinuteWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        use time::format_description::modifier::Padding;
+        let padding_str = match self.0.padding {
+            Padding::Space => "Space",
+            Padding::Zero => "Zero",
+            Padding::None => "None",
+            _ => "None",
+        };
+        let mut map = serializer.serialize_map(Some(1))?;
+        map.serialize_entry("padding", padding_str)?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for FmtMinuteWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::modifier::Padding;
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            padding: String,
+        }
+        let helper = Helper::deserialize(deserializer)?;
+        let padding = match helper.padding.as_str() {
+            "Space" => Padding::Space,
+            "Zero" => Padding::Zero,
+            "None" => Padding::None,
+            other => {
+                return Err(D::Error::unknown_variant(other, &["Space", "Zero", "None"]));
+            }
+        };
+        Ok(Self(
+            time::format_description::modifier::Minute::default().with_padding(padding),
+        ))
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for FmtMinuteWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "FmtMinute".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "padding": { "type": "string", "enum": ["Space", "Zero", "None"] }
+            },
+            "required": ["padding"]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for FmtMinuteWrap {
+    fn prompt() -> Option<&'static str> {
+        Some("Configure minute formatting:")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for FmtMinuteWrap {
+    type Style = <time::format_description::modifier::Minute as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting FmtMinuteWrap");
+        let inner = time::format_description::modifier::Minute::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("FmtMinuteWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("FmtMinuteWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("FmtMinuteWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for FmtMinuteWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Survey
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "FmtMinuteWrap",
+            description: <FmtMinuteWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Survey {
+                fields: vec![crate::FieldInfo {
+                    name: "padding",
+                    type_name: "time::format_description::modifier::Padding",
+                    prompt: None,
+                }],
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for FmtMinuteWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "FmtMinuteWrap".to_string(),
+            fields: vec![(
+                "padding".to_string(),
+                Box::new(time::format_description::modifier::Padding::prompt_tree()),
+            )],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for FmtMinuteWrap {}
+
 // ── ComponentRangeWrap — trenchcoat for time::error::ComponentRange ──────────
 /// Trenchcoat wrapper for [`time::error::ComponentRange`] that satisfies
 /// `schemars::JsonSchema`, `Serialize`, and `Deserialize`.
@@ -2610,6 +5166,304 @@ mod time_emit_impls {
     impl ToCodeLiteral for DifferentVariantWrap {
         fn to_code_literal(&self) -> TokenStream {
             quote::quote! { elicitation::DifferentVariantWrap(::time::error::DifferentVariant) }
+        }
+    }
+
+    impl ToCodeLiteral for FmtDayWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::FmtDayWrap(#inner) }
+        }
+    }
+
+    impl ToCodeLiteral for FmtEndWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! {
+                elicitation::FmtEndWrap(::time::format_description::modifier::End::default())
+            }
+        }
+    }
+
+    impl ToCodeLiteral for FmtTrailingInputWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            use time::format_description::modifier::TrailingInput;
+            match self.0 {
+                TrailingInput::Prohibit => quote::quote! {
+                    elicitation::FmtTrailingInputWrap(
+                        ::time::format_description::modifier::TrailingInput::Prohibit,
+                    )
+                },
+                TrailingInput::Discard => quote::quote! {
+                    elicitation::FmtTrailingInputWrap(
+                        ::time::format_description::modifier::TrailingInput::Discard,
+                    )
+                },
+            }
+        }
+    }
+
+    impl ToCodeLiteral for FmtPaddingWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            use time::format_description::modifier::Padding;
+            match self.0 {
+                Padding::Space => quote::quote! {
+                    elicitation::FmtPaddingWrap(
+                        ::time::format_description::modifier::Padding::Space,
+                    )
+                },
+                Padding::Zero => quote::quote! {
+                    elicitation::FmtPaddingWrap(
+                        ::time::format_description::modifier::Padding::Zero,
+                    )
+                },
+                Padding::None => quote::quote! {
+                    elicitation::FmtPaddingWrap(
+                        ::time::format_description::modifier::Padding::None,
+                    )
+                },
+                _ => quote::quote! {
+                    elicitation::FmtPaddingWrap(
+                        ::time::format_description::modifier::Padding::None,
+                    )
+                },
+            }
+        }
+    }
+
+    impl ToCodeLiteral for FmtIgnoreWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let count: u16 = self.0.count.get();
+            quote::quote! {
+                elicitation::FmtIgnoreWrap(
+                    ::time::format_description::modifier::Ignore::count(
+                        match ::core::num::NonZero::<u16>::new(#count) {
+                            Some(n) => n,
+                            None => ::core::num::NonZero::<u16>::MIN,
+                        }
+                    )
+                )
+            }
+        }
+    }
+
+    impl ToCodeLiteral for FmtMinuteWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            use time::format_description::modifier::Padding;
+            let padding_tokens = match self.0.padding {
+                Padding::Space => {
+                    quote::quote! { ::time::format_description::modifier::Padding::Space }
+                }
+                Padding::Zero => {
+                    quote::quote! { ::time::format_description::modifier::Padding::Zero }
+                }
+                _ => {
+                    quote::quote! { ::time::format_description::modifier::Padding::None }
+                }
+            };
+            quote::quote! {
+                elicitation::FmtMinuteWrap(
+                    ::time::format_description::modifier::Minute::default()
+                        .with_padding(#padding_tokens)
+                )
+            }
+        }
+    }
+
+    macro_rules! padding_wrap_to_code_literal {
+        ($wrap:ident, $inner:path) => {
+            impl ToCodeLiteral for $wrap {
+                fn to_code_literal(&self) -> TokenStream {
+                    use time::format_description::modifier::Padding;
+                    let padding_tokens = match self.0.padding {
+                        Padding::Space => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Space
+                            }
+                        }
+                        Padding::Zero => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Zero
+                            }
+                        }
+                        _ => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::None
+                            }
+                        }
+                    };
+                    quote::quote! {
+                        elicitation::$wrap(
+                            <$inner>::default().with_padding(#padding_tokens)
+                        )
+                    }
+                }
+            }
+        };
+    }
+
+    padding_wrap_to_code_literal!(
+        FmtOrdinalWrap,
+        ::time::format_description::modifier::Ordinal
+    );
+    padding_wrap_to_code_literal!(
+        FmtSecondWrap,
+        ::time::format_description::modifier::Second
+    );
+    padding_wrap_to_code_literal!(
+        FmtOffsetMinuteWrap,
+        ::time::format_description::modifier::OffsetMinute
+    );
+    padding_wrap_to_code_literal!(
+        FmtOffsetSecondWrap,
+        ::time::format_description::modifier::OffsetSecond
+    );
+    padding_wrap_to_code_literal!(
+        FmtWeekNumberIsoWrap,
+        ::time::format_description::modifier::WeekNumberIso
+    );
+    padding_wrap_to_code_literal!(
+        FmtWeekNumberSundayWrap,
+        ::time::format_description::modifier::WeekNumberSunday
+    );
+    padding_wrap_to_code_literal!(
+        FmtWeekNumberMondayWrap,
+        ::time::format_description::modifier::WeekNumberMonday
+    );
+
+    macro_rules! opaque_padding_wrap_literal {
+        ($wrap:ident) => {
+            impl ToCodeLiteral for $wrap {
+                fn to_code_literal(&self) -> TokenStream {
+                    use time::format_description::modifier::Padding;
+                    let padding_tokens = match self.0 {
+                        Padding::Space => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Space
+                            }
+                        }
+                        Padding::Zero => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Zero
+                            }
+                        }
+                        _ => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::None
+                            }
+                        }
+                    };
+                    quote::quote! {
+                        elicitation::$wrap(#padding_tokens)
+                    }
+                }
+            }
+        };
+    }
+
+    opaque_padding_wrap_literal!(FmtHour12Wrap);
+    opaque_padding_wrap_literal!(FmtHour24Wrap);
+    opaque_padding_wrap_literal!(FmtMonthNumericalWrap);
+    opaque_padding_wrap_literal!(FmtCalendarYearLastTwoWrap);
+    opaque_padding_wrap_literal!(FmtIsoYearLastTwoWrap);
+
+    // Opaque bool-field wrappers: emit Wrap(value).
+    macro_rules! opaque_bool_wrap_literal {
+        ($wrap:ident) => {
+            impl ToCodeLiteral for $wrap {
+                fn to_code_literal(&self) -> TokenStream {
+                    let value = self.0;
+                    quote::quote! { elicitation::$wrap(#value) }
+                }
+            }
+        };
+    }
+
+    opaque_bool_wrap_literal!(FmtMonthShortWrap);
+    opaque_bool_wrap_literal!(FmtMonthLongWrap);
+    opaque_bool_wrap_literal!(FmtWeekdayShortWrap);
+    opaque_bool_wrap_literal!(FmtWeekdayLongWrap);
+    opaque_bool_wrap_literal!(FmtWeekdaySundayWrap);
+    opaque_bool_wrap_literal!(FmtWeekdayMondayWrap);
+    opaque_bool_wrap_literal!(FmtUnixTimestampSecondWrap);
+    opaque_bool_wrap_literal!(FmtUnixTimestampMillisecondWrap);
+    opaque_bool_wrap_literal!(FmtUnixTimestampMicrosecondWrap);
+    opaque_bool_wrap_literal!(FmtUnixTimestampNanosecondWrap);
+
+    // Opaque padding+sign wrappers: emit Wrap { padding, sign_is_mandatory }.
+    macro_rules! opaque_padding_sign_wrap_literal {
+        ($wrap:ident) => {
+            impl ToCodeLiteral for $wrap {
+                fn to_code_literal(&self) -> TokenStream {
+                    use time::format_description::modifier::Padding;
+                    let padding_tokens = match self.padding {
+                        Padding::Space => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Space
+                            }
+                        }
+                        Padding::Zero => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::Zero
+                            }
+                        }
+                        _ => {
+                            quote::quote! {
+                                ::time::format_description::modifier::Padding::None
+                            }
+                        }
+                    };
+                    let sign = self.sign_is_mandatory;
+                    quote::quote! {
+                        elicitation::$wrap {
+                            padding: #padding_tokens,
+                            sign_is_mandatory: #sign,
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    opaque_padding_sign_wrap_literal!(FmtCalendarYearFullExtendedRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtCalendarYearFullStandardRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtCalendarYearCenturyExtendedRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtCalendarYearCenturyStandardRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtIsoYearFullExtendedRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtIsoYearFullStandardRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtIsoYearCenturyExtendedRangeWrap);
+    opaque_padding_sign_wrap_literal!(FmtIsoYearCenturyStandardRangeWrap);
+
+    impl ToCodeLiteral for WellKnownRfc2822Wrap {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { elicitation::WellKnownRfc2822Wrap }
+        }
+    }
+
+    impl ToCodeLiteral for FmtSubsecondDigitsWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::FmtSubsecondDigitsWrap(#inner) }
+        }
+    }
+
+    impl ToCodeLiteral for FmtSubsecondWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::FmtSubsecondWrap(#inner) }
+        }
+    }
+
+    impl ToCodeLiteral for FmtPeriodWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::FmtPeriodWrap(#inner) }
+        }
+    }
+
+    impl ToCodeLiteral for FmtOffsetHourWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::FmtOffsetHourWrap(#inner) }
         }
     }
 

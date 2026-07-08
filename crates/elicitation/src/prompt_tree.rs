@@ -1289,9 +1289,9 @@ mod verification_impls {
     mod time_impls {
         use super::*;
         use crate::verification::types::{
-            ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap, OffsetDateTimeAfter,
-            OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap,
-            UtcDateTimeWrap, UtcOffsetWrap,
+            ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap, FmtEndWrap,
+            OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap,
+            TimeWrap, UtcDateTimeWrap, UtcOffsetWrap,
         };
         leaf_impl!(time::OffsetDateTime, "time::OffsetDateTime");
         leaf_impl!(time::PrimitiveDateTime, "time::PrimitiveDateTime");
@@ -1305,6 +1305,10 @@ mod verification_impls {
             time::error::DifferentVariant,
             "time::error::DifferentVariant"
         );
+        leaf_impl!(
+            time::format_description::modifier::End,
+            "time::format_description::modifier::End"
+        );
         leaf_impl!(OffsetDateTimeAfter, "OffsetDateTimeAfter");
         leaf_impl!(OffsetDateTimeBefore, "OffsetDateTimeBefore");
         leaf_impl!(OffsetDateTimeWrap, "OffsetDateTimeWrap");
@@ -1316,6 +1320,7 @@ mod verification_impls {
         leaf_impl!(UtcOffsetWrap, "UtcOffsetWrap");
         leaf_impl!(ConversionRangeWrap, "ConversionRangeWrap");
         leaf_impl!(DifferentVariantWrap, "DifferentVariantWrap");
+        leaf_impl!(FmtEndWrap, "FmtEndWrap");
     }
 
     #[cfg(all(feature = "jiff", not(kani)))]
