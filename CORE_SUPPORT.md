@@ -28,6 +28,125 @@ shadow crate path.
 
 ---
 
+## Communicator and prompt customization
+
+Every `elicit()` method receives a `communicator: &C` (or `_communicator: &C`).
+The communicator is the *only* channel through which a caller can swap in a
+custom prompt style at runtime.  **Hardcoding the prompt string directly is
+wrong** — it silently ignores any style the caller installed.
+
+### The three categories
+
+#### Category A — select / survey types (most types)
+
+These types ask the user something — a numeric value, a string, a choice from
+a list, one or more sub-fields.  Every prompt string must come from
+`prompt_for_type`, not from a hardcoded literal:
+
+```rust
+#[tracing::instrument(skip(communicator))]
+async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+    let prompt = communicator
+        .style_context()
+        .prompt_for_type::<Self>(
+            "value",                              // field name
+            "foo::Color",                         // field type (for display)
+            &crate::style::PromptContext::new(0, 1), // (field_index, total_fields)
+        )?
+        .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a color:").to_string());
+    let params = mcp::select_params(&prompt, &Self::labels());
+    // … call_tool, extract result …
+}
+```
+
+For a **multi-field survey** (struct with several fields), call `prompt_for_type`
+once per field, advancing the index:
+
+```rust
+let hour_prompt = communicator
+    .style_context()
+    .prompt_for_type::<Self>("hour", "u8", &crate::style::PromptContext::new(0, 3))?
+    .unwrap_or_else(|| "Enter hour (0-23):".to_string());
+// … elicit hour …
+
+let minute_prompt = communicator
+    .style_context()
+    .prompt_for_type::<Self>("minute", "u8", &crate::style::PromptContext::new(1, 3))?
+    .unwrap_or_else(|| "Enter minute (0-59):".to_string());
+// … elicit minute …
+
+let second_prompt = communicator
+    .style_context()
+    .prompt_for_type::<Self>("second", "u8", &crate::style::PromptContext::new(2, 3))?
+    .unwrap_or_else(|| "Enter second (0-59):".to_string());
+// … elicit second …
+```
+
+#### Category B — pure delegation types
+
+These types collect sub-values entirely by calling `T::elicit(communicator)` on
+their constituent types, with no hardcoded prompt of their own.  Because the
+communicator is passed through, the style system already works correctly.  Do
+**not** call `prompt_for_type` or `style_or_default` here — just pass the
+communicator along:
+
+```rust
+async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+    let start = foo::Date::elicit(communicator).await?;
+    let end   = foo::Date::elicit(communicator).await?;
+    Ok(Self { start, end })
+}
+```
+
+#### Category C — unit types (single possible value, no user choice)
+
+These types have exactly one value and require no user interaction.  The
+communicator is intentionally unused.  Use `_communicator` as the parameter
+name (suppresses the unused-variable warning) and use `skip_all` on the
+instrument attribute:
+
+```rust
+#[tracing::instrument(skip_all)]
+async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+    Ok(foo::Utc)
+}
+```
+
+Unit types arise when:
+
+- The type is a unit struct (e.g. a timezone marker like `chrono::Utc`)
+- The type is an error with only one possible value (e.g. an out-of-range error
+  that is produced by a single known-invalid operation)
+- The type is uninhabited (no valid value exists; `elicit()` always returns `Err`)
+
+### What `style_or_default` is NOT
+
+`style_or_default` fetches the style object associated with `Self`.  Calling it
+and then ignoring the return value is just as broken as not calling it at all —
+the style is fetched but has no effect on the prompt the user sees.  The style
+object is only meaningful when you call `prompt_for_field` on it yourself (via
+`prompt_for_type`, which does this internally).
+
+```rust
+// ❌ WRONG — style fetched but discarded; prompt is still hardcoded
+let _style = communicator.style_or_default::<Self>()?;
+let params = mcp::select_params(Self::prompt().unwrap_or("hardcoded"), &labels);
+
+// ❌ WRONG — style fetched, debug-logged, then thrown away
+let style = communicator.style_or_default::<Self>()?;
+tracing::debug!(?style, "eliciting");
+let params = mcp::select_params(Self::prompt().unwrap_or("still hardcoded"), &labels);
+
+// ✅ CORRECT — style is applied to the prompt via prompt_for_type
+let prompt = communicator
+    .style_context()
+    .prompt_for_type::<Self>("value", "foo::Color", &crate::style::PromptContext::new(0, 1))?
+    .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a color:").to_string());
+let params = mcp::select_params(&prompt, &labels);
+```
+
+---
+
 ## File layout
 
 For a crate named `foo`:
@@ -88,10 +207,15 @@ impl Elicitation for foo::Scalar {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting foo::Scalar");
-        let params = mcp::number_params(
-            Self::prompt().unwrap_or("Enter scalar:"),
-            i64::MIN, i64::MAX,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "value",
+                "foo::Scalar",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Enter scalar:").to_string());
+        let params = mcp::number_params(&prompt, i64::MIN, i64::MAX);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
@@ -228,10 +352,15 @@ impl Elicitation for foo::Color {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting foo::Color");
         let labels = Self::labels();
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose a color:"),
-            &labels,
-        );
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "value",
+                "foo::Color",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a color:").to_string());
+        let params = mcp::select_params(&prompt, &labels);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
