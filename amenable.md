@@ -23,6 +23,9 @@ Eg. FlowersArePretty
 
 Methods for types that depend on Standards or Objectives, including ways to audit the proof chain leading back to the originating Objective or Standard.
 Eg. PolygonValid
+* audit - For a given method, produce the source code associated with computing the result.
+
+Additional convenience methods for analytics and heuristics.
 
 Objective and Standard trivially implement Evidence by referring to their identity.
 
@@ -46,6 +49,18 @@ The Exchange trait defines the semantics of producing one Sidecar type, and rece
 
 Since each Sidecar contains Evidence, users must implement Establish to define legal exchanges of proof tokens, or they will not be able to produce the required proof to form a valid Sidecar type.
 
+## Trait StateMachine
+
+Methods expose a bounded set of states and transitions comprising a finite state machine.
+
+## Amenable
+
+A closed set of Exchanges, where the program is a State Machine and all state transitions implement Exchange.
+
+Methods enumerate the set of Exchanges, all the transitions that are allowing inside the program, and provide accessors to the formal proofs associated with a given state or transition.
+
 ## Narrative
+
+Standards and Objectives are ways to plug trusted assumptions into formal verifiers, in a way that makes them auditable. Carefully crafted human decision, based on policy or legal standards, can produce a contained audit trail of source code. Largely speaking, this comes down to embedding good metadata describing the condition, the reference standard or program invariant that it represents, links to the third party standards, or internal steps taken to uphold the objective. The metadata embedded into the formal proofs is the true value of trusted assumptions in formal models, because they create a paper trail detailing how the programmers intended to uphold their promises. This is a good thing because it sweeps up a broader class of program invariants than what we can prove with a few math operations.
 
 Proofs generally refer to evidence that desired program invariants are preserved throughout all states of the program. Acquiring proofs can be computationally intensive (polygon with metadata), or ineffable and requiring human audit (flowers are pretty). The trait interface is only valid way to manufacture a proof token. This restricts the audit surface to the narrow bottleneck of the trait method implementations.

@@ -124,6 +124,26 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### amenable Constitutional Crate
+
+**Document:** [AMENABLE_PLAN.md](AMENABLE_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Introduce `amenable` as a small, dependency-light
+constitutional crate that distills elicitation's ad hoc proof-carrying patterns
+into a trait accord for lawful evidence exchange, trusted roots, and closed
+proof-bearing workflows. The first incubation step is inside `elicitation`
+itself, where the trait family can be explored in a parallel `amenable` module
+against existing `Prop` and `ProvableFrom` machinery before any separate crate
+boundary or downstream adoption is forced.
+
+**Architecture principle:** `amenable` defines upstream architectural law, not
+domain payloads or backend policy. It should explain and govern the explicit
+`Established<_>` sidecar plus `ProvableFrom<_>` exchange pattern without
+competing with `elicitation`'s concrete proof machinery, and it should proceed
+as a parallel track rather than a migration campaign.
+
 ### elicit_temporal Interface Crate
 
 **Document:** [ELICIT_TEMPORAL_PLAN.md](ELICIT_TEMPORAL_PLAN.md)
