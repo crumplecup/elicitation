@@ -124,25 +124,24 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
-### amenable Constitutional Crate
+### amenable Constitutional Crate — relocated
 
-**Document:** [AMENABLE_PLAN.md](AMENABLE_PLAN.md)
+**Relocated to:** [github.com/crumplecup/amenable](https://github.com/crumplecup/amenable)
+(local checkout: `/home/erik/repos/amenable`)
 
-**Status:** 🔲 Planning
+**Last commit in this repo:** `d9a0f276` (`AMENABLE_PLAN.md`, `amenable.md`);
+see `git show d9a0f276:AMENABLE_PLAN.md` to retrieve the pre-relocation plan.
 
-**Description:** Introduce `amenable` as a small, dependency-light
-constitutional crate that distills elicitation's ad hoc proof-carrying patterns
-into a trait accord for lawful evidence exchange, trusted roots, and closed
-proof-bearing workflows. The first incubation step is inside `elicitation`
-itself, where the trait family can be explored in a parallel `amenable` module
-against existing `Prop` and `ProvableFrom` machinery before any separate crate
-boundary or downstream adoption is forced.
-
-**Architecture principle:** `amenable` defines upstream architectural law, not
-domain payloads or backend policy. It should explain and govern the explicit
-`Established<_>` sidecar plus `ProvableFrom<_>` exchange pattern without
-competing with `elicitation`'s concrete proof machinery, and it should proceed
-as a parallel track rather than a migration campaign.
+**Description:** The `amenable` constitutional trait family incubated inside
+`crates/elicitation/src/amenable.rs` and has since moved to its own crate and
+repository. The dependency direction inverted during the move: `amenable` is
+now the foundational proof-carrying crate that `elicitation` is expected to
+depend on, not the other way around. The `elicitation`-side bridge code that
+adapted the constitutional traits onto `Prop`/`VerifiedStateMachine`
+(`amenable_elicitation.rs`) was deleted rather than migrated. Planning
+continues in the `amenable` repo's own `AMENABLE_PLAN.md`; watch for a future
+plan entry here once `elicitation` begins consuming `amenable` as a
+dependency.
 
 ### elicit_temporal Interface Crate
 

@@ -92,8 +92,6 @@ pub mod middleware;
 
 // Verification framework imports
 
-mod amenable;
-mod amenable_elicitation;
 mod collections;
 mod complete;
 mod containers;
@@ -222,14 +220,6 @@ pub use contracts::{
     And, Established, FormalMethod, Implies, InVariant, Is, KaniVariantConstruction,
     KaniVariantState, Prop, ProvableFrom, Refines, VerifiedStateMachine, VerifiedTransition, both,
     downcast, fst, snd,
-};
-
-// Constitutional proof roles
-pub use amenable::{
-    Amenable, AsObjective, AsStandard, CreusotVerifier, CreusotVerifierMetadata, Establish,
-    Evidence, Exchange, KaniVerifier, KaniVerifierMetadata, MetadataEntry, Objective, ProofToken,
-    Provenance, RustStdType, Sidecar, Standard, StateMachine, Verifier, VerusVerifier,
-    VerusVerifierMetadata, Witness, WitnessSource, Witnessed,
 };
 
 // Compositional depth-bounded construction for Kani proofs
