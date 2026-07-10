@@ -67,10 +67,10 @@ pub use native_interval::TemporalNativeIntervalFactory;
 pub use native_props::{
     TemporalCivilProps, TemporalDateTimeFormulaProps, TemporalDurationProps,
     TemporalExplicitDurationProps, TemporalExplicitTemporalFormProps,
-    TemporalExplicitTimeIntervalProps, TemporalExtensionProps,
-    TemporalGroupedTimeScaleUnitProps, TemporalInstantProps, TemporalNativeProps,
-    TemporalQualifiedTemporalValueProps, TemporalRecurringIntervalProps, TemporalSetProps,
-    TemporalSpanProps, TemporalTimeIntervalProps, TemporalZoneProps,
+    TemporalExplicitTimeIntervalProps, TemporalExtensionProps, TemporalGroupedTimeScaleUnitProps,
+    TemporalInstantProps, TemporalNativeProps, TemporalQualifiedTemporalValueProps,
+    TemporalRecurringIntervalProps, TemporalSetProps, TemporalSpanProps, TemporalTimeIntervalProps,
+    TemporalZoneProps,
 };
 pub use native_span::{
     TemporalDurationNativeBridge, TemporalNativeSpanBridge, TemporalRecurringIntervalNativeBridge,

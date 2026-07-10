@@ -7,24 +7,23 @@
 //! return wrapped in proven carriers rather than loose proof tuples.
 
 use crate::{
-    DateTimeFormulaDescriptor, DateTimeFormulaSemanticBundle,
-    ExplicitDurationDescriptor, ExplicitDurationSemanticBundle, ExplicitTemporalFormDescriptor,
+    DateTimeFormulaDescriptor, DateTimeFormulaSemanticBundle, ExplicitDurationDescriptor,
+    ExplicitDurationSemanticBundle, ExplicitTemporalFormDescriptor,
     ExplicitTemporalFormSemanticBundle, ExplicitTimeIntervalDescriptor,
     ExplicitTimeIntervalSemanticBundle, GroupedTimeScaleUnitDescriptor,
     GroupedTimeScaleUnitSemanticBundle, NativeEvaluatedProvenDateTimeFormulaResult,
-    ProvenDateTimeFormulaCarrier, ProvenExplicitDurationCarrier,
-    ProvenExplicitTemporalFormCarrier, ProvenExplicitTimeIntervalCarrier,
-    ProvenGroupedTimeScaleUnitCarrier, ProvenQualifiedTemporalValueCarrier,
-    ProvenTemporalSetCarrier, QualifiedTemporalValueDescriptor,
-    QualifiedTemporalValueSemanticBundle, RealizedProvenDateTimeFormulaResult,
-    RealizedProvenExplicitDurationResult, RealizedProvenExplicitTemporalFormResult,
-    RealizedProvenExplicitTimeIntervalResult, RealizedProvenGroupedTimeScaleUnitResult,
-    RealizedProvenQualifiedTemporalValueResult, RealizedProvenTemporalSetResult,
-    ReflectedProvenDateTimeFormulaResult, ReflectedProvenExplicitDurationResult,
-    ReflectedProvenExplicitTemporalFormResult, ReflectedProvenExplicitTimeIntervalResult,
-    ReflectedProvenGroupedTimeScaleUnitResult, ReflectedProvenQualifiedTemporalValueResult,
-    ReflectedProvenTemporalSetResult, TemporalDateTimeFormulaProps,
-    TemporalExplicitDurationProps, TemporalExplicitTemporalFormProps,
+    ProvenDateTimeFormulaCarrier, ProvenExplicitDurationCarrier, ProvenExplicitTemporalFormCarrier,
+    ProvenExplicitTimeIntervalCarrier, ProvenGroupedTimeScaleUnitCarrier,
+    ProvenQualifiedTemporalValueCarrier, ProvenTemporalSetCarrier,
+    QualifiedTemporalValueDescriptor, QualifiedTemporalValueSemanticBundle,
+    RealizedProvenDateTimeFormulaResult, RealizedProvenExplicitDurationResult,
+    RealizedProvenExplicitTemporalFormResult, RealizedProvenExplicitTimeIntervalResult,
+    RealizedProvenGroupedTimeScaleUnitResult, RealizedProvenQualifiedTemporalValueResult,
+    RealizedProvenTemporalSetResult, ReflectedProvenDateTimeFormulaResult,
+    ReflectedProvenExplicitDurationResult, ReflectedProvenExplicitTemporalFormResult,
+    ReflectedProvenExplicitTimeIntervalResult, ReflectedProvenGroupedTimeScaleUnitResult,
+    ReflectedProvenQualifiedTemporalValueResult, ReflectedProvenTemporalSetResult,
+    TemporalDateTimeFormulaProps, TemporalExplicitDurationProps, TemporalExplicitTemporalFormProps,
     TemporalExplicitTimeIntervalProps, TemporalGroupedTimeScaleUnitProps,
     TemporalQualifiedTemporalValueProps, TemporalSetDescriptor, TemporalSetProps,
     TemporalSetSemanticBundle,
@@ -67,7 +66,9 @@ pub trait TemporalExplicitTemporalFormNativeBridge:
 }
 
 /// Realize and reflect native explicit duration carriers.
-pub trait TemporalExplicitDurationNativeBridge: TemporalExplicitDurationProps + Send + Sync {
+pub trait TemporalExplicitDurationNativeBridge:
+    TemporalExplicitDurationProps + Send + Sync
+{
     /// Realize a validated explicit duration descriptor as a proven backend-native carrier.
     fn realize_explicit_duration(
         &self,

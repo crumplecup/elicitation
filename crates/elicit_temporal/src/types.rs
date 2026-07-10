@@ -21,13 +21,12 @@ use crate::{
     ConversionTruncatesSubseconds, DateTimeFormulaEvaluationResultEvidence,
     DateTimeFormulaEvaluationResultValid, DateTimeFormulaEvaluationSemanticsEvidence,
     DateTimeFormulaEvaluationSemanticsValid, DateTimeFormulaEvidence, DateTimeFormulaValid,
-    DateWithShiftValid, DecadeValid,
-    DurationAlternativeFormEvidence, DurationDesignatorRepresentationEvidence, DurationFormEvidence,
-    DurationFormValid, DurationRepresentationSemanticsValid, ExplicitDurationMayBeNegative,
-    ExplicitDurationMayUseFractionalLowestOrderUnit, ExplicitDurationEvidence,
-    ExplicitDurationRepresentationEvidence, ExplicitDurationSemanticEvidence,
-    ExplicitDurationUsesDurationalUnitDesignators, ExplicitDurationValid,
-    ExplicitIntervalDurationSubstitutionEvidence,
+    DateWithShiftValid, DecadeValid, DurationAlternativeFormEvidence,
+    DurationDesignatorRepresentationEvidence, DurationFormEvidence, DurationFormValid,
+    DurationRepresentationSemanticsValid, ExplicitDurationEvidence, ExplicitDurationMayBeNegative,
+    ExplicitDurationMayUseFractionalLowestOrderUnit, ExplicitDurationRepresentationEvidence,
+    ExplicitDurationSemanticEvidence, ExplicitDurationUsesDurationalUnitDesignators,
+    ExplicitDurationValid, ExplicitIntervalDurationSubstitutionEvidence,
     ExplicitIntervalDurationSubstitutionSemanticsValid,
     ExplicitIntervalEndComponentInheritanceEvidence,
     ExplicitIntervalEndComponentInheritanceSemanticsValid,
@@ -45,15 +44,15 @@ use crate::{
     GroupedTimeScaleUnitValid, GroupedTimeScaleUnitValueCarriesExplicitCoefficient,
     InheritedIntervalEndComponentsEvidence, InheritedIntervalEndComponentsSemanticsValid,
     InheritedIntervalZoneEvidence, InheritedIntervalZoneSemanticsValid,
-    IntervalEndpointOrderingEvidence, IntervalEndpointsOrdered,
-    IxdtfAdditionalInformationEvidence, IxdtfAdditionalInformationSemanticsValid,
-    IxdtfCalendarAwareTimestampEvidence, IxdtfTimestampHasPreferredPresentationCalendar,
-    IxdtfTimestampValid, LevelOneUnspecifiedDigitsOccupyRightmostPositions,
+    IntervalEndpointOrderingEvidence, IntervalEndpointsOrdered, IxdtfAdditionalInformationEvidence,
+    IxdtfAdditionalInformationSemanticsValid, IxdtfCalendarAwareTimestampEvidence,
+    IxdtfTimestampHasPreferredPresentationCalendar, IxdtfTimestampValid,
+    LevelOneUnspecifiedDigitsOccupyRightmostPositions,
     LevelTwoUnspecifiedDigitsMayAppearWithinComponent, LocalDateTimeDoesNotIdentifyFixedInstant,
     LocalDateTimeEvidence, LocalDateTimeMayBeAmbiguousAtZoneTransition,
     LocalDateTimeMayFallInZoneTransitionGap, LocalDateTimeValid, LocalTimestampSemanticsEvidence,
-    LosslessConversionEvidence, LossyConversionAuthorityEvidence,
-    LossyConversionAuthorityValid, NamedTimeZoneIdentityEvidence, NamedTimeZoneIdentityValid,
+    LosslessConversionEvidence, LossyConversionAuthorityEvidence, LossyConversionAuthorityValid,
+    NamedTimeZoneIdentityEvidence, NamedTimeZoneIdentityValid,
     NamedTimeZoneInterpretationTracksTzdbRevision, NamedTimeZoneRevisionEvidence,
     NamedZoneAttachmentEvidence, OffsetConsistencyEvidence, OffsetConsistentWithNamedZone,
     OffsetDateTimeEvidence, OffsetDateTimeValid, OffsetTimeZoneAnnotationConsistentWithTimestamp,
@@ -62,8 +61,7 @@ use crate::{
     QualifiedTemporalExpressionEvidence, QualifiedTemporalExpressionValid,
     QualifiedTemporalValueEvidence, QualifiedTemporalValueValid, RecurringIntervalEvidence,
     RecurringIntervalFormValid, RecurringIntervalWithRepeatRuleValid, ReducedCalendarDateValid,
-    ReducedLocalTimeValid,
-    RepeatRuleDeclaresEligibleTimeIntervals,
+    ReducedLocalTimeValid, RepeatRuleDeclaresEligibleTimeIntervals,
     RepeatRuleEvaluationInheritsInitialStartComponentInformation,
     RepeatRuleSelectionAppliesWithinEligibleIntervals, RepeatRuleUsesFrequencyDesignator,
     RepeatRuleValid, Rfc3339TimestampValid, SeasonCodeDeclaresNamedSeason,
@@ -82,13 +80,13 @@ use crate::{
     SubYearGroupingExpressionUsesYearAndGroupingForm, SubYearGroupingExpressionValid,
     SubYearGroupingKindEvidence, SubsecondTruncationEvidence, TemporalResult,
     TemporalSetExpressionEvidence, TemporalSetExpressionValid, TemporalSetRangeSemanticsEvidence,
-    TemporalSetRangeSemanticsValid, TimeIntervalValid,
+    TemporalSetRangeSemanticsValid, TimeIntervalEvidence, TimeIntervalValid,
     TimeOfDayWithShiftValid, TimestampRepresentsFixedInstant, UnspecifiedComponentExpressionValid,
     UnspecifiedDigitUsesUppercaseXPlaceholder, UnspecifiedDigitsDeclareUnknownValue,
-    TimeIntervalEvidence, ZoneTransitionAmbiguityEvidence,
-    ZoneTransitionAmbiguitySemanticsValid, ZoneTransitionGapEvidence,
-    ZoneTransitionGapSemanticsValid, ZoneTransitionResolutionAuthorityEvidence,
-    ZoneTransitionResolutionAuthorityValid, ZonedDateTimeHasNamedZone, ZonedTimestampEvidence,
+    ZoneTransitionAmbiguityEvidence, ZoneTransitionAmbiguitySemanticsValid,
+    ZoneTransitionGapEvidence, ZoneTransitionGapSemanticsValid,
+    ZoneTransitionResolutionAuthorityEvidence, ZoneTransitionResolutionAuthorityValid,
+    ZonedDateTimeHasNamedZone, ZonedTimestampEvidence,
 };
 
 /// Smallest named temporal unit relevant to ISO 8601 precision rules.
@@ -2040,8 +2038,7 @@ pub type ProvenGroupedTimeScaleUnitCarrier<T> =
 pub type ProvenTemporalSetCarrier<T> = ProvenTemporalCarrier<T, TemporalSetSemanticBundle>;
 
 /// User-facing proven date-time formula carrier.
-pub type ProvenDateTimeFormulaCarrier<T> =
-    ProvenTemporalCarrier<T, DateTimeFormulaSemanticBundle>;
+pub type ProvenDateTimeFormulaCarrier<T> = ProvenTemporalCarrier<T, DateTimeFormulaSemanticBundle>;
 
 /// Result shape for parsing an RFC 3339 timestamp into a fixed-instant descriptor.
 pub type ParsedRfc3339TimestampResult = TemporalResult<(
@@ -2284,20 +2281,23 @@ pub type RealizedProvenQualifiedTemporalValueResult<T> =
     TemporalResult<ProvenQualifiedTemporalValueCarrier<T>>;
 
 /// Result shape for reflecting a proven native qualified temporal value carrier back into the descriptor accord.
-pub type ReflectedProvenQualifiedTemporalValueResult =
-    TemporalResult<(QualifiedTemporalValueDescriptor, QualifiedTemporalValueSemanticBundle)>;
+pub type ReflectedProvenQualifiedTemporalValueResult = TemporalResult<(
+    QualifiedTemporalValueDescriptor,
+    QualifiedTemporalValueSemanticBundle,
+)>;
 
 /// Result shape for realizing a validated explicit temporal form descriptor as a proven native carrier.
 pub type RealizedProvenExplicitTemporalFormResult<T> =
     TemporalResult<ProvenExplicitTemporalFormCarrier<T>>;
 
 /// Result shape for reflecting a proven native explicit temporal form carrier back into the descriptor accord.
-pub type ReflectedProvenExplicitTemporalFormResult =
-    TemporalResult<(ExplicitTemporalFormDescriptor, ExplicitTemporalFormSemanticBundle)>;
+pub type ReflectedProvenExplicitTemporalFormResult = TemporalResult<(
+    ExplicitTemporalFormDescriptor,
+    ExplicitTemporalFormSemanticBundle,
+)>;
 
 /// Result shape for realizing a validated explicit duration descriptor as a proven native carrier.
-pub type RealizedProvenExplicitDurationResult<T> =
-    TemporalResult<ProvenExplicitDurationCarrier<T>>;
+pub type RealizedProvenExplicitDurationResult<T> = TemporalResult<ProvenExplicitDurationCarrier<T>>;
 
 /// Result shape for reflecting a proven native explicit duration carrier back into the descriptor accord.
 pub type ReflectedProvenExplicitDurationResult =
@@ -2308,16 +2308,20 @@ pub type RealizedProvenExplicitTimeIntervalResult<T> =
     TemporalResult<ProvenExplicitTimeIntervalCarrier<T>>;
 
 /// Result shape for reflecting a proven native explicit time-interval carrier back into the descriptor accord.
-pub type ReflectedProvenExplicitTimeIntervalResult =
-    TemporalResult<(ExplicitTimeIntervalDescriptor, ExplicitTimeIntervalSemanticBundle)>;
+pub type ReflectedProvenExplicitTimeIntervalResult = TemporalResult<(
+    ExplicitTimeIntervalDescriptor,
+    ExplicitTimeIntervalSemanticBundle,
+)>;
 
 /// Result shape for realizing a validated grouped time-scale-unit descriptor as a proven native carrier.
 pub type RealizedProvenGroupedTimeScaleUnitResult<T> =
     TemporalResult<ProvenGroupedTimeScaleUnitCarrier<T>>;
 
 /// Result shape for reflecting a proven native grouped time-scale-unit carrier back into the descriptor accord.
-pub type ReflectedProvenGroupedTimeScaleUnitResult =
-    TemporalResult<(GroupedTimeScaleUnitDescriptor, GroupedTimeScaleUnitSemanticBundle)>;
+pub type ReflectedProvenGroupedTimeScaleUnitResult = TemporalResult<(
+    GroupedTimeScaleUnitDescriptor,
+    GroupedTimeScaleUnitSemanticBundle,
+)>;
 
 /// Result shape for realizing a validated temporal-set descriptor as a proven native carrier.
 pub type RealizedProvenTemporalSetResult<T> = TemporalResult<ProvenTemporalSetCarrier<T>>;
@@ -2327,8 +2331,7 @@ pub type ReflectedProvenTemporalSetResult =
     TemporalResult<(TemporalSetDescriptor, TemporalSetSemanticBundle)>;
 
 /// Result shape for realizing a validated date-time formula descriptor as a proven native carrier.
-pub type RealizedProvenDateTimeFormulaResult<T> =
-    TemporalResult<ProvenDateTimeFormulaCarrier<T>>;
+pub type RealizedProvenDateTimeFormulaResult<T> = TemporalResult<ProvenDateTimeFormulaCarrier<T>>;
 
 /// Result shape for reflecting a proven native date-time formula carrier back into the descriptor accord.
 pub type ReflectedProvenDateTimeFormulaResult =
@@ -2351,34 +2354,26 @@ pub type NativeResolvedProvenLocalDateTimeAtNamedZoneResult<T> = TemporalResult<
 pub type NativeAttachedProvenNamedZoneResult<T> = TemporalResult<ProvenZonedDateTimeCarrier<T>>;
 
 /// Result shape for normalizing a proven native offset timestamp to UTC.
-pub type NativeNormalizedProvenUtcTimestampResult<T> = TemporalResult<(
-    ProvenOffsetDateTimeCarrier<T>,
-    LosslessConversionBundle,
-)>;
+pub type NativeNormalizedProvenUtcTimestampResult<T> =
+    TemporalResult<(ProvenOffsetDateTimeCarrier<T>, LosslessConversionBundle)>;
 
 /// Result shape for dropping named-zone identity from a proven native zoned timestamp.
 pub type NativeStrippedProvenNamedZoneTimestampResult<T> =
     TemporalResult<ProvenOffsetDateTimeCarrier<T>>;
 
 /// Result shape for reducing proven native timestamp subsecond precision under explicit authority.
-pub type NativeTruncatedProvenSubsecondsTimestampResult<T> = TemporalResult<(
-    ProvenOffsetDateTimeCarrier<T>,
-    SubsecondTruncationBundle,
-)>;
+pub type NativeTruncatedProvenSubsecondsTimestampResult<T> =
+    TemporalResult<(ProvenOffsetDateTimeCarrier<T>, SubsecondTruncationBundle)>;
 
 /// Result shape for adjusting proven native timestamp precision without losing information.
-pub type NativeLosslessPrecisionAdjustedProvenTimestampResult<T> = TemporalResult<(
-    ProvenOffsetDateTimeCarrier<T>,
-    LosslessConversionBundle,
-)>;
+pub type NativeLosslessPrecisionAdjustedProvenTimestampResult<T> =
+    TemporalResult<(ProvenOffsetDateTimeCarrier<T>, LosslessConversionBundle)>;
 
 /// Result shape for confirming chronological ordering between two proven native fixed-instant endpoints.
-pub type NativeOrderedProvenOffsetEndpointsResult =
-    TemporalResult<IntervalEndpointOrderingBundle>;
+pub type NativeOrderedProvenOffsetEndpointsResult = TemporalResult<IntervalEndpointOrderingBundle>;
 
 /// Result shape for confirming that a proven zoned timestamp is interpreted under a concrete TZDB revision.
-pub type ConfirmedProvenNamedZoneRevisionResult =
-    TemporalResult<NamedTimeZoneRevisionBundle>;
+pub type ConfirmedProvenNamedZoneRevisionResult = TemporalResult<NamedTimeZoneRevisionBundle>;
 
 /// Result shape for realizing a validated local date-time descriptor as a native carrier.
 pub type RealizedLocalDateTimeResult<T> = TemporalResult<(
