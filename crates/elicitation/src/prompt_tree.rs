@@ -1321,6 +1321,8 @@ mod verification_impls {
         leaf_impl!(ConversionRangeWrap, "ConversionRangeWrap");
         leaf_impl!(DifferentVariantWrap, "DifferentVariantWrap");
         leaf_impl!(FmtEndWrap, "FmtEndWrap");
+        // WellKnownRfc2822Wrap and Iso8601ConfigWrap have explicit ElicitPromptTree impls
+        // in verification/types/datetimes.rs; leaf_impl! would duplicate them.
     }
 
     #[cfg(all(feature = "jiff", not(kani)))]

@@ -1818,6 +1818,36 @@ impl ToCodeLiteral for time::format_description::well_known::Rfc2822 {
     }
 }
 
+#[cfg(feature = "time")]
+impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig> ToCodeLiteral
+    for time::format_description::well_known::Iso8601<CONFIG>
+{
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! { ::time::format_description::well_known::Iso8601::<{ #CONFIG }> }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::well_known::Rfc3339 {
+    fn to_code_literal(&self) -> TokenStream {
+        quote::quote! { ::time::format_description::well_known::Rfc3339 }
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::format_description::well_known::iso8601::DateKind {
+    fn to_code_literal(&self) -> TokenStream {
+        use time::format_description::well_known::iso8601::DateKind;
+        let variant = match self {
+            DateKind::Calendar => "Calendar",
+            DateKind::Week => "Week",
+            DateKind::Ordinal => "Ordinal",
+        };
+        let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+        quote::quote! { ::time::format_description::well_known::iso8601::DateKind::#ident }
+    }
+}
+
 /// `time::error::ComponentRange` — reproduce by triggering the named API error.
 #[cfg(feature = "time")]
 impl ToCodeLiteral for time::error::ComponentRange {

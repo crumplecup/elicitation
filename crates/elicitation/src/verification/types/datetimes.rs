@@ -3373,7 +3373,18 @@ impl<'de> serde::Deserialize<'de> for FmtSubsecondDigitsWrap {
             other => {
                 return Err(D::Error::unknown_variant(
                     other,
-                    &["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+                    &[
+                        "OneOrMore",
+                        "One",
+                        "Two",
+                        "Three",
+                        "Four",
+                        "Five",
+                        "Six",
+                        "Seven",
+                        "Eight",
+                        "Nine",
+                    ],
                 ));
             }
         };
@@ -3444,13 +3455,14 @@ impl crate::ElicitIntrospect for FmtSubsecondDigitsWrap {
             type_name: "FmtSubsecondDigitsWrap",
             description: <FmtSubsecondDigitsWrap as Prompt>::prompt(),
             details: crate::PatternDetails::Select {
-                variants: <time::format_description::modifier::SubsecondDigits as crate::Select>::labels()
-                    .into_iter()
-                    .map(|label| crate::VariantMetadata {
-                        label,
-                        fields: vec![],
-                    })
-                    .collect(),
+                variants:
+                    <time::format_description::modifier::SubsecondDigits as crate::Select>::labels()
+                        .into_iter()
+                        .map(|label| crate::VariantMetadata {
+                            label,
+                            fields: vec![],
+                        })
+                        .collect(),
             },
         }
     }
@@ -3523,7 +3535,18 @@ impl<'de> serde::Deserialize<'de> for FmtSubsecondWrap {
             other => {
                 return Err(D::Error::unknown_variant(
                     other,
-                    &["OneOrMore", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+                    &[
+                        "OneOrMore",
+                        "One",
+                        "Two",
+                        "Three",
+                        "Four",
+                        "Five",
+                        "Six",
+                        "Seven",
+                        "Eight",
+                        "Nine",
+                    ],
                 ));
             }
         };
@@ -3617,9 +3640,7 @@ impl crate::ElicitPromptTree for FmtSubsecondWrap {
             type_name: "FmtSubsecondWrap".to_string(),
             fields: vec![(
                 "digits".to_string(),
-                Box::new(
-                    time::format_description::modifier::SubsecondDigits::prompt_tree(),
-                ),
+                Box::new(time::format_description::modifier::SubsecondDigits::prompt_tree()),
             )],
         }
     }
@@ -3840,10 +3861,7 @@ impl<'de> serde::Deserialize<'de> for FmtOffsetHourWrap {
             "Zero" => Padding::Zero,
             "None" => Padding::None,
             other => {
-                return Err(D::Error::unknown_variant(
-                    other,
-                    &["Space", "Zero", "None"],
-                ));
+                return Err(D::Error::unknown_variant(other, &["Space", "Zero", "None"]));
             }
         };
         Ok(Self(
@@ -3948,9 +3966,7 @@ impl crate::ElicitPromptTree for FmtOffsetHourWrap {
                 ),
                 (
                     "padding".to_string(),
-                    Box::new(
-                        time::format_description::modifier::Padding::prompt_tree(),
-                    ),
+                    Box::new(time::format_description::modifier::Padding::prompt_tree()),
                 ),
             ],
         }
@@ -4069,6 +4085,777 @@ impl crate::ElicitPromptTree for WellKnownRfc2822Wrap {
 
 #[cfg(all(feature = "time", not(kani)))]
 impl crate::ElicitComplete for WellKnownRfc2822Wrap {}
+
+// ── WellKnownRfc3339Wrap ──────────────────────────────────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::well_known::Rfc3339`].
+///
+/// Unit struct — serializes as `{}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WellKnownRfc3339Wrap;
+
+#[cfg(all(feature = "time", not(kani)))]
+impl WellKnownRfc3339Wrap {
+    /// Extract the inner value.
+    pub fn into_inner(self) -> time::format_description::well_known::Rfc3339 {
+        time::format_description::well_known::Rfc3339
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for WellKnownRfc3339Wrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        serializer.serialize_map(Some(0))?.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for WellKnownRfc3339Wrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        struct Helper {}
+        Helper::deserialize(deserializer)?;
+        Ok(Self)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for WellKnownRfc3339Wrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "WellKnownRfc3339".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({ "type": "object", "properties": {} })
+            .as_object()
+            .cloned()
+            .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for WellKnownRfc3339Wrap {
+    fn prompt() -> Option<&'static str> {
+        Some(
+            "RFC 3339 / ISO 8601 format (e.g. 1996-12-19T16:39:57-08:00) — no options to configure.",
+        )
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for WellKnownRfc3339Wrap {
+    type Style = <time::format_description::well_known::Rfc3339 as Elicitation>::Style;
+
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(Self)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("WellKnownRfc3339Wrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("WellKnownRfc3339Wrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("WellKnownRfc3339Wrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for WellKnownRfc3339Wrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "WellKnownRfc3339Wrap",
+            description: <WellKnownRfc3339Wrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for WellKnownRfc3339Wrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: <WellKnownRfc3339Wrap as Prompt>::prompt()
+                .unwrap_or("WellKnownRfc3339Wrap")
+                .to_string(),
+            type_name: "WellKnownRfc3339Wrap".to_string(),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for WellKnownRfc3339Wrap {}
+
+// ── Iso8601ConfigWrap — trenchcoat for time::format_description::well_known::Iso8601<CONFIG> ──
+
+/// Trenchcoat for [`time::format_description::well_known::Iso8601`].
+///
+/// Stores the six ISO 8601 config fields at runtime so the user can elicit a
+/// specific `Iso8601<CONFIG>` value via MCP.  `to_code_literal` builds the
+/// setter chain at code-gen time and calls `Config::encode()` to produce the
+/// const-generic `u128` parameter.
+///
+/// Serializes as a JSON object:
+/// `{"formatted_components":"DateTime","use_separators":true,"year_is_six_digits":false,`
+/// `"date_kind":"Calendar","time_precision_variant":"Second","time_precision_decimal_digits":null,`
+/// `"offset_precision":"Minute"}`.
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Iso8601ConfigWrap {
+    /// Which date/time components appear in the formatted output.
+    pub formatted_components: time::format_description::well_known::iso8601::FormattedComponents,
+    /// Whether to include separator characters (`-`, `:`).
+    pub use_separators: bool,
+    /// Whether to use a 6-digit year (sign + 6 digits) instead of 4.
+    pub year_is_six_digits: bool,
+    /// Calendar, week-based, or ordinal date representation.
+    pub date_kind: time::format_description::well_known::iso8601::DateKind,
+    /// Time component precision (Hour / Minute / Second) with optional decimal digits.
+    pub time_precision: time::format_description::well_known::iso8601::TimePrecision,
+    /// UTC offset precision (Hour or Minute).
+    pub offset_precision: time::format_description::well_known::iso8601::OffsetPrecision,
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Default for Iso8601ConfigWrap {
+    fn default() -> Self {
+        use time::format_description::well_known::iso8601::{
+            Config, DateKind, FormattedComponents, OffsetPrecision, TimePrecision,
+        };
+        let _defaults = Config::DEFAULT;
+        Self {
+            formatted_components: FormattedComponents::DateTimeOffset,
+            use_separators: true,
+            year_is_six_digits: false,
+            date_kind: DateKind::Calendar,
+            time_precision: TimePrecision::Second {
+                decimal_digits: None,
+            },
+            offset_precision: OffsetPrecision::Minute,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Iso8601ConfigWrap {
+    /// Build a `Config` and return its encoded `u128`.
+    pub fn encode(&self) -> time::format_description::well_known::iso8601::EncodedConfig {
+        time::format_description::well_known::iso8601::Config::DEFAULT
+            .set_formatted_components(self.formatted_components)
+            .set_use_separators(self.use_separators)
+            .set_year_is_six_digits(self.year_is_six_digits)
+            .set_date_kind(self.date_kind)
+            .set_time_precision(self.time_precision)
+            .set_offset_precision(self.offset_precision)
+            .encode()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for Iso8601ConfigWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+        use time::format_description::well_known::iso8601::{
+            DateKind, FormattedComponents, OffsetPrecision, TimePrecision,
+        };
+        let fc = match self.formatted_components {
+            FormattedComponents::None => "None",
+            FormattedComponents::Date => "Date",
+            FormattedComponents::Time => "Time",
+            FormattedComponents::Offset => "Offset",
+            FormattedComponents::DateTime => "DateTime",
+            FormattedComponents::DateTimeOffset => "DateTimeOffset",
+            FormattedComponents::TimeOffset => "TimeOffset",
+        };
+        let dk = match self.date_kind {
+            DateKind::Calendar => "Calendar",
+            DateKind::Week => "Week",
+            DateKind::Ordinal => "Ordinal",
+        };
+        let (tp_variant, tp_digits) = match self.time_precision {
+            TimePrecision::Hour { decimal_digits } => ("Hour", decimal_digits),
+            TimePrecision::Minute { decimal_digits } => ("Minute", decimal_digits),
+            TimePrecision::Second { decimal_digits } => ("Second", decimal_digits),
+        };
+        let op = match self.offset_precision {
+            OffsetPrecision::Hour => "Hour",
+            OffsetPrecision::Minute => "Minute",
+        };
+        let mut map = serializer.serialize_map(Some(7))?;
+        map.serialize_entry("formatted_components", fc)?;
+        map.serialize_entry("use_separators", &self.use_separators)?;
+        map.serialize_entry("year_is_six_digits", &self.year_is_six_digits)?;
+        map.serialize_entry("date_kind", dk)?;
+        map.serialize_entry("time_precision_variant", tp_variant)?;
+        map.serialize_entry("time_precision_decimal_digits", &tp_digits.map(|n| n.get()))?;
+        map.serialize_entry("offset_precision", op)?;
+        map.end()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for Iso8601ConfigWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use std::num::NonZero;
+        use time::format_description::well_known::iso8601::{
+            DateKind, FormattedComponents, OffsetPrecision, TimePrecision,
+        };
+
+        #[derive(serde::Deserialize)]
+        struct Helper {
+            formatted_components: String,
+            use_separators: bool,
+            year_is_six_digits: bool,
+            date_kind: String,
+            time_precision_variant: String,
+            time_precision_decimal_digits: Option<u8>,
+            offset_precision: String,
+        }
+
+        let h = Helper::deserialize(deserializer)?;
+
+        let formatted_components = match h.formatted_components.as_str() {
+            "None" => FormattedComponents::None,
+            "Date" => FormattedComponents::Date,
+            "Time" => FormattedComponents::Time,
+            "Offset" => FormattedComponents::Offset,
+            "DateTime" => FormattedComponents::DateTime,
+            "DateTimeOffset" => FormattedComponents::DateTimeOffset,
+            "TimeOffset" => FormattedComponents::TimeOffset,
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &[
+                        "None",
+                        "Date",
+                        "Time",
+                        "Offset",
+                        "DateTime",
+                        "DateTimeOffset",
+                        "TimeOffset",
+                    ],
+                ));
+            }
+        };
+
+        let date_kind = match h.date_kind.as_str() {
+            "Calendar" => DateKind::Calendar,
+            "Week" => DateKind::Week,
+            "Ordinal" => DateKind::Ordinal,
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &["Calendar", "Week", "Ordinal"],
+                ));
+            }
+        };
+
+        let decimal_digits = h.time_precision_decimal_digits.and_then(NonZero::new);
+        let time_precision = match h.time_precision_variant.as_str() {
+            "Hour" => TimePrecision::Hour { decimal_digits },
+            "Minute" => TimePrecision::Minute { decimal_digits },
+            "Second" => TimePrecision::Second { decimal_digits },
+            other => {
+                return Err(D::Error::unknown_variant(
+                    other,
+                    &["Hour", "Minute", "Second"],
+                ));
+            }
+        };
+
+        let offset_precision = match h.offset_precision.as_str() {
+            "Hour" => OffsetPrecision::Hour,
+            "Minute" => OffsetPrecision::Minute,
+            other => {
+                return Err(D::Error::unknown_variant(other, &["Hour", "Minute"]));
+            }
+        };
+
+        Ok(Self {
+            formatted_components,
+            use_separators: h.use_separators,
+            year_is_six_digits: h.year_is_six_digits,
+            date_kind,
+            time_precision,
+            offset_precision,
+        })
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for Iso8601ConfigWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "Iso8601Config".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "object",
+            "properties": {
+                "formatted_components": {
+                    "type": "string",
+                    "enum": ["None","Date","Time","Offset","DateTime","DateTimeOffset","TimeOffset"]
+                },
+                "use_separators": { "type": "boolean" },
+                "year_is_six_digits": { "type": "boolean" },
+                "date_kind": { "type": "string", "enum": ["Calendar","Week","Ordinal"] },
+                "time_precision_variant": { "type": "string", "enum": ["Hour","Minute","Second"] },
+                "time_precision_decimal_digits": {
+                    "oneOf": [
+                        { "type": "null" },
+                        { "type": "integer", "minimum": 1, "maximum": 9 }
+                    ]
+                },
+                "offset_precision": { "type": "string", "enum": ["Hour","Minute"] }
+            },
+            "required": [
+                "formatted_components", "use_separators", "year_is_six_digits",
+                "date_kind", "time_precision_variant", "time_precision_decimal_digits",
+                "offset_precision"
+            ]
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for Iso8601ConfigWrap {
+    fn prompt() -> Option<&'static str> {
+        Some(
+            "Configure an ISO 8601 format (components, separators, year digits, date kind, time precision, offset precision):",
+        )
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for Iso8601ConfigWrap {
+    type Style = <time::format_description::well_known::Iso8601<
+        { time::format_description::well_known::iso8601::Config::DEFAULT.encode() },
+    > as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting Iso8601ConfigWrap");
+
+        let fc_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "formatted_components",
+                "iso8601::FormattedComponents",
+                &crate::style::PromptContext::new(0, 7),
+            )?
+            .unwrap_or_else(|| "Which components to include in the ISO 8601 output?".to_string());
+        let fc_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &fc_prompt,
+                        &[
+                            "None".to_string(),
+                            "Date".to_string(),
+                            "Time".to_string(),
+                            "Offset".to_string(),
+                            "DateTime".to_string(),
+                            "DateTimeOffset".to_string(),
+                            "TimeOffset".to_string(),
+                        ],
+                    )),
+            )
+            .await?;
+        let fc_label = crate::mcp::parse_string(crate::mcp::extract_value(fc_result)?)?;
+        use time::format_description::well_known::iso8601::FormattedComponents;
+        let formatted_components = match fc_label.as_str() {
+            "None" => FormattedComponents::None,
+            "Date" => FormattedComponents::Date,
+            "Time" => FormattedComponents::Time,
+            "Offset" => FormattedComponents::Offset,
+            "DateTime" => FormattedComponents::DateTime,
+            "DateTimeOffset" => FormattedComponents::DateTimeOffset,
+            "TimeOffset" => FormattedComponents::TimeOffset,
+            _ => FormattedComponents::DateTimeOffset,
+        };
+
+        let sep_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "use_separators",
+                "bool",
+                &crate::style::PromptContext::new(1, 7),
+            )?
+            .unwrap_or_else(|| "Use separator characters (- and :)?".to_string());
+        let sep_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &sep_prompt,
+                        &["Yes".to_string(), "No".to_string()],
+                    )),
+            )
+            .await?;
+        let use_separators =
+            crate::mcp::parse_string(crate::mcp::extract_value(sep_result)?)? == "Yes";
+
+        let year_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "year_is_six_digits",
+                "bool",
+                &crate::style::PromptContext::new(2, 7),
+            )?
+            .unwrap_or_else(|| "Use 6-digit year (±YYYYYY) instead of 4-digit (YYYY)?".to_string());
+        let year_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &year_prompt,
+                        &["No (4-digit)".to_string(), "Yes (6-digit)".to_string()],
+                    )),
+            )
+            .await?;
+        let year_is_six_digits =
+            crate::mcp::parse_string(crate::mcp::extract_value(year_result)?)? == "Yes (6-digit)";
+
+        let dk_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "date_kind",
+                "iso8601::DateKind",
+                &crate::style::PromptContext::new(3, 7),
+            )?
+            .unwrap_or_else(|| "Date representation kind?".to_string());
+        let dk_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &dk_prompt,
+                        &[
+                            "Calendar".to_string(),
+                            "Week".to_string(),
+                            "Ordinal".to_string(),
+                        ],
+                    )),
+            )
+            .await?;
+        let dk_label = crate::mcp::parse_string(crate::mcp::extract_value(dk_result)?)?;
+        use time::format_description::well_known::iso8601::DateKind;
+        let date_kind = match dk_label.as_str() {
+            "Calendar" => DateKind::Calendar,
+            "Week" => DateKind::Week,
+            "Ordinal" => DateKind::Ordinal,
+            _ => DateKind::Calendar,
+        };
+
+        let tp_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "time_precision",
+                "iso8601::TimePrecision",
+                &crate::style::PromptContext::new(4, 7),
+            )?
+            .unwrap_or_else(|| "Time component precision?".to_string());
+        let tp_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &tp_prompt,
+                        &[
+                            "Hour".to_string(),
+                            "Minute".to_string(),
+                            "Second".to_string(),
+                        ],
+                    )),
+            )
+            .await?;
+        let tp_variant_label = crate::mcp::parse_string(crate::mcp::extract_value(tp_result)?)?;
+
+        let digits_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "time_precision_decimal_digits",
+                "Option<NonZero<u8>>",
+                &crate::style::PromptContext::new(5, 7),
+            )?
+            .unwrap_or_else(|| "Decimal digits for sub-unit time precision?".to_string());
+        let digits_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &digits_prompt,
+                        &[
+                            "None (variable)".to_string(),
+                            "1".to_string(),
+                            "2".to_string(),
+                            "3".to_string(),
+                            "4".to_string(),
+                            "5".to_string(),
+                            "6".to_string(),
+                            "7".to_string(),
+                            "8".to_string(),
+                            "9".to_string(),
+                        ],
+                    )),
+            )
+            .await?;
+        let digits_label = crate::mcp::parse_string(crate::mcp::extract_value(digits_result)?)?;
+        let decimal_digits = if digits_label == "None (variable)" {
+            None
+        } else {
+            digits_label
+                .parse::<u8>()
+                .ok()
+                .and_then(std::num::NonZero::new)
+        };
+        use time::format_description::well_known::iso8601::TimePrecision;
+        let time_precision = match tp_variant_label.as_str() {
+            "Hour" => TimePrecision::Hour { decimal_digits },
+            "Minute" => TimePrecision::Minute { decimal_digits },
+            _ => TimePrecision::Second { decimal_digits },
+        };
+
+        let op_prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "offset_precision",
+                "iso8601::OffsetPrecision",
+                &crate::style::PromptContext::new(6, 7),
+            )?
+            .unwrap_or_else(|| "UTC offset precision?".to_string());
+        let op_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(crate::mcp::tool_names::elicit_select())
+                    .with_arguments(crate::mcp::select_params(
+                        &op_prompt,
+                        &["Hour".to_string(), "Minute".to_string()],
+                    )),
+            )
+            .await?;
+        let op_label = crate::mcp::parse_string(crate::mcp::extract_value(op_result)?)?;
+        use time::format_description::well_known::iso8601::OffsetPrecision;
+        let offset_precision = if op_label == "Hour" {
+            OffsetPrecision::Hour
+        } else {
+            OffsetPrecision::Minute
+        };
+
+        Ok(Self {
+            formatted_components,
+            use_separators,
+            year_is_six_digits,
+            date_kind,
+            time_precision,
+            offset_precision,
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("Iso8601ConfigWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("Iso8601ConfigWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("Iso8601ConfigWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for Iso8601ConfigWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "Iso8601ConfigWrap",
+            description: <Iso8601ConfigWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for Iso8601ConfigWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: <Iso8601ConfigWrap as Prompt>::prompt()
+                .unwrap_or("Iso8601ConfigWrap")
+                .to_string(),
+            type_name: "Iso8601ConfigWrap".to_string(),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for Iso8601ConfigWrap {}
+
+// ── DateKindWrap — trenchcoat for iso8601::DateKind ──────────────────────────
+
+/// Trenchcoat wrapper for [`time::format_description::well_known::iso8601::DateKind`].
+///
+/// Serializes as a JSON string (`"Calendar"`, `"Week"`, or `"Ordinal"`).
+///
+/// Available with the `time` feature.
+#[cfg(all(feature = "time", not(kani)))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DateKindWrap(pub time::format_description::well_known::iso8601::DateKind);
+
+#[cfg(all(feature = "time", not(kani)))]
+impl From<time::format_description::well_known::iso8601::DateKind> for DateKindWrap {
+    fn from(inner: time::format_description::well_known::iso8601::DateKind) -> Self {
+        Self(inner)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl DateKindWrap {
+    /// Extract the inner [`time::format_description::well_known::iso8601::DateKind`].
+    pub fn into_inner(self) -> time::format_description::well_known::iso8601::DateKind {
+        self.0
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl serde::Serialize for DateKindWrap {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use time::format_description::well_known::iso8601::DateKind;
+        let s = match self.0 {
+            DateKind::Calendar => "Calendar",
+            DateKind::Week => "Week",
+            DateKind::Ordinal => "Ordinal",
+        };
+        serializer.serialize_str(s)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl<'de> serde::Deserialize<'de> for DateKindWrap {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        use time::format_description::well_known::iso8601::DateKind;
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Calendar" => Ok(Self(DateKind::Calendar)),
+            "Week" => Ok(Self(DateKind::Week)),
+            "Ordinal" => Ok(Self(DateKind::Ordinal)),
+            _ => Err(D::Error::custom(format!("unknown DateKind: {s}"))),
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl schemars::JsonSchema for DateKindWrap {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "DateKind".into()
+    }
+
+    fn json_schema(_generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let map = serde_json::json!({
+            "type": "string",
+            "enum": ["Calendar", "Week", "Ordinal"],
+            "description": "ISO 8601 date representation kind"
+        })
+        .as_object()
+        .cloned()
+        .unwrap_or_default();
+        schemars::Schema::from(map)
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Prompt for DateKindWrap {
+    fn prompt() -> Option<&'static str> {
+        <time::format_description::well_known::iso8601::DateKind as Prompt>::prompt()
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl Elicitation for DateKindWrap {
+    type Style = <time::format_description::well_known::iso8601::DateKind as Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting DateKindWrap");
+        let inner =
+            time::format_description::well_known::iso8601::DateKind::elicit(communicator).await?;
+        Ok(Self(inner))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_newtype_wrapper_harness("DateKindWrap")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_newtype_wrapper_harness("DateKindWrap")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_newtype_wrapper_harness("DateKindWrap")
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitIntrospect for DateKindWrap {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Select
+    }
+
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "DateKindWrap",
+            description: <DateKindWrap as Prompt>::prompt(),
+            details: crate::PatternDetails::Select {
+                variants: <time::format_description::well_known::iso8601::DateKind as crate::Select>::labels()
+                    .into_iter()
+                    .map(|label| crate::VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitPromptTree for DateKindWrap {
+    fn prompt_tree() -> crate::PromptTree {
+        let labels =
+            <time::format_description::well_known::iso8601::DateKind as crate::Select>::labels();
+        let count = labels.len();
+        crate::PromptTree::Select {
+            prompt: <DateKindWrap as Prompt>::prompt()
+                .unwrap_or("ISO 8601 date kind?")
+                .to_string(),
+            type_name: "DateKindWrap".to_string(),
+            options: labels,
+            branches: vec![None; count],
+        }
+    }
+}
+
+#[cfg(all(feature = "time", not(kani)))]
+impl crate::ElicitComplete for DateKindWrap {}
 
 // ── FmtIgnoreWrap — trenchcoat for time::format_description::modifier::Ignore ─
 /// Trenchcoat wrapper for [`time::format_description::modifier::Ignore`] that
@@ -5305,10 +6092,7 @@ mod time_emit_impls {
         FmtOrdinalWrap,
         ::time::format_description::modifier::Ordinal
     );
-    padding_wrap_to_code_literal!(
-        FmtSecondWrap,
-        ::time::format_description::modifier::Second
-    );
+    padding_wrap_to_code_literal!(FmtSecondWrap, ::time::format_description::modifier::Second);
     padding_wrap_to_code_literal!(
         FmtOffsetMinuteWrap,
         ::time::format_description::modifier::OffsetMinute
@@ -5436,6 +6220,34 @@ mod time_emit_impls {
     impl ToCodeLiteral for WellKnownRfc2822Wrap {
         fn to_code_literal(&self) -> TokenStream {
             quote::quote! { elicitation::WellKnownRfc2822Wrap }
+        }
+    }
+
+    impl ToCodeLiteral for WellKnownRfc3339Wrap {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { elicitation::WellKnownRfc3339Wrap }
+        }
+    }
+
+    impl ToCodeLiteral for DateKindWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            use time::format_description::well_known::iso8601::DateKind;
+            let variant = match self.0 {
+                DateKind::Calendar => "Calendar",
+                DateKind::Week => "Week",
+                DateKind::Ordinal => "Ordinal",
+            };
+            let ident = proc_macro2::Ident::new(variant, proc_macro2::Span::call_site());
+            quote::quote! { ::time::format_description::well_known::iso8601::DateKind::#ident }
+        }
+    }
+
+    impl ToCodeLiteral for Iso8601ConfigWrap {
+        fn to_code_literal(&self) -> TokenStream {
+            let encoded: u128 = self.encode();
+            quote::quote! {
+                ::time::format_description::well_known::Iso8601::<{ #encoded }>
+            }
         }
     }
 

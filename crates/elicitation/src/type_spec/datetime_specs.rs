@@ -737,22 +737,23 @@ mod jiff_specs {
 mod time_specs {
     use super::*;
     use crate::verification::types::{
-        ComponentRangeWrap, ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap,
-        FmtCalendarYearCenturyExtendedRangeWrap, FmtCalendarYearCenturyStandardRangeWrap,
-        FmtCalendarYearFullExtendedRangeWrap, FmtCalendarYearFullStandardRangeWrap,
-        FmtCalendarYearLastTwoWrap, FmtDayWrap, FmtEndWrap, FmtHour12Wrap, FmtHour24Wrap,
-        FmtIgnoreWrap, FmtIsoYearCenturyExtendedRangeWrap, FmtIsoYearCenturyStandardRangeWrap,
-        FmtIsoYearFullExtendedRangeWrap, FmtIsoYearFullStandardRangeWrap, FmtIsoYearLastTwoWrap,
-        FmtMinuteWrap, FmtMonthLongWrap, FmtMonthNumericalWrap, FmtMonthShortWrap,
-        FmtOffsetHourWrap, FmtOffsetMinuteWrap, FmtOffsetSecondWrap, FmtOrdinalWrap,
-        FmtPaddingWrap, FmtPeriodWrap, FmtSecondWrap, FmtSubsecondDigitsWrap, FmtSubsecondWrap,
-        FmtTrailingInputWrap, FmtUnixTimestampMicrosecondWrap, FmtUnixTimestampMillisecondWrap,
+        ComponentRangeWrap, ConversionRangeWrap, DateKindWrap, DateWrap, DifferentVariantWrap,
+        DurationWrap, FmtCalendarYearCenturyExtendedRangeWrap,
+        FmtCalendarYearCenturyStandardRangeWrap, FmtCalendarYearFullExtendedRangeWrap,
+        FmtCalendarYearFullStandardRangeWrap, FmtCalendarYearLastTwoWrap, FmtDayWrap, FmtEndWrap,
+        FmtHour12Wrap, FmtHour24Wrap, FmtIgnoreWrap, FmtIsoYearCenturyExtendedRangeWrap,
+        FmtIsoYearCenturyStandardRangeWrap, FmtIsoYearFullExtendedRangeWrap,
+        FmtIsoYearFullStandardRangeWrap, FmtIsoYearLastTwoWrap, FmtMinuteWrap, FmtMonthLongWrap,
+        FmtMonthNumericalWrap, FmtMonthShortWrap, FmtOffsetHourWrap, FmtOffsetMinuteWrap,
+        FmtOffsetSecondWrap, FmtOrdinalWrap, FmtPaddingWrap, FmtPeriodWrap, FmtSecondWrap,
+        FmtSubsecondDigitsWrap, FmtSubsecondWrap, FmtTrailingInputWrap,
+        FmtUnixTimestampMicrosecondWrap, FmtUnixTimestampMillisecondWrap,
         FmtUnixTimestampNanosecondWrap, FmtUnixTimestampSecondWrap, FmtWeekNumberIsoWrap,
         FmtWeekNumberMondayWrap, FmtWeekNumberSundayWrap, FmtWeekdayLongWrap, FmtWeekdayMondayWrap,
-        FmtWeekdayShortWrap, FmtWeekdaySundayWrap, MonthWrap, OffsetDateTimeAfter,
-        WellKnownRfc2822Wrap,
-        OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
-        UtcOffsetWrap, WeekdayWrap,
+        FmtWeekdayShortWrap, FmtWeekdaySundayWrap, Iso8601ConfigWrap, MonthWrap,
+        OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap,
+        TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap, WellKnownRfc2822Wrap,
+        WellKnownRfc3339Wrap,
     };
 
     impl crate::ElicitSpec for PrimitiveDateTimeWrap {
@@ -1873,5 +1874,104 @@ mod time_specs {
         "WellKnownRfc2822Wrap",
         <WellKnownRfc2822Wrap as crate::ElicitSpec>::type_spec,
         std::any::TypeId::of::<WellKnownRfc2822Wrap>
+    ));
+
+    // ── well_known::Rfc3339 ───────────────────────────────────────────────────
+
+    impl crate::ElicitSpec for time::format_description::well_known::Rfc3339 {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::well_known::Rfc3339",
+                "RFC 3339 / ISO 8601 internet date-time format — unit struct, no configuration.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::well_known::Rfc3339",
+        <time::format_description::well_known::Rfc3339 as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::well_known::Rfc3339>
+    ));
+
+    impl crate::ElicitSpec for WellKnownRfc3339Wrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "WellKnownRfc3339Wrap",
+                "Trenchcoat for well_known::Rfc3339 — serializes as {}.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "WellKnownRfc3339Wrap",
+        <WellKnownRfc3339Wrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<WellKnownRfc3339Wrap>
+    ));
+
+    // ── iso8601::DateKind ─────────────────────────────────────────────────────
+
+    impl crate::ElicitSpec for time::format_description::well_known::iso8601::DateKind {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::well_known::iso8601::DateKind",
+                "ISO 8601 date representation: calendar (year-month-day), week, or ordinal.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "time::format_description::well_known::iso8601::DateKind",
+        <time::format_description::well_known::iso8601::DateKind as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<time::format_description::well_known::iso8601::DateKind>
+    ));
+
+    impl crate::ElicitSpec for DateKindWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "DateKindWrap",
+                "Trenchcoat for iso8601::DateKind — serializes as a JSON string.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "DateKindWrap",
+        <DateKindWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<DateKindWrap>
+    ));
+
+    // ── well_known::Iso8601 ───────────────────────────────────────────────────
+
+    // Iso8601<CONFIG> is generic in a const — cannot use inventory::submit!
+    // (TypeId requires a concrete type).  Elicitation of a runtime-chosen
+    // config is done through Iso8601ConfigWrap below.
+    impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig>
+        crate::ElicitSpec for time::format_description::well_known::Iso8601<CONFIG>
+    {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "time::format_description::well_known::Iso8601",
+                "ISO 8601 date/time format — unit struct whose behaviour is fully determined \
+                 by the const-generic CONFIG parameter (an encoded u128 produced by \
+                 iso8601::Config::encode()).  Use Iso8601ConfigWrap to elicit the config \
+                 interactively.",
+                vec![],
+            )
+        }
+    }
+
+    impl crate::ElicitSpec for Iso8601ConfigWrap {
+        fn type_spec() -> crate::TypeSpec {
+            crate::TypeSpec::new(
+                "Iso8601ConfigWrap",
+                "Trenchcoat for well_known::Iso8601<CONFIG> — elicits the six Config fields and emits the encoded const-generic u128.",
+                vec![],
+            )
+        }
+    }
+    inventory::submit!(TypeSpecInventoryKey::new(
+        "Iso8601ConfigWrap",
+        <Iso8601ConfigWrap as crate::ElicitSpec>::type_spec,
+        std::any::TypeId::of::<Iso8601ConfigWrap>
     ));
 }

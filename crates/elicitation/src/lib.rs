@@ -484,7 +484,8 @@ pub use datetime_chrono::{
 
 #[cfg(feature = "time")]
 pub use datetime_time::{
-    InstantGenerationMode, InstantGenerator, OffsetDateTimeGenerationMode, OffsetDateTimeGenerator,
+    InstantGenerationMode, InstantGenerator, Iso8601Style, OffsetDateTimeGenerationMode,
+    OffsetDateTimeGenerator,
 };
 
 #[cfg(feature = "jiff")]
@@ -496,21 +497,21 @@ pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTime
 
 #[cfg(feature = "time")]
 pub use verification::types::{
-    ComponentRangeWrap, ConversionRangeWrap, DateWrap, DifferentVariantWrap, DurationWrap,
-    FmtCalendarYearCenturyExtendedRangeWrap, FmtCalendarYearCenturyStandardRangeWrap,
+    ComponentRangeWrap, ConversionRangeWrap, DateKindWrap, DateWrap, DifferentVariantWrap,
+    DurationWrap, FmtCalendarYearCenturyExtendedRangeWrap, FmtCalendarYearCenturyStandardRangeWrap,
     FmtCalendarYearFullExtendedRangeWrap, FmtCalendarYearFullStandardRangeWrap,
     FmtCalendarYearLastTwoWrap, FmtDayWrap, FmtEndWrap, FmtHour12Wrap, FmtHour24Wrap,
     FmtIgnoreWrap, FmtIsoYearCenturyExtendedRangeWrap, FmtIsoYearCenturyStandardRangeWrap,
     FmtIsoYearFullExtendedRangeWrap, FmtIsoYearFullStandardRangeWrap, FmtIsoYearLastTwoWrap,
-    FmtMinuteWrap, FmtMonthLongWrap, FmtMonthNumericalWrap, FmtMonthShortWrap,
-    FmtOffsetHourWrap, FmtOffsetMinuteWrap, FmtOffsetSecondWrap, FmtOrdinalWrap, FmtPaddingWrap,
-    FmtPeriodWrap, FmtSecondWrap, FmtSubsecondDigitsWrap, FmtSubsecondWrap, FmtTrailingInputWrap,
+    FmtMinuteWrap, FmtMonthLongWrap, FmtMonthNumericalWrap, FmtMonthShortWrap, FmtOffsetHourWrap,
+    FmtOffsetMinuteWrap, FmtOffsetSecondWrap, FmtOrdinalWrap, FmtPaddingWrap, FmtPeriodWrap,
+    FmtSecondWrap, FmtSubsecondDigitsWrap, FmtSubsecondWrap, FmtTrailingInputWrap,
     FmtUnixTimestampMicrosecondWrap, FmtUnixTimestampMillisecondWrap,
     FmtUnixTimestampNanosecondWrap, FmtUnixTimestampSecondWrap, FmtWeekNumberIsoWrap,
     FmtWeekNumberMondayWrap, FmtWeekNumberSundayWrap, FmtWeekdayLongWrap, FmtWeekdayMondayWrap,
-    FmtWeekdayShortWrap, FmtWeekdaySundayWrap, WellKnownRfc2822Wrap,
-    MonthWrap, OffsetDateTimeAfter, OffsetDateTimeBefore, OffsetDateTimeWrap,
-    PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap, UtcOffsetWrap, WeekdayWrap,
+    FmtWeekdayShortWrap, FmtWeekdaySundayWrap, Iso8601ConfigWrap, MonthWrap, OffsetDateTimeAfter,
+    OffsetDateTimeBefore, OffsetDateTimeWrap, PrimitiveDateTimeWrap, TimeWrap, UtcDateTimeWrap,
+    UtcOffsetWrap, WeekdayWrap, WellKnownRfc2822Wrap, WellKnownRfc3339Wrap,
 };
 
 #[cfg(feature = "jiff")]

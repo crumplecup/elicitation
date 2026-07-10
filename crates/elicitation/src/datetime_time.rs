@@ -145,8 +145,16 @@ impl Elicitation for InstantGenerationMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "InstantGenerationMode", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose instant generation mode:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "InstantGenerationMode",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose instant generation mode:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
@@ -398,8 +406,16 @@ impl Elicitation for OffsetDateTimeGenerationMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "OffsetDateTimeGenerationMode", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose OffsetDateTime generation mode:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "OffsetDateTimeGenerationMode",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose OffsetDateTime generation mode:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
 
         let result = communicator
@@ -540,8 +556,15 @@ impl Elicitation for OffsetDateTime {
             DateTimeInputMethod::Iso8601String => {
                 let prompt = communicator
                     .style_context()
-                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 2))?
-                    .unwrap_or_else(|| "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):".to_string());
+                    .prompt_for_type::<Self>(
+                        "iso8601",
+                        "String",
+                        &crate::style::PromptContext::new(0, 2),
+                    )?
+                    .unwrap_or_else(|| {
+                        "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):"
+                            .to_string()
+                    });
                 let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
@@ -568,8 +591,14 @@ impl Elicitation for OffsetDateTime {
 
                 let offset_prompt = communicator
                     .style_context()
-                    .prompt_for_type::<Self>("offset_hours", "i32", &crate::style::PromptContext::new(1, 2))?
-                    .unwrap_or_else(|| "Enter timezone offset in hours (e.g., +5 or -8):".to_string());
+                    .prompt_for_type::<Self>(
+                        "offset_hours",
+                        "i32",
+                        &crate::style::PromptContext::new(1, 2),
+                    )?
+                    .unwrap_or_else(|| {
+                        "Enter timezone offset in hours (e.g., +5 or -8):".to_string()
+                    });
                 let offset_params = mcp::number_params(&offset_prompt, -12, 14);
                 let offset_result = communicator
                     .call_tool(
@@ -666,8 +695,14 @@ impl Elicitation for PrimitiveDateTime {
             DateTimeInputMethod::Iso8601String => {
                 let prompt = communicator
                     .style_context()
-                    .prompt_for_type::<Self>("iso8601", "String", &crate::style::PromptContext::new(0, 1))?
-                    .unwrap_or_else(|| "Enter datetime (e.g., \"2024-07-11T15:30:00\"):".to_string());
+                    .prompt_for_type::<Self>(
+                        "iso8601",
+                        "String",
+                        &crate::style::PromptContext::new(0, 1),
+                    )?
+                    .unwrap_or_else(|| {
+                        "Enter datetime (e.g., \"2024-07-11T15:30:00\"):".to_string()
+                    });
                 let params = mcp::text_params(&prompt);
                 let result = communicator
                     .call_tool(
@@ -946,7 +981,11 @@ impl Elicitation for time::Duration {
 
         let nanos_prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("nanoseconds", "i32", &crate::style::PromptContext::new(1, 2))?
+            .prompt_for_type::<Self>(
+                "nanoseconds",
+                "i32",
+                &crate::style::PromptContext::new(1, 2),
+            )?
             .unwrap_or_else(|| "Enter subsecond nanoseconds (0–999999999):".to_string());
         let nanos_result = communicator
             .call_tool(
@@ -1055,7 +1094,11 @@ impl Elicitation for time::Month {
         tracing::debug!("Eliciting time::Month");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::Month", &crate::style::PromptContext::new(0, 1))?
+            .prompt_for_type::<Self>(
+                "value",
+                "time::Month",
+                &crate::style::PromptContext::new(0, 1),
+            )?
             .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a month:").to_string());
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
@@ -1175,8 +1218,16 @@ impl Elicitation for time::Weekday {
         tracing::debug!("Eliciting time::Weekday");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::Weekday", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a day of the week:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::Weekday",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose a day of the week:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -1409,8 +1460,16 @@ impl Elicitation for time::error::ComponentRange {
         tracing::debug!("Eliciting time::error::ComponentRange");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::error::ComponentRange", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a time component range error:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::error::ComponentRange",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose a time component range error:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -1487,7 +1546,7 @@ impl Prompt for time::error::ConversionRange {
 impl Elicitation for time::error::ConversionRange {
     type Style = ConversionRangeStyle;
 
-    #[tracing::instrument(skip(communicator))]
+    #[tracing::instrument(skip_all)]
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         // Single-value type: trigger the one possible error state.
         time::Duration::try_from(std::time::Duration::new(u64::MAX, 0))
@@ -1536,7 +1595,7 @@ impl Prompt for time::error::DifferentVariant {
 impl Elicitation for time::error::DifferentVariant {
     type Style = DifferentVariantStyle;
 
-    #[tracing::instrument(skip(communicator))]
+    #[tracing::instrument(skip_all)]
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         // Single-value unit struct: construct directly.
         Ok(time::error::DifferentVariant)
@@ -1645,8 +1704,16 @@ impl Elicitation for time::format_description::Component {
         tracing::debug!("Eliciting time::format_description::Component");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::format_description::Component", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a format description component:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::format_description::Component",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose a format description component:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -1758,8 +1825,16 @@ impl Elicitation for time::format_description::modifier::Padding {
         tracing::debug!("Eliciting time::format_description::modifier::Padding");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::format_description::modifier::Padding", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose a padding type:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::format_description::modifier::Padding",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose a padding type:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -1914,7 +1989,7 @@ impl Prompt for time::format_description::modifier::End {
 impl Elicitation for time::format_description::modifier::End {
     type Style = FmtEndStyle;
 
-    #[tracing::instrument(skip(communicator))]
+    #[tracing::instrument(skip_all)]
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(time::format_description::modifier::End::default())
     }
@@ -1987,8 +2062,16 @@ impl Elicitation for time::format_description::modifier::TrailingInput {
         tracing::debug!("Eliciting time::format_description::modifier::TrailingInput");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::format_description::modifier::TrailingInput", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose how to handle trailing input:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::format_description::modifier::TrailingInput",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose how to handle trailing input:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -2863,8 +2946,16 @@ impl Elicitation for time::format_description::modifier::SubsecondDigits {
         tracing::debug!("Eliciting time::format_description::modifier::SubsecondDigits");
         let prompt = communicator
             .style_context()
-            .prompt_for_type::<Self>("value", "time::format_description::modifier::SubsecondDigits", &crate::style::PromptContext::new(0, 1))?
-            .unwrap_or_else(|| Self::prompt().unwrap_or("Choose subsecond digit count:").to_string());
+            .prompt_for_type::<Self>(
+                "value",
+                "time::format_description::modifier::SubsecondDigits",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| {
+                Self::prompt()
+                    .unwrap_or("Choose subsecond digit count:")
+                    .to_string()
+            });
         let params = mcp::select_params(&prompt, &Self::labels());
         let result = communicator
             .call_tool(
@@ -3008,9 +3099,7 @@ impl ElicitPromptTree for time::format_description::modifier::Subsecond {
             type_name: "time::format_description::modifier::Subsecond".to_string(),
             fields: vec![(
                 "digits".to_string(),
-                Box::new(
-                    time::format_description::modifier::SubsecondDigits::prompt_tree(),
-                ),
+                Box::new(time::format_description::modifier::SubsecondDigits::prompt_tree()),
             )],
         }
     }
@@ -3073,6 +3162,301 @@ impl ElicitPromptTree for time::format_description::well_known::Rfc2822 {
                 .unwrap_or("time::format_description::well_known::Rfc2822")
                 .to_string(),
             type_name: "time::format_description::well_known::Rfc2822".to_string(),
+        }
+    }
+}
+
+// ── well_known::Iso8601<CONFIG> (unit struct with const generic) ──────────────
+
+/// Style for [`time::format_description::well_known::Iso8601`].
+///
+/// Const-generic unit struct — no user choices; the CONFIG parameter is fixed
+/// at compile time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum Iso8601Style {
+    #[default]
+    /// Default style — no style options available.
+    Default,
+}
+
+impl Prompt for Iso8601Style {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for Iso8601Style {
+    type Style = Iso8601Style;
+
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_single_variant_enum("Iso8601Style")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_single_variant_enum("Iso8601Style")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_single_variant_enum("Iso8601Style")
+    }
+}
+
+impl crate::style::ElicitationStyle for Iso8601Style {}
+
+impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig> Prompt
+    for time::format_description::well_known::Iso8601<CONFIG>
+{
+    fn prompt() -> Option<&'static str> {
+        Some("ISO 8601 date/time format — unit struct, CONFIG parameter is set at compile time.")
+    }
+}
+
+impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig> Elicitation
+    for time::format_description::well_known::Iso8601<CONFIG>
+{
+    type Style = Iso8601Style;
+
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(time::format_description::well_known::Iso8601)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque(
+            "time::format_description::well_known::Iso8601<CONFIG>",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque(
+            "time::format_description::well_known::Iso8601<CONFIG>",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque(
+            "time::format_description::well_known::Iso8601<CONFIG>",
+        )
+    }
+}
+
+impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig> ElicitIntrospect
+    for time::format_description::well_known::Iso8601<CONFIG>
+{
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::well_known::Iso8601",
+            description: <time::format_description::well_known::Iso8601<CONFIG> as Prompt>::prompt(
+            ),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl<const CONFIG: time::format_description::well_known::iso8601::EncodedConfig> ElicitPromptTree
+    for time::format_description::well_known::Iso8601<CONFIG>
+{
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: <time::format_description::well_known::Iso8601<CONFIG> as Prompt>::prompt()
+                .unwrap_or("time::format_description::well_known::Iso8601")
+                .to_string(),
+            type_name: "time::format_description::well_known::Iso8601".to_string(),
+        }
+    }
+}
+
+// ── well_known::Rfc3339 (unit struct) ─────────────────────────────────────────
+
+crate::default_style!(time::format_description::well_known::Rfc3339 => WellKnownRfc3339Style);
+
+impl Prompt for time::format_description::well_known::Rfc3339 {
+    fn prompt() -> Option<&'static str> {
+        Some("RFC 3339 / ISO 8601 date-time format (e.g. 1996-12-19T16:39:57-08:00) — no options.")
+    }
+}
+
+impl Elicitation for time::format_description::well_known::Rfc3339 {
+    type Style = WellKnownRfc3339Style;
+
+    #[tracing::instrument(skip_all)]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
+        Ok(Self)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque(
+            "time::format_description::well_known::Rfc3339",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque(
+            "time::format_description::well_known::Rfc3339",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque(
+            "time::format_description::well_known::Rfc3339",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::well_known::Rfc3339 {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::well_known::Rfc3339",
+            description: <time::format_description::well_known::Rfc3339 as Prompt>::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::well_known::Rfc3339 {
+    fn prompt_tree() -> PromptTree {
+        PromptTree::Leaf {
+            prompt: Self::prompt()
+                .unwrap_or("time::format_description::well_known::Rfc3339")
+                .to_string(),
+            type_name: "time::format_description::well_known::Rfc3339".to_string(),
+        }
+    }
+}
+
+// ── iso8601::DateKind ─────────────────────────────────────────────────────────
+
+crate::default_style!(time::format_description::well_known::iso8601::DateKind => Iso8601DateKindStyle);
+
+impl Prompt for time::format_description::well_known::iso8601::DateKind {
+    fn prompt() -> Option<&'static str> {
+        Some(
+            "ISO 8601 date representation: calendar (year-month-day), week (year-week-weekday), or ordinal (year-day)?",
+        )
+    }
+}
+
+impl Select for time::format_description::well_known::iso8601::DateKind {
+    fn options() -> Vec<Self> {
+        use time::format_description::well_known::iso8601::DateKind;
+        vec![DateKind::Calendar, DateKind::Week, DateKind::Ordinal]
+    }
+
+    fn labels() -> Vec<String> {
+        vec![
+            "Calendar".to_string(),
+            "Week".to_string(),
+            "Ordinal".to_string(),
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        use time::format_description::well_known::iso8601::DateKind;
+        match label {
+            "Calendar" => Some(DateKind::Calendar),
+            "Week" => Some(DateKind::Week),
+            "Ordinal" => Some(DateKind::Ordinal),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for time::format_description::well_known::iso8601::DateKind {
+    type Style = Iso8601DateKindStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting iso8601::DateKind");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>(
+                "value",
+                "iso8601::DateKind",
+                &crate::style::PromptContext::new(0, 1),
+            )?
+            .unwrap_or_else(|| Self::prompt().unwrap_or("ISO 8601 date kind?").to_string());
+        let params = mcp::select_params(&prompt, &Self::labels());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+        Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid iso8601::DateKind: {label}"
+            )))
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "time::format_description::well_known::iso8601::DateKind",
+            "Calendar",
+        )
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "time::format_description::well_known::iso8601::DateKind",
+            "Calendar",
+        )
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "time::format_description::well_known::iso8601::DateKind",
+            "Calendar",
+        )
+    }
+}
+
+impl ElicitIntrospect for time::format_description::well_known::iso8601::DateKind {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::format_description::well_known::iso8601::DateKind",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}
+
+impl ElicitPromptTree for time::format_description::well_known::iso8601::DateKind {
+    fn prompt_tree() -> PromptTree {
+        let labels = Self::labels();
+        let count = labels.len();
+        PromptTree::Select {
+            prompt: Self::prompt().unwrap_or("ISO 8601 date kind?").to_string(),
+            type_name: "time::format_description::well_known::iso8601::DateKind".to_string(),
+            options: labels,
+            branches: vec![None; count],
         }
     }
 }
